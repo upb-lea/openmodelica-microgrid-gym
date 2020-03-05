@@ -1,0 +1,6 @@
+loadModel(grid); getErrorString();
+setCommandLineOptions("-d=newInst"); getErrorString();
+setCommandLineOptions("-d=initialization"); getErrorString();
+setCommandLineOptions("--simCodeTarget=Cpp"); getErrorString();
+setCommandLineOptions("-d=-disableDirectionalDerivatives"); getErrorString();
+translateModelFMU(grid.network); getErrorString();
