@@ -21,3 +21,8 @@ def test_inst_rms():
 def test_dq0_to_abc_cos_sin():
     np.random.seed(1)
     assert dq0_to_abc_cos_sin(np.random.random(3), *np.random.random(2)) == approx([0.02048185, 0.23152558, -0.2516643])
+
+
+def test_dq0_to_abc_cos_sin_power_inv():
+    np.random.seed(1)
+    assert dq0_to_abc_cos_sin_power_inv(np.random.random(3), *np.random.random(2)) == approx([0.025085037842289073, 0.28355976715193565, -0.3082245650813462])

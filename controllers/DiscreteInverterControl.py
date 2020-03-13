@@ -365,7 +365,7 @@ class PLL:
         # Uses a DDS oscillator to keep track of the internal angle
         self._dds = DDS(ts, pllParams.theta_0)
 
-        self._prev_cossin = thetatoCossine(pllParams.theta_0)
+        self._prev_cossin = cos_sin(pllParams.theta_0)
         self._sqrt2 = math.sqrt(2)
 
     def step(self, v_abc):
@@ -384,7 +384,7 @@ class PLL:
         freq = self._controller.step(dphi) + self._params.f_nom
 
         theta = self._dds.step(freq)
-        self._prev_cossin = thetatoCossine(theta)
+        self._prev_cossin = cos_sin(theta)
 
         # debug vector that can be returned for debugging purposes
         debug = [self._prev_cossin[0], self._prev_cossin[1], cossin_x[0], cossin_x[1], theta]
@@ -418,7 +418,7 @@ class PLL:
         # Get the magnitude of the waveforms to normalise the PLL calcs
         mag = inst_rms(abc)
         if mag != 0:
-            abc = constMult(abc, 1 / mag)
+            abc = abc / mag
 
         return abc
 

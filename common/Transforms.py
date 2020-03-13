@@ -7,7 +7,6 @@ Created on Fri Jan 24 16:19:01 2020
 Common static transforms used commonly in voltage/power inverter control systems
 """
 
-import math
 import numpy as np
 
 
@@ -21,16 +20,16 @@ def dq0Toabc(dq0, theta):
     :return abc: The transformed space in the abc frame
     """
     theta_rad = theta
-    a = (math.cos(theta_rad) * dq0[0] -
-         math.sin(theta_rad) * dq0[1] +
+    a = (np.cos(theta_rad) * dq0[0] -
+         np.sin(theta_rad) * dq0[1] +
          dq0[2])
-    theta2 = theta_rad - 2 * math.pi / 3
-    b = (math.cos(theta2) * dq0[0] -
-         math.sin(theta2) * dq0[1] +
+    theta2 = theta_rad - 2 * np.pi / 3
+    b = (np.cos(theta2) * dq0[0] -
+         np.sin(theta2) * dq0[1] +
          dq0[2])
-    theta2 = theta_rad + 2 * math.pi / 3
-    c = (math.cos(theta2) * dq0[0] -
-         math.sin(theta2) * dq0[1] +
+    theta2 = theta_rad + 2 * np.pi / 3
+    c = (np.cos(theta2) * dq0[0] -
+         np.sin(theta2) * dq0[1] +
          dq0[2])
 
     return [a, b, c]
@@ -82,8 +81,7 @@ def dq0_to_abc_cos_sin_power_inv(dq0, cos, sin):
 
     :return abc: The transformed space in the abc frame
     """
-    temp = dq0_to_abc_cos_sin(dq0, cos, sin)
-    return constMult(temp, 1.224744871391589)
+    return dq0_to_abc_cos_sin(dq0, cos, sin) * 1.224744871391589
 
 
 def constMult(arr, mag):
@@ -108,7 +106,7 @@ def abcTodq0(abc, theta):
 
     :return dq0: The transformed space in the abc frame
     """
-    return abcTodq0CosSin(abc, thetatoCossine(theta))
+    return abcTodq0CosSin(abc, cos_sin(theta))
 
 
 def abcTodq0CosSin(abc, cossin):
@@ -145,46 +143,37 @@ def abcTodq0CosSin(abc, cossin):
     return [d, q, z]
 
 
-def abctoAlphaBeta(abc):
+def abctoAlphaBeta(abc) -> np.ndarray:
     """
     Transforms from abc frame to the alpha-beta frame
-
     :param abc: The values in the abc reference frame
-
     :return [alpha,beta]: The transformed alpha beta results
     """
 
     alpha = (2 / 3) * (abc[0] - 0.5 * abc[1] - 0.5 * abc[2])
     beta = (2 / 3) * (0.866 * abc[1] - 0.866 * abc[2])
 
-    return [alpha, beta]
+    return np.array([alpha, beta])
 
 
-def thetatoCossine(theta):
+def cos_sin(theta) -> tuple:
     """
     Transforms from provided angle to the relavent cossine values
-
     :param theta: The angle [In RADIANS]
-
     :return [alpha,beta]: The resultant cossine
     """
-    alpha = math.cos(theta)
-    beta = math.sin(theta)
-    return [alpha, beta]
+    return np.cos(theta), np.sin(theta)
 
 
-def inst_rms(arr):
-    return (math.sqrt(arr[0] * arr[0] + arr[1] * arr[1] + arr[2] * arr[2])) / 1.732050807568877
+def inst_rms(arr: np.ndarray):
+    return np.linalg.norm(arr) / 1.732050807568877
 
 
-def inst_power(varr, iarr):
-    return (varr[0] * iarr[0] + varr[1] * iarr[1] + varr[2] * iarr[2])
+def inst_power(varr: np.ndarray, iarr: np.ndarray):
+    # scalar product
+    return varr @ iarr
 
 
-def inst_reactive(varr, iarr):
-    vlines = phaseToLines(varr)
-    return -(vlines[1] * iarr[0] + varr[2] * iarr[1] + varr[0] * iarr[2]) * 0.5773502691896258
-
-
-def phaseToLines(varr):
-    return (varr[0] - varr[1], varr[1] - varr[2], varr[2] - varr[0])
+def inst_reactive(varr: np.ndarray, iarr: np.ndarray):
+    vline = np.array([varr[1] - varr[2], varr[2], varr[0]])
+    return -0.5773502691896258 * vline @ iarr

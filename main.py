@@ -93,7 +93,8 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
         start = time.time()
         sim_time = 0
         cont_time = 0
-        observation = sim_env.reset()
+        obs = sim_env.reset()
+        obs = np.array(obs)
 
         currentHist = []  # List to hold the current values
         voltageHist = []  # List to hold the voltage values
@@ -103,7 +104,7 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
         iteration_s = []
         currentsHistdq0 = []  # Currents for the second inverter in dq0
 
-        CVV1, CVI1, CVV2, CVI2 = _map_CVs(observation)
+        CVV1, CVI1, CVV2, CVI2 = _map_CVs(obs)
 
         # Logging for plotting
         currentHist.append(CVI1)
@@ -119,7 +120,7 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
             SPidq0 = [0, 0, 0]
 
             # CVs from the states of the simulation
-            CVV1, CVI1, CVV2, CVI2 = _map_CVs(observation)
+            CVV1, CVI1, CVV2, CVI2 = _map_CVs(obs)
 
             # prev_cossine, prev_freq, prev_theta, debug = testPLL.step(CVI1)
 
@@ -143,7 +144,7 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
             # action1 = [0,50,0]
             # action2=action1
             # Accumulate time spent computing controller actions
-            cont_time = cont_time + time.time() - startContSim;
+            cont_time = cont_time + time.time() - startContSim
 
             currentHist.append(CVI1dq)
             currentsHist.append(CVI2)
@@ -162,7 +163,8 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
             # print("Action: {}".format(action))
 
             # Perform a step of simulation
-            observation, reward, done, iterations, _ = sim_env.step(action)
+            obs, reward, done, iterations, _ = sim_env.step(action)
+            obs = np.array(obs)
 
             iteration_s.append(iterations)
             # Accumulate time spent simulating
@@ -222,10 +224,10 @@ def _map_CVs(observation):
     :return CVV2: Voltages measured for inverter 2
     :return CVI2: Currents measured for inverter 2
     """
-    CVI1 = [observation[0], observation[1], observation[2]]
-    CVV1 = [observation[3], observation[4], observation[5]]
-    CVI2 = [observation[6], observation[7], observation[8]]
-    CVV2 = [observation[9], observation[10], observation[11]]
+    CVI1 = observation[0:3]
+    CVV1 = observation[3:6]
+    CVI2 = observation[6:9]
+    CVV2 = observation[9:12]
 
     # Invert the current feedback values (positive power when absorbing power)
     # CVI1=constMult(CVI1,-1)
