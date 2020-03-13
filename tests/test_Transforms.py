@@ -1,5 +1,5 @@
 from pytest import approx
-
+import numpy as np
 from common.Transforms import *
 
 
@@ -22,4 +22,4 @@ def test_inst_rms():
 
 def test_dq0_to_abc_cos_sin():
     a = np.array([0.23240663328276812, 0.6399024956598093, 0.018417432066713868])
-    assert dq0_to_abc_cos_sin(a, .5, .6) == approx(np.array([-0.24932075, 0.55012279, -0.24554974]))
+    assert dq0_to_abc_cos_sin(a, (.5, .6)) == approx(np.array([-0.24932075, 0.55012279, -0.24554974]))

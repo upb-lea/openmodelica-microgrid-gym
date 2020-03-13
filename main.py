@@ -123,7 +123,7 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
 
             # prev_cossine, prev_freq, prev_theta, debug = testPLL.step(CVI1)
 
-            shareRatio = Transforms.instPower(CVV1, CVI1) / Transforms.instPower(CVV2, CVI2)
+            shareRatio = inst_power(CVV1, CVI1) / inst_power(CVV2, CVI2)
             # Logging for plotting
             # voltageHist.append(CVV1)
             timeHist.append(step * delta_t)
@@ -228,8 +228,8 @@ def _map_CVs(observation):
     CVV2 = [observation[9], observation[10], observation[11]]
 
     # Invert the current feedback values (positive power when absorbing power)
-    # CVI1=Transforms.constMult(CVI1,-1)
-    # CVI2=Transforms.constMult(CVI2,-1)
+    # CVI1=constMult(CVI1,-1)
+    # CVI2=constMult(CVI2,-1)
 
     return CVV1, CVI1, CVV2, CVI2
 
@@ -302,7 +302,7 @@ def run_rl_experiments(n_experiments=1,
 
 
 def _get_average_voltage(arr):
-    return Transforms.constMult(arr, V_dc)
+    return constMult(arr, V_dc)
 
 
 if __name__ == "__main__":

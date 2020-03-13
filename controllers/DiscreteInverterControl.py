@@ -12,14 +12,15 @@ from .pi_controller import PIController
 from .ControlParameters import *
 from common.Transforms import *
 
-"""
-Implements a basic Direct Digital Synthesizer (DDS) controller. 
-Basically is a resetting integrator to provide a theta reference at a given
-frequency
-"""
+import numpy as np
 
 
 class DDS:
+    """
+    Implements a basic Direct Digital Synthesizer (DDS) controller.
+    Basically is a resetting integrator to provide a theta reference at a given
+    frequency
+    """
 
     def __init__(self, ts, DDSMax=1, theta_0=0):
         """
@@ -91,7 +92,7 @@ class MultiPhaseABCPIPIController:
         # Populate the previous MV with n_phase 0's
         self._prev_MV = ([0 for k in range(n_phase)])
 
-    def step(self, currentCV, voltageCV, VSP, freqSP):
+    def step(self, currentCV: np.ndarray, voltageCV: np.ndarray, VSP, freqSP):
         """
         Performs the calculations for a discrete step of the controller
         
@@ -106,12 +107,12 @@ class MultiPhaseABCPIPIController:
         """
         if self._undersampling_count == (self._undersample - 1):
 
-            instPow = -Transforms.instPower(voltageCV, currentCV)
+            instPow = -inst_power(voltageCV, currentCV)
             freq = self._droopController.step(instPow)
             # Get the next phase rotation angle to implement
             phase = self._phaseDDS.step(freq)
 
-            instQ = -Transforms.instReactive(voltageCV, currentCV)
+            instQ = -inst_reactive(voltageCV, currentCV)
             voltage = self._droopQController.step(instQ)
 
             VSP = (voltage) * 1.732050807568877
@@ -120,7 +121,7 @@ class MultiPhaseABCPIPIController:
 
             # Get the voltage SPs in abc vector
             # print("SPVdq0: {}, phase: {}".format(SPVdq0,phase))
-            SPV = Transforms.dq0Toabc(SPVdq0, phase)
+            SPV = dq0Toabc(SPVdq0, phase)
 
             # print("QInst: {}, Volt {}".format(instQ,VSP))
             # SPV=[300,310,320]
@@ -190,12 +191,12 @@ class MultiPhaseDQ0PIPIController:
         """
         if self._undersampling_count == (self._undersample - 1):
 
-            instPow = -Transforms.instPower(voltageCV, currentCV)
+            instPow = -inst_power(voltageCV, currentCV)
             freq = self._droopController.step(instPow)
             # Get the next phase rotation angle to implement
             phase = self._phaseDDS.step(freq)
 
-            instQ = -Transforms.instReactive(voltageCV, currentCV)
+            instQ = -inst_reactive(voltageCV, currentCV)
             voltage = self._droopQController.step(instQ)
 
             VSP = (voltage) * 1.732050807568877
@@ -203,8 +204,8 @@ class MultiPhaseDQ0PIPIController:
             SPVdq0 = [VSP, 0, 0]
 
             # Transform the feedback to the dq0 frame
-            CVIdq0 = Transforms.abcTodq0(currentCV, phase)
-            CVVdq0 = Transforms.abcTodq0(voltageCV, phase)
+            CVIdq0 = abcTodq0(currentCV, phase)
+            CVVdq0 = abcTodq0(voltageCV, phase)
 
             # Voltage controller calculations
             SPI = self._voltagePI.stepSPCV(SPVdq0, CVVdq0)
@@ -215,7 +216,7 @@ class MultiPhaseDQ0PIPIController:
 
             # MVdq0=[0.1, 0, 0]
             # Transform the MVs back to the abc frame
-            MV = Transforms.dq0Toabc(MVdq0, phase)
+            MV = dq0Toabc(MVdq0, phase)
 
             # print("SPi: {}, MV: {}".format(SPI,MV))
             self._prev_MV = MV
@@ -289,19 +290,19 @@ class MultiPhaseDQCurrentController:
         :return MVdq0: the controller outputs in the dq0 axis
         """
         if self._undersampling_count == (self._undersample - 1):
-            Vinst = Transforms.instRMS(voltageCV)
+            Vinst = inst_rms(voltageCV)
             # Get current phase information from the voltage measurements
             self._prev_cossine, self._prev_freq, self._prev_theta, debug = self._pll.step(voltageCV)
             # Transform the current feedback to the DQ0 frame
-            self._lastIDQ = Transforms.abcTodq0CosSin(currentCV, self._prev_cossine)
+            self._lastIDQ = abcTodq0CosSin(currentCV, self._prev_cossine)
 
-            # Pinst = Transforms.instPower (voltageCV, currentCV)
+            # Pinst = instPower (voltageCV, currentCV)
 
             droopPI = 0
             droopQI = 0
             if (Vinst) > 200:
                 # Determine the droop power setpoints
-                droopPI = self._droop_control.step(self._prev_freq) / Transforms.instRMS(voltageCV)
+                droopPI = self._droop_control.step(self._prev_freq) / inst_rms(voltageCV)
                 droopPI = (droopPI / 1.732050807568877)
 
                 droopmax = self._i_limit
@@ -333,7 +334,7 @@ class MultiPhaseDQCurrentController:
             # Transform the outputs from the controllers (dq0) to abc
             # also divide by SQRT(2) to ensure the transform is limited to [-1,1]
             self._prev_MVdq0 = MVdq0
-            self._prev_MV = Transforms.dq0ToabcCosSin(MVdq0, self._prev_cossine)
+            self._prev_MV = dq0_to_abc_cos_sin(MVdq0, self._prev_cossine)
             # print("SP: {}, act: {}, actabc {}".format(idq0SP,MVdq0,self._prev_MV))
             # self._prev_MV = MVdq0;
             self._undersampling_count = 0
@@ -364,7 +365,7 @@ class PLL:
         # Uses a DDS oscillator to keep track of the internal angle
         self._dds = DDS(ts, pllParams.theta_0)
 
-        self._prev_cossin = Transforms.thetatoCossine(pllParams.theta_0)
+        self._prev_cossin = thetatoCossine(pllParams.theta_0)
         self._sqrt2 = math.sqrt(2)
 
     def step(self, v_abc):
@@ -378,12 +379,12 @@ class PLL:
         
         """
         v_abc = self.__normalise_abc(v_abc)
-        cossin_x = Transforms.abctoAlphaBeta(v_abc)
+        cossin_x = abctoAlphaBeta(v_abc)
         dphi = self.__phase_comp(cossin_x, self._prev_cossin)
         freq = self._controller.step(dphi) + self._params.f_nom
 
         theta = self._dds.step(freq)
-        self._prev_cossin = Transforms.thetatoCossine(theta)
+        self._prev_cossin = thetatoCossine(theta)
 
         # debug vector that can be returned for debugging purposes
         debug = [self._prev_cossin[0], self._prev_cossin[1], cossin_x[0], cossin_x[1], theta]
@@ -415,9 +416,9 @@ class PLL:
         :return abc_norm: abc result normalised to [-1,1]
         """
         # Get the magnitude of the waveforms to normalise the PLL calcs
-        mag = Transforms.instRMS(abc)
+        mag = inst_rms(abc)
         if mag != 0:
-            abc = Transforms.constMult(abc, 1 / mag)
+            abc = constMult(abc, 1 / mag)
 
         return abc
 
@@ -436,7 +437,6 @@ class Filter:
 class PT1Filter(Filter):
     """
     A PT1 Filter implementation
-    
     """
 
     def __init__(self, filtParams, ts):
@@ -451,8 +451,7 @@ class PT1Filter(Filter):
         """
         Implements a first order PT1 filter on the input
         
-        :param val_in: new input 
-        
+        :param val_in: new input
         :return omega: The new output
         """
 
