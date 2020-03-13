@@ -9,12 +9,13 @@ design of controllers and or the filters.
 """
 from .pi_controller import PI_parameters
 
-        
+
 class FiltParams:
     """
     Implements a basic P,f droop controller
     
     """
+
     def __init__(self, gain, tau):
         """
         :param Droop: The droop gain
@@ -24,17 +25,18 @@ class FiltParams:
         
             
         """
-        
-        self.gain=gain
-        self.tau=tau
-            
+
+        self.gain = gain
+        self.tau = tau
+
 
 class DroopParams(FiltParams):
     """
     Implements a basic P,f droop controller
     
     """
-    def __init__(self, Droop, tau, nomValue = 0):
+
+    def __init__(self, Droop, tau, nomValue=0):
         """
         :param Droop: The droop gain
         :param tau: The first order time constant [s]
@@ -48,20 +50,22 @@ class DroopParams(FiltParams):
             nomValue = 50 [Hz]
             
         """
-        gain=0
-        if Droop!= 0 :
-            gain=1/Droop
-        
-        super().__init__(gain,tau)
-        
+        gain = 0
+        if Droop != 0:
+            gain = 1 / Droop
+
+        super().__init__(gain, tau)
+
         self.nom_val = nomValue
+
 
 class InverseDroopParams(DroopParams):
     """
     Implements a basic P,f droop controller
     
     """
-    def __init__(self, Droop, tau, nomValue = 0, tau_filt=0):
+
+    def __init__(self, Droop, tau, nomValue=0, tau_filt=0):
         """
         :param Droop: The droop gain
         :param tau: The first order time constant [s]
@@ -75,17 +79,18 @@ class InverseDroopParams(DroopParams):
             nomValue = 50 [Hz]
             
         """
-        self.derivativeFiltParams = FiltParams(1,tau_filt)
+        self.derivativeFiltParams = FiltParams(1, tau_filt)
 
-        super().__init__(Droop,tau,nomValue)
-        
-               
+        super().__init__(Droop, tau, nomValue)
+
+
 class PLLParams(PI_parameters):
     """
     The params for a basic PI Controller
 
     """
-    def __init__(self,kP, kI, uL, lL, kB = 1, f_nom = 0, theta_0 = 0):
+
+    def __init__(self, kP, kI, uL, lL, kB=1, f_nom=0, theta_0=0):
         """
         :param kP: proportional gain constant
         :param kI: integral gain constant
