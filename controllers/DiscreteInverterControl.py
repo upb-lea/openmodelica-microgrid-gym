@@ -5,8 +5,6 @@ Created on Tue Jan 14 14:29:23 2020
 @author: jarren
 """
 
-import math
-
 from .MultiPhasePIController import MultiPhasePIController
 from .pi_controller import PIController
 from .ControlParameters import *
@@ -53,7 +51,7 @@ class DDS:
         if self._integralSum > self._max:
             self._integralSum = self._integralSum - self._max
 
-        return self._integralSum * 2 * math.pi
+        return self._integralSum * 2 * np.pi
 
 
 class MultiPhaseABCPIPIController:
@@ -121,7 +119,7 @@ class MultiPhaseABCPIPIController:
 
             # Get the voltage SPs in abc vector
             # print("SPVdq0: {}, phase: {}".format(SPVdq0,phase))
-            SPV = dq0Toabc(SPVdq0, phase)
+            SPV = dq0_abc(SPVdq0, phase)
 
             # print("QInst: {}, Volt {}".format(instQ,VSP))
             # SPV=[300,310,320]
@@ -204,8 +202,8 @@ class MultiPhaseDQ0PIPIController:
             SPVdq0 = [VSP, 0, 0]
 
             # Transform the feedback to the dq0 frame
-            CVIdq0 = abcTodq0(currentCV, phase)
-            CVVdq0 = abcTodq0(voltageCV, phase)
+            CVIdq0 = abc_to_dq0(currentCV, phase)
+            CVVdq0 = abc_to_dq0(voltageCV, phase)
 
             # Voltage controller calculations
             SPI = self._voltagePI.stepSPCV(SPVdq0, CVVdq0)
@@ -216,7 +214,7 @@ class MultiPhaseDQ0PIPIController:
 
             # MVdq0=[0.1, 0, 0]
             # Transform the MVs back to the abc frame
-            MV = dq0Toabc(MVdq0, phase)
+            MV = dq0_abc(MVdq0, phase)
 
             # print("SPi: {}, MV: {}".format(SPI,MV))
             self._prev_MV = MV
@@ -294,7 +292,7 @@ class MultiPhaseDQCurrentController:
             # Get current phase information from the voltage measurements
             self._prev_cossine, self._prev_freq, self._prev_theta, debug = self._pll.step(voltageCV)
             # Transform the current feedback to the DQ0 frame
-            self._lastIDQ = abcTodq0CosSin(currentCV, self._prev_cossine)
+            self._lastIDQ = abc_to_dq0_cos_sin(currentCV, *self._prev_cossine)
 
             # Pinst = instPower (voltageCV, currentCV)
 
@@ -305,11 +303,7 @@ class MultiPhaseDQCurrentController:
                 droopPI = self._droop_control.step(self._prev_freq) / inst_rms(voltageCV)
                 droopPI = (droopPI / 1.732050807568877)
 
-                droopmax = self._i_limit
-                if (droopPI > droopmax):
-                    droopPI = droopmax
-                if (droopPI < (-droopmax)):
-                    droopPI = -droopmax
+                droopPI = np.clip(droopPI, self._i_limit, -self._i_limit)
 
                 # Determine the droop reactive power setpoints
                 droopQI = self._Qdroop_control.step(Vinst) / Vinst
@@ -317,11 +311,7 @@ class MultiPhaseDQCurrentController:
                 # print("droop: {}, Vinst: {}".format(droopModification,Vinst))
                 droopQI = (droopQI / 1.732050807568877)
 
-                droopmax = self._i_limit
-                if (droopQI > droopmax):
-                    droopQI = droopmax
-                if (droopQI < (-droopmax)):
-                    droopQI = -droopmax
+                droopQI = np.clip(droopQI, self._i_limit, -self._i_limit)
 
             idq0SP = [idq0SP[0] - droopPI, idq0SP[1] + droopQI, idq0SP[2]]
             # Calculate the control applied to the DQ0 currents
@@ -366,7 +356,7 @@ class PLL:
         self._dds = DDS(ts, pllParams.theta_0)
 
         self._prev_cossin = cos_sin(pllParams.theta_0)
-        self._sqrt2 = math.sqrt(2)
+        self._sqrt2 = np.sqrt(2)
 
     def step(self, v_abc):
         """
@@ -387,7 +377,7 @@ class PLL:
         self._prev_cossin = cos_sin(theta)
 
         # debug vector that can be returned for debugging purposes
-        debug = [self._prev_cossin[0], self._prev_cossin[1], cossin_x[0], cossin_x[1], theta]
+        debug = [*self._prev_cossin, *cossin_x, theta]
 
         return self._prev_cossin, freq, theta, debug
 
@@ -427,7 +417,6 @@ class Filter:
     """
     An empty Filter defining a base interface for any inherenting classes
     Mightnot be needed, but my use of Java suggests it may be useful.
-    
     """
 
     def step(self, value):
@@ -490,8 +479,7 @@ class DroopController(PT1Filter):
         """
         Implements a first order response on the input, using the initialised params
         
-        :param val_in: new input 
-        
+        :param val_in: new input
         :return omega: The new setpoint
         """
 

@@ -304,7 +304,7 @@ def run_rl_experiments(n_experiments=1,
 
 
 def _get_average_voltage(arr):
-    return constMult(arr, V_dc)
+    return arr* V_dc
 
 
 if __name__ == "__main__":

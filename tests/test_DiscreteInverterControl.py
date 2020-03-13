@@ -36,5 +36,5 @@ def test_step3():
     piparams = pi_parms(2, 3, 2, 3, 5, 1, 4, 4)
     ctl = MultiPhaseDQ0PIPIController(piparams, piparams, 3, dparams, dparams)
     mv, cv = ctl.step(np.random.random(3), np.random.random(3), 4, 4)
-    assert mv == approx([4.298710257860408, -0.7428881372249228, 11.444177879364517])
+    assert mv == approx([4.29871026, -0.74270939, 11.44399913])
     assert cv == approx([-0.29270728309561767, -0.2977367776984352, 0.37915362432069233])

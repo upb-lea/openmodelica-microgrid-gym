@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Fri Jan 24 16:19:01 2020
 
@@ -10,7 +9,7 @@ Common static transforms used commonly in voltage/power inverter control systems
 import numpy as np
 
 
-def dq0Toabc(dq0, theta):
+def dq0_abc(dq0: np.ndarray, theta: float) -> np.ndarray:
     """
     Transforms from DQ frame to the abc frame using the provided angle theta
 
@@ -32,10 +31,10 @@ def dq0Toabc(dq0, theta):
          np.sin(theta2) * dq0[1] +
          dq0[2])
 
-    return [a, b, c]
+    return np.array([a, b, c])
 
 
-def dq0_to_abc_cos_sin(dq0, cos, sin):
+def dq0_to_abc_cos_sin(dq0: np.ndarray, cos: float, sin: float) -> np.ndarray:
     """
     Transforms from DQ frame to the abc frame using the provided cos-sin
     This implementation tries to improve on the dq0Toabc transform by
@@ -47,26 +46,18 @@ def dq0_to_abc_cos_sin(dq0, cos, sin):
 
     :return abc: The transformed space in the abc frame
     """
-    a = (cos * dq0[0] -
-         sin * dq0[1] +
-         dq0[2])
+    abc = np.empty(3)
+    abc[0] = np.array([cos, -sin, 1]) @ dq0
+
     # implements the cos(a-2pi/3) using cos (A+B) expansion etc
-    cos_shift = cos * (-0.5) - sin * (-0.866)
-    sin_shift = sin * (-0.5) + cos * (-0.866)
-    b = (cos_shift * dq0[0] -
-         sin_shift * dq0[1] +
-         dq0[2])
-
-    cos_shift = cos * (-0.5) - sin * (0.866)
-    sin_shift = sin * (-0.5) + cos * (0.866)
-    c = (cos_shift * dq0[0] -
-         sin_shift * dq0[1] +
-         dq0[2])
-
-    return np.array([a, b, c])
+    for i in range(1, 3):
+        cos_shift = -cos * 0.5 - sin * 0.866 * (-1) ** i
+        sin_shift = -sin * 0.5 + cos * 0.866 * (-1) ** i
+        abc[i] = np.array([cos_shift, -sin_shift, 1]) @ dq0
+    return abc
 
 
-def dq0_to_abc_cos_sin_power_inv(dq0, cos, sin):
+def dq0_to_abc_cos_sin_power_inv(dq0: np.ndarray, cos: float, sin: float) -> np.ndarray:
     """
     Transforms from DQ frame to the abc frame using the provided cos-sin
     This implementation tries to improve on the dq0Toabc transform by
@@ -84,20 +75,7 @@ def dq0_to_abc_cos_sin_power_inv(dq0, cos, sin):
     return dq0_to_abc_cos_sin(dq0, cos, sin) * 1.224744871391589
 
 
-def constMult(arr, mag):
-    """
-    Performs an element based multiplication of the arr by the constant mag
-    ie [arr[0]*mag, arr[1]*mag .... arr[n]*mag]
-
-    :param arr: the list
-    :param mag: The constant to multiply by
-
-    :return abc: The transformed space in the abc frame
-    """
-    return tuple([k * mag for k in arr])
-
-
-def abcTodq0(abc, theta):
+def abc_to_dq0(abc, theta):
     """
     Transforms from abc frame to the dq0 frame using the provided angle
 
@@ -106,10 +84,10 @@ def abcTodq0(abc, theta):
 
     :return dq0: The transformed space in the abc frame
     """
-    return abcTodq0CosSin(abc, cos_sin(theta))
+    return abc_to_dq0_cos_sin(abc, *cos_sin(theta))
 
 
-def abcTodq0CosSin(abc, cossin):
+def abc_to_dq0_cos_sin(abc, cos, sin):
     """
     Transforms from abc frame to the dq0 frame using the provided cos-sin
     This implementation tries to improve by utilising the provided cos-sin
@@ -120,9 +98,6 @@ def abcTodq0CosSin(abc, cossin):
 
     :return dq0: The transformed space in the abc frame
     """
-    # Seperate sine and cosine elements
-    cos = cossin[0]
-    sin = cossin[1]
     # implements the cos(a-2pi/3) using cos (A+B) expansion etc
     cos_shift_neg = cos * (-0.5) - sin * (-0.866)
     sin_shift_neg = sin * (-0.5) + cos * (-0.866)
@@ -140,7 +115,7 @@ def abcTodq0CosSin(abc, cossin):
 
     z = (1 / 3) * (abc[0] + abc[1] + abc[2])
 
-    return [d, q, z]
+    return np.array([d, q, z])
 
 
 def abctoAlphaBeta(abc) -> np.ndarray:
