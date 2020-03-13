@@ -334,7 +334,7 @@ class MultiPhaseDQCurrentController:
             # Transform the outputs from the controllers (dq0) to abc
             # also divide by SQRT(2) to ensure the transform is limited to [-1,1]
             self._prev_MVdq0 = MVdq0
-            self._prev_MV = dq0_to_abc_cos_sin(MVdq0, self._prev_cossine)
+            self._prev_MV = dq0_to_abc_cos_sin(MVdq0, *self._prev_cossine)
             # print("SP: {}, act: {}, actabc {}".format(idq0SP,MVdq0,self._prev_MV))
             # self._prev_MV = MVdq0;
             self._undersampling_count = 0

@@ -8,6 +8,7 @@ Common static transforms used commonly in voltage/power inverter control systems
 """
 
 import math
+import numpy as np
 
 
 def dq0Toabc(dq0, theta):
@@ -35,7 +36,7 @@ def dq0Toabc(dq0, theta):
     return [a, b, c]
 
 
-def dq0_to_abc_cos_sin(dq0, cossin):
+def dq0_to_abc_cos_sin(dq0, cos, sin):
     """
     Transforms from DQ frame to the abc frame using the provided cos-sin
     This implementation tries to improve on the dq0Toabc transform by
@@ -47,10 +48,8 @@ def dq0_to_abc_cos_sin(dq0, cossin):
 
     :return abc: The transformed space in the abc frame
     """
-    cos = cossin[0]
-    sin = cossin[1]
-    a = (cossin[0] * dq0[0] -
-         cossin[1] * dq0[1] +
+    a = (cos * dq0[0] -
+         sin * dq0[1] +
          dq0[2])
     # implements the cos(a-2pi/3) using cos (A+B) expansion etc
     cos_shift = cos * (-0.5) - sin * (-0.866)
@@ -65,10 +64,10 @@ def dq0_to_abc_cos_sin(dq0, cossin):
          sin_shift * dq0[1] +
          dq0[2])
 
-    return [a, b, c]
+    return np.array([a, b, c])
 
 
-def dq0ToabcCosSinPowerInvariant(dq0, cossin):
+def dq0_to_abc_cos_sin_power_inv(dq0, cos, sin):
     """
     Transforms from DQ frame to the abc frame using the provided cos-sin
     This implementation tries to improve on the dq0Toabc transform by
@@ -83,7 +82,7 @@ def dq0ToabcCosSinPowerInvariant(dq0, cossin):
 
     :return abc: The transformed space in the abc frame
     """
-    temp = dq0_to_abc_cos_sin(dq0, cossin)
+    temp = dq0_to_abc_cos_sin(dq0, cos, sin)
     return constMult(temp, 1.224744871391589)
 
 
