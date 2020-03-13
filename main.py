@@ -155,15 +155,13 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
 
             freqHist.append(freq)
             currentsHistdq0.append(Idq0)
-            action = [action1[0], action1[1], action1[2],
-                      action2[0], action2[1], action2[2]]
             # Record the start time of the simulation for performance metrics
             startSim = time.time()
 
             # print("Action: {}".format(action))
 
             # Perform a step of simulation
-            obs, reward, done, iterations, _ = sim_env.step(action)
+            obs, reward, done, iterations, _ = sim_env.step(np.append(action1, action2))
             obs = np.array(obs)
 
             iteration_s.append(iterations)
@@ -304,7 +302,7 @@ def run_rl_experiments(n_experiments=1,
 
 
 def _get_average_voltage(arr):
-    return arr* V_dc
+    return arr * V_dc
 
 
 if __name__ == "__main__":

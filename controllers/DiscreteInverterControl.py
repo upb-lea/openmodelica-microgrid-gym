@@ -5,6 +5,8 @@ Created on Tue Jan 14 14:29:23 2020
 @author: jarren
 """
 
+import math
+
 from .MultiPhasePIController import MultiPhasePIController
 from .pi_controller import PIController
 from .ControlParameters import *
@@ -51,7 +53,7 @@ class DDS:
         if self._integralSum > self._max:
             self._integralSum = self._integralSum - self._max
 
-        return self._integralSum * 2 * np.pi
+        return self._integralSum * 2 * math.pi
 
 
 class MultiPhaseABCPIPIController:
@@ -119,7 +121,7 @@ class MultiPhaseABCPIPIController:
 
             # Get the voltage SPs in abc vector
             # print("SPVdq0: {}, phase: {}".format(SPVdq0,phase))
-            SPV = dq0_abc(SPVdq0, phase)
+            SPV = dq0_to_abc(SPVdq0, phase)
 
             # print("QInst: {}, Volt {}".format(instQ,VSP))
             # SPV=[300,310,320]
@@ -210,11 +212,11 @@ class MultiPhaseDQ0PIPIController:
 
             # SPI=[10, 0, 0]
             # Current controller calculations
-            MVdq0 = self._currentPI.stepSPCV(SPI, CVIdq0);
+            MVdq0 = self._currentPI.stepSPCV(SPI, CVIdq0)
 
             # MVdq0=[0.1, 0, 0]
             # Transform the MVs back to the abc frame
-            MV = dq0_abc(MVdq0, phase)
+            MV = dq0_to_abc(MVdq0, phase)
 
             # print("SPi: {}, MV: {}".format(SPI,MV))
             self._prev_MV = MV
@@ -301,17 +303,17 @@ class MultiPhaseDQCurrentController:
             if (Vinst) > 200:
                 # Determine the droop power setpoints
                 droopPI = self._droop_control.step(self._prev_freq) / inst_rms(voltageCV)
-                droopPI = (droopPI / 1.732050807568877)
+                droopPI = droopPI / 1.732050807568877
 
-                droopPI = np.clip(droopPI, self._i_limit, -self._i_limit)
+                droopPI = np.clip(droopPI, -self._i_limit, self._i_limit)
 
                 # Determine the droop reactive power setpoints
                 droopQI = self._Qdroop_control.step(Vinst) / Vinst
 
                 # print("droop: {}, Vinst: {}".format(droopModification,Vinst))
-                droopQI = (droopQI / 1.732050807568877)
+                droopQI = droopQI / 1.732050807568877
 
-                droopQI = np.clip(droopQI, self._i_limit, -self._i_limit)
+                droopQI = np.clip(droopQI, -self._i_limit, self._i_limit)
 
             idq0SP = [idq0SP[0] - droopPI, idq0SP[1] + droopQI, idq0SP[2]]
             # Calculate the control applied to the DQ0 currents
@@ -341,22 +343,19 @@ class PLL:
     
     """
 
-    def __init__(self, pllParams, ts):
+    def __init__(self, params, ts):
         """
-        :param piParams:PI Params for controller
+        :param params:PI Params for controller
         :param tau: absolute sampling time for the controller
-        :param f_nom: the nominal frequency to initialise the PLL with also biases
-                    the PLL around a nominal frequency
-        :param theta_0: Initial frequency to initialise the PLL with
         """
-        self._params = pllParams
-        self._controller = PIController(pllParams, ts)
+        self._params = params
+        self._controller = PIController(params, ts)
 
         # Uses a DDS oscillator to keep track of the internal angle
-        self._dds = DDS(ts, pllParams.theta_0)
+        self._dds = DDS(ts, params.theta_0)
 
-        self._prev_cossin = cos_sin(pllParams.theta_0)
-        self._sqrt2 = np.sqrt(2)
+        self._prev_cossin = cos_sin(params.theta_0)
+        self._sqrt2 = math.sqrt(2)
 
     def step(self, v_abc):
         """
@@ -369,7 +368,7 @@ class PLL:
         
         """
         v_abc = self.__normalise_abc(v_abc)
-        cossin_x = abctoAlphaBeta(v_abc)
+        cossin_x = abc_to_alpha_beta(v_abc)
         dphi = self.__phase_comp(cossin_x, self._prev_cossin)
         freq = self._controller.step(dphi) + self._params.f_nom
 
@@ -377,7 +376,7 @@ class PLL:
         self._prev_cossin = cos_sin(theta)
 
         # debug vector that can be returned for debugging purposes
-        debug = [*self._prev_cossin, *cossin_x, theta]
+        debug = [self._prev_cossin[0], self._prev_cossin[1], cossin_x[0], cossin_x[1], theta]
 
         return self._prev_cossin, freq, theta, debug
 
@@ -417,6 +416,7 @@ class Filter:
     """
     An empty Filter defining a base interface for any inherenting classes
     Mightnot be needed, but my use of Java suggests it may be useful.
+    
     """
 
     def step(self, value):
@@ -479,7 +479,8 @@ class DroopController(PT1Filter):
         """
         Implements a first order response on the input, using the initialised params
         
-        :param val_in: new input
+        :param val_in: new input 
+        
         :return omega: The new setpoint
         """
 
