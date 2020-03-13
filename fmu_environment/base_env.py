@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Jan  6 16:53:59 2020
 
-@author: jarren
-"""
 
 import datetime
 import logging
@@ -18,14 +14,7 @@ from enum import Enum
 logger = logging.getLogger(__name__)
 
 
-class ModelicaType(Enum):
-    Dymola = 1
-    JModelica = 2
-    OpenModelica = 3
-
-
 class FMIStandardVersion(Enum):
-    first = 1
     second = 2
 
 
@@ -64,8 +53,8 @@ class ModelicaBaseEnv(gym.Env):
     def __init__(self, model_path, mode, config, log_level):
         """
 
-        :param model_path: path to the model FMU. Absolute path is advised.
-        :param mode: FMU exporting mode "CS" or "ME"
+        :param model_path: path to the model FMU. Absolute path is advised. Automatically set in this programm
+        :param mode: FMU exporting mode "CS" or "ME". Only ME supported
         :param config: dictionary with model specifications:
             model_input_names - names of parameters to be used as action.
             model_output_names - names of parameters to be used as state descriptors.
@@ -80,8 +69,8 @@ class ModelicaBaseEnv(gym.Env):
 
         logger.setLevel(log_level)
         if mode != 'CS' and mode != 'ME':
-            logger.warning("Mode should be either CS or ME. Actual value {}. Trying to load in CS mode".format(mode))
-            mode = 'CS'
+            logger.warning("Mode should be either CS or ME. Actual value {}. Trying to load in ME mode".format(mode))
+            mode = 'ME'
 
         self.solver_method = config.get('solver_method')
         # load model from fmu
@@ -91,19 +80,6 @@ class ModelicaBaseEnv(gym.Env):
 
         # self.model = load_fmu(model_path, kind=mode, log_file_name=self.get_log_file_name())
         self.model = load_fmu(model_path, log_file_name=self.get_log_file_name())
-
-        #        states = self.model.get_states_list()
-        #        states_references = [s.value_reference for s in states.values()]
-        #        derivatives = self.model.get_derivatives_list()
-        #        derivatives_references = [d.value_reference for d in derivatives.values()]
-        #        n_states = len(states)
-        #        self.jacobian = np.zeros([n_states, n_states])
-        #        for n in range(0, n_states):
-        #            v = np.zeros(n_states)
-        #            v[n] = 1
-        #            dx = self.model.get_directional_derivative(states_references, derivatives_references, v)
-        #            self.jacobian[:,n] = dx
-        #
 
         logger.debug("Successfully loaded model {}".format(self.model_name))
         # if you reward policy is different from just reward/penalty - implement custom step method

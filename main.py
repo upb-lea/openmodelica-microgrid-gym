@@ -1,5 +1,3 @@
-from os import getcwd
-
 import logging
 import gym
 import numpy as np
@@ -9,15 +7,13 @@ from controllers.DiscreteInverterControl import *
 
 from gym.envs.registration import register
 
-# Moved this here so that a call to
-# del gym.envs.registry.env_specs[env_name]
 # clears the environment
-env_name = "JModelicaConvEnv-v065443"
-wd = getcwd()
+env_name = "JModelicaConvEnv-v1"
+
 fcontrol = 1e4
-tau = 1 / fcontrol
+delta_t = 1 / fcontrol
 # Time to simulate
-T_simulate = 1.0
+T_simulate = 0.1
 N = int(T_simulate * fcontrol)
 
 V_dc = 1000
@@ -27,20 +23,23 @@ nomVoltPeak = 230 * 1.414
 iLimit = 30
 DroopGain = 40000.0  # W/Hz
 QDroopGain = 1000.0  # VAR/V
-T_sim = 0.0
 
 
-def cart_pole_train_qlearning(sim_env, max_number_of_steps=N, n_episodes=1, visualize=False):
+def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=False):
     """
-    Runs one experiment of Q-learning training on cart pole environment
-    :param cart_pole_env: environment RL agent will learn on.
+
+    Runs one experiment of parameter tuning on the grid environment.
+
+    :param sim_env: environment RL agent will learn on.
     :param max_number_of_steps: maximum episode length.
     :param n_episodes: number of episodes to perform.
     :param visualize: flag if experiments should be rendered. (not implemented)
-    :return: trained Q-learning agent, array of actual episodes length, execution time in s
+
+    :return: trained Q-learning agent (not implemented yet), array of actual episodes length, execution time in s
+
     """
 
-    # Droop of the active power Watt/Hz, tau
+    # Droop of the active power Watt/Hz, delta_t
     droopParam = DroopParams(DroopGain, 0.005, nomFreq)
     # droopParam= DroopParams(0,0,nomFreq)
     # Droop of the reactive power VAR/Volt Var.s/Volt
@@ -48,13 +47,17 @@ def cart_pole_train_qlearning(sim_env, max_number_of_steps=N, n_episodes=1, visu
     # qdroopParam= DroopParams(0,0,nomVoltPeak)
 
     # PIPI voltage forming controller in ABC frame
+    # TODO: To check by Jarren what is still needed!
     """
+    
+    
+    
     #Voltage loop PI controller parameters for the voltage forming inverter
     voltagePIparams=PI_parameters(kP= 0.33, kI=150.0, uL=iLimit, lL= -iLimit, kB =1)
     #Current loop PI parameters controller for the voltage forming inverter's current loop
     currentPIparams=PI_parameters(kP= 0.24, kI=20.0, uL=1, lL= -1 ,kB =1 )
     controller = MultiPhaseABCPIPIController (voltagePIparams, currentPIparams,
-                                              tau, droopParam, qdroopParam, 
+                                              delta_t, droopParam, qdroopParam, 
                                               undersampling=10, n_phase=3)
     """
     # Current PI parameters for the voltage sourcing inverter
@@ -63,7 +66,7 @@ def cart_pole_train_qlearning(sim_env, max_number_of_steps=N, n_episodes=1, visu
     voltageDQPIparams = PI_parameters(kP=0.025, kI=60, uL=iLimit, lL=-iLimit, kB=1)
 
     controller = MultiPhaseDQ0PIPIController(voltageDQPIparams, currentDQPIparams,
-                                             tau, droopParam, qdroopParam,
+                                             delta_t, droopParam, qdroopParam,
                                              undersampling=1, n_phase=3)
 
     # Discrete controller implementation for a DQ based Current controller for the current sourcing inverter
@@ -81,16 +84,15 @@ def cart_pole_train_qlearning(sim_env, max_number_of_steps=N, n_episodes=1, visu
     currentDQPIparams = PI_parameters(kP=0.005, kI=200, uL=1, lL=-1, kB=1)
 
     slave_controller = MultiPhaseDQCurrentController(currentDQPIparams, pllparams,
-                                                     tau, nomFreq, iLimit, droopParam,
+                                                     delta_t, nomFreq, iLimit, droopParam,
                                                      qdroopParam, undersampling=1)
 
-    start = time.time()
-    sim_time = 0
-    cont_time = 0
     episode_lengths = np.array([])
 
     for episode in range(n_episodes):
-
+        start = time.time()
+        sim_time = 0
+        cont_time = 0
         observation = sim_env.reset()
 
         currentHist = []  # List to hold the current values
@@ -115,7 +117,6 @@ def cart_pole_train_qlearning(sim_env, max_number_of_steps=N, n_episodes=1, visu
         for step in range(max_number_of_steps):
 
             SPidq0 = [0, 0, 0]
-            # if(step == max_number_of_steps/2):
 
             # CVs from the states of the simulation
             CVV1, CVI1, CVV2, CVI2 = _map_CVs(observation)
@@ -125,7 +126,7 @@ def cart_pole_train_qlearning(sim_env, max_number_of_steps=N, n_episodes=1, visu
             shareRatio = Transforms.instPower(CVV1, CVI1) / Transforms.instPower(CVV2, CVI2)
             # Logging for plotting
             # voltageHist.append(CVV1)
-            timeHist.append(step * tau)
+            timeHist.append(step * delta_t)
 
             startContSim = time.time()
             # cossin, freq, theta,debug =pll.step(CVV)
@@ -135,6 +136,8 @@ def cart_pole_train_qlearning(sim_env, max_number_of_steps=N, n_episodes=1, visu
             mod_ind, CVI1dq = controller.step(CVI1, CVV1, nomVoltPeak, nomFreq)
 
             # Average voltages from modulation indices created by current controller
+
+            # TODO: Extract number of Inverters from FMU, write a function which defines actions for them dynamically
             action1 = _get_average_voltage(mod_ind)
             action2 = _get_average_voltage(mod_indSlave)
             # action1 = [0,50,0]
@@ -146,7 +149,7 @@ def cart_pole_train_qlearning(sim_env, max_number_of_steps=N, n_episodes=1, visu
             currentsHist.append(CVI2)
             voltageHist.append(CVV2)
 
-            # TODO: This changes the data, right? If its only for plotting, than the plotting axis should be cropped instead – sheid
+            # TODO: This changes the data. If its only for plotting, than the plotting axis should be cropped instead – sheid
             freq = np.clip(freq, 49, 51)
 
             freqHist.append(freq)
@@ -205,21 +208,11 @@ def cart_pole_train_qlearning(sim_env, max_number_of_steps=N, n_episodes=1, visu
 
 
 # Internal logic for state discretization
-def _get_bins(lower_bound, upper_bound, n_bins):
-    """
-    Given bounds for environment state variable splits it into n_bins number of bins,
-    taking into account possible values outside the bounds.
-
-    :param lower_bound: lower bound for variable describing state space
-    :param upper_bound: upper bound for variable describing state space
-    :param n_bins: number of bins to receive
-    :return: n_bins-1 values separating bins. I.e. the most left bin is opened from the left,
-    the most right bin is open from the right.
-    """
-    return np.linspace(lower_bound, upper_bound, n_bins + 1)[1:-1]
 
 
 def _map_CVs(observation):
+    # TODO implement dynamic function regarding to the number of inverters
+
     """
     Takes all the observations from the simulation and rearranges it into the 
     Control variables used for system feedback.
@@ -241,64 +234,41 @@ def _map_CVs(observation):
     return CVV1, CVI1, CVV2, CVI2
 
 
-def _to_bin(value, bins):
-    """
-    Transforms actual state variable value into discretized one,
-    by choosing the bin in variable space, where it belongs to.
-
-    :param value: variable value
-    :param bins: sequence of values separating variable space
-    :return: number of bin variable belongs to. If it is smaller than lower_bound - 0.
-    If it is bigger than the upper bound
-    """
-    return np.digitize(x=[value], bins=bins)[0]
-
-
-def _get_state_index(state_bins):
-    """
-    Transforms discretized environment state (represented as sequence of bin indexes) into an integer value.
-    Value is composed by concatenating string representations of a state_bins.
-    Received string is a valid integer, so it is converted to int.
-
-    :param state_bins: sequence of integers that represents discretized environment state.
-    Each integer is an index of bin, where corresponding variable belongs.
-    :return: integer value corresponding to the environment state
-    """
-    state = int("".join(map(lambda state_bin: str(state_bin), state_bins)))
-    return state
-
-
-def run_ql_experiments(n_experiments=1,
+def run_rl_experiments(n_experiments=1,
                        n_episodes=1,
                        visualize=False,
-                       time_step=tau,
+                       time_step=delta_t,
                        positive_reward=1,
                        negative_reward=-100,
                        log_level=4):
     """
-    Wrapper for running experiment of q-learning training on cart pole environment.
+
+    Wrapper for running experiment of q-learning training.
     Is responsible for environment creation and closing, sets all necessary parameters of environment.
     Runs n exepriments, where each experiment is training Q-learning agent on the same environment.
     After one agent finisEnvironment did not existhed training, environment is reset to the initial state.
     Parameters of the experiment:
+
     :param n_episodes: number of episodes to perform in each experiment run
     :param visualize: boolean flag if experiments should be rendered
     :param n_experiments: number of experiments to perform.
     :param log_level: level of logging that should be used by environment during experiments.
 
-    Parameters of the cart pole environment:
+    Parameters of the environment:
+
     :param time_step: time difference between simulation steps.
     :param positive_reward: positive reward for RL agent.
     :param negative_reward: negative reward for RL agent.
-    :return: trained Q-learning agent, array of actual episodes length
-    that were returned from cart_pole_train_qlearning()
+
+    :return: trained Q-learning agent, array of actual episodes length that were returned from train_qlearning()
+
     """
     config = {
         'time_step': time_step,
         'positive_reward': positive_reward,
         'negative_reward': negative_reward,
         'log_level': log_level,
-        'solver_method': 'Radau'
+        'solver_method': 'LSODA'
     }
 
     register(
@@ -314,9 +284,9 @@ def run_ql_experiments(n_experiments=1,
     count_iterations_s = []
     env = gym.make(env_name)
     for i in range(n_experiments):
-        episodes_length, exec_time, sim_time, cont_time, count_iters, _ = cart_pole_train_qlearning(env,
-                                                                                                    n_episodes=n_episodes,
-                                                                                                    visualize=visualize)
+        episodes_length, exec_time, sim_time, cont_time, count_iters, _ = grid_simulation(env,
+                                                                                          n_episodes=n_episodes,
+                                                                                          visualize=visualize)
 
         episodes_length_s.append(episodes_length)
         exec_time_s.append(exec_time)
@@ -344,7 +314,7 @@ if __name__ == "__main__":
         # Would ideally like to do nothing, but will print a message nonetheless
         print("Environment did not exist")
 
-    _, episodes_lengths, exec_times, sim_time, cont_time, count_iter, _ = run_ql_experiments(visualize=False,
+    _, episodes_lengths, exec_times, sim_time, cont_time, count_iter, _ = run_rl_experiments(visualize=False,
                                                                                              log_level=logging.INFO)
     print("Experiment length {} s".format(exec_times[0]))
     print("Simulating time length {} s ({} %)".format(sim_time[0], (100 * sim_time[0] / exec_times[0])))

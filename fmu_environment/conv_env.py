@@ -1,14 +1,8 @@
-"""
-Classic cart-pole example implemented with an FMU simulating a cart-pole system.
-Implementation inspired by OpenAI Gym examples:
-https://github.com/openai/gym/blob/master/gym/envs/classic_control/cartpole.py
-"""
-
 import logging
 import math
 import numpy as np
 from gym import spaces
-from .test_me_env import FMI2MEEnv, FMI1MEEnv
+from .me_env import FMI2MEEnv
 
 logger = logging.getLogger(__name__)
 
@@ -17,18 +11,12 @@ TWELVE_DEGREES_IN_RAD = (12 / 180) * math.pi
 
 
 class ConvEnv:
-    """
-    Class extracting common logic for JModelica and Dymola environments for CartPole experiments.
-    Allows to avoid code duplication.
-    Implements all methods for connection to the OpenAI Gym as an environment.
-
-
-    """
 
     def _is_done(self):
         """
+        #TODO: Add an proper is_done policy
         Internal logic that is utilized by parent classes.
-       Checks if the experiment is finished using a time limit
+        Checks if the experiment is finished using a time limit
 
         :return: boolean flag if current state of the environment indicates that experiment has ended.
         True, if the simulation time is larger than the time threshold.
@@ -113,24 +101,21 @@ class JModelicaConvEnv(ConvEnv, FMI2MEEnv):
                  log_level,
                  solver_method):
         logger.setLevel(log_level)
-
-        self.time_threshold = 10.0
+        # TODO time.threshhold needed? I would delete it completely, no one knows about it, just leads to confusion if exceeded.
+        # Right now still there until we defined an other stop-criteria according to safeness
+        self.time_threshold = 10000.0
 
         self.viewer = None
         self.display = None
-        self.pole_transform = None
-        self.cart_transform = None
 
         # Define the interface between the software to the FMU
         # Defines the order of inputs and outputs.
         config = {
             'model_input_names': ['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
-            # 'model_input_names': ['t1r1','t1r2','t1r3','t2r1','t2r2','t2r3'],
             'model_output_names': ['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i',
                                    'lc1.capacitor1.v', 'lc1.capacitor2.v', 'lc1.capacitor3.v',
                                    'lcl1.inductor1.i', 'lcl1.inductor2.i', 'lcl1.inductor3.i',
                                    'lcl1.capacitor1.v', 'lcl1.capacitor2.v', 'lcl1.capacitor3.v', ],
-            #            'model_output_names': ['inductor1.i'],
             'model_parameters': {},
             'initial_state': (),
             'time_step': time_step,
