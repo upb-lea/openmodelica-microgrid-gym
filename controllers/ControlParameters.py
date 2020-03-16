@@ -7,7 +7,6 @@ Created on Fri Jan 24 16:13:21 2020
 Just contains the definitions of the initialisation parameters used in the 
 design of controllers and or the filters.
 """
-from .pi_controller import PI_parameters
 
 
 class FiltParams:
@@ -18,12 +17,8 @@ class FiltParams:
 
     def __init__(self, gain, tau):
         """
-        :param Droop: The droop gain
+        :param gain: The droop gain
         :param tau: The first order time constant [s]
-        :param nomValue: An offset to add to the output of the droop
-        :param ts: The discrete sampling frequency
-        
-            
         """
 
         self.gain = gain
@@ -33,15 +28,13 @@ class FiltParams:
 class DroopParams(FiltParams):
     """
     Implements a basic P,f droop controller
-    
     """
 
-    def __init__(self, Droop, tau, nomValue=0):
+    def __init__(self, gain, tau, nomValue=0):
         """
-        :param Droop: The droop gain
+        :param gain: The droop gain
         :param tau: The first order time constant [s]
         :param nomValue: An offset to add to the output of the droop
-        :param ts: The discrete sampling frequency
         
         EG for a P-f droop controller (for voltage forming inverter)
         Inverter of 10kW, droop of 10% , timeConstant of 1 sec, 50Hz
@@ -50,9 +43,10 @@ class DroopParams(FiltParams):
             nomValue = 50 [Hz]
             
         """
-        gain = 0
-        if Droop != 0:
-            gain = 1 / Droop
+        if gain != 0:
+            gain = 1 / gain
+        else:
+            gain = 0
 
         super().__init__(gain, tau)
 
@@ -62,7 +56,6 @@ class DroopParams(FiltParams):
 class InverseDroopParams(DroopParams):
     """
     Implements a basic P,f droop controller
-    
     """
 
     def __init__(self, Droop, tau, nomValue=0, tau_filt=0):
@@ -84,10 +77,30 @@ class InverseDroopParams(DroopParams):
         super().__init__(Droop, tau, nomValue)
 
 
-class PLLParams(PI_parameters):
+class PIParams:
     """
     The params for a basic PI Controller
+    """
 
+    def __init__(self, kP, kI, uL, lL, kB=1):
+        """
+        :param kP: proportional gain constant
+        :param kI: integral gain constant
+        :param uL: upper limit of controller output
+        :param lL: lower limit of controller output
+        :param kB: anti-windup via back calculation gain
+        :param ts: The discrete sampling time of the controller
+        """
+        self.kP = kP
+        self.kI = kI
+        self.upper_limit = uL
+        self.lower_limit = lL
+        self.kB = kB
+
+
+class PLLParams(PIParams):
+    """
+    The params for a basic PI Controller
     """
 
     def __init__(self, kP, kI, uL, lL, kB=1, f_nom=0, theta_0=0):

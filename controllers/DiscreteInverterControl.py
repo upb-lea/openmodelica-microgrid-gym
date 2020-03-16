@@ -117,7 +117,7 @@ class MultiPhaseABCPIPIController:
 
             VSP = (voltage) * 1.732050807568877
             # Voltage SP in dq0 (static for the moment)
-            SPVdq0 = [VSP, 0, 0]
+            SPVdq0 = np.array([VSP, 0, 0])
 
             # Get the voltage SPs in abc vector
             # print("SPVdq0: {}, phase: {}".format(SPVdq0,phase))
@@ -128,7 +128,7 @@ class MultiPhaseABCPIPIController:
             SPI = self._voltagePI.stepSPCV(SPV, voltageCV)
 
             # Average voltages from modulation indices created by current controller
-            MV = self._currentPI.stepSPCV(SPI, currentCV);
+            MV = self._currentPI.stepSPCV(SPI, currentCV)
 
             # print("SPi: {}, MV: {}".format(SPI,MV))
             self._prev_MV = MV
@@ -240,17 +240,16 @@ class MultiPhaseDQCurrentController:
     DOES NOT wait for PLL lock before activating
     """
 
-    def __init__(self, IPIParams, pllPIParams, tau, f_nom, i_limit, Pdroop_param, Qdroop_param, undersampling=1):
+    def __init__(self, IPIParams, pllPIParams, tau, f_nom, i_limit, Pdroop_param: InverseDroopParams,
+                 Qdroop_param: InverseDroopParams, undersampling=1):
         """
         :param IPIParams: PI parameters for the current control loops along the
                         dq0 axes
         :param pllPIParams: PI parameters for the PLL controller
-        
         :param tau: absolute sampling time for the controller
         :param f_nom: the nominal frequency to initiate the PLL to the external
                     grid angle reference
         :param droop_perc: The percentage [0,1] for the droop controller per Hz
-        
         :param undersampling: reduces the actual sampling time of the controller,
                     for example if set to 10, the controller will only calculate 
                     the setpoint every 10th controller call
@@ -340,7 +339,6 @@ class PLL:
     """
     Implements a basic PI controller based PLL to track the angle of a threephase
     ABC voltage
-    
     """
 
     def __init__(self, params, ts):
@@ -416,7 +414,6 @@ class Filter:
     """
     An empty Filter defining a base interface for any inherenting classes
     Mightnot be needed, but my use of Java suggests it may be useful.
-    
     """
 
     def step(self, value):
@@ -465,7 +462,6 @@ class DroopController(PT1Filter):
     required to implement inverter droop
     
     Ignores the first order element if gain is set to 0, providing a linear gain
-    
     """
 
     def __init__(self, DroopParams, ts):
@@ -479,8 +475,7 @@ class DroopController(PT1Filter):
         """
         Implements a first order response on the input, using the initialised params
         
-        :param val_in: new input 
-        
+        :param val_in: new input
         :return omega: The new setpoint
         """
 
@@ -495,7 +490,6 @@ class InverseDroopController(DroopController):
     Contains a derivative elements and an input filter.
     
     Ignores the first order element if gain is set to 0, providing a linear gain
-    
     """
 
     def __init__(self, DroopParams, ts):
@@ -503,6 +497,7 @@ class InverseDroopController(DroopController):
         :param Droopparams: The InverseDroopControllerParams for the droop 
         controller
         """
+        super().__init__(DroopParams, ts)
         self._params = DroopParams
         self._prev_val = 0
         self._ts = ts

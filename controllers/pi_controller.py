@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Tue Jan  7 09:01:39 2020
 
@@ -9,8 +8,7 @@ Created on Tue Jan  7 09:01:39 2020
 class PIController:
     """
     Implements a basic PI controller.
-    Uses back calculation for anti-windup 
-
+    Uses back calculation for anti-windup
     """
 
     def __init__(self, PI_param, ts):
@@ -30,10 +28,8 @@ class PIController:
     def step(self, error):
         """
         implements a step of a basic PI controller with anti-windup by back-calculation
-        
-        
-        :param error: control error to act on 
-        
+
+        :param error: control error to act on
         :return: the calculated PI controller response to the error, using the
                 PI_Parameters provided during initialisation.
         """
@@ -53,25 +49,3 @@ class PIController:
         self.windup_compensation = (output - preout) * self._params.kB
 
         return output
-
-
-class PI_parameters:
-    """
-    The params for a basic PI Controller
-
-    """
-
-    def __init__(self, kP, kI, uL, lL, kB=1):
-        """
-        :param kP: proportional gain constant
-        :param kI: integral gain constant
-        :param uL: upper limit of controller output
-        :param lL: lower limit of controller output
-        :param kB: anti-windup via back calculation gain
-        :param ts: The discrete sampling time of the controller
-        """
-        self.kP = kP
-        self.kI = kI
-        self.upper_limit = uL
-        self.lower_limit = lL
-        self.kB = kB

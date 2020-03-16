@@ -61,9 +61,9 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
                                               undersampling=10, n_phase=3)
     """
     # Current PI parameters for the voltage sourcing inverter
-    currentDQPIparams = PI_parameters(kP=0.012, kI=90, uL=1, lL=-1, kB=1)
+    currentDQPIparams = PIParams(kP=0.012, kI=90, uL=1, lL=-1, kB=1)
     # Voltage PI parameters for the current sourcing inverter
-    voltageDQPIparams = PI_parameters(kP=0.025, kI=60, uL=iLimit, lL=-iLimit, kB=1)
+    voltageDQPIparams = PIParams(kP=0.025, kI=60, uL=iLimit, lL=-iLimit, kB=1)
 
     controller = MultiPhaseDQ0PIPIController(voltageDQPIparams, currentDQPIparams,
                                              delta_t, droopParam, qdroopParam,
@@ -81,7 +81,7 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
     pllparams = PLLParams(kP=10, kI=200, uL=10000, lL=-10000, kB=1, f_nom=50)
 
     # Current PI parameters for the current sourcing inverter
-    currentDQPIparams = PI_parameters(kP=0.005, kI=200, uL=1, lL=-1, kB=1)
+    currentDQPIparams = PIParams(kP=0.005, kI=200, uL=1, lL=-1, kB=1)
 
     slave_controller = MultiPhaseDQCurrentController(currentDQPIparams, pllparams,
                                                      delta_t, nomFreq, iLimit, droopParam,
