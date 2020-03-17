@@ -1,3 +1,4 @@
+# created with pipreqs
 scipy>=1.4.1
 PyFMI>=2.6
 matplotlib>=3.2.0
