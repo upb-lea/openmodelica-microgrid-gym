@@ -2,4 +2,5 @@ from gym_microgrid.agents import Agent
 
 
 class SafeOptAgent(Agent):
-    pass
+    def __init__(self):
+        super().__init__()
