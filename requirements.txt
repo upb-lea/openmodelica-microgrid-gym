@@ -1,0 +1,6 @@
+scipy>=1.4.1
+PyFMI>=2.6
+matplotlib>=3.2.0
+numpy>=1.18
+pytest>=5.3
+gym>=0.16
