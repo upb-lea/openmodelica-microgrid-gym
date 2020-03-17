@@ -1,4 +1,3 @@
-
-from .pi_controller import *
-from .MultiPhasePIController import *
-from .DiscreteInverterControl import *
+from .pi_control import *
+from .multiphase_pi_control import *
+from .disc_inverter_control import *

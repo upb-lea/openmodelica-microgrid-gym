@@ -7,9 +7,9 @@ Created on Tue Jan 14 14:29:23 2020
 
 import math
 
-from .MultiPhasePIController import MultiPhasePIController
-from .pi_controller import PIController
-from .ControlParameters import *
+from .multiphase_pi_control import MultiPhasePIController
+from .pi_control import PIController
+from .control_params import *
 from gym_microgrid.common import *
 
 import numpy as np

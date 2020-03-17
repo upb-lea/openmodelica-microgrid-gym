@@ -6,7 +6,7 @@ Created on Tue Jan 14 09:42:23 2020
 """
 import logging
 
-from .pi_controller import *
+from .pi_control import *
 
 
 class MultiPhasePIController:
