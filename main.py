@@ -1,9 +1,7 @@
-import logging
 import gym
-import numpy as np
 import time
 import matplotlib.pyplot as plt
-from controllers.DiscreteInverterControl import *
+from gym_microgrid.controllers import *
 
 from gym.envs.registration import register
 
@@ -27,7 +25,6 @@ QDroopGain = 1000.0  # VAR/V
 
 def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=False):
     """
-
     Runs one experiment of parameter tuning on the grid environment.
 
     :param sim_env: environment RL agent will learn on.
@@ -36,7 +33,6 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
     :param visualize: flag if experiments should be rendered. (not implemented)
 
     :return: trained Q-learning agent (not implemented yet), array of actual episodes length, execution time in s
-
     """
 
     # Droop of the active power Watt/Hz, delta_t
@@ -234,13 +230,8 @@ def _map_CVs(observation):
     return CVV1, CVI1, CVV2, CVI2
 
 
-def run_rl_experiments(n_experiments=1,
-                       n_episodes=1,
-                       visualize=False,
-                       time_step=delta_t,
-                       positive_reward=1,
-                       negative_reward=-100,
-                       log_level=4):
+def run_rl_experiments(n_experiments=1, n_episodes=1, visualize=False, time_step=delta_t, positive_reward=1,
+                       negative_reward=-100, log_level=4):
     """
 
     Wrapper for running experiment of q-learning training.
@@ -273,7 +264,7 @@ def run_rl_experiments(n_experiments=1,
 
     register(
         id=env_name,
-        entry_point='fmu_environment:JModelicaConvEnv',
+        entry_point='env:JModelicaConvEnv',
         kwargs=config
     )
     trained_agent_s = []

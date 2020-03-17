@@ -1,7 +1,6 @@
-import numpy as np
 from pytest import approx
 
-from controllers.DiscreteInverterControl import *
+from gym_microgrid.controllers import *
 
 
 def test_step():

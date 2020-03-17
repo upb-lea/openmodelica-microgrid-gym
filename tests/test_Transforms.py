@@ -1,6 +1,5 @@
 from pytest import approx
-import numpy as np
-from common.Transforms import *
+from gym_microgrid.common import *
 
 
 def test_inst_reactive():
