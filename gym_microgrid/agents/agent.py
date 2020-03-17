@@ -2,9 +2,10 @@ class Agent:
     def __init__(self):
         pass
 
-    def reset(self):
+    def reset(self, ):
         """
         Resets all agent buffers and discards unfinished episodes.
+        TODO: Also set up the agent with respect to the environment (#actions, ...)
         """
         pass
 
