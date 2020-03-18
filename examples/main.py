@@ -264,7 +264,7 @@ def run_rl_experiments(n_experiments=1, n_episodes=1, visualize=False, time_step
 
     register(
         id=env_name,
-        entry_point='env:JModelicaConvEnv',
+        entry_point='gym_microgrid.env:JModelicaConvEnv',
         kwargs=config
     )
     trained_agent_s = []
