@@ -21,16 +21,12 @@ class JModelicaConvEnv(ModelicaMEEnv):
         negative_reward (int): negative reward for RL agent.
     """
 
-    def __init__(self,
-                 time_step,
-                 positive_reward,
-                 negative_reward,
-                 log_level,
-                 solver_method):
+    def __init__(self, time_step, positive_reward, negative_reward,
+                 log_level, solver_method, max_episode_steps=10000.0):
         logger.setLevel(log_level)
         # TODO time.threshhold needed? I would delete it completely, no one knows about it, just leads to confusion if exceeded.
         # Right now still there until we defined an other stop-criteria according to safeness
-        self.time_threshold = 10000.0
+        self.time_threshold = max_episode_steps
 
         self.viewer = None
         self.display = None

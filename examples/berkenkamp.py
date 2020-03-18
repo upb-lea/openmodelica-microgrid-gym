@@ -4,7 +4,7 @@ from gym_microgrid import Runner
 
 if __name__ == '__main__':
     agent = SafeOptAgent()
-    env = gym.make('gym_microgrid:JModelicaConvEnv-v1', negative_reward=-1000)
+    env = gym.make('gym_microgrid:JModelicaConvEnv-v1', max_episode_steps=1000)
 
     runner = Runner(agent, env)
     runner.run(1)
