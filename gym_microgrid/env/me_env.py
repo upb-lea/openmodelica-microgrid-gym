@@ -58,16 +58,3 @@ class ModelicaMEEnv(ModelicaBaseEnv):
     def getTime(self):
         return self.stop
 
-
-class FMI2MEEnv(ModelicaMEEnv):
-    """
-    Wrapper class.
-    Should be used as a superclass for all environments using FMU exported in model exported mode.
-    FMI standard version 2.0.
-    Abstract logic is implemented in parent classes.
-
-    Refer to the ModelicaBaseEnv docs for detailed instructions on own environment implementation.
-    """
-
-    def __init__(self, model_path, config, log_level, simulation_start_time=0):
-        super().__init__(model_path, config, log_level, simulation_start_time=simulation_start_time)

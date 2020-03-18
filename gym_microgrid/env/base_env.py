@@ -314,15 +314,3 @@ class ModelicaBaseEnv(gym.Env):
             self.model_output_index = [list(states).index(k) for k in model_outputs]
 
         return self
-
-
-class ModelicaMEEnv(ModelicaBaseEnv):
-    """
-    Test version.
-    Wrapper class of ModelicaBaseEnv for convenient creation of environments that utilize
-    FMU exported in a model-exchange mode.
-    Should be used as a superclass for all such environments.
-    """
-
-    def __init__(self, model_path, config, log_level):
-        super().__init__(model_path, "ME", config, log_level)

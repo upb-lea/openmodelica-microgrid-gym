@@ -2,7 +2,7 @@ import logging
 import math
 import numpy as np
 from gym import spaces
-from .me_env import FMI2MEEnv
+from .me_env import ModelicaMEEnv
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +10,47 @@ NINETY_DEGREES_IN_RAD = (90 / 180) * math.pi
 TWELVE_DEGREES_IN_RAD = (12 / 180) * math.pi
 
 
-class ConvEnv:
+class JModelicaConvEnv(ModelicaMEEnv):
+    """
+    Wrapper class 
+    
+    Defining the inputs and outputs to the FMU as well as the FMU file.
+    Attributes:
+        time_step (float): the delta T to be used during the experiment for simulation
+        positive_reward (int): positive reward for RL agent.
+        negative_reward (int): negative reward for RL agent.
+    """
+
+    def __init__(self,
+                 time_step,
+                 positive_reward,
+                 negative_reward,
+                 log_level,
+                 solver_method):
+        logger.setLevel(log_level)
+        # TODO time.threshhold needed? I would delete it completely, no one knows about it, just leads to confusion if exceeded.
+        # Right now still there until we defined an other stop-criteria according to safeness
+        self.time_threshold = 10000.0
+
+        self.viewer = None
+        self.display = None
+
+        # Define the interface between the software to the FMU
+        # Defines the order of inputs and outputs.
+        config = {
+            'model_input_names': ['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
+            'model_output_names': ['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i',
+                                   'lc1.capacitor1.v', 'lc1.capacitor2.v', 'lc1.capacitor3.v',
+                                   'lcl1.inductor1.i', 'lcl1.inductor2.i', 'lcl1.inductor3.i',
+                                   'lcl1.capacitor1.v', 'lcl1.capacitor2.v', 'lcl1.capacitor3.v', ],
+            'model_parameters': {},
+            'initial_state': (),
+            'time_step': time_step,
+            'positive_reward': positive_reward,
+            'negative_reward': negative_reward,
+            'solver_method': solver_method
+        }
+        super().__init__("grid.network.fmu", config, log_level, simulation_start_time=time_step)
 
     def _is_done(self):
         """
@@ -55,7 +95,7 @@ class ConvEnv:
         """
         OpenAI Gym API. Executes one step in the environment:
         in the current state perform given action to move to the next action.
-        
+
         :param action: action to be performed.
         :return: next (resulting) state
         """
@@ -81,46 +121,3 @@ class ConvEnv:
         :return: True if everything worked out.
         """
         return self.render(close=True)
-
-
-class JModelicaConvEnv(ConvEnv, FMI2MEEnv):
-    """
-    Wrapper class 
-    
-    Defining the inputs and outputs to the FMU as well as the FMU file.
-    Attributes:
-        time_step (float): the delta T to be used during the experiment for simulation
-        positive_reward (int): positive reward for RL agent.
-        negative_reward (int): negative reward for RL agent.
-    """
-
-    def __init__(self,
-                 time_step,
-                 positive_reward,
-                 negative_reward,
-                 log_level,
-                 solver_method):
-        logger.setLevel(log_level)
-        # TODO time.threshhold needed? I would delete it completely, no one knows about it, just leads to confusion if exceeded.
-        # Right now still there until we defined an other stop-criteria according to safeness
-        self.time_threshold = 10000.0
-
-        self.viewer = None
-        self.display = None
-
-        # Define the interface between the software to the FMU
-        # Defines the order of inputs and outputs.
-        config = {
-            'model_input_names': ['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
-            'model_output_names': ['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i',
-                                   'lc1.capacitor1.v', 'lc1.capacitor2.v', 'lc1.capacitor3.v',
-                                   'lcl1.inductor1.i', 'lcl1.inductor2.i', 'lcl1.inductor3.i',
-                                   'lcl1.capacitor1.v', 'lcl1.capacitor2.v', 'lcl1.capacitor3.v', ],
-            'model_parameters': {},
-            'initial_state': (),
-            'time_step': time_step,
-            'positive_reward': positive_reward,
-            'negative_reward': negative_reward,
-            'solver_method': solver_method
-        }
-        super().__init__("grid.network.fmu", config, log_level, simulation_start_time=time_step)
