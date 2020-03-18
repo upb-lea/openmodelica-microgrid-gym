@@ -26,7 +26,7 @@ class JModelicaConvEnv(ModelicaMEEnv):
         logger.setLevel(log_level)
         # TODO time.threshhold needed? I would delete it completely, no one knows about it, just leads to confusion if exceeded.
         # Right now still there until we defined an other stop-criteria according to safeness
-        self.time_threshold = max_episode_steps
+        self.time_threshold = max_episode_steps * time_step
 
         self.viewer = None
         self.display = None

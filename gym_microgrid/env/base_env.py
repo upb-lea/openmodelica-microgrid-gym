@@ -275,7 +275,7 @@ class ModelicaBaseEnv(gym.Env):
                  as detetermined during initialization
         """
 
-        return tuple([self.x[k] for k in self.model_output_index])
+        return np.array([self.x[k] for k in self.model_output_index])
 
     def _set_init_parameter(self):
         """
