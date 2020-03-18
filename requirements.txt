@@ -1,9 +1,11 @@
 # created with pipreqs
-scipy>=1.4.1
-PyFMI>=2.6
-matplotlib>=3.2.0
-numpy>=1.18
-pytest>=5.3
-gym>=0.16
+gym>=0.15.3
+matplotlib>=3.1.1
+numpy>=1.17.2
+PyFMI>=2.5.7
+pytest>=5.2.1
+scipy>=1.3.1
+
+
 
 safeopt>=0.15[safeopt]
