@@ -267,6 +267,7 @@ def run_rl_experiments(n_experiments=1, n_episodes=1, visualize=False, time_step
         entry_point='gym_microgrid.env:JModelicaConvEnv',
         kwargs=config
     )
+
     trained_agent_s = []
     episodes_length_s = []
     exec_time_s = []

@@ -14,8 +14,7 @@ class ModelicaMEEnv(ModelicaBaseEnv):
 
     """
 
-    def __init__(self, model_path, config, log_level,
-                 simulation_start_time=0):
+    def __init__(self, model_path, config, log_level, simulation_start_time=0):
         """
 
         :param model_path: path to the model FMU. Absolute path is advised.
@@ -54,7 +53,7 @@ class ModelicaMEEnv(ModelicaBaseEnv):
         self.start = self.simulation_start_time
         self.stop = self.start + self.tau
         self.done = self._is_done()
-        return self.state
+        return np.array(self.state)
 
     def getTime(self):
         return self.stop
@@ -71,5 +70,4 @@ class FMI2MEEnv(ModelicaMEEnv):
     """
 
     def __init__(self, model_path, config, log_level, simulation_start_time=0):
-        super().__init__(model_path, config, log_level,
-                         simulation_start_time=simulation_start_time)
+        super().__init__(model_path, config, log_level, simulation_start_time=simulation_start_time)

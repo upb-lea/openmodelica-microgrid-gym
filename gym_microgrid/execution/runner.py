@@ -22,4 +22,4 @@ class Runner:
             while not done:
                 self.agent.observe(r, done)
                 act = self.agent.act(obs)
-                obs, done, r = self.env.step(act)
+                obs, done, r, _, _ = self.env.step(act)

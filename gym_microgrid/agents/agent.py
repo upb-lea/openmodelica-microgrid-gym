@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Agent:
     def __init__(self):
         pass
@@ -9,7 +12,7 @@ class Agent:
         """
         pass
 
-    def act(self, state):
+    def act(self, state: np.ndarray) -> np.ndarray:
         """
         select an action with respect to the state
         :param state:
