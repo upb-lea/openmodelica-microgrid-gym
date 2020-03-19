@@ -5,6 +5,7 @@ import datetime
 import logging
 import os
 import gym
+import pandas as pd
 import scipy
 from scipy import integrate
 from pyfmi import load_fmu
@@ -68,7 +69,7 @@ class ModelicaBaseEnv(gym.Env):
         """
 
         logger.setLevel(log_level)
-        if mode != 'CS' and mode != 'ME':
+        if mode not in {'CS', 'ME'}:
             logger.warning("Mode should be either CS or ME. Actual value {}. Trying to load in ME mode".format(mode))
             mode = 'ME'
 
@@ -107,6 +108,8 @@ class ModelicaBaseEnv(gym.Env):
             'render.modes': ['human', 'rgb_array'],
             'video.frames_per_second': 50
         }
+
+        self.history = pd.DataFrame([], columns=self.model_output_names)
 
     def calc_jac(self, t, x):
         # t and x are indirectly retrieved from the model
@@ -157,7 +160,7 @@ class ModelicaBaseEnv(gym.Env):
                 """You are calling 'step()' even though this environment has already returned done = True.
                 You should always call 'reset()' once you receive 'done = True' -- any further steps are
                 undefined behavior.""")
-            return np.array(self.state), self.negative_reward, self.done, {}
+            return self.state, self.negative_reward, self.done, {}
 
         # check if action is a list. If not - create list of length 1
         try:
@@ -180,6 +183,8 @@ class ModelicaBaseEnv(gym.Env):
 
         # Simulate and observe result state
         self.state = self.do_simulation()
+        self.history = self.history.append(pd.DataFrame([self.state], columns=self.model_output_names),
+                                           ignore_index=True)
 
         logger.debug("model output: {}, values: {}".format(self.model_output_names, self.state))
         # print("model output: {}, values: {}".format(self.model_output_names, self.state))

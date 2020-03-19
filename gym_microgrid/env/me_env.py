@@ -53,7 +53,7 @@ class ModelicaMEEnv(ModelicaBaseEnv):
         self.start = self.simulation_start_time
         self.stop = self.start + self.tau
         self.done = self._is_done()
-        return np.array(self.state)
+        return self.state
 
     def getTime(self):
         return self.stop
