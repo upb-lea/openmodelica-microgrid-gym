@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 NINETY_DEGREES_IN_RAD = (90 / 180) * math.pi
 TWELVE_DEGREES_IN_RAD = (12 / 180) * math.pi
+import matplotlib.pyplot as plt
 
 
 class JModelicaConvEnv(ModelicaMEEnv):
@@ -108,10 +109,12 @@ class JModelicaConvEnv(ModelicaMEEnv):
                 pass
             else:
                 # TODO create the plot
+                self.history.plot()
+                plt.show()
+                # print(self.history)
                 pass
         elif self.viz_mode == 'step':
             # TODO update plot
-            print(self.history)
             pass
         return True
 

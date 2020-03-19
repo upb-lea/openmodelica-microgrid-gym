@@ -5,5 +5,6 @@ matplotlib>=3.2.0
 numpy>=1.18
 pytest>=5.3
 gym>=0.16
+tqdm>=4
 
 safeopt>=0.15[safeopt]

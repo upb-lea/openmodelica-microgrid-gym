@@ -1,7 +1,9 @@
 """
 This class will handle the execution
 """
+
 from gym import Env
+from tqdm import tqdm
 
 from gym_microgrid.agents import Agent
 
@@ -15,7 +17,7 @@ class Runner:
         # TODO pass action space when resetting agent
         self.agent.reset()
 
-        for episode in range(n_episodes):
+        for _ in tqdm(range(n_episodes), desc='episodes'):
             obs = self.env.reset()
 
             done, r = False, None
@@ -26,3 +28,4 @@ class Runner:
                 if visualize:
                     self.env.render()
             self.agent.observe(r, done)
+            self.env.close()

@@ -5,7 +5,7 @@ from gym_microgrid import Runner
 if __name__ == '__main__':
     agent = SafeOptAgent()
     env = gym.make('gym_microgrid:JModelicaConvEnv_test-v1',
-                   viz_mode='step',
+                   viz_mode='episode',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output=['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i',
                                  'lc1.capacitor1.v', 'lc1.capacitor2.v', 'lc1.capacitor3.v',
