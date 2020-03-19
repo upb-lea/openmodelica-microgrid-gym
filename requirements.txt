@@ -6,5 +6,6 @@ numpy>=1.18
 pytest>=5.3
 gym>=0.16
 tqdm>=4
+more_itertools>=7
 
 safeopt>=0.15[safeopt]
