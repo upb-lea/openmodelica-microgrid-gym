@@ -11,7 +11,7 @@ class Runner:
         self.agent = agent
         self.env = env
 
-    def run(self, n_episodes=10):
+    def run(self, n_episodes=10, visualize=False):
         # TODO pass action space when resetting agent
         self.agent.reset()
 
@@ -23,4 +23,6 @@ class Runner:
                 self.agent.observe(r, done)
                 act = self.agent.act(obs)
                 obs, r, done, _, _ = self.env.step(act)
+                if visualize:
+                    self.env.render()
             self.agent.observe(r, done)

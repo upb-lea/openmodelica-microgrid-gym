@@ -1,8 +1,9 @@
 import logging
 import math
+
 import numpy as np
 from gym import spaces
-from .me_env import ModelicaMEEnv
+from gym_microgrid.env.me_env import ModelicaMEEnv
 
 logger = logging.getLogger(__name__)
 
@@ -20,25 +21,29 @@ class JModelicaConvEnv(ModelicaMEEnv):
         positive_reward (int): positive reward for RL agent.
         negative_reward (int): negative reward for RL agent.
     """
+    viz_modes = {'episode', 'step'}
 
-    def __init__(self, time_step, positive_reward, negative_reward,
-                 log_level, solver_method, max_episode_steps=10000.0):
+    def __init__(self, time_step=1e-4, positive_reward=1, negative_reward=-100,
+                 log_level=2, solver_method='LSODA', max_episode_steps=10000.0, model_input=None, model_output=None,
+                 viz_mode='episode'):
         logger.setLevel(log_level)
         # TODO time.threshhold needed? I would delete it completely, no one knows about it, just leads to confusion if exceeded.
         # Right now still there until we defined an other stop-criteria according to safeness
         self.time_threshold = max_episode_steps * time_step
+        if model_input is None:
+            raise ValueError('Please specify model_input variables')
+        if model_output is None:
+            raise ValueError('Please specify model_output variables')
+        if viz_mode not in self.viz_modes:
+            raise ValueError(f'Please select one of the following viz_modes: {self.viz_modes}')
 
-        self.viewer = None
-        self.display = None
+        self.viz_mode = viz_mode
 
         # Define the interface between the software to the FMU
         # Defines the order of inputs and outputs.
         config = {
-            'model_input_names': ['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
-            'model_output_names': ['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i',
-                                   'lc1.capacitor1.v', 'lc1.capacitor2.v', 'lc1.capacitor3.v',
-                                   'lcl1.inductor1.i', 'lcl1.inductor2.i', 'lcl1.inductor3.i',
-                                   'lcl1.capacitor1.v', 'lcl1.capacitor2.v', 'lcl1.capacitor3.v', ],
+            'model_input_names': model_input,
+            'model_output_names': model_output,
             'model_parameters': {},
             'initial_state': (),
             'time_step': time_step,
@@ -108,6 +113,16 @@ class JModelicaConvEnv(ModelicaMEEnv):
         Used, when environment is closed.
         :return: rendering result
         """
+        if close:
+            if self.viz_mode == 'episode':
+                # TODO create the plot
+                pass
+            else:
+                # TODO close plot
+                pass
+        elif self.viz_mode == 'step':
+            # TODO update plot
+            pass
         return True
 
     def close(self):

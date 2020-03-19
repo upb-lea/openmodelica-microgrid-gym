@@ -6,7 +6,9 @@ from gym.envs.registration import register
 __all__ = ['Agent', 'Runner']
 
 register(
-    id='JModelicaConvEnv-v1',
+    id='JModelicaConvEnv_test-v1',
     entry_point='gym_microgrid.env:JModelicaConvEnv',
-    kwargs=dict(time_step=1e-4, positive_reward=1, negative_reward=-100, log_level=4, solver_method='LSODA')
+    kwargs=dict(log_level=4, max_episode_steps=100, viz_mode='step')
 )
+
+register(id='JModelicaConvEnv-v1', entry_point='gym_microgrid.env:JModelicaConvEnv')
