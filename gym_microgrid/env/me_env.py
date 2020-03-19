@@ -14,7 +14,7 @@ class ModelicaMEEnv(ModelicaBaseEnv):
 
     """
 
-    def __init__(self, model_path, config, log_level, simulation_start_time=0):
+    def __init__(self, model_path, config, log_level=logging.WARN, simulation_start_time=0):
         """
 
         :param model_path: path to the model FMU. Absolute path is advised.
@@ -25,7 +25,7 @@ class ModelicaMEEnv(ModelicaBaseEnv):
         self.simulation_start_time = simulation_start_time
         #    self.fmi_version = fmi_version
         logger.setLevel(log_level)
-        super().__init__(model_path, "ME", config, log_level)
+        super().__init__(model_path, config, log_level)
 
     def reset(self):
         """
@@ -48,7 +48,7 @@ class ModelicaMEEnv(ModelicaBaseEnv):
         self.start = 0
         self.stop = self.simulation_start_time
 
-        self.state = self.do_simulation()
+        self.state = self.simulate()
 
         self.start = self.simulation_start_time
         self.stop = self.start + self.tau

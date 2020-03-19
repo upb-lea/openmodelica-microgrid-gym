@@ -12,6 +12,8 @@ from pyfmi import load_fmu
 import numpy as np
 from enum import Enum
 
+from gym_microgrid.common.flattendict import flatten
+
 logger = logging.getLogger(__name__)
 
 
@@ -51,9 +53,8 @@ class ModelicaBaseEnv(gym.Env):
     All methods called on model are from implemented PyFMI API.
     """
 
-    def __init__(self, model_path, mode, config, log_level):
+    def __init__(self, model_path: str, config: dict, log_level=logging.WARN):
         """
-
         :param model_path: path to the model FMU. Absolute path is advised. Automatically set in this programm
         :param mode: FMU exporting mode "CS" or "ME". Only ME supported
         :param config: dictionary with model specifications:
@@ -69,9 +70,6 @@ class ModelicaBaseEnv(gym.Env):
         """
 
         logger.setLevel(log_level)
-        if mode not in {'CS', 'ME'}:
-            logger.warning("Mode should be either CS or ME. Actual value {}. Trying to load in ME mode".format(mode))
-            mode = 'ME'
 
         self.solver_method = config.get('solver_method')
         # load model from fmu
@@ -109,7 +107,7 @@ class ModelicaBaseEnv(gym.Env):
             'video.frames_per_second': 50
         }
 
-        self.history = pd.DataFrame([], columns=self.model_output_names)
+        self.history = pd.DataFrame([], columns=flatten(self.model_output_names))
 
     def calc_jac(self, t, x):
         # t and x are indirectly retrieved from the model
@@ -182,11 +180,11 @@ class ModelicaBaseEnv(gym.Env):
         self.model.set(list(self.model_input_names), list(action))
 
         # Simulate and observe result state
-        self.state = self.do_simulation()
-        self.history = self.history.append(pd.DataFrame([self.state], columns=self.model_output_names),
+        self.state = self.simulate()
+        self.history = self.history.append(pd.DataFrame([self.state], columns=flatten(self.model_output_names)),
                                            ignore_index=True)
 
-        logger.debug("model output: {}, values: {}".format(self.model_output_names, self.state))
+        logger.debug("model output: {}, values: {}".format(flatten(self.model_output_names), self.state))
         # print("model output: {}, values: {}".format(self.model_output_names, self.state))
         # Check if experiment has finished
         self.done = self._is_done()
@@ -233,7 +231,7 @@ class ModelicaBaseEnv(gym.Env):
         pass
 
     # part of the step() method extracted for convenience
-    def do_simulation(self):
+    def simulate(self):
         """
         Executes simulation by FMU in the time interval [start_time; stop_time]
         currently saved in the environment.
@@ -314,8 +312,7 @@ class ModelicaBaseEnv(gym.Env):
             model state space. This is an optimisation to reduce simulation time
             when rearranging the output (instead of using the string names every iteration)
             """
-            model_outputs = self.model_output_names
             states = self.model.get_states_list()
-            self.model_output_index = [list(states).index(k) for k in model_outputs]
+            self.model_output_index = [list(states).index(k) for k in flatten(self.model_output_names)]
 
         return self

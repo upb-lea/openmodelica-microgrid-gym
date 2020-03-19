@@ -1,9 +1,13 @@
 import logging
 import math
+from itertools import groupby
 from typing import Sequence
+import re
 
 import numpy as np
 from gym import spaces
+
+from gym_microgrid.common.flattendict import flatten
 from gym_microgrid.env.me_env import ModelicaMEEnv
 
 logger = logging.getLogger(__name__)
@@ -109,8 +113,9 @@ class JModelicaConvEnv(ModelicaMEEnv):
                 pass
             else:
                 # TODO create the plot
-                self.history.plot()
-                plt.show()
+                for cols in flatten(self.model_output_names, 1):
+                    self.history[cols].plot()
+                    plt.show()
                 # print(self.history)
                 pass
         elif self.viz_mode == 'step':
