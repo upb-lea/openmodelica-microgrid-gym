@@ -9,7 +9,7 @@ import pandas as pd
 def test_main():
     agent = SafeOptAgent()
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
-                   #                   viz_mode=None,
+                   viz_mode=None,
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output={
                        'lc1': [

@@ -1,18 +1,16 @@
 import datetime
 import logging
 from os.path import basename
-from typing import Sequence, Optional, Tuple, Iterable
+from typing import Sequence
 
 import gym
 import numpy as np
 import pandas as pd
 import scipy
-from numpy.core._multiarray_umath import ndarray
 from pyfmi import load_fmu
 from scipy import integrate
 
 import matplotlib.pyplot as plt
-from scipy.integrate import OdeSolution
 
 from gym_microgrid.common.flattendict import flatten
 
@@ -204,7 +202,7 @@ class ModelicaEnv(gym.Env):
         else:
             logger.debug("Experiment step done, experiment done.")
 
-        return self.state, self._reward_policy(), self.done
+        return self.state, self.reward, self.done
 
     # logging
     def get_log_file_name(self):
@@ -224,22 +222,21 @@ class ModelicaEnv(gym.Env):
 
         # Advance
         x_0 = self.model.continuous_states
-
-        t_span = [self.start, self.stop]
-
         # Get the output from a step of the solver
-        sol_out = scipy.integrate.solve_ivp(self.deriv_func, t_span, x_0, method=self.solver_method, jac=self.calc_jac)
+        sol_out = scipy.integrate.solve_ivp(self.deriv_func, [self.start, self.stop], x_0, method=self.solver_method,
+                                            jac=self.calc_jac)
         # Unpack the solver output
         size, n_sols = sol_out.y.shape
         # get the last solution of the solver
-        self.x = sol_out.y[:, -1]
+        x = sol_out.y[:, -1]
         # Not strictly necessary, the last call of the solver to get the derivative
         # should have set this.
-        self.model.continuous_states = self.x
+        self.model.continuous_states = x
 
-        return self.get_state()
+        return np.array([x[k] for k in self.model_output_index])
 
-    def _reward_policy(self):
+    @property
+    def reward(self):
         """
         Determines reward based on the current environment state.
         By default, implements simple logic of penalizing for experiment end and rewarding each step.
@@ -247,16 +244,6 @@ class ModelicaEnv(gym.Env):
         :return: reward associated with the current state
         """
         return self.negative_reward or -100 if self.done else self.positive_reward or 1
-
-    def get_state(self):
-        """
-        Extracts the values of model outputs at the end of modeling time interval from simulation result
-
-        :return: Values of model outputs as tuple in order specified in `model_outputs` attribute
-                 as detetermined during initialization
-        """
-
-        return np.array([self.x[k] for k in self.model_output_index])
 
     def _set_init_parameter(self):
         """
