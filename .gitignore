@@ -1,3 +1,5 @@
 .idea/
 __pycache__/
 .mypy_cache/
+*.fmu.txt
+*.fmu
