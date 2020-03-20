@@ -22,4 +22,4 @@ def test_main():
     runner = Runner(agent, env)
     runner.run(1)
     # env.history.to_hdf('test_main.hd5','hist')
-    assert env.history.head(100).to_numpy() == approx(pd.read_hdf('test_main.hd5', 'hist').to_numpy(), rel=1e-2)
+    assert env.history.to_numpy() == approx(pd.read_hdf('test_main.hd5', 'hist').to_numpy(), rel=5e-3)

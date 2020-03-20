@@ -266,11 +266,10 @@ def run_rl_experiments(n_experiments=1, n_episodes=1, visualize=False, time_step
         exec_time_s.append(exec_time)
         sim_time_s.append(sim_time)
         cont_time_s.append(cont_time)
-        count_iterations_s.append(np.asarray(count_iters).mean())
         env.reset()
 
     env.close()
-    return trained_agent_s, episodes_length_s, exec_time_s, sim_time_s, cont_time_s, count_iterations_s, {}
+    return trained_agent_s, episodes_length_s, exec_time_s, sim_time_s, cont_time_s, {}
 
 
 def _get_average_voltage(arr):
@@ -278,12 +277,11 @@ def _get_average_voltage(arr):
 
 
 if __name__ == "__main__":
-    _, episodes_lengths, exec_times, sim_time, cont_time, count_iter, _ = run_rl_experiments(visualize=False,
-                                                                                             log_level=logging.INFO)
+    _, episodes_lengths, exec_times, sim_time, cont_time, _ = run_rl_experiments(visualize=False,
+                                                                                 log_level=logging.INFO)
     print("Experiment length {}s".format(exec_times[0]))
     print("Simulating time length {}s ({} %)".format(sim_time[0], (100 * sim_time[0] / exec_times[0])))
     print("Control calc time length {}s ({} %)".format(cont_time[0], (100 * cont_time[0] / exec_times[0])))
     print(u"Avg episode performance {} ± {}".format(episodes_lengths[0].mean(), episodes_lengths[0].std()))
-    print(u"Avg solver steps per DeltaT {} ".format(count_iter))
     print(u"Max episode performance {}".format(episodes_lengths[0].max()))
     print(u"All episodes performance {}".format(episodes_lengths))
