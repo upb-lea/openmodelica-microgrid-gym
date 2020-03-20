@@ -98,12 +98,12 @@ class ModelicaEnv(gym.Env):
         # initialize the model time and state
         self.start = 0
         self.stop = self.time_step_size
-        self.done = False
         self.state = self.reset()
 
         # OpenAI Gym requirements
-        self.action_space = self._get_action_space()
-        self.observation_space = self._get_observation_space()
+        self.action_space = gym.spaces.Discrete(3)
+        high = np.array([self.time_end, np.inf])
+        self.observation_space = gym.spaces.Box(-high, high)
 
         self.history = pd.DataFrame([], columns=flatten(self.model_output_names))
 
@@ -151,7 +151,6 @@ class ModelicaEnv(gym.Env):
 
         self.start = self.time_start
         self.stop = self.start + self.time_step_size
-        self.done = self._is_done()
         return self.state
 
     def step(self, action):
@@ -196,7 +195,6 @@ class ModelicaEnv(gym.Env):
         logger.debug("model output: {}, values: {}".format(flatten(self.model_output_names), self.state))
         # print("model output: {}, values: {}".format(self.model_output_names, self.state))
         # Check if experiment has finished
-        self.done = self._is_done()
 
         # Move simulation time interval if experiment continues
         if not self.done:
@@ -297,7 +295,8 @@ class ModelicaEnv(gym.Env):
 
         return self
 
-    def _is_done(self):
+    @property
+    def done(self):
         """
         #TODO: Add an proper is_done policy
         Internal logic that is utilized by parent classes.
@@ -306,28 +305,8 @@ class ModelicaEnv(gym.Env):
         :return: boolean flag if current state of the environment indicates that experiment has ended.
         True, if the simulation time is larger than the time threshold.
         """
-        time = self.stop
-        logger.debug("t: {0}, ".format(self.stop))
-        return abs(time) > self.time_end
-
-    def _get_action_space(self):
-        """
-        Internal logic that is utilized by parent classes.
-        Returns action space according to OpenAI Gym API requirements
-
-        :return: Discrete action space of size 3
-        """
-        return gym.spaces.Discrete(3)
-
-    def _get_observation_space(self):
-        """
-        Internal logic that is utilized by parent classes.
-        Returns observation space according to OpenAI Gym API requirements
-
-        :return: Box state space with specified lower and upper bounds for state variables.
-        """
-        high = np.array([self.time_end, np.inf])
-        return gym.spaces.Box(-high, high)
+        logger.debug(f't: {self.stop}, ')
+        return abs(self.stop) > self.time_end
 
     def render(self, mode='human', close=False):
         """
