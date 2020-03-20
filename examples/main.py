@@ -274,7 +274,12 @@ def run_rl_experiments(n_experiments=1, n_episodes=1, visualize=False, time_step
     sim_time_s = []
     cont_time_s = []
     count_iterations_s = []
-    env = gym.make(env_name)
+    env = gym.make(env_name,
+                   model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
+                   model_output=['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i',
+                                 'lc1.capacitor1.v', 'lc1.capacitor2.v', 'lc1.capacitor3.v',
+                                 'lcl1.inductor1.i', 'lcl1.inductor2.i', 'lcl1.inductor3.i',
+                                 'lcl1.capacitor1.v', 'lcl1.capacitor2.v', 'lcl1.capacitor3.v'])
     for i in range(n_experiments):
         episodes_length, exec_time, sim_time, cont_time, count_iters, _ = grid_simulation(env,
                                                                                           n_episodes=n_episodes,
