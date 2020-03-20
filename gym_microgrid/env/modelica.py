@@ -51,7 +51,7 @@ class ModelicaEnv(gym.Env):
     All methods called on model are from implemented PyFMI API.
     """
 
-    viz_modes = {'episode', 'step'}
+    viz_modes = {'episode', 'step', None}
 
     def __init__(self, time_step: float = 1e-4, positive_reward: float = 1, negative_reward: float = -100,
                  log_level: int = logging.WARNING, solver_method='LSODA', max_episode_steps: int = 10000.0,
@@ -339,20 +339,21 @@ class ModelicaEnv(gym.Env):
         Used, when environment is closed.
         :return: rendering result
         """
-        if close:
-            if self.viz_mode == 'step':
-                # TODO close plot
+        if self.viz_mode is not None:
+            if close:
+                if self.viz_mode == 'step':
+                    # TODO close plot
+                    pass
+                else:
+                    # TODO create the plot
+                    for cols in flatten(self.model_output_names, 1):
+                        self.history[cols].plot()
+                        plt.show()
+                    # print(self.history)
+                    pass
+            elif self.viz_mode == 'step':
+                # TODO update plot
                 pass
-            else:
-                # TODO create the plot
-                for cols in flatten(self.model_output_names, 1):
-                    self.history[cols].plot()
-                    plt.show()
-                # print(self.history)
-                pass
-        elif self.viz_mode == 'step':
-            # TODO update plot
-            pass
         return True
 
     def close(self):
