@@ -18,9 +18,9 @@ or:
  ['lcl1.inductor1.i', 'lcl1.inductor2.i', 'lcl1.inductor3.i'],
  ['lcl1.capacitor1.v', 'lcl1.capacitor2.v', 'lcl1.capacitor3.v']]
 """
+from typing import Sequence, Callable
 
 import pandas as pd
-import numpy as np
 from more_itertools import collapse
 
 
@@ -32,9 +32,20 @@ def flatten(data, remaining_levels=0):
         data = df.to_dict(orient='records')[0]
         # move the key into the lists
         for k, v in data.items():
-            f = np.vectorize(lambda s, t: '.'.join([t, s]))
-            data[k] = f(np.array(v), k).tolist()
+            data[k] = nested_map(v, lambda suffix: '.'.join([k, suffix]))
         data = list(data.values())
     # count levels and collapse to keep the levels as needed
-    depth = len(np.array(data).shape)
+    depth = nested_depth(data)
     return list(collapse(data, levels=depth - remaining_levels - 1))
+
+
+def nested_map(l: Sequence, fun: Callable):
+    if isinstance(l, list):
+        return [nested_map(l_, fun) for l_ in l]
+    return fun(l)
+
+
+def nested_depth(l: Sequence) -> int:
+    if isinstance(l, list):
+        return max((nested_depth(l_) for l_ in l)) + 1
+    return 0
