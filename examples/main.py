@@ -280,12 +280,10 @@ def _get_average_voltage(arr):
 if __name__ == "__main__":
     _, episodes_lengths, exec_times, sim_time, cont_time, count_iter, _ = run_rl_experiments(visualize=False,
                                                                                              log_level=logging.INFO)
-    print("Experiment length {} s".format(exec_times[0]))
-    print("Simulating time length {} s ({} %)".format(sim_time[0], (100 * sim_time[0] / exec_times[0])))
-    print("Control calc time length {} s ({} %)".format(cont_time[0], (100 * cont_time[0] / exec_times[0])))
-    print(u"Avg episode performance {} {} {}".format(episodes_lengths[0].mean(),
-                                                     chr(177),  # plus minus sign
-                                                     episodes_lengths[0].std()))
+    print("Experiment length {}s".format(exec_times[0]))
+    print("Simulating time length {}s ({} %)".format(sim_time[0], (100 * sim_time[0] / exec_times[0])))
+    print("Control calc time length {}s ({} %)".format(cont_time[0], (100 * cont_time[0] / exec_times[0])))
+    print(u"Avg episode performance {} ± {}".format(episodes_lengths[0].mean(), episodes_lengths[0].std()))
     print(u"Avg solver steps per DeltaT {} ".format(count_iter))
     print(u"Max episode performance {}".format(episodes_lengths[0].max()))
     print(u"All episodes performance {}".format(episodes_lengths))

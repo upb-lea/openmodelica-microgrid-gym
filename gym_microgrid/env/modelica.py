@@ -285,14 +285,11 @@ class ModelicaEnv(gym.Env):
         return self
 
     @property
-    def done(self):
+    def done(self) -> bool:
         """
-        #TODO: Add an proper is_done policy
-        Internal logic that is utilized by parent classes.
         Checks if the experiment is finished using a time limit
 
-        :return: boolean flag if current state of the environment indicates that experiment has ended.
-        True, if the simulation time is larger than the time threshold.
+        :return: True if simulation time exceeded
         """
         logger.debug(f't: {self.stop}')
         return abs(self.stop) > self.time_end
@@ -307,27 +304,28 @@ class ModelicaEnv(gym.Env):
         Used, when environment is closed.
         :return: rendering result
         """
-        if self.viz_mode is not None:
-            if close:
-                if self.viz_mode == 'step':
-                    # TODO close plot
-                    pass
-                else:
-                    # TODO create the plot
-                    for cols in flatten(self.model_output_names, 1):
-                        self.history[cols].plot()
-                        plt.show()
-                    # print(self.history)
-                    pass
-            elif self.viz_mode == 'step':
-                # TODO update plot
+        if self.viz_mode is None:
+            return True
+        elif close:
+            if self.viz_mode == 'step':
+                # TODO close plot
                 pass
+            else:
+                # TODO create the plot
+                for cols in flatten(self.model_output_names, 1):
+                    self.history[cols].plot()
+                    plt.show()
+                # print(self.history)
+                pass
+        elif self.viz_mode == 'step':
+            # TODO update plot
+            pass
         return True
 
     def close(self):
         """
         OpenAI Gym API. Closes environment and all related resources.
         Closes rendering.
-        :return: True if everything worked out.
+        :return: True on success
         """
         return self.render(close=True)
