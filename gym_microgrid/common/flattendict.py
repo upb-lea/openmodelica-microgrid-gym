@@ -47,5 +47,8 @@ def nested_map(l: Sequence, fun: Callable):
 
 def nested_depth(l: Sequence) -> int:
     if isinstance(l, list):
-        return max((nested_depth(l_) for l_ in l)) + 1
+        if l:
+            # if the list contains elements
+            return max((nested_depth(l_) for l_ in l)) + 1
+        return 1
     return 0
