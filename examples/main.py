@@ -3,11 +3,6 @@ import time
 import matplotlib.pyplot as plt
 from gym_microgrid.controllers import *
 
-from gym.envs.registration import register
-
-# clears the environment
-env_name = "JModelicaConvEnv-v1"
-
 fcontrol = 1e4
 delta_t = 1 / fcontrol
 # Time to simulate
@@ -112,9 +107,6 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
 
         # SP for the slave inverter in dq0 frame
         for step in range(max_number_of_steps):
-
-            SPidq0 = [0, 0, 0]
-
             # CVs from the states of the simulation
             CVV1, CVI1, CVV2, CVI2 = _map_CVs(obs)
 
@@ -127,7 +119,7 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
 
             startContSim = time.time()
             # cossin, freq, theta,debug =pll.step(CVV)
-            mod_indSlave, freq, Idq0, mod_dq0 = slave_controller.step(CVI2, CVV2, SPidq0)
+            mod_indSlave, freq, Idq0, mod_dq0 = slave_controller.step(CVI2, CVV2, [0, 0, 0])
 
             # Perform controller calculations
             mod_ind, CVI1dq = controller.step(CVI1, CVV1, nomVoltPeak, nomFreq)
@@ -157,10 +149,8 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
             # print("Action: {}".format(action))
 
             # Perform a step of simulation
-            obs, reward, done, iterations, _ = sim_env.step(np.append(action1, action2))
+            obs, reward, done = sim_env.step(np.append(action1, action2))
             obs = np.array(obs)
-
-            iteration_s.append(iterations)
             # Accumulate time spent simulating
             sim_time = sim_time + time.time() - startSim
 
@@ -252,21 +242,7 @@ def run_rl_experiments(n_experiments=1, n_episodes=1, visualize=False, time_step
     :param negative_reward: negative reward for RL agent.
 
     :return: trained Q-learning agent, array of actual episodes length that were returned from train_qlearning()
-
     """
-    config = {
-        'time_step': time_step,
-        'positive_reward': positive_reward,
-        'negative_reward': negative_reward,
-        'log_level': log_level,
-        'solver_method': 'LSODA'
-    }
-
-    register(
-        id=env_name,
-        entry_point='gym_microgrid.env:JModelicaConvEnv',
-        kwargs=config
-    )
 
     trained_agent_s = []
     episodes_length_s = []
@@ -274,12 +250,13 @@ def run_rl_experiments(n_experiments=1, n_episodes=1, visualize=False, time_step
     sim_time_s = []
     cont_time_s = []
     count_iterations_s = []
-    env = gym.make(env_name,
+    env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output=['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i',
                                  'lc1.capacitor1.v', 'lc1.capacitor2.v', 'lc1.capacitor3.v',
                                  'lcl1.inductor1.i', 'lcl1.inductor2.i', 'lcl1.inductor3.i',
-                                 'lcl1.capacitor1.v', 'lcl1.capacitor2.v', 'lcl1.capacitor3.v'])
+                                 'lcl1.capacitor1.v', 'lcl1.capacitor2.v', 'lcl1.capacitor3.v'],
+                   max_episode_steps=N)
     for i in range(n_experiments):
         episodes_length, exec_time, sim_time, cont_time, count_iters, _ = grid_simulation(env,
                                                                                           n_episodes=n_episodes,
@@ -293,8 +270,6 @@ def run_rl_experiments(n_experiments=1, n_episodes=1, visualize=False, time_step
         env.reset()
 
     env.close()
-    # delete registered environment to avoid errors in future runs.
-    del gym.envs.registry.env_specs[env_name]
     return trained_agent_s, episodes_length_s, exec_time_s, sim_time_s, cont_time_s, count_iterations_s, {}
 
 
@@ -303,14 +278,6 @@ def _get_average_voltage(arr):
 
 
 if __name__ == "__main__":
-
-    # Try deleting the environment before excecution (needed if previous execution was interupted by a runtime error)
-    try:
-        del gym.envs.registry.env_specs[env_name]
-    except:
-        # Would ideally like to do nothing, but will print a message nonetheless
-        print("Environment did not exist")
-
     _, episodes_lengths, exec_times, sim_time, cont_time, count_iter, _ = run_rl_experiments(visualize=False,
                                                                                              log_level=logging.INFO)
     print("Experiment length {} s".format(exec_times[0]))

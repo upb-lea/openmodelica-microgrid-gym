@@ -13,10 +13,22 @@ import numpy as np
 
 from gym_microgrid.common.flattendict import flatten
 
+import math
+from itertools import groupby
+from typing import Sequence
+import re
+
+import numpy as np
+from gym import spaces
+
+from gym_microgrid.common.flattendict import flatten
+
 logger = logging.getLogger(__name__)
 
+import matplotlib.pyplot as plt
 
-class ModelicaBaseEnv(gym.Env):
+
+class ModelicaEnv(gym.Env):
     """
     Superclass for all environments simulated with Modelica FMU exported.
     Implements abstract logic, common to all such environments.
@@ -48,22 +60,39 @@ class ModelicaBaseEnv(gym.Env):
     All methods called on model are from implemented PyFMI API.
     """
 
-    def __init__(self, model_path: str, config: dict, log_level=logging.WARN, simulation_start_time=0):
+    viz_modes = {'episode', 'step'}
+
+    def close(self):
         """
-        :param model_path: path to the model FMU. Absolute path is advised. Automatically set in this programm
-        :param mode: FMU exporting mode "CS" or "ME". Only ME supported
-        :param config: dictionary with model specifications:
-            model_input_names - names of parameters to be used as action.
-            model_output_names - names of parameters to be used as state descriptors.
-            model_parameters - dictionary of initial parameters of the model
-            time_step - time difference between simulation steps
-
-            positive_reward - (optional) positive reward for default reward policy. Is returned when episode goes on.
-            negative_reward - (optional) negative reward for default reward policy. Is returned when episode is ended
-
-        :param log_level: level of logging to be used
+        OpenAI Gym API. Closes environment and all related resources.
+        Closes rendering.
+        :return: True if everything worked out.
         """
+        return self.render(close=True)
 
+    def __init__(self, time_step: float = 1e-4, positive_reward: float = 1, negative_reward: float = -100,
+                 log_level: int = logging.WARNING, solver_method='LSODA', max_episode_steps: int = 10000.0,
+                 model_input: Sequence[str] = None, model_output: Sequence[str] = None, model_path='grid.network.fmu',
+                 simulation_start_time=0,
+                 viz_mode='episode'):
+        logger.setLevel(log_level)
+        # TODO time.threshold needed? I would delete it completely, no one knows about it, just leads to confusion if exceeded.
+        # Right now still there until we defined an other stop-criteria according to safeness
+        if model_input is None:
+            raise ValueError('Please specify model_input variables from your OM FMU.')
+        if model_output is None:
+            raise ValueError('Please specify model_output variables from your OM FMU.')
+        if viz_mode not in self.viz_modes:
+            raise ValueError(f'Please select one of the following viz_modes: {self.viz_modes}')
+
+        self.time_threshold = max_episode_steps * time_step
+        self.viz_mode = viz_mode
+
+        # Define the interface between the software to the FMU
+        # Defines the order of inputs and outputs.
+        config = dict(model_input_names=model_input, model_output_names=model_output, model_parameters={},
+                      initial_state=(), time_step=time_step, positive_reward=positive_reward,
+                      negative_reward=negative_reward, solver_method=solver_method)
         self.simulation_start_time = simulation_start_time
 
         logger.setLevel(log_level)
@@ -99,11 +128,6 @@ class ModelicaBaseEnv(gym.Env):
         self.action_space = self._get_action_space()
         self.observation_space = self._get_observation_space()
 
-        self.metadata = {
-            'render.modes': ['human', 'rgb_array'],
-            'video.frames_per_second': 50
-        }
-
         self.history = pd.DataFrame([], columns=flatten(self.model_output_names))
 
     def calc_jac(self, t, x):
@@ -126,13 +150,6 @@ class ModelicaBaseEnv(gym.Env):
         dx = self.model.get_derivatives()
         return dx
 
-    # OpenAI Gym API
-    def render(self, **kwargs):
-        """
-        OpenAI Gym API. Determines how current environment state should be rendered.
-        :param kwargs:
-        :return: implementation should return rendering result
-        """
         pass
 
     def reset(self):
@@ -180,7 +197,7 @@ class ModelicaBaseEnv(gym.Env):
                 """You are calling 'step()' even though this environment has already returned done = True.
                 You should always call 'reset()' once you receive 'done = True' -- any further steps are
                 undefined behavior.""")
-            return self.state, self.negative_reward, self.done, {}
+            return self.state, self.negative_reward, self.done
 
         # check if action is a list. If not - create list of length 1
         try:
@@ -219,38 +236,13 @@ class ModelicaBaseEnv(gym.Env):
         else:
             logger.debug("Experiment step done, experiment done.")
 
-        return self.state, self._reward_policy(), self.done, self.count_iter, {}
+        return self.state, self._reward_policy(), self.done
 
     # logging
     def get_log_file_name(self):
         log_date = datetime.datetime.utcnow()
         log_file_name = "{}-{}-{}_{}.txt".format(log_date.year, log_date.month, log_date.day, self.model_name)
         return log_file_name
-
-    # internal logic
-    def _get_action_space(self):
-        """
-        Returns action space according to OpenAI Gym API requirements.
-
-        :return: one of gym.spaces classes that describes action space according to environment specifications.
-        """
-        pass
-
-    def _get_observation_space(self):
-        """
-        Returns state space according to OpenAI Gym API requirements.
-
-        :return: one of gym.spaces classes that describes state space according to environment specifications.
-        """
-        pass
-
-    def _is_done(self):
-        """
-        Determines logic when experiment is considered to be done.
-
-        :return: boolean flag if current state of the environment indicates that experiment has ended.
-        """
-        pass
 
     # part of the step() method extracted for convenience
     def simulate(self):
@@ -338,3 +330,61 @@ class ModelicaBaseEnv(gym.Env):
             self.model_output_index = [list(states).index(k) for k in flatten(self.model_output_names)]
 
         return self
+
+    def _is_done(self):
+        """
+        #TODO: Add an proper is_done policy
+        Internal logic that is utilized by parent classes.
+        Checks if the experiment is finished using a time limit
+
+        :return: boolean flag if current state of the environment indicates that experiment has ended.
+        True, if the simulation time is larger than the time threshold.
+        """
+        time = self.stop
+        logger.debug("t: {0}, ".format(self.stop))
+        return abs(time) > self.time_threshold
+
+    def _get_action_space(self):
+        """
+        Internal logic that is utilized by parent classes.
+        Returns action space according to OpenAI Gym API requirements
+
+        :return: Discrete action space of size 3
+        """
+        return gym.spaces.Discrete(3)
+
+    def _get_observation_space(self):
+        """
+        Internal logic that is utilized by parent classes.
+        Returns observation space according to OpenAI Gym API requirements
+
+        :return: Box state space with specified lower and upper bounds for state variables.
+        """
+        high = np.array([self.time_threshold, np.inf])
+        return gym.spaces.Box(-high, high)
+
+    def render(self, mode='human', close=False):
+        """
+        OpenAI Gym API. Determines how current environment state should be rendered.
+        Does nothing at the moment
+
+        :param mode: rendering mode. Read more in Gym docs.
+        :param close: flag if rendering procedure should be finished and resources cleaned.
+        Used, when environment is closed.
+        :return: rendering result
+        """
+        if close:
+            if self.viz_mode == 'step':
+                # TODO close plot
+                pass
+            else:
+                # TODO create the plot
+                for cols in flatten(self.model_output_names, 1):
+                    self.history[cols].plot()
+                    plt.show()
+                # print(self.history)
+                pass
+        elif self.viz_mode == 'step':
+            # TODO update plot
+            pass
+        return True
