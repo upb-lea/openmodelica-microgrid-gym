@@ -8,7 +8,7 @@ import numpy as np
 from gym import spaces
 
 from gym_microgrid.common.flattendict import flatten
-from gym_microgrid.env.me_env import ModelicaMEEnv
+from gym_microgrid.env import ModelicaBaseEnv
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ TWELVE_DEGREES_IN_RAD = (12 / 180) * math.pi
 import matplotlib.pyplot as plt
 
 
-class JModelicaConvEnv(ModelicaMEEnv):
+class JModelicaConvEnv(ModelicaBaseEnv):
     """
     Wrapper class 
     

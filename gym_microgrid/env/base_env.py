@@ -10,15 +10,10 @@ import scipy
 from scipy import integrate
 from pyfmi import load_fmu
 import numpy as np
-from enum import Enum
 
 from gym_microgrid.common.flattendict import flatten
 
 logger = logging.getLogger(__name__)
-
-
-class FMIStandardVersion(Enum):
-    second = 2
 
 
 class ModelicaBaseEnv(gym.Env):
@@ -53,7 +48,7 @@ class ModelicaBaseEnv(gym.Env):
     All methods called on model are from implemented PyFMI API.
     """
 
-    def __init__(self, model_path: str, config: dict, log_level=logging.WARN):
+    def __init__(self, model_path: str, config: dict, log_level=logging.WARN, simulation_start_time=0):
         """
         :param model_path: path to the model FMU. Absolute path is advised. Automatically set in this programm
         :param mode: FMU exporting mode "CS" or "ME". Only ME supported
@@ -68,6 +63,8 @@ class ModelicaBaseEnv(gym.Env):
 
         :param log_level: level of logging to be used
         """
+
+        self.simulation_start_time = simulation_start_time
 
         logger.setLevel(log_level)
 
@@ -143,7 +140,32 @@ class ModelicaBaseEnv(gym.Env):
         OpenAI Gym API. Determines restart procedure of the environment
         :return: environment state after restart
         """
-        pass
+        """
+                OpenAI Gym API. Restarts environment and sets it ready for experiments.
+                In particular, does the following:
+                    * resets model
+                    * sets simulation start time to 0
+                    * sets initial parameters of the model
+                    * initializes the model
+                    * sets environment class attributes, e.g. start and stop time.
+                :return: state of the environment after resetting
+                """
+        logger.debug("Experiment reset was called. Resetting the model.")
+
+        self.model.reset()
+        self.model.setup_experiment(start_time=0)
+
+        self._set_init_parameter()
+
+        self.start = 0
+        self.stop = self.simulation_start_time
+
+        self.state = self.simulate()
+
+        self.start = self.simulation_start_time
+        self.stop = self.start + self.tau
+        self.done = self._is_done()
+        return self.state
 
     def step(self, action):
         """
