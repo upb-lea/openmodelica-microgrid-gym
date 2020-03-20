@@ -1,31 +1,22 @@
-# -*- coding: utf-8 -*-
-
-
 import datetime
 import logging
-import os
+from os.path import basename
+from typing import Sequence, Optional, Tuple, Iterable
+
 import gym
+import numpy as np
 import pandas as pd
 import scipy
-from scipy import integrate
+from numpy.core._multiarray_umath import ndarray
 from pyfmi import load_fmu
-import numpy as np
+from scipy import integrate
 
-from gym_microgrid.common.flattendict import flatten
-
-import math
-from itertools import groupby
-from typing import Sequence
-import re
-
-import numpy as np
-from gym import spaces
+import matplotlib.pyplot as plt
+from scipy.integrate import OdeSolution
 
 from gym_microgrid.common.flattendict import flatten
 
 logger = logging.getLogger(__name__)
-
-import matplotlib.pyplot as plt
 
 
 class ModelicaEnv(gym.Env):
@@ -62,19 +53,15 @@ class ModelicaEnv(gym.Env):
 
     viz_modes = {'episode', 'step'}
 
-    def close(self):
-        """
-        OpenAI Gym API. Closes environment and all related resources.
-        Closes rendering.
-        :return: True if everything worked out.
-        """
-        return self.render(close=True)
-
     def __init__(self, time_step: float = 1e-4, positive_reward: float = 1, negative_reward: float = -100,
                  log_level: int = logging.WARNING, solver_method='LSODA', max_episode_steps: int = 10000.0,
+                 model_params: dict = None,
                  model_input: Sequence[str] = None, model_output: Sequence[str] = None, model_path='grid.network.fmu',
-                 simulation_start_time=0,
+                 time_start=0,
                  viz_mode='episode'):
+        """
+        :type viz_mode: object
+        """
         logger.setLevel(log_level)
         # TODO time.threshold needed? I would delete it completely, no one knows about it, just leads to confusion if exceeded.
         # Right now still there until we defined an other stop-criteria according to safeness
@@ -85,42 +72,32 @@ class ModelicaEnv(gym.Env):
         if viz_mode not in self.viz_modes:
             raise ValueError(f'Please select one of the following viz_modes: {self.viz_modes}')
 
-        self.time_threshold = max_episode_steps * time_step
         self.viz_mode = viz_mode
-
-        # Define the interface between the software to the FMU
-        # Defines the order of inputs and outputs.
-        config = dict(model_input_names=model_input, model_output_names=model_output, model_parameters={},
-                      initial_state=(), time_step=time_step, positive_reward=positive_reward,
-                      negative_reward=negative_reward, solver_method=solver_method)
-        self.simulation_start_time = simulation_start_time
-
         logger.setLevel(log_level)
+        self.solver_method = solver_method
 
-        self.solver_method = config.get('solver_method')
         # load model from fmu
-        self.model_name = model_path.split(os.path.sep)[-1]
-
+        self.model_name = basename(model_path)
         logger.debug("Loading model {}".format(self.model_name))
-
-        # self.model = load_fmu(model_path, kind=mode, log_file_name=self.get_log_file_name())
         self.model = load_fmu(model_path, log_file_name=self.get_log_file_name())
-
         logger.debug("Successfully loaded model {}".format(self.model_name))
+
         # if you reward policy is different from just reward/penalty - implement custom step method
-        self.positive_reward = config.get('positive_reward')
-        self.negative_reward = config.get('negative_reward')
+        self.positive_reward = positive_reward
+        self.negative_reward = negative_reward
 
         # Parameters required by this implementation
-        self.tau = config.get('time_step')
-        self.model_input_names = config.get('model_input_names')
-        self.model_output_names = config.get('model_output_names')
-        self.model_parameters = config.get('model_parameters')
+        self.time_start = time_start
+        self.time_step_size = time_step
+        self.time_end = self.time_start + max_episode_steps * self.time_step_size
+
+        self.model_parameters = model_params or {}
+        self.model_input_names = model_input
+        self.model_output_names = model_output
 
         # initialize the model time and state
         self.start = 0
-        self.count_iter = 0
-        self.stop = self.tau
+        self.stop = self.time_step_size
         self.done = False
         self.state = self.reset()
 
@@ -150,23 +127,17 @@ class ModelicaEnv(gym.Env):
         dx = self.model.get_derivatives()
         return dx
 
-        pass
-
     def reset(self):
         """
-        OpenAI Gym API. Determines restart procedure of the environment
-        :return: environment state after restart
+        OpenAI Gym API. Restarts environment and sets it ready for experiments.
+        In particular, does the following:
+            * resets model
+            * sets simulation start time to 0
+            * sets initial parameters of the model
+            * initializes the model
+            * sets environment class attributes, e.g. start and stop time.
+        :return: state of the environment after resetting
         """
-        """
-                OpenAI Gym API. Restarts environment and sets it ready for experiments.
-                In particular, does the following:
-                    * resets model
-                    * sets simulation start time to 0
-                    * sets initial parameters of the model
-                    * initializes the model
-                    * sets environment class attributes, e.g. start and stop time.
-                :return: state of the environment after resetting
-                """
         logger.debug("Experiment reset was called. Resetting the model.")
 
         self.model.reset()
@@ -175,12 +146,11 @@ class ModelicaEnv(gym.Env):
         self._set_init_parameter()
 
         self.start = 0
-        self.stop = self.simulation_start_time
-
+        self.stop = self.time_start
         self.state = self.simulate()
 
-        self.start = self.simulation_start_time
-        self.stop = self.start + self.tau
+        self.start = self.time_start
+        self.stop = self.start + self.time_step_size
         self.done = self._is_done()
         return self.state
 
@@ -232,7 +202,7 @@ class ModelicaEnv(gym.Env):
         if not self.done:
             logger.debug("Experiment step done, experiment continues.")
             self.start = self.stop
-            self.stop += self.tau
+            self.stop += self.time_step_size
         else:
             logger.debug("Experiment step done, experiment done.")
 
@@ -264,11 +234,7 @@ class ModelicaEnv(gym.Env):
         # Unpack the solver output
         size, n_sols = sol_out.y.shape
         # get the last solution of the solver
-        self.x = sol_out.y[:, n_sols - 1]
-
-        # Count the number of solutions needed by the solver
-        self.count_iter = n_sols
-
+        self.x = sol_out.y[:, -1]
         # Not strictly necessary, the last call of the solver to get the derivative
         # should have set this.
         self.model.continuous_states = self.x
@@ -308,7 +274,7 @@ class ModelicaEnv(gym.Env):
             eInfo = self.model.get_event_info()
             eInfo.newDiscreteStatesNeeded = True
             # Event iteration
-            while eInfo.newDiscreteStatesNeeded == True:
+            while eInfo.newDiscreteStatesNeeded:
                 self.model.enter_event_mode()
                 self.model.event_update()
                 eInfo = self.model.get_event_info()
@@ -342,7 +308,7 @@ class ModelicaEnv(gym.Env):
         """
         time = self.stop
         logger.debug("t: {0}, ".format(self.stop))
-        return abs(time) > self.time_threshold
+        return abs(time) > self.time_end
 
     def _get_action_space(self):
         """
@@ -360,7 +326,7 @@ class ModelicaEnv(gym.Env):
 
         :return: Box state space with specified lower and upper bounds for state variables.
         """
-        high = np.array([self.time_threshold, np.inf])
+        high = np.array([self.time_end, np.inf])
         return gym.spaces.Box(-high, high)
 
     def render(self, mode='human', close=False):
@@ -388,3 +354,11 @@ class ModelicaEnv(gym.Env):
             # TODO update plot
             pass
         return True
+
+    def close(self):
+        """
+        OpenAI Gym API. Closes environment and all related resources.
+        Closes rendering.
+        :return: True if everything worked out.
+        """
+        return self.render(close=True)
