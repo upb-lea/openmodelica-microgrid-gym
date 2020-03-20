@@ -1,18 +1,15 @@
-import datetime
+from datetime import datetime
 import logging
 from os.path import basename
-from typing import Sequence, Optional, Tuple, Iterable
+from typing import Sequence
 
 import gym
 import numpy as np
 import pandas as pd
 import scipy
-from numpy.core._multiarray_umath import ndarray
 from pyfmi import load_fmu
 from scipy import integrate
-
 import matplotlib.pyplot as plt
-from scipy.integrate import OdeSolution
 
 from gym_microgrid.common.flattendict import flatten
 
@@ -63,7 +60,6 @@ class ModelicaEnv(gym.Env):
         :type viz_mode: object
         """
         logger.setLevel(log_level)
-        # TODO time.threshold needed? I would delete it completely, no one knows about it, just leads to confusion if exceeded.
         # Right now still there until we defined an other stop-criteria according to safeness
         if model_input is None:
             raise ValueError('Please specify model_input variables from your OM FMU.')
@@ -79,7 +75,7 @@ class ModelicaEnv(gym.Env):
         # load model from fmu
         self.model_name = basename(model_path)
         logger.debug("Loading model {}".format(self.model_name))
-        self.model = load_fmu(model_path, log_file_name=self.get_log_file_name())
+        self.model = load_fmu(model_path, log_file_name=datetime.now().strftime(f'%Y-%m-%d_{self.model_name}.txt'))
         logger.debug("Successfully loaded model {}".format(self.model_name))
 
         # if you reward policy is different from just reward/penalty - implement custom step method
@@ -89,6 +85,7 @@ class ModelicaEnv(gym.Env):
         # Parameters required by this implementation
         self.time_start = time_start
         self.time_step_size = time_step
+        # TODO allow infinite end with None and np.inf
         self.time_end = self.time_start + max_episode_steps * self.time_step_size
 
         self.model_parameters = model_params or {}
@@ -98,12 +95,11 @@ class ModelicaEnv(gym.Env):
         # initialize the model time and state
         self.start = 0
         self.stop = self.time_step_size
-        self.done = False
-        self.state = self.reset()
 
         # OpenAI Gym requirements
-        self.action_space = self._get_action_space()
-        self.observation_space = self._get_observation_space()
+        self.action_space = gym.spaces.Discrete(3)
+        high = np.array([self.time_end, np.inf])
+        self.observation_space = gym.spaces.Box(-high, high)
 
         self.history = pd.DataFrame([], columns=flatten(self.model_output_names))
 
@@ -147,11 +143,9 @@ class ModelicaEnv(gym.Env):
 
         self.start = 0
         self.stop = self.time_start
-        self.state = self.simulate()
 
         self.start = self.time_start
         self.stop = self.start + self.time_step_size
-        self.done = self._is_done()
         return self.state
 
     def step(self, action):
@@ -189,14 +183,12 @@ class ModelicaEnv(gym.Env):
         self.model.set(list(self.model_input_names), list(action))
 
         # Simulate and observe result state
-        self.state = self.simulate()
         self.history = self.history.append(pd.DataFrame([self.state], columns=flatten(self.model_output_names)),
                                            ignore_index=True)
 
         logger.debug("model output: {}, values: {}".format(flatten(self.model_output_names), self.state))
         # print("model output: {}, values: {}".format(self.model_output_names, self.state))
         # Check if experiment has finished
-        self.done = self._is_done()
 
         # Move simulation time interval if experiment continues
         if not self.done:
@@ -206,13 +198,7 @@ class ModelicaEnv(gym.Env):
         else:
             logger.debug("Experiment step done, experiment done.")
 
-        return self.state, self._reward_policy(), self.done
-
-    # logging
-    def get_log_file_name(self):
-        log_date = datetime.datetime.utcnow()
-        log_file_name = "{}-{}-{}_{}.txt".format(log_date.year, log_date.month, log_date.day, self.model_name)
-        return log_file_name
+        return self.state, self.reward, self.done
 
     # part of the step() method extracted for convenience
     def simulate(self):
@@ -227,10 +213,9 @@ class ModelicaEnv(gym.Env):
         # Advance
         x_0 = self.model.continuous_states
 
-        t_span = [self.start, self.stop]
-
         # Get the output from a step of the solver
-        sol_out = scipy.integrate.solve_ivp(self.deriv_func, t_span, x_0, method=self.solver_method, jac=self.calc_jac)
+        sol_out = scipy.integrate.solve_ivp(
+            self.deriv_func, [self.start, self.stop], x_0, method=self.solver_method, jac=self.calc_jac)
         # Unpack the solver output
         size, n_sols = sol_out.y.shape
         # get the last solution of the solver
@@ -239,9 +224,10 @@ class ModelicaEnv(gym.Env):
         # should have set this.
         self.model.continuous_states = self.x
 
-        return self.get_state()
+        return self.state
 
-    def _reward_policy(self):
+    @property
+    def reward(self):
         """
         Determines reward based on the current environment state.
         By default, implements simple logic of penalizing for experiment end and rewarding each step.
@@ -250,7 +236,8 @@ class ModelicaEnv(gym.Env):
         """
         return self.negative_reward or -100 if self.done else self.positive_reward or 1
 
-    def get_state(self):
+    @property
+    def state(self):
         """
         Extracts the values of model outputs at the end of modeling time interval from simulation result
 
@@ -297,7 +284,8 @@ class ModelicaEnv(gym.Env):
 
         return self
 
-    def _is_done(self):
+    @property
+    def done(self):
         """
         #TODO: Add an proper is_done policy
         Internal logic that is utilized by parent classes.
@@ -306,28 +294,8 @@ class ModelicaEnv(gym.Env):
         :return: boolean flag if current state of the environment indicates that experiment has ended.
         True, if the simulation time is larger than the time threshold.
         """
-        time = self.stop
-        logger.debug("t: {0}, ".format(self.stop))
-        return abs(time) > self.time_end
-
-    def _get_action_space(self):
-        """
-        Internal logic that is utilized by parent classes.
-        Returns action space according to OpenAI Gym API requirements
-
-        :return: Discrete action space of size 3
-        """
-        return gym.spaces.Discrete(3)
-
-    def _get_observation_space(self):
-        """
-        Internal logic that is utilized by parent classes.
-        Returns observation space according to OpenAI Gym API requirements
-
-        :return: Box state space with specified lower and upper bounds for state variables.
-        """
-        high = np.array([self.time_end, np.inf])
-        return gym.spaces.Box(-high, high)
+        logger.debug(f't: {self.stop}')
+        return abs(self.stop) > self.time_end
 
     def render(self, mode='human', close=False):
         """
