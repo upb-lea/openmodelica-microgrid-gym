@@ -17,7 +17,7 @@ class Runner:
         # TODO pass action space when resetting agent
         self.agent.reset()
 
-        for _ in tqdm(range(n_episodes), desc='episodes'):
+        for _ in tqdm(range(n_episodes), desc='episodes', unit='epoch'):
             obs = self.env.reset()
 
             done, r = False, None
