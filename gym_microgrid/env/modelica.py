@@ -95,6 +95,7 @@ class ModelicaEnv(gym.Env):
         # initialize the model time and state
         self.start = 0
         self.stop = self.time_step_size
+        self.state = self.reset()
 
         # OpenAI Gym requirements
         self.action_space = gym.spaces.Discrete(3)
@@ -143,6 +144,7 @@ class ModelicaEnv(gym.Env):
 
         self.start = 0
         self.stop = self.time_start
+        self.state = self.simulate()
 
         self.start = self.time_start
         self.stop = self.start + self.time_step_size
@@ -183,6 +185,7 @@ class ModelicaEnv(gym.Env):
         self.model.set(list(self.model_input_names), list(action))
 
         # Simulate and observe result state
+        self.state = self.simulate()
         self.history = self.history.append(pd.DataFrame([self.state], columns=flatten(self.model_output_names)),
                                            ignore_index=True)
 
@@ -219,12 +222,12 @@ class ModelicaEnv(gym.Env):
         # Unpack the solver output
         size, n_sols = sol_out.y.shape
         # get the last solution of the solver
-        self.x = sol_out.y[:, -1]
+        x = sol_out.y[:, -1]
         # Not strictly necessary, the last call of the solver to get the derivative
         # should have set this.
-        self.model.continuous_states = self.x
+        self.model.continuous_states = x
 
-        return self.state
+        return np.array([x[k] for k in self.model_output_index])
 
     @property
     def reward(self):
@@ -235,17 +238,6 @@ class ModelicaEnv(gym.Env):
         :return: reward associated with the current state
         """
         return self.negative_reward or -100 if self.done else self.positive_reward or 1
-
-    @property
-    def state(self):
-        """
-        Extracts the values of model outputs at the end of modeling time interval from simulation result
-
-        :return: Values of model outputs as tuple in order specified in `model_outputs` attribute
-                 as detetermined during initialization
-        """
-
-        return np.array([self.x[k] for k in self.model_output_index])
 
     def _set_init_parameter(self):
         """
@@ -291,7 +283,7 @@ class ModelicaEnv(gym.Env):
 
         :return: True if simulation time exceeded
         """
-        logger.debug(f't: {self.stop}')
+        logger.debug(f't: {self.stop}, ')
         return abs(self.stop) > self.time_end
 
     def render(self, mode='human', close=False):
