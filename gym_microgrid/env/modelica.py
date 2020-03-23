@@ -104,141 +104,6 @@ class ModelicaEnv(gym.Env):
 
         self.history = pd.DataFrame([], columns=flatten(self.model_output_names))
 
-    def calc_jac(self, t, x):
-        # t and x are indirectly retrieved from the model
-        states = self.model.get_states_list()
-        states_references = [s.value_reference for s in states.values()]
-        derivatives = self.model.get_derivatives_list()
-        derivatives_references = [d.value_reference for d in derivatives.values()]
-        self.jacobian = np.identity(len(states))
-        np.apply_along_axis(
-            lambda col: self.model.get_directional_derivative(states_references, derivatives_references, col), 0,
-            self.jacobian)
-        return self.jacobian
-
-    def deriv_func(self, t, x):
-        self.model.time = t
-        self.model.continuous_states = x.copy(order='C')
-
-        # Compute the derivative
-        dx = self.model.get_derivatives()
-        return dx
-
-    def reset(self):
-        """
-        OpenAI Gym API. Restarts environment and sets it ready for experiments.
-        In particular, does the following:
-            * resets model
-            * sets simulation start time to 0
-            * sets initial parameters of the model
-            * initializes the model
-            * sets environment class attributes, e.g. start and stop time.
-        :return: state of the environment after resetting
-        """
-        logger.debug("Experiment reset was called. Resetting the model.")
-
-        self.model.reset()
-        self.model.setup_experiment(start_time=0)
-
-        self._set_init_parameter()
-
-        self.start = 0
-        self.stop = self.time_start
-        self.state = self.simulate()
-
-        self.start = self.time_start
-        self.stop = self.start + self.time_step_size
-        return self.state
-
-    def step(self, action):
-        """
-        OpenAI Gym API. Determines how one simulation step is performed for the environment.
-        Simulation step is execution of the given action in a current state of the environment.
-        :param action: action to be executed.
-        :return: resulting state
-        """
-        logger.debug("Experiment next step was called.")
-        if self.done:
-            logging.warning(
-                """You are calling 'step()' even though this environment has already returned done = True.
-                You should always call 'reset()' once you receive 'done = True' -- any further steps are
-                undefined behavior.""")
-            return self.state, self.negative_reward, self.done
-
-        # check if action is a list. If not - create list of length 1
-        try:
-            iter(action)
-        except TypeError:
-            action = [action]
-            logging.warning("Model input values (action) should be passed as a list")
-
-        # Check if number of model inputs equals number of values passed
-        if len(action) != len(list(self.model_input_names)):
-            message = "List of values for model inputs should be of the length {}," \
-                      "equal to the number of model inputs. Actual length {}".format(
-                len(list(self.model_input_names)), len(action))
-            logging.error(message)
-            raise ValueError(message)
-
-        # Set input values of the model
-        logger.debug("model input: {}, values: {}".format(self.model_input_names, action))
-        self.model.set(list(self.model_input_names), list(action))
-
-        # Simulate and observe result state
-        self.state = self.simulate()
-        self.history = self.history.append(pd.DataFrame([self.state], columns=flatten(self.model_output_names)),
-                                           ignore_index=True)
-
-        logger.debug("model output: {}, values: {}".format(flatten(self.model_output_names), self.state))
-        # print("model output: {}, values: {}".format(self.model_output_names, self.state))
-        # Check if experiment has finished
-
-        # Move simulation time interval if experiment continues
-        if not self.done:
-            logger.debug("Experiment step done, experiment continues.")
-            self.start = self.stop
-            self.stop += self.time_step_size
-        else:
-            logger.debug("Experiment step done, experiment done.")
-
-        return self.state, self.reward, self.done
-
-    # part of the step() method extracted for convenience
-    def simulate(self):
-        """
-        Executes simulation by FMU in the time interval [start_time; stop_time]
-        currently saved in the environment.
-
-        :return: resulting state of the environment.
-        """
-        logger.debug(f'Simulation started for time interval {self.start}-{self.stop}')
-
-        # Advance
-        x_0 = self.model.continuous_states
-
-        # Get the output from a step of the solver
-        sol_out = scipy.integrate.solve_ivp(
-            self.deriv_func, [self.start, self.stop], x_0, method=self.solver_method, jac=self.calc_jac)
-        # Unpack the solver output
-        size, n_sols = sol_out.y.shape
-        # get the last solution of the solver
-        x = sol_out.y[:, -1]
-        # Not strictly necessary, the last call of the solver to get the derivative
-        # should have set this.
-        self.model.continuous_states = x
-
-        return np.array([x[k] for k in self.model_output_index])
-
-    @property
-    def reward(self):
-        """
-        Determines reward based on the current environment state.
-        By default, implements simple logic of penalizing for experiment end and rewarding each step.
-
-        :return: reward associated with the current state
-        """
-        return self.negative_reward or -100 if self.done else self.positive_reward or 1
-
     def _set_init_parameter(self):
         """
         Sets initial parameters of a model.
@@ -276,8 +141,65 @@ class ModelicaEnv(gym.Env):
 
         return self
 
+    def _calc_jac(self, t, x):
+        # t and x are indirectly retrieved from the model
+        states = self.model.get_states_list()
+        states_references = [s.value_reference for s in states.values()]
+        derivatives = self.model.get_derivatives_list()
+        derivatives_references = [d.value_reference for d in derivatives.values()]
+        self.jacobian = np.identity(len(states))
+        np.apply_along_axis(
+            lambda col: self.model.get_directional_derivative(states_references, derivatives_references, col), 0,
+            self.jacobian)
+        return self.jacobian
+
+    def _get_deriv(self, t, x):
+        self.model.time = t
+        self.model.continuous_states = x.copy(order='C')
+
+        # Compute the derivative
+        dx = self.model.get_derivatives()
+        return dx
+
+        # part of the step() method extracted for convenience
+
+    def _simulate(self):
+        """
+        Executes simulation by FMU in the time interval [start_time; stop_time]
+        currently saved in the environment.
+
+        :return: resulting state of the environment.
+        """
+        logger.debug(f'Simulation started for time interval {self.start}-{self.stop}')
+
+        # Advance
+        x_0 = self.model.continuous_states
+
+        # Get the output from a step of the solver
+        sol_out = scipy.integrate.solve_ivp(
+            self._get_deriv, [self.start, self.stop], x_0, method=self.solver_method, jac=self._calc_jac)
+        # Unpack the solver output
+        size, n_sols = sol_out.y.shape
+        # get the last solution of the solver
+        x = sol_out.y[:, -1]
+        # Not strictly necessary, the last call of the solver to get the derivative
+        # should have set this.
+        self.model.continuous_states = x
+
+        return np.array([x[k] for k in self.model_output_index])
+
     @property
-    def done(self) -> bool:
+    def reward(self):
+        """
+        Determines reward based on the current environment state.
+        By default, implements simple logic of penalizing for experiment end and rewarding each step.
+
+        :return: reward associated with the current state
+        """
+        return self.negative_reward or -100 if self.is_done else self.positive_reward or 1
+
+    @property
+    def is_done(self) -> bool:
         """
         Checks if the experiment is finished using a time limit
 
@@ -285,6 +207,85 @@ class ModelicaEnv(gym.Env):
         """
         logger.debug(f't: {self.stop}, ')
         return abs(self.stop) > self.time_end
+
+    def reset(self):
+        """
+        OpenAI Gym API. Restarts environment and sets it ready for experiments.
+        In particular, does the following:
+            * resets model
+            * sets simulation start time to 0
+            * sets initial parameters of the model
+            * initializes the model
+            * sets environment class attributes, e.g. start and stop time.
+        :return: state of the environment after resetting
+        """
+        logger.debug("Experiment reset was called. Resetting the model.")
+
+        self.model.reset()
+        self.model.setup_experiment(start_time=0)
+
+        self._set_init_parameter()
+
+        self.start = 0
+        self.stop = self.time_start
+        self.state = self._simulate()
+
+        self.start = self.time_start
+        self.stop = self.start + self.time_step_size
+        return self.state
+
+    def step(self, action):
+        """
+        OpenAI Gym API. Determines how one simulation step is performed for the environment.
+        Simulation step is execution of the given action in a current state of the environment.
+        :param action: action to be executed.
+        :return: resulting state
+        """
+        logger.debug("Experiment next step was called.")
+        if self.is_done:
+            logging.warning(
+                """You are calling 'step()' even though this environment has already returned done = True.
+                You should always call 'reset()' once you receive 'done = True' -- any further steps are
+                undefined behavior.""")
+            return self.state, self.negative_reward, self.is_done
+
+        # check if action is a list. If not - create list of length 1
+        try:
+            iter(action)
+        except TypeError:
+            action = [action]
+            logging.warning("Model input values (action) should be passed as a list")
+
+        # Check if number of model inputs equals number of values passed
+        if len(action) != len(list(self.model_input_names)):
+            message = "List of values for model inputs should be of the length {}," \
+                      "equal to the number of model inputs. Actual length {}".format(
+                len(list(self.model_input_names)), len(action))
+            logging.error(message)
+            raise ValueError(message)
+
+        # Set input values of the model
+        logger.debug("model input: {}, values: {}".format(self.model_input_names, action))
+        self.model.set(list(self.model_input_names), list(action))
+
+        # Simulate and observe result state
+        self.state = self._simulate()
+        self.history = self.history.append(pd.DataFrame([self.state], columns=flatten(self.model_output_names)),
+                                           ignore_index=True)
+
+        logger.debug("model output: {}, values: {}".format(flatten(self.model_output_names), self.state))
+        # print("model output: {}, values: {}".format(self.model_output_names, self.state))
+        # Check if experiment has finished
+
+        # Move simulation time interval if experiment continues
+        if not self.is_done:
+            logger.debug("Experiment step done, experiment continues.")
+            self.start = self.stop
+            self.stop += self.time_step_size
+        else:
+            logger.debug("Experiment step done, experiment done.")
+
+        return self.state, self.reward, self.is_done
 
     def render(self, mode='human', close=False):
         """

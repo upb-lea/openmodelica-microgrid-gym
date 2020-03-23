@@ -1,5 +1,7 @@
 import gym
 import pytest
+import numpy as np
+from pytest import approx
 
 
 @pytest.fixture
@@ -19,3 +21,18 @@ def env():
 
 def test_modelica_env(env):
     assert hasattr(env, 'history')
+
+
+def test_reset(env):
+    assert np.array_equal(np.zeros(12), env.reset())
+
+
+def test_step(env):
+    np.random.seed(1)
+    env.reset()
+    obs, r, done = env.step(np.random.random(6))
+    assert obs == approx(
+        [3.548958e-02, 6.157956e-02, -5.862613e-05, 1.727147e-01, 2.851154e-01, 3.294574e-03, 2.536135e-02,
+         1.192695e-02, 7.840170e-03, 1.426348e-01, 8.746552e-02, 3.908457e-02])
+    assert r == 1
+    assert not done
