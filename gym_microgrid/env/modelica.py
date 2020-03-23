@@ -46,7 +46,9 @@ class ModelicaEnv(gym.Env):
                  time_start=0,
                  viz_mode: str = 'episode', history: EmptyHistory = FullHistory()):
         """
-        :type record_states: EmptyHistory
+        :type model_params: dict
+        :param model_params: key is variable name, value is a scalar or a callable with parameter time
+        :type history: EmptyHistory
         :type viz_mode: str
         """
         logger.setLevel(log_level)
@@ -77,7 +79,8 @@ class ModelicaEnv(gym.Env):
         self.time_step_size = time_step
         self.time_end = np.inf if max_episode_steps is None else self.time_start + max_episode_steps * self.time_step_size
 
-        self.model_parameters = model_params
+        self.model_parameters = model_params and {var: (val if isinstance(val, callable) else lambda t: val) for
+                                                  var, val in model_params}
         self.model_input_names = model_input
         self.model_output_names = model_output
         self.sim_time_interval = None
@@ -111,10 +114,6 @@ class ModelicaEnv(gym.Env):
             e_info = self.model.get_event_info()
 
         self.model.enter_continuous_time_mode()
-
-        if self.model_parameters is not None:
-            # list of keys and list of values
-            self.model.set(*zip(*self.model_parameters.items()))
 
         # precalculating indices for more efficient lookup
         statename_index_map = {v: i for i, v in enumerate(list(self.model.get_states_list()))}
@@ -228,6 +227,9 @@ class ModelicaEnv(gym.Env):
         # Set input values of the model
         logger.debug("model input: {}, values: {}".format(self.model_input_names, action))
         self.model.set(list(self.model_input_names), list(action))
+        if self.model_parameters:
+            # list of keys and list of values
+            self.model.set(*zip(*{var: f(self.sim_time_interval[0]) for var, f in self.model_parameters.items()}))
 
         # Simulate and observe result state
         self.state = self._simulate()
