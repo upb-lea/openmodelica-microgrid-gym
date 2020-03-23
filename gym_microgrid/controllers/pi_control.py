@@ -3,6 +3,8 @@ Created on Tue Jan  7 09:01:39 2020
 
 @author: jarren
 """
+from gym_microgrid.controllers import PI_params
+import numpy as np
 
 
 class PIController:
@@ -11,7 +13,7 @@ class PIController:
     Uses back calculation for anti-windup
     """
 
-    def __init__(self, PI_param, ts):
+    def __init__(self, PI_param: PI_params, ts):
         """
         :param PI_param: The PI_Parameters object with the PI controller
         parameters
@@ -36,16 +38,6 @@ class PIController:
 
         self.integralSum = self.integralSum + (self._params.kI * error + self.windup_compensation) * self._ts
         output = self._params.kP * error + self.integralSum
-        preout = output
-
-        # Limit output to exactly the limit
-        if output > self._params.upper_limit:
-            output = self._params.upper_limit
-        elif output < self._params.lower_limit:
-            output = self._params.lower_limit
-
-        # Calculate the saturation error (gets added to the integral error in
-        # the next step of the controller)
-        self.windup_compensation = (output - preout) * self._params.kB
-
-        return output
+        clipped = np.clip(output, *self._params.limits)
+        self.windup_compensation = (output - clipped) * self._params.kB
+        return clipped

@@ -1,5 +1,6 @@
 from gym_microgrid.agents import Agent
-from gym_microgrid.controllers import PIParams, MultiPhaseDQ0PIPIController, DroopParams, InverseDroopParams, PLLParams, \
+from gym_microgrid.controllers import PI_params, MultiPhaseDQ0PIPIController, DroopParams, InverseDroopParams, \
+    PLLParams, \
     MultiPhaseDQCurrentController
 
 import numpy as np
@@ -32,9 +33,9 @@ class SafeOptAgent(Agent):
         # qdroopParam= DroopParams(0,0,nomVoltPeak)
 
         # Current PI parameters for the voltage sourcing inverter
-        current_dqp_iparams = PIParams(kP=0.012, kI=90, uL=1, lL=-1, kB=1)
+        current_dqp_iparams = PI_params(kP=0.012, kI=90, limits=(-1, 1), kB=1)
         # Voltage PI parameters for the current sourcing inverter
-        voltage_dqp_iparams = PIParams(kP=0.025, kI=60, uL=iLimit, lL=-iLimit, kB=1)
+        voltage_dqp_iparams = PI_params(kP=0.025, kI=60, limits=(-iLimit, iLimit), kB=1)
 
         self.controller = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams,
                                                       delta_t, droop_param, qdroop_param,
@@ -48,10 +49,10 @@ class SafeOptAgent(Agent):
         # qdroopParam=InverseDroopParams(0,0,nomVoltPeak)
 
         # PI params for the PLL in the current forming inverter
-        pll_params = PLLParams(kP=10, kI=200, uL=10000, lL=-10000, kB=1, f_nom=50)
+        pll_params = PLLParams(kP=10, kI=200, limits=(-10000, 10000), f_nom=50)
 
         # Current PI parameters for the current sourcing inverter
-        current_dqp_iparams = PIParams(kP=0.005, kI=200, uL=1, lL=-1, kB=1)
+        current_dqp_iparams = PI_params(kP=0.005, kI=200, limits=(-1, 1))
 
         self.slave_controller = MultiPhaseDQCurrentController(current_dqp_iparams, pll_params,
                                                               delta_t, nomFreq, iLimit, droop_param,
@@ -63,10 +64,10 @@ class SafeOptAgent(Agent):
         CVI2 = state[6:9]
         CVV2 = state[9:12]
 
-        mod_indSlave, _, _, _ = self.slave_controller.step(CVI2, CVV2, [0, 0, 0])
+        mod_indSlave, _, _, _ = self.slave_controller.step(CVI2, CVV2, np.zeros(3))
 
         # Perform controller calculations
-        mod_ind, _ = self.controller.step(CVI1, CVV1, nomVoltPeak, nomFreq)
+        mod_ind, _ = self.controller.step(CVI1, CVV1)
         return np.append(mod_ind, mod_indSlave) * V_dc
 
     def observe(self, reward, terminated):

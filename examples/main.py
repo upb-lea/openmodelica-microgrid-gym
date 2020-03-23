@@ -52,9 +52,9 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
                                               undersampling=10, n_phase=3)
     """
     # Current PI parameters for the voltage sourcing inverter
-    currentDQPIparams = PIParams(kP=0.012, kI=90, uL=1, lL=-1, kB=1)
+    currentDQPIparams = PI_params(kP=0.012, kI=90, limits=(-1, 1))
     # Voltage PI parameters for the current sourcing inverter
-    voltageDQPIparams = PIParams(kP=0.025, kI=60, uL=iLimit, lL=-iLimit, kB=1)
+    voltageDQPIparams = PI_params(kP=0.025, kI=60, limits=(-iLimit, iLimit))
 
     controller = MultiPhaseDQ0PIPIController(voltageDQPIparams, currentDQPIparams,
                                              delta_t, droopParam, qdroopParam,
@@ -69,10 +69,10 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
     # qdroopParam=InverseDroopParams(0,0,nomVoltPeak)
 
     # PI params for the PLL in the current forming inverter
-    pllparams = PLLParams(kP=10, kI=200, uL=10000, lL=-10000, kB=1, f_nom=50)
+    pllparams = PLLParams(kP=10, kI=200, limits=(-10000, 10000), kB=1, f_nom=50)
 
     # Current PI parameters for the current sourcing inverter
-    currentDQPIparams = PIParams(kP=0.005, kI=200, uL=1, lL=-1, kB=1)
+    currentDQPIparams = PI_params(kP=0.005, kI=200, limits=(-1, 1), kB=1)
 
     slave_controller = MultiPhaseDQCurrentController(currentDQPIparams, pllparams,
                                                      delta_t, nomFreq, iLimit, droopParam,
@@ -122,7 +122,7 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
             mod_indSlave, freq, Idq0, mod_dq0 = slave_controller.step(CVI2, CVV2, [0, 0, 0])
 
             # Perform controller calculations
-            mod_ind, CVI1dq = controller.step(CVI1, CVV1, nomVoltPeak, nomFreq)
+            mod_ind, CVI1dq = controller.step(CVI1, CVV1)
 
             # Average voltages from modulation indices created by current controller
 
@@ -249,7 +249,6 @@ def run_rl_experiments(n_experiments=1, n_episodes=1, visualize=False, time_step
     exec_time_s = []
     sim_time_s = []
     cont_time_s = []
-    count_iterations_s = []
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output=['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i',

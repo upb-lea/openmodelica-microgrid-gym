@@ -22,7 +22,7 @@ class DDS:
     frequency
     """
 
-    def __init__(self, ts, DDSMax=1, theta_0=0):
+    def __init__(self, ts, DDSMax: float = 1, theta_0: float = 0):
         """
         :param tau: the constant timestep at which the DDS is called
         :param DDSMax: The value at which the DDS resets the integrator
@@ -92,7 +92,7 @@ class MultiPhaseABCPIPIController:
         # Populate the previous MV with n_phase 0's
         self._prev_MV = ([0 for k in range(n_phase)])
 
-    def step(self, currentCV: np.ndarray, voltageCV: np.ndarray, VSP, freqSP):
+    def step(self, currentCV: np.ndarray, voltageCV: np.ndarray):
         """
         Performs the calculations for a discrete step of the controller
         
@@ -173,18 +173,15 @@ class MultiPhaseDQ0PIPIController:
         self._phaseDDS = DDS(self._ts)
         self._undersampling_count = 0
         # Populate the previous MV with n_phase 0's
-        self._prev_MV = ([0 for k in range(n_phase)])
-        self._prev_CV = ([0 for k in range(n_phase)])
+        self._prev_MV = np.zeros(n_phase)
+        self._prev_CV = np.zeros(n_phase)
 
-    def step(self, currentCV, voltageCV, VSP, freqSP):
+    def step(self, currentCV, voltageCV):
         """
         Performs the calculations for a discrete step of the controller
         
         :param currentCV: The feedback values for current
         :param voltageCV: The feedback values for voltage
-        
-        :param VSP: The peak voltage setpoint
-        :param freqSP: the frequency setpoint
         
         :param MV: The controller output for the current calculation in the ABC 
                     frame
@@ -264,16 +261,16 @@ class MultiPhaseDQCurrentController:
         self._pll = PLL(pllPIParams, self._ts)
 
         # Populate the previous values with 0's
-        self._prev_MV = ([0 for k in range(3)])
-        self._prev_MVdq0 = ([0 for k in range(3)])
-        self._prev_cossine = ([0 for k in range(2)])
-        self._lastIDQ = ([0 for k in range(3)])
+        self._prev_MV = np.zeros(3)
+        self._prev_MVdq0 = np.zeros(3)
+        self._prev_cossine = np.zeros(2)
+        self._lastIDQ = np.zeros(3)
         self._prev_theta = 0
         self._prev_freq = 0
         self._droop_control = InverseDroopController(Pdroop_param, self._ts)
         self._Qdroop_control = InverseDroopController(Qdroop_param, self._ts)
 
-    def step(self, currentCV, voltageCV, idq0SP):
+    def step(self, currentCV, voltageCV, idq0SP: np.ndarray):
         """
         Performs the calculations for a discrete step of the controller
         
@@ -314,7 +311,7 @@ class MultiPhaseDQCurrentController:
 
                 droopQI = np.clip(droopQI, -self._i_limit, self._i_limit)
 
-            idq0SP = [idq0SP[0] - droopPI, idq0SP[1] + droopQI, idq0SP[2]]
+            idq0SP = idq0SP + np.array([-droopPI, +droopQI, 0])
             # Calculate the control applied to the DQ0 currents
             # action space is limited to [-1,1]
 
@@ -330,7 +327,7 @@ class MultiPhaseDQCurrentController:
             # self._prev_MV = MVdq0;
             self._undersampling_count = 0
         else:
-            self._undersampling_count = self._undersampling_count + 1
+            self._undersampling_count += 1
 
         return self._prev_MV, self._prev_freq, self._lastIDQ, self._prev_MVdq0
 
@@ -341,7 +338,7 @@ class PLL:
     ABC voltage
     """
 
-    def __init__(self, params, ts):
+    def __init__(self, params: PLLParams, ts):
         """
         :param params:PI Params for controller
         :param tau: absolute sampling time for the controller
@@ -374,7 +371,7 @@ class PLL:
         self._prev_cossin = cos_sin(theta)
 
         # debug vector that can be returned for debugging purposes
-        debug = [self._prev_cossin[0], self._prev_cossin[1], cossin_x[0], cossin_x[1], theta]
+        debug = [*self._prev_cossin, *cossin_x, theta]
 
         return self._prev_cossin, freq, theta, debug
 
@@ -417,7 +414,7 @@ class Filter:
     """
 
     def step(self, value):
-        return 0
+        pass
 
 
 class PT1Filter(Filter):
@@ -502,7 +499,6 @@ class InverseDroopController(DroopController):
         self._prev_val = 0
         self._ts = ts
         self._droop_filt = PT1Filter(DroopParams.derivativeFiltParams, ts)
-        # super.__init__(DroopParams)
 
     def step(self, val_in):
         """
