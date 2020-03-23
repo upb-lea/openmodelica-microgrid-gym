@@ -1,8 +1,13 @@
 import pandas as pd
 
 
-class History:
-    def __init__(self, cols):
+class EmptyHistory:
+    """
+    Dummy history for recording data in the environment
+    This class will not actually store any data
+    """
+
+    def __init__(self, cols=None):
         self.cols = cols
         self.df = None
 
@@ -16,8 +21,12 @@ class History:
         return self.df.__str__()
 
 
-class FullHistory(History):
-    def __init__(self, cols):
+class FullHistory(EmptyHistory):
+    """
+    Full history that stores all data
+    """
+
+    def __init__(self, cols=None):
         super().__init__(cols)
 
     def append(self, values):

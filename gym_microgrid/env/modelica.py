@@ -13,7 +13,7 @@ from scipy import integrate
 import matplotlib.pyplot as plt
 
 from gym_microgrid.common.flattendict import flatten
-from gym_microgrid.env.recorder import FullHistory, History
+from gym_microgrid.env.recorder import FullHistory, EmptyHistory
 
 logger = logging.getLogger(__name__)
 
@@ -57,9 +57,10 @@ class ModelicaEnv(gym.Env):
                  model_params: dict = None,
                  model_input: Sequence[str] = None, model_output: Sequence[str] = None, model_path='grid.network.fmu',
                  time_start=0,
-                 viz_mode='episode', record_states=True):
+                 viz_mode: str = 'episode', history: EmptyHistory = FullHistory()):
         """
-        :type viz_mode: object
+        :type record_states: EmptyHistory
+        :type viz_mode: str
         """
         logger.setLevel(log_level)
         # Right now still there until we defined an other stop-criteria according to safeness
@@ -88,17 +89,16 @@ class ModelicaEnv(gym.Env):
         # Parameters required by this implementation
         self.time_start = time_start
         self.time_step_size = time_step
-        # TODO allow infinite end with None and np.inf
-        self.time_end = self.time_start + max_episode_steps * self.time_step_size
+        self.time_end = np.inf if max_episode_steps is None else self.time_start + max_episode_steps * self.time_step_size
 
-        self.model_parameters = model_params or {}
+        self.model_parameters = model_params
         self.model_input_names = model_input
         self.model_output_names = model_output
         self.sim_time_interval = None
         self.state = None
-        self.record_states = viz_mode == 'episode' or record_states
-        self.history = FullHistory(flatten(self.model_output_names)) if self.record_states else History(
-            flatten(self.model_output_names))
+        self.record_states = viz_mode == 'episode'
+        self.history = history
+        self.history.cols = flatten(self.model_output_names)
 
         # OpenAI Gym requirements
         self.action_space = gym.spaces.Discrete(3)
@@ -111,31 +111,28 @@ class ModelicaEnv(gym.Env):
 
         :return: environment
         """
-        if self.model_parameters is not None:
-            self.model.setup_experiment(start_time=self.time_start)
-            self.model.enter_initialization_mode()
-            self.model.exit_initialization_mode()
 
+        self.model.setup_experiment(start_time=self.time_start)
+        self.model.enter_initialization_mode()
+        self.model.exit_initialization_mode()
+
+        e_info = self.model.get_event_info()
+        e_info.newDiscreteStatesNeeded = True
+        # Event iteration
+        while e_info.newDiscreteStatesNeeded:
+            self.model.enter_event_mode()
+            self.model.event_update()
             e_info = self.model.get_event_info()
-            e_info.newDiscreteStatesNeeded = True
-            # Event iteration
-            while e_info.newDiscreteStatesNeeded:
-                self.model.enter_event_mode()
-                self.model.event_update()
-                e_info = self.model.get_event_info()
 
-            self.model.enter_continuous_time_mode()
-            # list of keys and list of values
-            if self.model_parameters:
-                self.model.set(*zip(*self.model_parameters.items()))
+        self.model.enter_continuous_time_mode()
+        # list of keys and list of values
 
-            """
-            gets the indices of the model output states, as they exist within the
-            model state space. This is an optimisation to reduce simulation time
-            when rearranging the output (instead of using the string names every iteration)
-            """
-            states = self.model.get_states_list()
-            self.model_output_index = [list(states).index(k) for k in flatten(self.model_output_names)]
+        if self.model_parameters is not None:
+            self.model.set(*zip(*self.model_parameters.items()))
+
+        # precalculating indices for more efficient lookup
+        statename_index_map = {v: i for i, v in enumerate(list(self.model.get_states_list()))}
+        self.model_output_index = np.array([statename_index_map[k] for k in flatten(self.model_output_names)])
 
         return self
 
@@ -178,7 +175,7 @@ class ModelicaEnv(gym.Env):
         # get the last solution of the solver
         self.model.continuous_states = sol_out.y[:, -1]
 
-        obs = np.array([self.model.continuous_states[k] for k in self.model_output_index])
+        obs = np.array(self.model.continuous_states)[self.model_output_index]
         self.history.append(obs)
         return obs
 
@@ -294,7 +291,7 @@ class ModelicaEnv(gym.Env):
             else:
                 # TODO create the plot
                 for cols in flatten(self.model_output_names, 1):
-                    self.history[cols].plot()
+                    self.history.df[cols].plot()
                     plt.show()
                 # print(self.history)
                 pass
