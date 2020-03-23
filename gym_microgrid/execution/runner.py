@@ -9,6 +9,11 @@ from gym_microgrid.agents import Agent
 
 
 class Runner:
+    """
+    This class will execute an agent on the environment.
+    It handles communication between agent and environment and handles the execution of multiple epochs
+    """
+
     def __init__(self, agent: Agent, env: Env):
         self.agent = agent
         self.env = env
@@ -24,7 +29,7 @@ class Runner:
             while not done:
                 self.agent.observe(r, done)
                 act = self.agent.act(obs)
-                obs, r, done, _, _ = self.env.step(act)
+                obs, r, done = self.env.step(act)
                 if visualize:
                     self.env.render()
             self.agent.observe(r, done)

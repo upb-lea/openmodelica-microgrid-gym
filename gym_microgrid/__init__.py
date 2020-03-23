@@ -8,9 +8,9 @@ from gym.envs.registration import register
 __all__ = ['Agent', 'Runner']
 
 register(
-    id='JModelicaConvEnv_test-v1',
-    entry_point='gym_microgrid.env:JModelicaConvEnv',
+    id='ModelicaEnv_test-v1',
+    entry_point='gym_microgrid.env:ModelicaEnv',
     kwargs=dict(log_level=logging.DEBUG, max_episode_steps=100, viz_mode='step')
 )
 
-register(id='JModelicaConvEnv-v1', entry_point='gym_microgrid.env:JModelicaConvEnv')
+register(id='ModelicaEnv-v1', entry_point='gym_microgrid.env:ModelicaEnv')
