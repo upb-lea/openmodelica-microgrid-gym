@@ -79,6 +79,7 @@ class ModelicaEnv(gym.Env):
         self.time_step_size = time_step
         self.time_end = np.inf if max_episode_steps is None else self.time_start + max_episode_steps * self.time_step_size
 
+        # if there are parameters, we will convert all scalars to constant functions.
         self.model_parameters = model_params and {var: (val if isinstance(val, callable) else lambda t: val) for
                                                   var, val in model_params}
         self.model_input_names = model_input
@@ -94,11 +95,9 @@ class ModelicaEnv(gym.Env):
         high = np.array([self.time_end, np.inf])
         self.observation_space = gym.spaces.Box(-high, high)
 
-    def _set_init_parameter(self):
+    def _setup_fmu(self):
         """
-        Sets initial parameters of a model.
-
-        :return: environment
+        Setup FMU
         """
 
         self.model.setup_experiment(start_time=self.time_start)
@@ -118,8 +117,6 @@ class ModelicaEnv(gym.Env):
         # precalculating indices for more efficient lookup
         statename_index_map = {v: i for i, v in enumerate(list(self.model.get_states_list()))}
         self.model_output_index = np.array([statename_index_map[k] for k in flatten(self.model_output_names)])
-
-        return self
 
     def _calc_jac(self, t, x):
         # get state and derivative value reference lists
@@ -187,7 +184,7 @@ class ModelicaEnv(gym.Env):
         self.model.reset()
         self.model.setup_experiment(start_time=0)
 
-        self._set_init_parameter()
+        self._setup_fmu()
         self.sim_time_interval = np.array([self.time_start, self.time_start + self.time_step_size])
         self.history.reset()
         self.state = self._simulate()
