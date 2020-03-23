@@ -43,3 +43,22 @@ def test_proper_reset(env):
     for a in actions:
         env.step(a)
     assert state == str(env) + str(env.history.df)
+
+
+def test_params_simple():
+    np.random.seed(1)
+    env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
+                   viz_mode=None,
+                   model_params=dict(i1p1=lambda t: np.sin(t), i1p2=3),
+                   model_input=['i1p3', 'i2p1', 'i2p2', 'i2p3'],
+                   model_output={'lc1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
+                                         ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
+                                 'lcl1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
+                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]})
+    env.reset()
+    obs, r, done = env.step(np.random.random(4))
+    assert obs == approx([-5.32812108e-04, 2.56906733e-01, 3.54883017e-02, 2.53605852e-02,
+                          1.16595698e+00, 1.72720287e-01, 6.11590476e-02, -2.20933938e-03,
+                          2.53610394e-02, 3.04877618e-01, 1.05669912e-01, 1.42644541e-01])
+    assert r == 1
+    assert not done

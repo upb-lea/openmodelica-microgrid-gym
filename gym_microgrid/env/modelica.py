@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 from os.path import basename
-from typing import Sequence
+from typing import Sequence, Callable
 
 import gym
 import numpy as np
@@ -80,8 +80,8 @@ class ModelicaEnv(gym.Env):
         self.time_end = np.inf if max_episode_steps is None else self.time_start + max_episode_steps * self.time_step_size
 
         # if there are parameters, we will convert all scalars to constant functions.
-        self.model_parameters = model_params and {var: (val if isinstance(val, callable) else lambda t: val) for
-                                                  var, val in model_params}
+        self.model_parameters = model_params and {var: (val if isinstance(val, Callable) else lambda t: val) for
+                                                  var, val in model_params.items()}
         self.model_input_names = model_input
         self.model_output_names = model_output
         self.sim_time_interval = None
@@ -226,7 +226,7 @@ class ModelicaEnv(gym.Env):
         self.model.set(list(self.model_input_names), list(action))
         if self.model_parameters:
             # list of keys and list of values
-            self.model.set(*zip(*{var: f(self.sim_time_interval[0]) for var, f in self.model_parameters.items()}))
+            self.model.set(*zip(*[(var, f(self.sim_time_interval[0])) for var, f in self.model_parameters.items()]))
 
         # Simulate and observe result state
         self.state = self._simulate()
