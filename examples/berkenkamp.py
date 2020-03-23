@@ -13,7 +13,10 @@ if __name__ == '__main__':
                            ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
                        'lcl1':
                            [['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                            ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]})
+                            ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
+                       'pll':
+                           ['pi.x', 'f2theta.y']
+                   })
 
     runner = Runner(agent, env)
     runner.run(1, visualize=True)
