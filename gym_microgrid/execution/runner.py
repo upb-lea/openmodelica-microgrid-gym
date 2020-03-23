@@ -9,6 +9,11 @@ from gym_microgrid.agents import Agent
 
 
 class Runner:
+    """
+    This class will execute an agent on the environment.
+    It handles communication between agent and environment and handles the execution of multiple epochs
+    """
+
     def __init__(self, agent: Agent, env: Env):
         self.agent = agent
         self.env = env
