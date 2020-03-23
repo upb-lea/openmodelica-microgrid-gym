@@ -1697,6 +1697,44 @@ package grid
         Icon(coordinateSystem(preserveAspectRatio = true, extent = {{-100, -100}, {100, 100}}), graphics = {Line(points = {{-80, 78}, {-80, -90}}, color = {192, 192, 192}), Polygon(points = {{-80, 90}, {-88, 68}, {-72, 68}, {-80, 90}}, lineColor = {192, 192, 192}, fillColor = {192, 192, 192}, fillPattern = FillPattern.Solid), Line(points = {{-90, -80}, {82, -80}}, color = {192, 192, 192}), Polygon(points = {{90, -80}, {68, -72}, {68, -88}, {90, -80}}, lineColor = {192, 192, 192}, fillColor = {192, 192, 192}, fillPattern = FillPattern.Solid), Line(points = {{-80.0, -80.0}, {-80.0, -20.0}, {60.0, 80.0}}, color = {0, 0, 127}), Text(extent = {{0, 6}, {60, -56}}, lineColor = {192, 192, 192}, textString = "PI"), Text(extent = {{-150, -150}, {150, -110}}, textString = "T=%T")}),
         Diagram(coordinateSystem(preserveAspectRatio = true, extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-60, 60}, {60, -60}}, lineColor = {0, 0, 255}), Text(extent = {{-68, 24}, {-24, -18}}, textString = "k"), Text(extent = {{-32, 48}, {60, 0}}, textString = "T s + 1"), Text(extent = {{-30, -8}, {52, -40}}, textString = "T s"), Line(points = {{-24, 0}, {54, 0}}), Line(points = {{-100, 0}, {-60, 0}}, color = {0, 0, 255}), Line(points = {{62, 0}, {100, 0}}, color = {0, 0, 255})}));
     end PI;
+    
+    model IdealClosingSwitch "Ideal electrical closer"
+      extends Modelica.Electrical.Analog.Interfaces.IdealSwitch;
+      Modelica.Blocks.Interfaces.BooleanInput control
+        "true => p--n connected, false => switch open" annotation (Placement(
+            transformation(
+            origin={0,120},
+            extent={{-20,-20},{20,20}},
+            rotation=270)));
+    equation
+      off = not control;
+      annotation (defaultComponentName="switch",
+        Documentation(info="<html>
+    <p>
+    The switching behaviour of the ideal closing switch is controlled by the input signal control: off = not control.<br>
+    For further details, see partial model <a href=\"modelica://Modelica.Electrical.Analog.Interfaces.IdealSwitch\">IdealSwitch</a>.
+    </p>
+    </html>", revisions="<html>
+    <ul>
+    <li><em>February 7, 2016   </em>
+         by Anton Haumer<br> extending from partial IdealSwitch<br>
+         </li>
+    <li><em> March 11, 2009   </em>
+         by Christoph Clauss<br> conditional heat port added<br>
+         </li>
+    <li><em> 1998   </em>
+         by Christoph Clauss<br> initially implemented<br>
+         </li>
+    </ul>
+    </html>"),
+        Icon(coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,
+                100}}), graphics={
+            Line(
+              visible=useHeatPort,
+              points={{0,-100},{0,25}},
+              color={127,0,0},
+              pattern=LinePattern.Dot)}));
+    end IdealClosingSwitch;
   end components;
 
   package plls
