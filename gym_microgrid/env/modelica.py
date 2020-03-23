@@ -8,10 +8,12 @@ import numpy as np
 import pandas as pd
 import scipy
 from pyfmi import load_fmu
+from pyfmi.fmi import FMUModelME2
 from scipy import integrate
 import matplotlib.pyplot as plt
 
 from gym_microgrid.common.flattendict import flatten
+from gym_microgrid.env.recorder import FullHistory, History
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +57,7 @@ class ModelicaEnv(gym.Env):
                  model_params: dict = None,
                  model_input: Sequence[str] = None, model_output: Sequence[str] = None, model_path='grid.network.fmu',
                  time_start=0,
-                 viz_mode='episode'):
+                 viz_mode='episode', record_states=True):
         """
         :type viz_mode: object
         """
@@ -73,10 +75,11 @@ class ModelicaEnv(gym.Env):
         self.solver_method = solver_method
 
         # load model from fmu
-        self.model_name = basename(model_path)
-        logger.debug("Loading model {}".format(self.model_name))
-        self.model = load_fmu(model_path, log_file_name=datetime.now().strftime(f'%Y-%m-%d_{self.model_name}.txt'))
-        logger.debug("Successfully loaded model {}".format(self.model_name))
+        model_name = basename(model_path)
+        logger.debug("Loading model {}".format(model_name))
+        self.model: FMUModelME2 = load_fmu(model_path,
+                                           log_file_name=datetime.now().strftime(f'%Y-%m-%d_{model_name}.txt'))
+        logger.debug("Successfully loaded model {}".format(model_name))
 
         # if you reward policy is different from just reward/penalty - implement custom step method
         self.positive_reward = positive_reward
@@ -91,18 +94,16 @@ class ModelicaEnv(gym.Env):
         self.model_parameters = model_params or {}
         self.model_input_names = model_input
         self.model_output_names = model_output
-
-        # initialize the model time and state
-        self.start = 0
-        self.stop = self.time_step_size
-        self.state = self.reset()
+        self.sim_time_interval = None
+        self.state = None
+        self.record_states = viz_mode == 'episode' or record_states
+        self.history = FullHistory(flatten(self.model_output_names)) if self.record_states else History(
+            flatten(self.model_output_names))
 
         # OpenAI Gym requirements
         self.action_space = gym.spaces.Discrete(3)
         high = np.array([self.time_end, np.inf])
         self.observation_space = gym.spaces.Box(-high, high)
-
-        self.history = pd.DataFrame([], columns=flatten(self.model_output_names))
 
     def _set_init_parameter(self):
         """
@@ -111,25 +112,22 @@ class ModelicaEnv(gym.Env):
         :return: environment
         """
         if self.model_parameters is not None:
-            self.model.setup_experiment(start_time=self.start)
+            self.model.setup_experiment(start_time=self.time_start)
             self.model.enter_initialization_mode()
             self.model.exit_initialization_mode()
 
-            eInfo = self.model.get_event_info()
-            eInfo.newDiscreteStatesNeeded = True
+            e_info = self.model.get_event_info()
+            e_info.newDiscreteStatesNeeded = True
             # Event iteration
-            while eInfo.newDiscreteStatesNeeded:
+            while e_info.newDiscreteStatesNeeded:
                 self.model.enter_event_mode()
                 self.model.event_update()
-                eInfo = self.model.get_event_info()
+                e_info = self.model.get_event_info()
 
             self.model.enter_continuous_time_mode()
-
-            self.x = self.model.continuous_states
-            self.event_ind = self.model.get_event_indicators()
-            # print(self.model.get_states_list())
-            self.model.set(list(self.model_parameters),
-                           list(self.model_parameters.values()))
+            # list of keys and list of values
+            if self.model_parameters:
+                self.model.set(*zip(*self.model_parameters.items()))
 
             """
             gets the indices of the model output states, as they exist within the
@@ -161,8 +159,6 @@ class ModelicaEnv(gym.Env):
         dx = self.model.get_derivatives()
         return dx
 
-        # part of the step() method extracted for convenience
-
     def _simulate(self):
         """
         Executes simulation by FMU in the time interval [start_time; stop_time]
@@ -170,23 +166,21 @@ class ModelicaEnv(gym.Env):
 
         :return: resulting state of the environment.
         """
-        logger.debug(f'Simulation started for time interval {self.start}-{self.stop}')
+        logger.debug(f'Simulation started for time interval {self.sim_time_interval[0]}-{self.sim_time_interval[1]}')
 
         # Advance
         x_0 = self.model.continuous_states
 
         # Get the output from a step of the solver
-        sol_out = scipy.integrate.solve_ivp(
-            self._get_deriv, [self.start, self.stop], x_0, method=self.solver_method, jac=self._calc_jac)
-        # Unpack the solver output
-        size, n_sols = sol_out.y.shape
-        # get the last solution of the solver
-        x = sol_out.y[:, -1]
-        # Not strictly necessary, the last call of the solver to get the derivative
-        # should have set this.
-        self.model.continuous_states = x
 
-        return np.array([x[k] for k in self.model_output_index])
+        sol_out = scipy.integrate.solve_ivp(
+            self._get_deriv, self.sim_time_interval, x_0, method=self.solver_method, jac=self._calc_jac)
+        # get the last solution of the solver
+        self.model.continuous_states = sol_out.y[:, -1]
+
+        obs = np.array([self.model.continuous_states[k] for k in self.model_output_index])
+        self.history.append(obs)
+        return obs
 
     @property
     def reward(self):
@@ -205,8 +199,8 @@ class ModelicaEnv(gym.Env):
 
         :return: True if simulation time exceeded
         """
-        logger.debug(f't: {self.stop}, ')
-        return abs(self.stop) > self.time_end
+        logger.debug(f't: {self.sim_time_interval[1]}, ')
+        return abs(self.sim_time_interval[1]) > self.time_end
 
     def reset(self):
         """
@@ -225,13 +219,10 @@ class ModelicaEnv(gym.Env):
         self.model.setup_experiment(start_time=0)
 
         self._set_init_parameter()
-
-        self.start = 0
-        self.stop = self.time_start
+        self.sim_time_interval = np.array([self.time_start, self.time_start + self.time_step_size])
+        self.history.reset()
         self.state = self._simulate()
 
-        self.start = self.time_start
-        self.stop = self.start + self.time_step_size
         return self.state
 
     def step(self, action):
@@ -270,8 +261,6 @@ class ModelicaEnv(gym.Env):
 
         # Simulate and observe result state
         self.state = self._simulate()
-        self.history = self.history.append(pd.DataFrame([self.state], columns=flatten(self.model_output_names)),
-                                           ignore_index=True)
 
         logger.debug("model output: {}, values: {}".format(flatten(self.model_output_names), self.state))
         # print("model output: {}, values: {}".format(self.model_output_names, self.state))
@@ -280,8 +269,7 @@ class ModelicaEnv(gym.Env):
         # Move simulation time interval if experiment continues
         if not self.is_done:
             logger.debug("Experiment step done, experiment continues.")
-            self.start = self.stop
-            self.stop += self.time_step_size
+            self.sim_time_interval += self.time_step_size
         else:
             logger.debug("Experiment step done, experiment done.")
 

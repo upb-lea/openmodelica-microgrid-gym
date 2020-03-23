@@ -11,15 +11,12 @@ def test_main():
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    viz_mode=None,
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
-                   model_output={
-                       'lc1': [
-                           ['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                           ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
-                       'lcl1':
-                           [['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                            ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]})
+                   model_output={'lc1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
+                                         ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
+                                 'lcl1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
+                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]})
 
     runner = Runner(agent, env)
     runner.run(1)
-    # env.history.to_hdf('test_main.hd5','hist')
-    assert env.history.to_numpy() == approx(pd.read_hdf('test_main.hd5', 'hist').to_numpy(), rel=5e-3)
+    # env.history.df.to_hdf('test_main.hd5','hist')
+    assert env.history.df.to_numpy()[1:, :] == approx(pd.read_hdf('test_main.hd5', 'hist').to_numpy(), rel=5e-3)
