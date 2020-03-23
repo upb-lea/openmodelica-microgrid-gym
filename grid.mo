@@ -1910,6 +1910,8 @@ package grid
       Placement(visible = true, transformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
     ideal_filter.lcl lcl1 annotation(
       Placement(visible = true, transformation(origin = {-30, -30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  grid.plls.pll pll annotation(
+      Placement(visible = true, transformation(origin = {0, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   equation
     connect(lc2.pin4, rc1.pin1) annotation(
       Line(points = {{40, 24}, {60, 24}, {60, 24}, {60, 24}}, color = {0, 0, 255}));
@@ -1953,6 +1955,12 @@ package grid
       Line(points = {{-20, -30}, {0, -30}, {0, 30}, {20, 30}, {20, 30}}, color = {0, 0, 255}));
     connect(lcl1.pin4, lc2.pin1) annotation(
       Line(points = {{-20, -36}, {6, -36}, {6, 24}, {20, 24}, {20, 24}}, color = {0, 0, 255}));
+  connect(pll.a, lcl1.pin6) annotation(
+      Line(points = {{-10, -56}, {-14, -56}, {-14, -24}, {-20, -24}, {-20, -24}, {-20, -24}}, color = {0, 0, 255}));
+  connect(pll.b, lcl1.pin5) annotation(
+      Line(points = {{-10, -58}, {-16, -58}, {-16, -30}, {-20, -30}, {-20, -30}}, color = {0, 0, 255}));
+  connect(pll.c, lcl1.pin4) annotation(
+      Line(points = {{-10, -62}, {-18, -62}, {-18, -36}, {-20, -36}, {-20, -36}}, color = {0, 0, 255}));
     annotation(
       Diagram);
   end network;
