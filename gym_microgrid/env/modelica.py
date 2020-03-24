@@ -120,7 +120,8 @@ class ModelicaEnv(gym.Env):
 
     def _calc_jac(self, t, x):
         # get state and derivative value reference lists
-        refs = [[s.value_reference for s in getattr(self.model, attr).values()] for attr in
+        refs = [[s.value_reference for s in getattr(self.model, attr)().values()]
+                for attr in
                 ['get_states_list', 'get_derivatives_list']]
         jacobian = np.identity(len(refs[1]))
         np.apply_along_axis(
