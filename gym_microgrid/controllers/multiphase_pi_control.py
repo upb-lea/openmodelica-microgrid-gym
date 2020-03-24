@@ -5,6 +5,7 @@ Created on Tue Jan 14 09:42:23 2020
 @author: jarren
 """
 import logging
+from itertools import repeat
 
 from .pi_control import *
 
@@ -21,16 +22,12 @@ class MultiPhasePIController:
         :params piParams:PI_Parameter object for the PI controllers
         :params n_phase: the number of phases to be controlled
         """
-
-        self.n_phase = n_phase
-        self.controllers = []
-        for phase in range(self.n_phase):
-            self.controllers.append(PIController(piParams, ts))
+        self.controllers = [PIController(piParams, ts) for _ in range(n_phase)]
 
     def reset(self):
         # Reset all controllers
-        for phase in range(self.n_phase):
-            self.controllers[phase].reset()
+        for ctl in self.controllers:
+            ctl.reset()
 
     def step(self, error):
         """
@@ -38,21 +35,17 @@ class MultiPhasePIController:
         :returns output: the controller outputs in a list
         """
         # Check if number of error inputs equals number of phases
-        if len(error) != self.n_phase:
-            message = "List of values for error inputs should be of the length {}," \
-                      "equal to the number of model inputs. Actual length {}".format(
-                self.n_phase, len(error))
+        if len(error) != len(self.controllers):
+            message = 'List of values for error inputs should be of the length {},' \
+                      'equal to the number of model inputs. Actual length {}'.format(
+                len(self.controllers), len(error))
             logging.error(message)
             raise ValueError(message)
 
-        output = []
         # perform all the steps for each phase
-        for phase in range(self.n_phase):
-            output.append(self.controllers[phase].step(error[phase]))
+        return [ctl.step(error[i]) for i, ctl in enumerate(self.controllers)]
 
-        return output
-
-    def stepSPCV(self, SP, CV):
+    def stepSPCV(self, SP: np.ndarray, CV: np.ndarray):
         """
         Performs a controller step calculating the error itself using the lists
         Setpoints (SP) and Controlled Variables (CV, feedback)
@@ -62,26 +55,4 @@ class MultiPhasePIController:
         
         :return output: A list of the controller outputs.
         """
-
-        # Check if number of error inputs equals number of phases
-        if len(SP) != self.n_phase:
-            message = "List of values for SP inputs should be of the length {}," \
-                      "equal to the number of model inputs. Actual length {}".format(
-                self.n_phase, len(SP))
-            logging.error(message)
-            raise ValueError(message)
-        if len(CV) != self.n_phase:
-            message = "List of values for CV inputs should be of the length {}," \
-                      "equal to the number of model inputs. Actual length {}".format(
-                self.n_phase, len(CV))
-            logging.error(message)
-            raise ValueError(message)
-
-        error = []
-
-        # calculate the error for each phase
-        for phase in range(self.n_phase):
-            error.append(SP[phase] - CV[phase])
-
-        # Use the defined step function
-        return self.step(error=error)
+        return self.step(SP - CV)
