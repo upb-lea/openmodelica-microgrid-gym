@@ -115,7 +115,7 @@ class MultiPhaseABCPIPIController:
             instQ = -inst_reactive(voltageCV, currentCV)
             voltage = self._droopQController.step(instQ)
 
-            VSP = (voltage) * 1.732050807568877
+            VSP = voltage * 1.732050807568877
             # Voltage SP in dq0 (static for the moment)
             SPVdq0 = np.array([VSP, 0, 0])
 
@@ -124,7 +124,6 @@ class MultiPhaseABCPIPIController:
             SPV = dq0_to_abc(SPVdq0, phase)
 
             # print("QInst: {}, Volt {}".format(instQ,VSP))
-            # SPV=[300,310,320]
             SPI = self._voltagePI.stepSPCV(SPV, voltageCV)
 
             # Average voltages from modulation indices created by current controller
@@ -196,27 +195,23 @@ class MultiPhaseDQ0PIPIController:
             instQ = -inst_reactive(voltageCV, currentCV)
             voltage = self._droopQController.step(instQ)
 
-            VSP = (voltage) * 1.732050807568877
-            # Voltage SP in dq0 (static for the moment)
-            SPVdq0 = [VSP, 0, 0]
-
             # Transform the feedback to the dq0 frame
             CVIdq0 = abc_to_dq0(currentCV, phase)
             CVVdq0 = abc_to_dq0(voltageCV, phase)
 
             # Voltage controller calculations
+            VSP = voltage * 1.732050807568877
+            # Voltage SP in dq0 (static for the moment)
+            SPVdq0 = [VSP, 0, 0]
             SPI = self._voltagePI.stepSPCV(SPVdq0, CVVdq0)
 
-            # SPI=[10, 0, 0]
             # Current controller calculations
             MVdq0 = self._currentPI.stepSPCV(SPI, CVIdq0)
 
-            # MVdq0=[0.1, 0, 0]
             # Transform the MVs back to the abc frame
-            MV = dq0_to_abc(MVdq0, phase)
+            self._prev_MV = dq0_to_abc(MVdq0, phase)
 
             # print("SPi: {}, MV: {}".format(SPI,MV))
-            self._prev_MV = MV
             self._prev_CV = CVIdq0
             self._undersampling_count = 0
         else:
@@ -237,15 +232,13 @@ class MultiPhaseDQCurrentController:
     DOES NOT wait for PLL lock before activating
     """
 
-    def __init__(self, IPIParams, pllPIParams, tau, f_nom, i_limit, Pdroop_param: InverseDroopParams,
+    def __init__(self, IPIParams, pllPIParams, tau, i_limit, Pdroop_param: InverseDroopParams,
                  Qdroop_param: InverseDroopParams, undersampling=1):
         """
         :param IPIParams: PI parameters for the current control loops along the
                         dq0 axes
         :param pllPIParams: PI parameters for the PLL controller
         :param tau: absolute sampling time for the controller
-        :param f_nom: the nominal frequency to initiate the PLL to the external
-                    grid angle reference
         :param droop_perc: The percentage [0,1] for the droop controller per Hz
         :param undersampling: reduces the actual sampling time of the controller,
                     for example if set to 10, the controller will only calculate 
@@ -285,18 +278,19 @@ class MultiPhaseDQCurrentController:
         :return IDQ: the feedback currents transformed to the DQ0 axis
         :return MVdq0: the controller outputs in the dq0 axis
         """
-        if self._undersampling_count == (self._undersample - 1):
+
+        self._undersampling_count += 1
+        if self._undersampling_count == self._undersample:
+            self._undersampling_count = 0
             Vinst = inst_rms(voltageCV)
             # Get current phase information from the voltage measurements
             self._prev_cossine, self._prev_freq, self._prev_theta, debug = self._pll.step(voltageCV)
             # Transform the current feedback to the DQ0 frame
             self._lastIDQ = abc_to_dq0_cos_sin(currentCV, *self._prev_cossine)
 
-            # Pinst = instPower (voltageCV, currentCV)
-
             droopPI = 0
             droopQI = 0
-            if (Vinst) > 200:
+            if Vinst > 200:
                 # Determine the droop power setpoints
                 droopPI = self._droop_control.step(self._prev_freq) / inst_rms(voltageCV)
                 droopPI = droopPI / 1.732050807568877
@@ -318,16 +312,11 @@ class MultiPhaseDQCurrentController:
             # print("Freq: {}, Volt: {}, idq0sp {}".format(self._prev_freq,Vinst,idq0SP))
             MVdq0 = self._currentPI.stepSPCV(idq0SP, self._lastIDQ)
             # print("SP: {}, act: {}, fb {}".format(idq0SP,MVdq0,self._lastIDQ))
-            # MVdq0[2]=0
             # Transform the outputs from the controllers (dq0) to abc
             # also divide by SQRT(2) to ensure the transform is limited to [-1,1]
             self._prev_MVdq0 = MVdq0
             self._prev_MV = dq0_to_abc_cos_sin(MVdq0, *self._prev_cossine)
             # print("SP: {}, act: {}, actabc {}".format(idq0SP,MVdq0,self._prev_MV))
-            # self._prev_MV = MVdq0;
-            self._undersampling_count = 0
-        else:
-            self._undersampling_count += 1
 
         return self._prev_MV, self._prev_freq, self._lastIDQ, self._prev_MVdq0
 

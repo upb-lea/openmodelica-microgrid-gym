@@ -72,10 +72,9 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
     pllparams = PLLParams(kP=10, kI=200, limits=(-10000, 10000), kB=1, f_nom=50)
 
     # Current PI parameters for the current sourcing inverter
-    currentDQPIparams = PI_params(kP=0.005, kI=200, limits=(-1, 1), kB=1)
+    currentDQPIparams = PI_params(kP=0.005, kI=200, limits=(-1, 1))
 
-    slave_controller = MultiPhaseDQCurrentController(currentDQPIparams, pllparams,
-                                                     delta_t, nomFreq, iLimit, droopParam,
+    slave_controller = MultiPhaseDQCurrentController(currentDQPIparams, pllparams, delta_t, iLimit, droopParam,
                                                      qdroopParam, undersampling=1)
 
     episode_lengths = np.array([])
