@@ -14,7 +14,7 @@ from typing import Tuple
 @dataclass
 class FiltParams:
     """
-    Implements a basic P,f droop controller
+    Defines Filter Parameters
     
     """
     gain: float
@@ -23,7 +23,7 @@ class FiltParams:
 
 class DroopParams(FiltParams):
     """
-    Implements a basic P,f droop controller
+    Defines Droop Parameters needed for the droop-controller
     """
 
     def __init__(self, gain, tau, nomValue=0):
@@ -34,7 +34,7 @@ class DroopParams(FiltParams):
         
         EG for a P-f droop controller (for voltage forming inverter)
         Inverter of 10kW, droop of 10% , timeConstant of 1 sec, 50Hz
-            Droop = 1000 [Watt/Hz]
+            Droop = gain = 1000 [Watt/Hz]
             tau = 1
             nomValue = 50 [Hz]
             
