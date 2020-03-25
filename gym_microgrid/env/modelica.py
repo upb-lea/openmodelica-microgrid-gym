@@ -151,7 +151,7 @@ class ModelicaEnv(gym.Env):
 
         # Get the output from a step of the solver
         sol_out = scipy.integrate.solve_ivp(
-            self._get_deriv, self.sim_time_interval, x_0, method=self.solver_method, jac=self._calc_jac)
+            self._get_deriv, self.sim_time_interval, x_0, method=self.solver_method, jac=self._calc_jac, atol=1e-10)
         # get the last solution of the solver
         self.model.continuous_states = sol_out.y[:, -1]
 
