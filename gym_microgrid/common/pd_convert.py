@@ -7,8 +7,11 @@ supported datastructures: Dict[List[Union(np.ndarray,float]]]
 
 
 """
+from operator import getitem
+
 import pandas as pd
 
 
 def fill_params(df: pd.DataFrame, template):
-    pass
+    d = df.to_dict()
+    getitem
