@@ -124,9 +124,7 @@ class ModelicaEnv(gym.Env):
                 for attr in
                 ['get_states_list', 'get_derivatives_list']]
         jacobian = np.identity(len(refs[1]))
-        np.apply_along_axis(
-            lambda col: self.model.get_directional_derivative(*refs, col), 0,
-            jacobian)
+        np.apply_along_axis(lambda col: self.model.get_directional_derivative(*refs, col), 0, jacobian)
         return jacobian
 
     def _get_deriv(self, t, x):
@@ -263,7 +261,9 @@ class ModelicaEnv(gym.Env):
             else:
                 # TODO create the plot
                 for cols in flatten(self.model_output_names, 1):
-                    self.history.df[cols].plot()
+                    df = self.history.df[cols].copy()
+                    df.index = self.history.df.index * self.time_step_size
+                    df.plot()
                     plt.show()
                 # print(self.history)
                 pass
