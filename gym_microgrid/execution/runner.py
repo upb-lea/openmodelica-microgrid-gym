@@ -18,7 +18,7 @@ class Runner:
         self.agent = agent
         self.env = env
 
-    def run(self, n_episodes=100000, visualize=False):
+    def run(self, n_episodes=10, visualize=False):
         # TODO pass action space when resetting agent
         self.agent.reset()
 

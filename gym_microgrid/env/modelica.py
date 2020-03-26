@@ -115,8 +115,8 @@ class ModelicaEnv(gym.Env):
         self.model.enter_continuous_time_mode()
 
         # precalculating indices for more efficient lookup
-        statename_index_map = {v: i for i, v in enumerate(list(self.model.get_states_list()))}
-        self.model_output_index = np.array([statename_index_map[k] for k in flatten(self.model_output_names)])
+        self.model_output_idx = np.array(
+            [self.model.get_variable_valueref(k) for k in flatten(self.model_output_names)])
 
     def _calc_jac(self, t, x):
         # get state and derivative value reference lists
@@ -151,11 +151,11 @@ class ModelicaEnv(gym.Env):
 
         # Get the output from a step of the solver
         sol_out = scipy.integrate.solve_ivp(
-            self._get_deriv, self.sim_time_interval, x_0, method=self.solver_method, jac=self._calc_jac, atol=1e-10)
+            self._get_deriv, self.sim_time_interval, x_0, method=self.solver_method, jac=self._calc_jac)
         # get the last solution of the solver
         self.model.continuous_states = sol_out.y[:, -1]
 
-        obs = np.array(self.model.continuous_states)[self.model_output_index]
+        obs = self.model.get_real(self.model_output_idx)
         self.history.append(obs)
         return obs
 

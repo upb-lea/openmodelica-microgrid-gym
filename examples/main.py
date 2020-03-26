@@ -6,7 +6,7 @@ from gym_microgrid.controllers import *
 fcontrol = 1e4
 delta_t = 1 / fcontrol
 # Time to simulate
-T_simulate = 0.5
+T_simulate = 0.1
 N = int(T_simulate * fcontrol)
 
 V_dc = 1000

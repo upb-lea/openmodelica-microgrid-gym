@@ -4,7 +4,7 @@ from gym_microgrid import Runner
 
 
 def f(t):
-    return 1 if t < 0.5 else 20000
+    return 0 if t < .2 else 1
 
 
 if __name__ == '__main__':
