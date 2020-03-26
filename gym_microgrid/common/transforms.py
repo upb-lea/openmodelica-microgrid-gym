@@ -146,5 +146,5 @@ def inst_power(varr: np.ndarray, iarr: np.ndarray):
 
 
 def inst_reactive(varr: np.ndarray, iarr: np.ndarray):
-    vline = np.array([varr[1] - varr[2], varr[2] - varr[0], varr[0] - varr[1]])
-    return -0.5773502691896258 * vline @ iarr
+    # vline = np.array([varr[1] - varr[2], varr[2] - varr[0], varr[0] - varr[1]]) # Linevoltages cal using np.roll
+    return -0.5773502691896258 * (np.roll(varr, -1) - np.roll(varr, -2)) @ iarr

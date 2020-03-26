@@ -9,7 +9,7 @@ def seed():
 
 
 def test_inst_reactive(seed):
-    assert inst_reactive(np.random.random(3), np.random.random(3)) == approx(-0.14795581512942466)
+    assert inst_reactive(np.random.random(3), np.random.random(3)) == approx(-0.07421999471678885)
 
 
 def test_inst_power(seed):
