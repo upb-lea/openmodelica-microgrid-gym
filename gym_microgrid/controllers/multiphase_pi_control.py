@@ -9,6 +9,8 @@ from itertools import repeat
 
 from .pi_control import *
 
+N_phase = 3
+
 
 class MultiPhasePIController:
     """
@@ -17,12 +19,12 @@ class MultiPhasePIController:
     
     """
 
-    def __init__(self, piParams, ts, n_phase=3):
+    def __init__(self, piParams, ts):
         """
         :params piParams:PI_Parameter object for the PI controllers
         :params n_phase: the number of phases to be controlled
         """
-        self.controllers = [PIController(piParams, ts) for _ in range(n_phase)]
+        self.controllers = [PIController(piParams, ts) for _ in range(N_phase)]
 
     def reset(self):
         # Reset all controllers
