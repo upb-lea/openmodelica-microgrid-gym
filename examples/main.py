@@ -84,7 +84,6 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
         sim_time = 0
         cont_time = 0
         obs = sim_env.reset()
-        obs = np.array(obs)
 
         currentHist = []  # List to hold the current values
         voltageHist = []  # List to hold the voltage values
@@ -149,7 +148,6 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
 
             # Perform a step of simulation
             obs, reward, done = sim_env.step(np.append(action1, action2))
-            obs = np.array(obs)
             # Accumulate time spent simulating
             sim_time = sim_time + time.time() - startSim
 
@@ -207,6 +205,7 @@ def _map_CVs(observation):
     :return CVV2: Voltages measured for inverter 2
     :return CVI2: Currents measured for inverter 2
     """
+    observation = observation.to_numpy()[0]
     CVI1 = observation[0:3]
     CVV1 = observation[3:6]
     CVI2 = observation[6:9]

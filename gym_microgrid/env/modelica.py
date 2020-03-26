@@ -5,6 +5,7 @@ from typing import Sequence, Callable
 
 import gym
 import numpy as np
+import pandas as pd
 import scipy
 from pyfmi import load_fmu
 from pyfmi.fmi import FMUModelME2
@@ -157,7 +158,7 @@ class ModelicaEnv(gym.Env):
 
         obs = self.model.get_real(self.model_output_idx)
         self.history.append(obs)
-        return obs
+        return pd.DataFrame([obs], columns=flatten(self.model_output_names))
 
     @property
     def is_done(self) -> bool:

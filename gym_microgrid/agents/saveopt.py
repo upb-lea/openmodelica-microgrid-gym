@@ -1,3 +1,5 @@
+import pandas as pd
+
 from gym_microgrid.agents import Agent
 from gym_microgrid.controllers import PI_params, MultiPhaseDQ0PIPIController, DroopParams, InverseDroopParams, \
     PLLParams, \
@@ -46,8 +48,8 @@ class SafeOptAgent(Agent):
         self.slave_controller = MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, iLimit,
                                                               droop_param, qdroop_param)
 
-    def act(self, state: np.ndarray):
-        state = state.reshape((-1, 3))
+    def act(self, state: pd.DataFrame):
+        state = state.to_numpy()[0].reshape((-1, 3))
         mod_ind = self.controller.step(*state[0:2])[0]
         mod_indSlave = self.slave_controller.step(*state[2:4], np.zeros(3))[0]
         # toDo: np.zeros(3) define the permanent power output of the slave inverter. Don't hide it here?
