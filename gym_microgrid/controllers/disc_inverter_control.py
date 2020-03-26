@@ -161,7 +161,6 @@ class MultiPhaseDQ0PIPIController:
         """
         self._integralSum = 0
         self._ts = tau * undersampling
-        self._undersample_count = 0
         self._undersample = undersampling
 
         self._droopController = DroopController(PdroopParams, self._ts)
@@ -170,6 +169,7 @@ class MultiPhaseDQ0PIPIController:
         self._currentPI = MultiPhasePIController(IPIParams, self._ts)
         self._voltagePI = MultiPhasePIController(VPIParams, self._ts)
         self._phaseDDS = DDS(self._ts)
+        self._undersampling_count = 0
         # Populate the previous MV with n_phase 0's
         self._prev_MV = np.zeros(n_phase)
         self._prev_CV = np.zeros(n_phase)
