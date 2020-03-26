@@ -173,6 +173,7 @@ class MultiPhaseDQ0PIPIController:
         self._integralSum = 0
         self._ts = tau * undersampling
         self._undersample = undersampling
+        self._undersample_count = 0
 
         self._droopController = DroopController(PdroopParams, self._ts)
         self._droopQController = DroopController(QdroopParams, self._ts)
