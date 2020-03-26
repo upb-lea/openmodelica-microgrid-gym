@@ -15,6 +15,17 @@ from gym_microgrid.common import *
 import numpy as np
 
 
+class Controller:
+    def __init__(self, output_gain=1000):
+        pass
+
+    def reset(self):
+        pass
+
+    def step(self, *args):
+        pass
+
+
 class DDS:
     """
     Implements a basic Direct Digital Synthesizer (DDS) controller.
