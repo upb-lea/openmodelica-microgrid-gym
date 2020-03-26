@@ -1,11 +1,10 @@
 from typing import Dict
 
-import pandas as pd
-
 from gym_microgrid.agents import Agent
 from gym_microgrid.common.itertools_ import fill_params
 from gym_microgrid.controllers import Controller
 
+import pandas as pd
 import numpy as np
 
 
@@ -26,7 +25,7 @@ class StaticControlAgent(Agent):
         :param state: the agent is stateless. the state is stored in the controllers.
         Therefore we simply pass the observation from the environment into the controllers.
         """
-        parameters = fill_params(state, self.obs_template)
+        parameters = fill_params(self.obs_template, state)
         controls = list()
         for key, params in parameters:
             controls.append(self.controllers[key].step(*params)[0])
