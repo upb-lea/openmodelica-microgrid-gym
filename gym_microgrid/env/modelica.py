@@ -39,11 +39,11 @@ class ModelicaEnv(gym.Env):
 
     viz_modes = {'episode', 'step', None}
 
-    def __init__(self, time_step: float = 5e-5, reward_fun: callable = lambda obs: 1,
+    def __init__(self, time_step: float = 1e-4, reward_fun: callable = lambda obs: 1,
                  log_level: int = logging.WARNING, solver_method='LSODA', max_episode_steps: int = None,
                  model_params: dict = None,
                  model_input: Sequence[str] = None, model_output: Sequence[str] = None,
-                 model_path='grid.rlc_network.fmu',
+                 model_path='grid.network.fmu',
                  time_start=0,
                  viz_mode: str = 'episode', history: EmptyHistory = FullHistory()):
         """
