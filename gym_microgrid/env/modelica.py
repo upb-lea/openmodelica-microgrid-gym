@@ -42,8 +42,7 @@ class ModelicaEnv(gym.Env):
     def __init__(self, time_step: float = 1e-4, reward_fun: callable = lambda obs: 1,
                  log_level: int = logging.WARNING, solver_method='LSODA', max_episode_steps: int = None,
                  model_params: dict = None,
-                 model_input: Sequence[str] = None, model_output: Sequence[str] = None,
-                 model_path='grid.network.fmu',
+                 model_input: Sequence[str] = None, model_output: Sequence[str] = None, model_path='grid.network.fmu',
                  time_start=0,
                  viz_mode: str = 'episode', history: EmptyHistory = FullHistory()):
         """
@@ -116,8 +115,8 @@ class ModelicaEnv(gym.Env):
         self.model.enter_continuous_time_mode()
 
         # precalculating indices for more efficient lookup
-        self.model_output_idx = np.array(
-            [self.model.get_variable_valueref(k) for k in flatten(self.model_output_names)])
+        statename_index_map = {v: i for i, v in enumerate(list(self.model.get_states_list()))}
+        self.model_output_index = np.array([statename_index_map[k] for k in flatten(self.model_output_names)])
 
     def _calc_jac(self, t, x):
         # get state and derivative value reference lists
@@ -152,11 +151,11 @@ class ModelicaEnv(gym.Env):
 
         # Get the output from a step of the solver
         sol_out = scipy.integrate.solve_ivp(
-            self._get_deriv, self.sim_time_interval, x_0, method=self.solver_method, jac=self._calc_jac, atol=1e-9)
+            self._get_deriv, self.sim_time_interval, x_0, method=self.solver_method, jac=self._calc_jac, atol=1e-10)
         # get the last solution of the solver
         self.model.continuous_states = sol_out.y[:, -1]
 
-        obs = self.model.get_real(self.model_output_idx)
+        obs = np.array(self.model.continuous_states)[self.model_output_index]
         self.history.append(obs)
         return obs
 
