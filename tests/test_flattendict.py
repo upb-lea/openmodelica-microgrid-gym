@@ -1,6 +1,8 @@
 import pytest
 import numpy as np
-from gym_microgrid.common.flattendict import flatten, nested_map, nested_depth
+import pandas as pd
+
+from gym_microgrid.common.itertools_ import fill_params, flatten, nested_map, nested_depth
 
 conf = {
     'lc1': [
@@ -60,3 +62,12 @@ def test_nested_map1():
 def test_nested_depth(i, o):
     assert nested_depth(i) == o
 
+
+@pytest.mark.parametrize('tmpl,data,result',
+                         [[dict(a=['a', 'b', 'c']), pd.DataFrame([dict(a=1, b=2, c=3)]), dict(a=[1, 2, 3])],
+                          [dict(a=[np.array(['a', 'b', 'c']), np.array(['d', 'b', 'c']), 1]),
+                           pd.DataFrame([dict(a=1, b=2, c=3, d=4)]),
+                           dict(a=[np.array([1., 2., 3.]), np.array([4., 2., 3.]), 1])]])
+def test_fill_params(tmpl, data, result):
+    # properly testing datastructures with nested numpy arrays is complicated because of "ambiguous truthness"
+    assert str(fill_params(tmpl, data)) == str(result)

@@ -62,3 +62,9 @@ def nested_depth(l: Sequence) -> int:
             return max((nested_depth(l_) for l_ in l)) + 1
         return 1
     return 0
+
+
+def fill_params(template, df: pd.DataFrame):
+    d = df.iloc[0].to_dict()
+    # keep key if there is no substitute
+    return nested_map(template, lambda k: d.get(k, k))
