@@ -22,8 +22,19 @@ class Controller:
     def reset(self):
         pass
 
+    def handle_undersampling(self):
+        pass
+
     def step(self, *args):
         pass
+
+
+class VoltageCtl(Controller):
+    pass
+
+
+class CurrentCtl(Controller):
+    pass
 
 
 class DDS:
@@ -67,7 +78,7 @@ class DDS:
         return self._integralSum * 2 * math.pi
 
 
-class MultiPhaseABCPIPIController:
+class MultiPhaseABCPIPIController(VoltageCtl):
     """
     Implements a discrete multiphase PIPI voltage forming control with current 
     limiting. Has its own internal oscillator to keep track of the internal angle
@@ -149,7 +160,7 @@ class MultiPhaseABCPIPIController:
         return self._prev_MV
 
 
-class MultiPhaseDQ0PIPIController:
+class MultiPhaseDQ0PIPIController(VoltageCtl):
     """
     Implements a discrete multiphase PIPI voltage forming control with current 
     limiting. Has its own internal oscillator to keep track of the internal angle

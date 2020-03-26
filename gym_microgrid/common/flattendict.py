@@ -18,10 +18,11 @@ or:
  ['lcl1.inductor1.i', 'lcl1.inductor2.i', 'lcl1.inductor3.i'],
  ['lcl1.capacitor1.v', 'lcl1.capacitor2.v', 'lcl1.capacitor3.v']]
 """
-from typing import Sequence, Callable
+from typing import Sequence, Callable, Mapping, Union
 
 import pandas as pd
 from more_itertools import collapse
+import numpy as np
 
 
 def flatten(data, remaining_levels=0):
@@ -39,9 +40,18 @@ def flatten(data, remaining_levels=0):
     return list(collapse(data, levels=depth - remaining_levels - 1))
 
 
-def nested_map(l: Sequence, fun: Callable):
-    if isinstance(l, list):
+def nested_map(l: Union[Sequence, Mapping, object], fun: Callable):
+    if isinstance(l, Mapping):
+        return {k: nested_map(v, fun) for k, v in l.items()}
+    if isinstance(l, (list, tuple)):
         return [nested_map(l_, fun) for l_ in l]
+    if isinstance(l, np.ndarray):
+        # empty_like would keep the datatype, with empty,
+        # we enforce that the dtype is infered from the result of the mapping function
+        a = np.empty(l.shape)
+        for idx in np.ndindex(l.shape):
+            a[idx] = nested_map(l[idx], fun)
+        return a
     return fun(l)
 
 

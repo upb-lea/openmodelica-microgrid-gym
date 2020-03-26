@@ -10,5 +10,5 @@ supported datastructures: Dict[List[Union(np.ndarray,float]]]
 import pandas as pd
 
 
-def fill_params(df: pd.DataFrame, mapping):
+def fill_params(df: pd.DataFrame, template):
     pass

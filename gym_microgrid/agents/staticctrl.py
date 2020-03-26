@@ -14,7 +14,7 @@ class StaticControlAgent(Agent):
         super().__init__()
         self.episode_reward = 0
         self.controllers = ctrls
-        self.obs_mapping = observation_action_mapping
+        self.obs_template = observation_action_mapping
 
     def reset(self):
         for ctrl in self.controllers.values():
