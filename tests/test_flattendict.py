@@ -16,6 +16,16 @@ conf2 = {
         ['capacitor3.v']],
     'lcl1': conf['lcl1']}
 
+conf3 = {
+    'lc1': [
+        ['inductor1.i', 'inductor2.i', 'inductor3.i'],
+        ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
+    'lcl1':
+        [['inductor1.i', 'inductor2.i', 'inductor3.i'],
+         ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
+    'pll':
+        ['add_freq_nom_delta_f.y']}
+
 result_1 = [['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i'],
             ['lc1.capacitor1.v', 'lc1.capacitor2.v', 'lc1.capacitor3.v'],
             ['lcl1.inductor1.i', 'lcl1.inductor2.i', 'lcl1.inductor3.i'],
@@ -29,9 +39,10 @@ result_0 = ['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i',
             'lc1.capacitor1.v', 'lc1.capacitor2.v', 'lc1.capacitor3.v',
             'lcl1.inductor1.i', 'lcl1.inductor2.i', 'lcl1.inductor3.i',
             'lcl1.capacitor1.v', 'lcl1.capacitor2.v', 'lcl1.capacitor3.v']
+result_3_0 = result_0 + ['pll.add_freq_nom_delta_f.y']
 
 
-@pytest.mark.parametrize('i,o', [[[conf], result_0], [[result_1], result_0], [[conf2], result_0],
+@pytest.mark.parametrize('i,o', [[[conf], result_0], [[result_1], result_0], [[conf2], result_0], [[conf3], result_3_0],
                                  [[conf, 1], result_1], [[result_1, 1], result_1], [[conf2, 1], result_1_2]])
 def test_flatten(i, o):
     assert flatten(*i) == o
@@ -44,3 +55,4 @@ def test_nested_map():
 @pytest.mark.parametrize('i,o', [[1, 0], [[1], 1], [[], 1], [[[], 1], 2], [result_1, 2], [result_1_2, 2]])
 def test_nested_depth(i, o):
     assert nested_depth(i) == o
+
