@@ -11,7 +11,7 @@ from pyfmi.fmi import FMUModelME2
 from scipy import integrate
 import matplotlib.pyplot as plt
 
-from gym_microgrid.common.flattendict import flatten
+from gym_microgrid.common.itertools_ import flatten
 from gym_microgrid.env.recorder import FullHistory, EmptyHistory
 
 logger = logging.getLogger(__name__)

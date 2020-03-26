@@ -3,7 +3,7 @@ from typing import Dict
 import pandas as pd
 
 from gym_microgrid.agents import Agent
-from gym_microgrid.common.pd_convert import fill_params
+from gym_microgrid.common.itertools_ import fill_params
 from gym_microgrid.controllers import Controller
 
 import numpy as np
