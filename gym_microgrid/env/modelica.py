@@ -39,10 +39,11 @@ class ModelicaEnv(gym.Env):
 
     viz_modes = {'episode', 'step', None}
 
-    def __init__(self, time_step: float = 1e-4, reward_fun: callable = lambda obs: 1,
+    def __init__(self, time_step: float = 5e-5, reward_fun: callable = lambda obs: 1,
                  log_level: int = logging.WARNING, solver_method='LSODA', max_episode_steps: int = None,
                  model_params: dict = None,
-                 model_input: Sequence[str] = None, model_output: Sequence[str] = None, model_path='grid.network.fmu',
+                 model_input: Sequence[str] = None, model_output: Sequence[str] = None,
+                 model_path='grid.rlc_network.fmu',
                  time_start=0,
                  viz_mode: str = 'episode', history: EmptyHistory = FullHistory()):
         """
@@ -150,7 +151,7 @@ class ModelicaEnv(gym.Env):
 
         # Get the output from a step of the solver
         sol_out = scipy.integrate.solve_ivp(
-            self._get_deriv, self.sim_time_interval, x_0, method=self.solver_method, jac=self._calc_jac)
+            self._get_deriv, self.sim_time_interval, x_0, method=self.solver_method, jac=self._calc_jac, atol=1e-9)
         # get the last solution of the solver
         self.model.continuous_states = sol_out.y[:, -1]
 

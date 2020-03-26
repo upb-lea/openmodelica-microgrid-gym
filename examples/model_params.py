@@ -4,19 +4,23 @@ from gym_microgrid import Runner
 
 
 def f(t):
-    return 0 if t < 500 else 1
+    return 20 if t < 0.05 else 1000
 
 
 if __name__ == '__main__':
     agent = SafeOptAgent()
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    viz_mode='episode',
-                   model_params={'var': f},
+                   max_episode_steps=1000,
+                   #      model_params={'rlc1.resistor1.R': f},
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output={
                        'lc1': [
                            ['inductor1.i', 'inductor2.i', 'inductor3.i'],
                            ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
+                       #              'rlc1': [
+                       #                 ['inductor1.i', 'inductor2.i', 'inductor3.i'],
+                       #                ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
                        'lcl1':
                            [['inductor1.i', 'inductor2.i', 'inductor3.i'],
                             ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]})
