@@ -304,7 +304,7 @@ class MultiPhaseDQCurrentController:
                 # Determine the droop power setpoints
                 droopPI = self._droop_control.step(self._prev_freq) / inst_rms(voltageCV)
 
-                droopPI = droopPI / 1.7  # * 1.4142135623730951      # RMS to Peak
+                droopPI = droopPI / 1.732050807568877  # * 1.4142135623730951      # RMS to Peak
 
 
                 droopPI = np.clip(droopPI, -self._i_limit, self._i_limit)
@@ -313,7 +313,7 @@ class MultiPhaseDQCurrentController:
                 droopQI = self._Qdroop_control.step(Vinst) / Vinst
 
                 # print("droop: {}, Vinst: {}".format(droopModification,Vinst))
-                droopQI = droopQI / 1.7  # * 1.4142135623730951      # RMS to Peak
+                droopQI = droopQI / 1.732050807568877  # * 1.4142135623730951      # RMS to Peak
 
 
                 droopQI = np.clip(droopQI, -self._i_limit, self._i_limit)
