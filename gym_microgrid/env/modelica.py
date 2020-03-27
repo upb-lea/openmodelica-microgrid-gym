@@ -5,13 +5,14 @@ from typing import Sequence, Callable
 
 import gym
 import numpy as np
+import pandas as pd
 import scipy
 from pyfmi import load_fmu
 from pyfmi.fmi import FMUModelME2
 from scipy import integrate
 import matplotlib.pyplot as plt
 
-from gym_microgrid.common.flattendict import flatten
+from gym_microgrid.common.itertools_ import flatten
 from gym_microgrid.env.recorder import FullHistory, EmptyHistory
 
 logger = logging.getLogger(__name__)
@@ -155,7 +156,7 @@ class ModelicaEnv(gym.Env):
 
         obs = self.model.get_real(self.model_output_idx)
         self.history.append(obs)
-        return obs
+        return pd.DataFrame([obs], columns=flatten(self.model_output_names))
 
     @property
     def is_done(self) -> bool:

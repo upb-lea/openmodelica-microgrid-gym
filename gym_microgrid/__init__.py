@@ -10,7 +10,7 @@ __all__ = ['Agent', 'Runner']
 register(
     id='ModelicaEnv_test-v1',
     entry_point='gym_microgrid.env:ModelicaEnv',
-    kwargs=dict(log_level=logging.DEBUG, max_episode_steps=100, viz_mode='step')
+    kwargs=dict(log_level=logging.DEBUG, max_episode_steps=500, viz_mode='step')
 )
 
 register(id='ModelicaEnv-v1', entry_point='gym_microgrid.env:ModelicaEnv')
