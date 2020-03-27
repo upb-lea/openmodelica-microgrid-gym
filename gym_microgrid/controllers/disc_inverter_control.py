@@ -242,7 +242,7 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
         return self._prev_MV, self._prev_CV
 
 
-class MultiPhaseDQCurrentController:
+class MultiPhaseDQCurrentController(CurrentCtl):
     """
     Implements a discrete 3-phase current sourcing inverter, using a PLL to 
     keep track of the external phase angle

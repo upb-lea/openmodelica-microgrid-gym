@@ -41,14 +41,15 @@ if __name__ == '__main__':
                                                   droop_param, qdroop_param)
 
     # TODO add V_dc into the controllers as output gain
-    agent = StaticControlAgent(ctrl, {'master': [np.array([f'lc1.inductor{i}.i' for i in range(3)]),
-                                                 np.array([f'lc1.capacitor{i}.v' for i in range(3)])],
-                                      'slave': [np.array([f'lcl1.inductor{i}.i' for i in range(3)]),
-                                                np.array([f'lcl1.capacitor{i}.v' for i in range(3)]),
+    agent = StaticControlAgent(ctrl, {'master': [np.array([f'lc1.inductor{i + 1}.i' for i in range(3)]),
+                                                 np.array([f'lc1.capacitor{i + 1}.v' for i in range(3)])],
+                                      'slave': [np.array([f'lcl1.inductor{i + 1}.i' for i in range(3)]),
+                                                np.array([f'lcl1.capacitor{i + 1}.v' for i in range(3)]),
                                                 np.zeros(3)]})
 
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    viz_mode='episode',
+                   model_path='grid.pll.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output={
                        'lc1': [

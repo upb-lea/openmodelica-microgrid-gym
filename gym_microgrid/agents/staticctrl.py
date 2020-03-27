@@ -25,12 +25,13 @@ class StaticControlAgent(Agent):
         :param state: the agent is stateless. the state is stored in the controllers.
         Therefore we simply pass the observation from the environment into the controllers.
         """
-        parameters = fill_params(self.obs_template, state)
+        obs = fill_params(self.obs_template, state)
         controls = list()
-        for key, params in parameters:
+        for key, params in obs.items():
             controls.append(self.controllers[key].step(*params)[0])
 
-        return np.append(*controls)
+        # TODO: Remove this constant 1000. it should actually be in the fmu!
+        return np.append(*controls) * 1000
 
     def observe(self, reward, terminated):
         self.episode_reward += reward or 0
