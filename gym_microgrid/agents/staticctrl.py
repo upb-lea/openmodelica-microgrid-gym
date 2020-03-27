@@ -1,6 +1,6 @@
 from typing import Dict
 
-from gym_microgrid.agents import Agent
+from gym_microgrid.agents.agent import Agent
 from gym_microgrid.common.itertools_ import fill_params
 from gym_microgrid.controllers import Controller
 
@@ -36,12 +36,6 @@ class StaticControlAgent(Agent):
     def observe(self, reward, terminated):
         self.episode_reward += reward or 0
         if terminated:
-            # safeopt update step
-            # TODO
             # reset episode reward
             self.episode_reward = 0
         # on other steps we don't need to do anything
-
-    def render(self):
-        # TODO plot the GP
-        pass
