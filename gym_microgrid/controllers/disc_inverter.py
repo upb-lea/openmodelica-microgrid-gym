@@ -7,9 +7,10 @@ Created on Tue Jan 14 14:29:23 2020
 
 import math
 
-from .multiphase_pi_control import MultiPhasePIController
-from .pi_control import PIController
-from .control_params import *
+from .filter import DroopController, InverseDroopController
+from .base import DDS, PLL
+from .pi import MultiPhasePIController
+from .params import *
 from gym_microgrid.common import *
 
 import numpy as np
@@ -35,47 +36,6 @@ class VoltageCtl(Controller):
 
 class CurrentCtl(Controller):
     pass
-
-
-class DDS:
-    """
-    Implements a basic Direct Digital Synthesizer (DDS) controller.
-    Basically is a resetting integrator to provide a theta reference at a given
-    frequency
-    """
-
-    def __init__(self, ts, DDSMax: float = 1, theta_0: float = 0):
-        """
-        :param tau: the constant timestep at which the DDS is called
-        :param DDSMax: The value at which the DDS resets the integrator
-        :param theta_0: The initial value of the DDS upon initialisation (not reset)
-        """
-        self._integralSum = 0
-        self._ts = ts
-        self._max = DDSMax
-        self._integralSum = theta_0
-
-    def reset(self):
-        """
-        Resets the DDS integrator to 0
-        """
-        self._integralSum = 0
-
-    def step(self, freq):
-        """
-        advances the Oscilator
-        
-        :param freq: absolute frequency to oscilate at for the next time step
-        
-        :return theta: the angle in RADIANS [0:2pi] 
-        """
-        self._integralSum = self._integralSum + self._ts * freq
-
-        # Limit output to exactly the limit
-        if self._integralSum > self._max:
-            self._integralSum = self._integralSum - self._max
-
-        return self._integralSum * 2 * math.pi
 
 
 class MultiPhaseABCPIPIController(VoltageCtl):
@@ -318,7 +278,6 @@ class MultiPhaseDQCurrentController(CurrentCtl):
 
                 droopPI = droopPI / 1.732050807568877  # * 1.4142135623730951      # RMS to Peak
 
-
                 droopPI = np.clip(droopPI, -self._i_limit, self._i_limit)
 
                 # Determine the droop reactive power setpoints
@@ -326,7 +285,6 @@ class MultiPhaseDQCurrentController(CurrentCtl):
 
                 # print("droop: {}, Vinst: {}".format(droopModification,Vinst))
                 droopQI = droopQI / 1.732050807568877  # * 1.4142135623730951      # RMS to Peak
-
 
                 droopQI = np.clip(droopQI, -self._i_limit, self._i_limit)
 
@@ -344,192 +302,3 @@ class MultiPhaseDQCurrentController(CurrentCtl):
             # print("SP: {}, act: {}, actabc {}".format(idq0SP,MVdq0,self._prev_MV))
 
         return self._prev_MV, self._prev_freq, self._lastIDQ, self._prev_MVdq0
-
-
-class PLL:
-    """
-    Implements a basic PI controller based PLL to track the angle of a threephase
-    ABC voltage
-    """
-
-    def __init__(self, params: PLLParams, ts):
-        """
-        :param params:PI Params for controller
-        :param tau: absolute sampling time for the controller
-        """
-        self._params = params
-        self._controller = PIController(params, ts)
-
-        # Uses a DDS oscillator to keep track of the internal angle
-        self._dds = DDS(ts, params.theta_0)
-
-        self._prev_cossin = cos_sin(params.theta_0)
-        self._sqrt2 = math.sqrt(2)
-
-    def step(self, v_abc):
-        """
-        Performs a discrete set of calculations for the PLL
-        :param v_abc: Voltages in the abc frame to track
-        
-        :return _prev_cossin: the internal cos-sin of the current phase angle
-        :return freq: the frequency of the internal oscillator
-        :return theta: the internal phase angle
-        
-        """
-        v_abc = self.__normalise_abc(v_abc)
-        cossin_x = abc_to_alpha_beta(v_abc)
-        dphi = self.__phase_comp(cossin_x, self._prev_cossin)
-        freq = self._controller.step(dphi) + self._params.f_nom
-
-        theta = self._dds.step(freq)
-        self._prev_cossin = cos_sin(theta)
-
-        # debug vector that can be returned for debugging purposes
-        debug = [*self._prev_cossin, *cossin_x, theta]
-
-        return self._prev_cossin, freq, theta, debug
-
-    @staticmethod
-    def __phase_comp(cossin_x, cossin_i):
-        """
-        The phase comparison calculation
-        uses sin(A-B)= sinAcosB-cosAsinB =  A-B (approximates for small A-B)
-        :param cossin_x: Alpha-beta components of the external angle to track,
-                    should be normalised [-1,1]
-        :param cossin_i: Alpha-beta components of the internal angle to compare
-                    to, should be normalised [-1,1]
-                    
-        :return dphi: The approximate error between the two phases
-        """
-        dphi = (cossin_x[1] * cossin_i[0]) - (cossin_x[0] * cossin_i[1])
-
-        return dphi
-
-    def __normalise_abc(self, abc):
-        """
-        Normalises the abc magnitudes to the RMS of the 3 magnitudes
-        Determines the instantaneous RMS value of the 3 waveforms
-        :param abc: three phase magnitudes input
-                    
-        :return abc_norm: abc result normalised to [-1,1]
-        """
-        # Get the magnitude of the waveforms to normalise the PLL calcs
-        mag = inst_rms(abc)
-        if mag != 0:
-            abc = abc / mag
-
-        return abc
-
-
-class Filter:
-    """
-    An empty Filter defining a base interface for any inherenting classes
-    Mightnot be needed, but my use of Java suggests it may be useful.
-    """
-
-    def step(self, value):
-        pass
-
-
-class PT1Filter(Filter):
-    """
-    A PT1 Filter implementation
-    """
-
-    def __init__(self, filtParams, ts):
-        """
-        :param filtParams: The filter params
-        """
-        self._params = filtParams
-        self._integral = 0
-        self._ts = ts
-
-    def step(self, val_in):
-        """
-        Implements a first order PT1 filter on the input
-        
-        :param val_in: new input
-        :return omega: The new output
-        """
-
-        output = val_in * self._params.gain - self._integral
-
-        if self._params.tau != 0:
-            intIn = output / self._params.tau
-            self._integral = (self._integral + intIn * self._ts)
-            output = self._integral
-        elif self._params.gain != 0:
-            self._integral = 0
-        else:
-            output = 0
-
-        return output
-
-
-class DroopController(PT1Filter):
-    """
-    Implements a basic first order filter with gain and time constant.
-    Uses the PT1 to implement the droop but modifies the gains and outputs as
-    required to implement inverter droop
-    
-    Ignores the first order element if gain is set to 0, providing a linear gain
-    """
-
-    def __init__(self, DroopParams, ts):
-        """
-        :param Droopparams: The droop params
-        """
-        self._droopParams = DroopParams
-        super().__init__(DroopParams, ts)
-
-    def step(self, val_in):
-        """
-        Implements a first order response on the input, using the initialised params
-        
-        :param val_in: new input
-        :return omega: The new setpoint
-        """
-
-        return super().step(val_in) + self._droopParams.nom_val
-
-
-class InverseDroopController(DroopController):
-    """
-    Implements an inverse Droop controller. For the use in grid following inverters
-    as opposed to grid forming inverters
-    Uses the frequency to determine the power output.
-    Contains a derivative elements and an input filter.
-    
-    Ignores the first order element if gain is set to 0, providing a linear gain
-    """
-
-    def __init__(self, DroopParams, ts):
-        """
-        :param Droopparams: The InverseDroopControllerParams for the droop 
-        controller
-        """
-        super().__init__(DroopParams, ts)
-        self._params = DroopParams
-        self._prev_val = 0
-        self._ts = ts
-        self._droop_filt = PT1Filter(DroopParams.derivativeFiltParams, ts)
-
-    def step(self, val_in):
-        """
-        Implements a inverse of the first order system
-        :param val_in: The result of a first order response to be reversed
-        
-        :return: The new setpoint
-        """
-        val_in = self._droop_filt.step(val_in - self._params.nom_val)
-
-        derivative = (val_in - self._prev_val) / (self._ts)
-        derivative = derivative * self._params.tau
-
-        self._prev_val = val_in
-        if self._params.gain != 0:
-            output = (val_in / self._params.gain + derivative)
-            # print("Inverse val: {}, nom: {}, output: {}".format(val_in,self._params.gain, output))
-            return output
-        else:
-            return 0

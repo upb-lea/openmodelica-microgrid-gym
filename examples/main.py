@@ -1,7 +1,12 @@
+import logging
+
 import gym
 import time
 import matplotlib.pyplot as plt
+
+from gym_microgrid.common import inst_power
 from gym_microgrid.controllers import *
+import numpy as np
 
 fcontrol = 1e4
 delta_t = 1 / fcontrol

@@ -2,6 +2,7 @@ import pytest
 from pytest import approx
 
 from gym_microgrid.controllers import *
+import numpy as np
 
 
 @pytest.fixture
