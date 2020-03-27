@@ -9,6 +9,9 @@ class MutableFloat():
     def __float__(self):
         return float(self.val)
 
+    def __repr__(self):
+        return f'{self.__class__.__name__}({float(self)})'
+
     @property
     def val(self):
         return self._f
