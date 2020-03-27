@@ -20,6 +20,9 @@ class EmptyHistory:
     def __str__(self):
         return self.df.__str__()
 
+    def __getitem__(self, item):
+        return self.df[item]
+
 
 class FullHistory(EmptyHistory):
     """
