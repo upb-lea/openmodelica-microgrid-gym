@@ -67,7 +67,7 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
 
     # Discrete controller implementation for a DQ based Current controller for the current sourcing inverter
     # Droop of the active power Watts/Hz, W.s/Hz
-    droopParam = InverseDroopParams(DroopGain, 0, nomValue=nomFreq, tau_filt=0.04)
+    droopParam = InverseDroopParams(DroopGain, 0, nom_value=nomFreq, tau_filt=0.04)
     # droopParam=InverseDroopParams(0,0,nomFreq)
     # Droop of the reactive power VAR/Volt Var.s/Volt
     qdroopParam = InverseDroopParams(100, 0, nomVoltPeak, tau_filt=0.01)
