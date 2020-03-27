@@ -1,7 +1,12 @@
+import logging
+
 import gym
 import time
 import matplotlib.pyplot as plt
+
+from gym_microgrid.common import inst_power
 from gym_microgrid.controllers import *
+import numpy as np
 
 fcontrol = 1e4
 delta_t = 1 / fcontrol
@@ -62,7 +67,7 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
 
     # Discrete controller implementation for a DQ based Current controller for the current sourcing inverter
     # Droop of the active power Watts/Hz, W.s/Hz
-    droopParam = InverseDroopParams(DroopGain, 0, nomValue=nomFreq, tau_filt=0.04)
+    droopParam = InverseDroopParams(DroopGain, 0, nom_value=nomFreq, tau_filt=0.04)
     # droopParam=InverseDroopParams(0,0,nomFreq)
     # Droop of the reactive power VAR/Volt Var.s/Volt
     qdroopParam = InverseDroopParams(100, 0, nomVoltPeak, tau_filt=0.01)
@@ -72,10 +77,9 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
     pllparams = PLLParams(kP=10, kI=200, limits=(-10000, 10000), kB=1, f_nom=50)
 
     # Current PI parameters for the current sourcing inverter
-    currentDQPIparams = PI_params(kP=0.005, kI=200, limits=(-1, 1), kB=1)
+    currentDQPIparams = PI_params(kP=0.005, kI=200, limits=(-1, 1))
 
-    slave_controller = MultiPhaseDQCurrentController(currentDQPIparams, pllparams,
-                                                     delta_t, nomFreq, iLimit, droopParam,
+    slave_controller = MultiPhaseDQCurrentController(currentDQPIparams, pllparams, delta_t, iLimit, droopParam,
                                                      qdroopParam, undersampling=1)
 
     episode_lengths = np.array([])
@@ -85,7 +89,6 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
         sim_time = 0
         cont_time = 0
         obs = sim_env.reset()
-        obs = np.array(obs)
 
         currentHist = []  # List to hold the current values
         voltageHist = []  # List to hold the voltage values
@@ -150,7 +153,6 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
 
             # Perform a step of simulation
             obs, reward, done = sim_env.step(np.append(action1, action2))
-            obs = np.array(obs)
             # Accumulate time spent simulating
             sim_time = sim_time + time.time() - startSim
 
@@ -208,6 +210,7 @@ def _map_CVs(observation):
     :return CVV2: Voltages measured for inverter 2
     :return CVI2: Currents measured for inverter 2
     """
+    observation = observation.to_numpy()[0]
     CVI1 = observation[0:3]
     CVV1 = observation[3:6]
     CVI2 = observation[6:9]

@@ -2,6 +2,7 @@ import pytest
 from pytest import approx
 
 from gym_microgrid.controllers import *
+import numpy as np
 
 
 @pytest.fixture
@@ -25,7 +26,7 @@ def test_step(seed, pll_par, droop_par):
 
 
 def test_step2(seed, droop_par, pll_par):
-    ctl = MultiPhaseDQCurrentController(pll_par, pll_par, 1, 50, 1, droop_par, droop_par)
+    ctl = MultiPhaseDQCurrentController(pll_par, pll_par, 1, 1, droop_par, droop_par)
     mv, freq, idq, mvdq0 = ctl.step(np.random.random(3), np.random.random(3), np.random.random(3))
     assert mv == approx([1.2610252, -1.18258947, 0.18577202])
     assert freq == approx(0.7806602122646245)
