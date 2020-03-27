@@ -1,4 +1,6 @@
 import gym
+import pytest
+from pandas._testing import assert_frame_equal
 from pytest import approx
 
 from gym_microgrid import Runner
@@ -10,7 +12,8 @@ from gym_microgrid.agents.util import MutableFloat
 from gym_microgrid.controllers import *
 
 
-def test_main():
+@pytest.fixture
+def agent():
     delta_t = 1e-4
     nomFreq = 50
     nomVoltPeak = 230 * 1.414
@@ -51,7 +54,10 @@ def test_main():
                                       'slave': [np.array([f'lcl1.inductor{i + 1}.i' for i in range(3)]),
                                                 np.array([f'lcl1.capacitor{i + 1}.v' for i in range(3)]),
                                                 np.zeros(3)]})
+    return agent
 
+
+def test_main(agent):
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    viz_mode=None,
                    max_episode_steps=100,
@@ -66,6 +72,27 @@ def test_main():
     # env.history.df.to_hdf('test_main.hd5', 'hist')
     assert env.history.df.head(100).to_numpy() == approx(pd.read_hdf('test_main.hd5', 'hist').head(100).to_numpy(),
                                                          rel=5e-3)
+
+
+def test_main2(agent):
+    env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
+                   viz_mode=None,
+                   max_episode_steps=100,
+                   model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
+                   model_output={'lc1': [['inductor1.i', 'inductor3.i', 'inductor2.i'],
+                                         ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
+                                 'lcl1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
+                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]})
+
+    runner = Runner(agent, env)
+    runner.run(1)
+    # env.history.df.to_hdf('test_main.hd5', 'hist')
+    df = env.history.df.head(100)
+    df = df.reindex(sorted(df.columns), axis=1)
+    df2 = pd.read_hdf('test_main.hd5', 'hist').head(100)
+
+    df2 = df2.reindex(sorted(df2.columns), axis=1)
+    assert df.to_numpy() == approx(df2.to_numpy(), 5e-3)
 
 
 def test_main_1():
