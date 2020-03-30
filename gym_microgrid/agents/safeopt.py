@@ -18,7 +18,7 @@ class SafeOptAgent(StaticControlAgent):
             list(mutable_params.values()) if isinstance(mutable_params, dict) else mutable_params)
         self.kernel = kernel
 
-        self.score = None
+        self.episode_reward = None
         self.optimizer = None
         super().__init__(ctrls, observation_action_mapping)
 
@@ -28,18 +28,17 @@ class SafeOptAgent(StaticControlAgent):
         self.kernel = GPy.kern.Matern32(input_dim=1, lengthscale=.01)
 
         self.params.reset()
-        self.score = None
         self.optimizer = None
+        self.episode_reward = 0
         return super().reset()
 
     def observe(self, reward, terminated):
         self.episode_reward += reward or 0
         if terminated:
-            self.score = self.episode_reward
-            # reset episode reward
-            self.episode_reward = 0
             # safeopt update step
             self.update_params()
+            # reset episode reward
+            self.episode_reward = 0
         # on other steps we don't need to do anything
 
     def update_params(self):
@@ -50,7 +49,7 @@ class SafeOptAgent(StaticControlAgent):
                                          noise_var=noise_var)
             self.optimizer = SafeOptSwarm(gp, 0., bounds=bounds, threshold=1)
         else:
-            self.optimizer.add_new_data_point(self.params[:], self.score)
+            self.optimizer.add_new_data_point(self.params[:], self.episode_reward)
         self.params[:] = self.optimizer.optimize()
 
     def render(self):
