@@ -60,6 +60,7 @@ if __name__ == '__main__':
 
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    viz_mode='episode',
+                   max_episode_steps=100,
                    model_path='grid.pll.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
