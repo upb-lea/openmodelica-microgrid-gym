@@ -45,7 +45,7 @@ class SafeOptAgent(StaticControlAgent):
         if self.optimizer is None:
             bounds = [(-0.1, 0.2)]
             noise_var = 0.05 ** 2
-            gp = GPy.models.GPRegression(np.array([self.params[:]]), np.array([[self.score]]), self.kernel,
+            gp = GPy.models.GPRegression(np.array([self.params[:]]), np.array([[self.episode_reward]]), self.kernel,
                                          noise_var=noise_var)
             self.optimizer = SafeOptSwarm(gp, 0., bounds=bounds, threshold=1)
         else:
