@@ -8,6 +8,8 @@ from gym_microgrid.agents.staticctrl import StaticControlAgent
 from gym_microgrid.agents.util import MutableParams
 from gym_microgrid.controllers import Controller
 
+import matplotlib.pyplot as plt
+
 import numpy as np
 
 
@@ -53,5 +55,6 @@ class SafeOptAgent(StaticControlAgent):
         self.params[:] = self.optimizer.optimize()
 
     def render(self):
-        # TODO plot the GP
-        pass
+        plt.figure
+        self.optimizer.plot(1000)
+        plt.show()
