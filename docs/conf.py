@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath('..'))
 sys.setrecursionlimit(1500)
 # -- Project information -----------------------------------------------------
 
-project = 'gym-electric-motor'
+project = 'OpenModelica Microgrid'
 copyright = '2020, Wallscheid, Weber, Heid, Bode'
 author = 'Wallscheid, Weber, Heid, Bode'
 
