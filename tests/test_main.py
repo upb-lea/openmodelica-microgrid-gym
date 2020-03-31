@@ -87,12 +87,8 @@ def test_main2(agent):
     runner = Runner(agent, env)
     runner.run(1)
     # env.history.df.to_hdf('test_main.hd5', 'hist')
-    df = env.history.df.head(100)
-    df = df.reindex(sorted(df.columns), axis=1)
-    df2 = pd.read_hdf('test_main.hd5', 'hist').head(100)
-
-    df2 = df2.reindex(sorted(df2.columns), axis=1)
-    assert df.to_numpy() == approx(df2.to_numpy(), 5e-3)
+    assert env.history.df.head(100).sort_index(axis=1).to_numpy() == approx(
+        pd.read_hdf('test_main.hd5', 'hist').head(100).sort_index(axis=1).to_numpy(), 5e-3)
 
 
 def test_main_1():
