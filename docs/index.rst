@@ -39,12 +39,21 @@ For the creation of additional grid contellations, Openmodelica (nightly build r
     :members:
 
 
+
 .. toctree::
    :maxdepth: 4
    :titlesonly:
-   :caption: RLMG Contents:
+   :caption: User Guide:
 
    parts/modules
+
+
+.. toctree::
+   :maxdepth: 4
+   :titlesonly:
+   :caption: API:
+
+   api/modules
 
 
 
