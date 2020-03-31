@@ -7,6 +7,7 @@ Created on Tue Jan 14 14:29:23 2020
 
 import math
 
+from gym_microgrid.env import EmptyHistory
 from .filter import DroopController, InverseDroopController
 from .base import DDS, PLL
 from .pi import MultiPhasePIController
@@ -17,11 +18,11 @@ import numpy as np
 
 
 class Controller:
-    def __init__(self, output_gain=1000):
-        pass
+    def __init__(self, history=EmptyHistory()):
+        self.history = history
 
     def reset(self):
-        pass
+        self.history.reset()
 
     def handle_undersampling(self):
         pass
@@ -46,7 +47,8 @@ class MultiPhaseABCPIPIController(VoltageCtl):
     Controls each phase individualy in the abc axis.
     """
 
-    def __init__(self, VPIParams, IPIParams, tau, PdroopParams, QdroopParams, undersampling=1, n_phase=3):
+    def __init__(self, VPIParams, IPIParams, tau, PdroopParams, QdroopParams, undersampling=1, n_phase=3,
+                 history=EmptyHistory()):
         """
         :param VPIParams: PI parameters for the voltage control loop
         :param IPIParams: PI parameters for the current control loop
@@ -59,6 +61,7 @@ class MultiPhaseABCPIPIController(VoltageCtl):
                     control
         
         """
+        super().__init__(history)
         self._integralSum = 0
         self._ts = tau * undersampling
         self._undersample_count = 0
@@ -128,7 +131,8 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
     Controls each phase individualy in the dq0 axis.
     """
 
-    def __init__(self, VPIParams, IPIParams, tau, PdroopParams, QdroopParams, undersampling=1, n_phase=3):
+    def __init__(self, VPIParams, IPIParams, tau, PdroopParams, QdroopParams, undersampling=1, n_phase=3,
+                 history=EmptyHistory()):
         """
         :param VPIParams: PI parameters for the voltage control loop
         :param IPIParams: PI parameters for the current control loop
@@ -141,6 +145,9 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
                     control
         
         """
+        super().__init__(history)
+        self.history.cols = ['phase']
+
         self._integralSum = 0
         self._ts = tau * undersampling
         self._undersample = undersampling
@@ -174,6 +181,8 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
             # Get the next phase rotation angle to implement
             phase = self._phaseDDS.step(freq)
 
+            self.history.append([phase])
+
             instQ = -inst_reactive(voltageCV, currentCV)
             voltage = self._droopQController.step(instQ)
 
@@ -185,10 +194,10 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
             VSP = voltage * 1.732050807568877
             # Voltage SP in dq0 (static for the moment)
             SPVdq0 = [VSP, 0, 0]
-            SPI = self._voltagePI.stepSPCV(SPVdq0, CVVdq0)
+            SPIdq0 = self._voltagePI.stepSPCV(SPVdq0, CVVdq0)
 
             # Current controller calculations
-            MVdq0 = self._currentPI.stepSPCV(SPI, CVIdq0)
+            MVdq0 = self._currentPI.stepSPCV(SPIdq0, CVIdq0)
 
             # Transform the MVs back to the abc frame
             self._prev_MV = dq0_to_abc(MVdq0, phase)
@@ -215,7 +224,7 @@ class MultiPhaseDQCurrentController(CurrentCtl):
     """
 
     def __init__(self, IPIParams, pllPIParams, tau, i_limit, Pdroop_param: InverseDroopParams,
-                 Qdroop_param: InverseDroopParams, undersampling=1):
+                 Qdroop_param: InverseDroopParams, undersampling=1, history=EmptyHistory()):
         """
         :param IPIParams: PI parameters for the current control loops along the
                         dq0 axes
@@ -226,6 +235,8 @@ class MultiPhaseDQCurrentController(CurrentCtl):
                     for example if set to 10, the controller will only calculate 
                     the setpoint every 10th controller call
         """
+        super().__init__(history)
+        self.history.cols = ['phase']
         self._ts = tau * undersampling
         self._undersampling_count = 0
         self._undersample = undersampling
@@ -267,6 +278,7 @@ class MultiPhaseDQCurrentController(CurrentCtl):
             Vinst = inst_rms(voltageCV)
             # Get current phase information from the voltage measurements
             self._prev_cossine, self._prev_freq, self._prev_theta, debug = self._pll.step(voltageCV)
+
             # Transform the current feedback to the DQ0 frame
             self._lastIDQ = abc_to_dq0_cos_sin(currentCV, *self._prev_cossine)
 
