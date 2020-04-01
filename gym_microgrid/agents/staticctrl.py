@@ -16,8 +16,7 @@ class StaticControlAgent(Agent):
         self.obs_template = observation_action_mapping
 
     def reset(self):
-        for ctrl in self.controllers.values():
-            ctrl.reset()
+        self.prepare_episode()
 
     def act(self, state: pd.DataFrame):
         """
@@ -37,5 +36,10 @@ class StaticControlAgent(Agent):
         self.episode_reward += reward or 0
         if terminated:
             # reset episode reward
-            self.episode_reward = 0
+            self.prepare_episode()
         # on other steps we don't need to do anything
+
+    def prepare_episode(self):
+        for ctrl in self.controllers.values():
+            ctrl.reset()
+        self.episode_reward = 0
