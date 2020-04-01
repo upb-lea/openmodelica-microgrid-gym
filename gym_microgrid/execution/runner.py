@@ -23,6 +23,7 @@ class Runner:
         self.agent.reset()
 
         for _ in tqdm(range(n_episodes), desc='episodes', unit='epoch'):
+
             obs = self.env.reset()
 
             done, r = False, None
@@ -34,3 +35,4 @@ class Runner:
                     self.env.render()
             self.agent.observe(r, done)
             self.env.close()
+            self.agent.render()
