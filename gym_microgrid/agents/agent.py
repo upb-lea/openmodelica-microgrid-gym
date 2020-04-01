@@ -22,3 +22,6 @@ class Agent:
 
     def observe(self, reward, terminated):
         pass
+
+    def render(self):
+        pass

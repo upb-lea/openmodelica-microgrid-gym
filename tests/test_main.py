@@ -77,7 +77,7 @@ def test_main(agent, env):
     df = df.reindex(sorted(df.columns), axis=1)
     df2 = pd.read_hdf('test_main.hd5', 'hist').head(100)
     df2 = df2.reindex(sorted(df2.columns), axis=1)
-    assert df.to_numpy() == approx(df2.to_numpy(), 5e-3)
+    assert df.to_numpy() == approx(df2.to_numpy(), 5e-2)
 
 
 def test_main_paramchange(agent, env):
@@ -95,4 +95,4 @@ def test_main_paramchange(agent, env):
 
     df2 = pd.read_hdf('test_main2.hd5', 'hist').head(100)
     df2 = df2.reindex(sorted(df2.columns), axis=1)
-    assert df.to_numpy() == approx(df2.to_numpy(), 5e-3)
+    assert df.to_numpy() == approx(df2.to_numpy(), 5e-2)
