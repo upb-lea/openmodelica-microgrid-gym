@@ -146,7 +146,7 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
         
         """
         super().__init__(history)
-        self.history.cols = ['phase']
+        self.history.cols = ['phase', 'SPVdq0', 'SPIdq0', 'M_dq0', 'SPIabc']
 
         self._integralSum = 0
         self._ts = tau * undersampling
@@ -181,7 +181,7 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
             # Get the next phase rotation angle to implement
             phase = self._phaseDDS.step(freq)
 
-            self.history.append([phase])
+
 
             instQ = -inst_reactive(voltageCV, currentCV)
             voltage = self._droopQController.step(instQ)
@@ -196,6 +196,8 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
             SPVdq0 = [VSP, 0, 0]
             SPIdq0 = self._voltagePI.stepSPCV(SPVdq0, CVVdq0)
 
+            SPIdq0 = [15, 0, 0]
+
             # Current controller calculations
             MVdq0 = self._currentPI.stepSPCV(SPIdq0, CVIdq0)
 
@@ -205,6 +207,11 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
             # print("SPi: {}, MV: {}".format(SPI,MV))
             self._prev_CV = CVIdq0
             self._undersampling_count = 0
+
+            # Add intern measurment
+            self.history.append([phase, SPVdq0, SPIdq0, MVdq0, dq0_to_abc(SPIdq0, phase)])
+
+
         else:
             self._undersampling_count = self._undersampling_count + 1
 
