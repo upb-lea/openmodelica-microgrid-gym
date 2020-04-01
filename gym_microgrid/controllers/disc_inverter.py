@@ -16,13 +16,28 @@ from gym_microgrid.common import *
 
 import numpy as np
 
+N_PHASE = 3
+
 
 class Controller:
-    def __init__(self, history=EmptyHistory()):
+    def __init__(self, IPIParams, tau, undersampling=1, history=EmptyHistory()):
         self.history = history
+
+        self._ts = tau * undersampling
+        self._undersample = undersampling
+
+        self._currentPI = MultiPhasePIController(IPIParams, self._ts)
+
+        # defining memory variables
+        self._undersampling_count = None
+        self._prev_MV = None
 
     def reset(self):
         self.history.reset()
+        self._undersampling_count = 0
+        self._prev_MV = np.zeros(N_PHASE)
+
+        self._currentPI.reset()
 
     def handle_undersampling(self):
         pass
@@ -32,11 +47,32 @@ class Controller:
 
 
 class VoltageCtl(Controller):
-    pass
+    def __init__(self, VPIParams, IPIParams, tau, PdroopParams: DroopParams, QdroopParams: DroopParams, undersampling=1,
+                 history=EmptyHistory()):
+        super().__init__(IPIParams, tau, undersampling, history)
+        self._integralSum = 0
+
+        self._droopController = DroopController(PdroopParams, self._ts)
+        self._droopQController = DroopController(QdroopParams, self._ts)
+
+        self._voltagePI = MultiPhasePIController(VPIParams, self._ts)
+        self._phaseDDS = DDS(self._ts)
+        # Populate the previous MV with n_phase 0's
+
+    def reset(self):
+        super().reset()
+        self._voltagePI.reset()
 
 
 class CurrentCtl(Controller):
-    pass
+    def __init__(self, IPIParams, tau, i_limit, Pdroop_param: InverseDroopParams,
+                 Qdroop_param: InverseDroopParams, undersampling=1, history=EmptyHistory()):
+        super().__init__(IPIParams, tau, undersampling, history)
+
+        self._i_limit = i_limit
+
+        self._droop_control = InverseDroopController(Pdroop_param, self._ts)
+        self._Qdroop_control = InverseDroopController(Qdroop_param, self._ts)
 
 
 class MultiPhaseABCPIPIController(VoltageCtl):
@@ -46,36 +82,6 @@ class MultiPhaseABCPIPIController(VoltageCtl):
     
     Controls each phase individualy in the abc axis.
     """
-
-    def __init__(self, VPIParams, IPIParams, tau, PdroopParams, QdroopParams, undersampling=1, n_phase=3,
-                 history=EmptyHistory()):
-        """
-        :param VPIParams: PI parameters for the voltage control loop
-        :param IPIParams: PI parameters for the current control loop
-        
-        :param tau: absolute sampling time for the controller
-        :param undersampling: reduces the actual sampling time of the controller,
-                    for example if set to 10, the controller will only calculate 
-                    the setpoint every 10th controller call
-        :param n_phase: The number of individual axis of voltage and current to
-                    control
-        
-        """
-        super().__init__(history)
-        self._integralSum = 0
-        self._ts = tau * undersampling
-        self._undersample_count = 0
-        self._undersample = undersampling
-
-        self._droopController = DroopController(PdroopParams, self._ts)
-        self._droopQController = DroopController(QdroopParams, self._ts)
-
-        self._currentPI = MultiPhasePIController(IPIParams, self._ts)
-        self._voltagePI = MultiPhasePIController(VPIParams, self._ts)
-        self._phaseDDS = DDS(self._ts)
-        self._undersampling_count = 0
-        # Populate the previous MV with n_phase 0's
-        self._prev_MV = ([0 for k in range(n_phase)])
 
     def step(self, currentCV: np.ndarray, voltageCV: np.ndarray):
         """
@@ -131,7 +137,7 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
     Controls each phase individualy in the dq0 axis.
     """
 
-    def __init__(self, VPIParams, IPIParams, tau, PdroopParams, QdroopParams, undersampling=1, n_phase=3,
+    def __init__(self, VPIParams, IPIParams, tau, PdroopParams, QdroopParams, undersampling=1,
                  history=EmptyHistory()):
         """
         :param VPIParams: PI parameters for the voltage control loop
@@ -145,24 +151,11 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
                     control
         
         """
-        super().__init__(history)
+
+        super().__init__(VPIParams, IPIParams, tau, PdroopParams, QdroopParams, undersampling,
+                         history)
         self.history.cols = ['phase', 'SPVdq0', 'SPIdq0', 'M_dq0', 'SPIabc']
-
-        self._integralSum = 0
-        self._ts = tau * undersampling
-        self._undersample = undersampling
-        self._undersample_count = 0
-
-        self._droopController = DroopController(PdroopParams, self._ts)
-        self._droopQController = DroopController(QdroopParams, self._ts)
-
-        self._currentPI = MultiPhasePIController(IPIParams, self._ts)
-        self._voltagePI = MultiPhasePIController(VPIParams, self._ts)
-        self._phaseDDS = DDS(self._ts)
-        self._undersampling_count = 0
-        # Populate the previous MV with n_phase 0's
-        self._prev_MV = np.zeros(n_phase)
-        self._prev_CV = np.zeros(n_phase)
+        self._prev_CV = np.zeros(N_PHASE)
 
     def step(self, currentCV, voltageCV):
         """
@@ -180,8 +173,6 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
             freq = self._droopController.step(instPow)
             # Get the next phase rotation angle to implement
             phase = self._phaseDDS.step(freq)
-
-
 
             instQ = -inst_reactive(voltageCV, currentCV)
             voltage = self._droopQController.step(instQ)
@@ -242,26 +233,17 @@ class MultiPhaseDQCurrentController(CurrentCtl):
                     for example if set to 10, the controller will only calculate 
                     the setpoint every 10th controller call
         """
-        super().__init__(history)
+        super().__init__(IPIParams, tau, i_limit, Pdroop_param, Qdroop_param, undersampling, history)
         self.history.cols = ['phase']
-        self._ts = tau * undersampling
-        self._undersampling_count = 0
-        self._undersample = undersampling
-        self._i_limit = i_limit
 
         # Three controllers  for each axis (d,q,0)
-        self._currentPI = MultiPhasePIController(IPIParams, self._ts)
         self._pll = PLL(pllPIParams, self._ts)
 
         # Populate the previous values with 0's
-        self._prev_MV = np.zeros(3)
-        self._prev_MVdq0 = np.zeros(3)
         self._prev_cossine = np.zeros(2)
-        self._lastIDQ = np.zeros(3)
+        self._lastIDQ = np.zeros(N_PHASE)
         self._prev_theta = 0
         self._prev_freq = 0
-        self._droop_control = InverseDroopController(Pdroop_param, self._ts)
-        self._Qdroop_control = InverseDroopController(Qdroop_param, self._ts)
 
     def step(self, currentCV, voltageCV, idq0SP: np.ndarray):
         """
