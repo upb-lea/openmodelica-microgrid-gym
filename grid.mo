@@ -1949,12 +1949,6 @@ package grid
       Line(points = {{-60, -30}, {-40, -30}, {-40, -30}, {-40, -30}}, color = {0, 0, 255}));
     connect(inverter2.pin1, lcl1.pin1) annotation(
       Line(points = {{-60, -36}, {-40, -36}, {-40, -36}, {-40, -36}}, color = {0, 0, 255}));
-    connect(lcl1.pin6, lc2.pin3) annotation(
-      Line(points = {{-20, -24}, {-4, -24}, {-4, 36}, {20, 36}, {20, 36}}, color = {0, 0, 255}));
-    connect(lcl1.pin5, lc2.pin2) annotation(
-      Line(points = {{-20, -30}, {0, -30}, {0, 30}, {20, 30}, {20, 30}}, color = {0, 0, 255}));
-    connect(lcl1.pin4, lc2.pin1) annotation(
-      Line(points = {{-20, -36}, {6, -36}, {6, 24}, {20, 24}, {20, 24}}, color = {0, 0, 255}));
   connect(pll.a, lcl1.pin6) annotation(
       Line(points = {{-10, -56}, {-14, -56}, {-14, -24}, {-20, -24}, {-20, -24}, {-20, -24}}, color = {0, 0, 255}));
   connect(pll.b, lcl1.pin5) annotation(
