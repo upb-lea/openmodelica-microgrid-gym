@@ -1,16 +1,18 @@
 import numpy as np
 
+from gym_microgrid.env import EmptyHistory
+
 
 class Agent:
-    def __init__(self):
-        pass
+    def __init__(self, history=EmptyHistory()):
+        self.history = history
 
     def reset(self, ):
         """
         Resets all agent buffers and discards unfinished episodes.
         TODO: Also set up the agent with respect to the environment (#actions, ...)
         """
-        pass
+        self.history.reset()
 
     def act(self, state: np.ndarray) -> np.ndarray:
         """

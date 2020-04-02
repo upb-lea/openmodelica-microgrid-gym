@@ -7,6 +7,7 @@ from safeopt import SafeOptSwarm
 from gym_microgrid.agents.staticctrl import StaticControlAgent
 from gym_microgrid.agents.util import MutableParams
 from gym_microgrid.controllers import Controller
+from gym_microgrid.env import EmptyHistory
 
 import matplotlib.pyplot as plt
 
@@ -15,7 +16,7 @@ import numpy as np
 
 class SafeOptAgent(StaticControlAgent):
     def __init__(self, mutable_params: Union[dict, list], kernel: Kern, ctrls: Dict[str, Controller],
-                 observation_action_mapping: dict):
+                 observation_action_mapping: dict, history=EmptyHistory()):
         self.params = MutableParams(
             list(mutable_params.values()) if isinstance(mutable_params, dict) else mutable_params)
         self.kernel = kernel
@@ -23,12 +24,13 @@ class SafeOptAgent(StaticControlAgent):
         self.episode_reward = None
         self.optimizer = None
         self.inital_reward = None
-        super().__init__(ctrls, observation_action_mapping)
+        super().__init__(ctrls, observation_action_mapping, history)
+        self.history.cols = ['J']
 
     def reset(self):
         # reinstantiate kernel
         # self.kernel = type(self.kernel)(**self.kernel.to_dict())
-        self.kernel = GPy.kern.Matern32(input_dim=1, lengthscale=.001)
+        self.kernel = GPy.kern.Matern32(input_dim=1, lengthscale=.01)
 
         self.params.reset()
         self.optimizer = None
@@ -53,11 +55,12 @@ class SafeOptAgent(StaticControlAgent):
             self.inital_reward = self.episode_reward
             # Norm for Safe-point
             # y_0 = y_meas = initial_reward
+            J = 1 / (self.episode_reward / self.inital_reward)
 
-            bounds = [(0.02, 0.035)]
+            bounds = [(-0.005, 0.035)]
             noise_var = 0.05 ** 2
             gp = GPy.models.GPRegression(np.array([self.params[:]]),
-                                         np.array([[self.episode_reward / self.inital_reward]]), self.kernel,
+                                         np.array([[J]]), self.kernel,
                                          noise_var=noise_var)
             self.optimizer = SafeOptSwarm(gp, 0., bounds=bounds, threshold=1)
         else:
@@ -69,6 +72,8 @@ class SafeOptAgent(StaticControlAgent):
             J = 1 / (self.episode_reward / self.inital_reward)
 
             self.optimizer.add_new_data_point(self.params[:], J)
+
+        self.history.append([J])
         self.params[:] = self.optimizer.optimize()
         print(self.episode_reward / self.inital_reward)
 

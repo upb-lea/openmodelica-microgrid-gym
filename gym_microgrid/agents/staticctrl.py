@@ -4,18 +4,22 @@ from gym_microgrid.agents.agent import Agent
 from gym_microgrid.common.itertools_ import fill_params
 from gym_microgrid.controllers import Controller
 
+from gym_microgrid.env import EmptyHistory
+
+
 import pandas as pd
 import numpy as np
 
 
 class StaticControlAgent(Agent):
-    def __init__(self, ctrls: Dict[str, Controller], observation_action_mapping: Dict):
-        super().__init__()
+    def __init__(self, ctrls: Dict[str, Controller], observation_action_mapping: Dict, history=EmptyHistory()):
+        super().__init__(history)
         self.episode_reward = 0
         self.controllers = ctrls
         self.obs_template = observation_action_mapping
 
     def reset(self):
+        super().reset()
         self.prepare_episode()
 
     def act(self, state: pd.DataFrame):
