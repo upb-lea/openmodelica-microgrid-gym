@@ -59,8 +59,7 @@ class SingleHistory(EmptyHistory):
         else:
             raise ValueError('"values" must be a sequence or DataFrame')
 
-        self.cols += newcols
-
+        self._structured_cols = self.structured_cols(None) + newcols
 
 class FullHistory(EmptyHistory):
     """
@@ -84,4 +83,4 @@ class FullHistory(EmptyHistory):
         else:
             raise ValueError('"values" must be a sequence or DataFrame')
 
-        self.cols += newcols
+        self._structured_cols = self.structured_cols(None) + newcols

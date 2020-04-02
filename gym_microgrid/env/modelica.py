@@ -173,7 +173,10 @@ class ModelicaEnv(gym.Env):
         """
         if isinstance(measurements, pd.DataFrame):
             measurements = [measurements]
-        self.history.cols = self.history.structured_cols(None) + [df.columns for df in measurements]
+        for df in measurements:
+            self.history.cols = self.history.structured_cols(None) + [col for col in df.columns if
+                                                                      col not in set(self.history.cols)]
+
         self.__measurements = pd.concat(measurements)
 
     def reset(self):
