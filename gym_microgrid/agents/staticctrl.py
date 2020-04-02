@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Union, List
 
 from gym_microgrid.agents import Agent
 from gym_microgrid.common.itertools_ import fill_params
@@ -42,6 +42,8 @@ class StaticControlAgent(Agent):
             self.episode_reward = 0
         # on other steps we don't need to do anything
 
+    def measure(self) -> Union[pd.DataFrame, List]:
+        return [ctrl.history.df.tail(1) for ctrl in self.controllers.values()]
+
     def render(self):
-        # TODO plot the GP
         pass

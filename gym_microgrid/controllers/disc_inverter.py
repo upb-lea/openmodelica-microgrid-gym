@@ -15,13 +15,15 @@ from gym_microgrid.common import *
 
 import numpy as np
 
+from ..env.recorder import SingleHistory
+
 
 class Controller:
-    def __init__(self, output_gain=1000):
-        pass
+    def __init__(self, history=SingleHistory()):
+        self.history = history
 
     def reset(self):
-        pass
+        self.history.reset()
 
     def handle_undersampling(self):
         pass
@@ -141,6 +143,7 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
                     control
         
         """
+        super().__init__()
         self._integralSum = 0
         self._ts = tau * undersampling
         self._undersample = undersampling
@@ -226,6 +229,7 @@ class MultiPhaseDQCurrentController(CurrentCtl):
                     for example if set to 10, the controller will only calculate 
                     the setpoint every 10th controller call
         """
+        super().__init__()
         self._ts = tau * undersampling
         self._undersampling_count = 0
         self._undersample = undersampling

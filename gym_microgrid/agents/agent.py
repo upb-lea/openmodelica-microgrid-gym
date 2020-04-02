@@ -33,6 +33,6 @@ class Agent:
     def measure(self) -> pd.DataFrame:
         """
 
-        :return:
+        :return: DataFrame or nested list of DataFrames
         """
         return pd.DataFrame()
