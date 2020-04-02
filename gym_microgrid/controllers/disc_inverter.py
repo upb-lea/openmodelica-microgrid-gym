@@ -62,6 +62,7 @@ class VoltageCtl(Controller):
     def reset(self):
         super().reset()
         self._voltagePI.reset()
+        self._phaseDDS.reset()
 
 
 class CurrentCtl(Controller):
@@ -196,7 +197,7 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
             self._prev_MV = dq0_to_abc(MVdq0, phase)
 
             # print("SPi: {}, MV: {}".format(SPI,MV))
-            self._prev_CV = CVIdq0
+
             self._undersampling_count = 0
 
             # Add intern measurment
@@ -298,7 +299,7 @@ class MultiPhaseDQCurrentController(CurrentCtl):
             # print("SP: {}, act: {}, fb {}".format(idq0SP,MVdq0,self._lastIDQ))
             # Transform the outputs from the controllers (dq0) to abc
             # also divide by SQRT(2) to ensure the transform is limited to [-1,1]
-            self._prev_MVdq0 = MVdq0
+
             self._prev_MV = dq0_to_abc_cos_sin(MVdq0, *self._prev_cossine)
             # print("SP: {}, act: {}, actabc {}".format(idq0SP,MVdq0,self._prev_MV))
 
