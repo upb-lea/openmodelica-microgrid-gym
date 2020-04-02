@@ -23,7 +23,6 @@ class PIController:
 
     def reset(self):
         self.integralSum = 0
-        self._subsample_count = 0
 
     def step(self, error):
         """
