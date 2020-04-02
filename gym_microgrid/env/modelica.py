@@ -171,9 +171,9 @@ class ModelicaEnv(gym.Env):
         """
         records measurements
         """
-        # TODO update plotting columns
         if isinstance(measurements, pd.DataFrame):
             measurements = [measurements]
+        self.history.cols = self.history.structured_cols(None) + [df.columns for df in measurements]
         self.__measurements = pd.concat(measurements)
 
     def reset(self):

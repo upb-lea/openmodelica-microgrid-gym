@@ -45,7 +45,8 @@ result_3_0 = result_0 + ['pll.add_freq_nom_delta_f.y']
 
 
 @pytest.mark.parametrize('i,o', [[[conf], result_0], [[result_1], result_0], [[conf2], result_0], [[conf3], result_3_0],
-                                 [[conf, 1], result_1], [[result_1, 1], result_1], [[conf2, 1], result_1_2]])
+                                 [[conf, 1], result_1], [[result_1, 1], result_1], [[conf2, 1], result_1_2],
+                                 [[result_1_2, None], result_1_2]])
 def test_flatten(i, o):
     assert flatten(*i) == o
 
