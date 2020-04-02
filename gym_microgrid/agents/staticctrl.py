@@ -30,8 +30,7 @@ class StaticControlAgent(Agent):
         for key, params in obs.items():
             controls.append(self.controllers[key].step(*params)[0])
 
-        # TODO: Remove this constant 1000. it should actually be in the fmu!
-        return np.append(*controls) * 1000
+        return np.append(*controls)
 
     def observe(self, reward, terminated):
         self.episode_reward += reward or 0
