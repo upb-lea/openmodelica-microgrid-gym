@@ -196,7 +196,7 @@ class ModelicaEnv(gym.Env):
         OpenAI Gym API. Determines how one simulation step is performed for the environment.
         Simulation step is execution of the given action in a current state of the environment.
         :param action: action to be executed.
-        :return: resulting state
+        :return: state, reward, is done, info
         """
         logger.debug("Experiment next step was called.")
         if self.is_done:
@@ -241,7 +241,7 @@ class ModelicaEnv(gym.Env):
         else:
             logger.debug("Experiment step done, experiment done.")
 
-        return self.state, self.reward(self.state), self.is_done
+        return self.state, self.reward(self.state), self.is_done, {}
 
     def render(self, mode='human', close=False):
         """

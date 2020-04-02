@@ -29,7 +29,7 @@ class Runner:
             while not done:
                 self.agent.observe(r, done)
                 act = self.agent.act(obs)
-                obs, r, done = self.env.step(act)
+                obs, r, done, info = self.env.step(act)
                 if visualize:
                     self.env.render()
             self.agent.observe(r, done)

@@ -152,7 +152,7 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
             # print("Action: {}".format(action))
 
             # Perform a step of simulation
-            obs, reward, done = sim_env.step(np.append(action1, action2))
+            obs, reward, done, _ = sim_env.step(np.append(action1, action2))
             # Accumulate time spent simulating
             sim_time = sim_time + time.time() - startSim
 
