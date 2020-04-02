@@ -41,6 +41,9 @@ class StaticControlAgent(Agent):
             self.prepare_episode()
         # on other steps we don't need to do anything
 
+    def measure(self) -> Union[pd.DataFrame, List]:
+        return [ctrl.history.df.tail(1) for ctrl in self.controllers.values()]
+
     def prepare_episode(self):
         for ctrl in self.controllers.values():
             ctrl.reset()
