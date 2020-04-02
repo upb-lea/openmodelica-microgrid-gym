@@ -187,7 +187,7 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
             SPVdq0 = [VSP, 0, 0]
             SPIdq0 = self._voltagePI.stepSPCV(SPVdq0, CVVdq0)
 
-            SPIdq0 = [15, 0, 0]
+            # SPIdq0 = [15, 0, 0]
 
             # Current controller calculations
             MVdq0 = self._currentPI.stepSPCV(SPIdq0, CVIdq0)
@@ -206,7 +206,7 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
         else:
             self._undersampling_count = self._undersampling_count + 1
 
-        return self._prev_MV, self._prev_CV
+        return self._prev_MV
 
 
 class MultiPhaseDQCurrentController(CurrentCtl):
@@ -302,4 +302,4 @@ class MultiPhaseDQCurrentController(CurrentCtl):
             self._prev_MV = dq0_to_abc_cos_sin(MVdq0, *self._prev_cossine)
             # print("SP: {}, act: {}, actabc {}".format(idq0SP,MVdq0,self._prev_MV))
 
-        return self._prev_MV, self._prev_freq, self._lastIDQ, self._prev_MVdq0
+        return self._prev_MV

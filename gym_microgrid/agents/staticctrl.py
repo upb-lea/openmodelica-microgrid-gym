@@ -27,7 +27,7 @@ class StaticControlAgent(Agent):
         obs = fill_params(self.obs_template, state)
         controls = list()
         for key, params in obs.items():
-            controls.append(self.controllers[key].step(*params)[0])
+            controls.append(self.controllers[key].step(*params))
 
         # TODO: Remove this constant 1000. it should actually be in the fmu!
         return np.append(*controls) * 1000
