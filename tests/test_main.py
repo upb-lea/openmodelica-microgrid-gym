@@ -60,6 +60,7 @@ def agent():
 def test_main(agent):
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    viz_mode=None,
+                   model_path='test.fmu',
                    max_episode_steps=100,
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output={'lc1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
@@ -77,6 +78,7 @@ def test_main(agent):
 def test_main2(agent):
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    viz_mode=None,
+                   model_path='test.fmu',
                    max_episode_steps=100,
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output={'lc1': [['inductor1.i', 'inductor3.i', 'inductor2.i'],
@@ -95,6 +97,7 @@ def test_main_1():
     agent = SafeOptAgent()
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    viz_mode=None,
+                   model_path='test.fmu',
                    max_episode_steps=100,
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output={'lc1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
