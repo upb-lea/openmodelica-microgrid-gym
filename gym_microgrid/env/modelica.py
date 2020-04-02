@@ -86,7 +86,8 @@ class ModelicaEnv(gym.Env):
         self.model_input_names = model_input
         self.model_output_names = model_output
         self.sim_time_interval = None
-        self.state = None
+        self.__state = None
+        self.__measurements = None
         self.record_states = viz_mode == 'episode'
         self.history = history
         self.history.cols = flatten(self.model_output_names)
@@ -155,7 +156,6 @@ class ModelicaEnv(gym.Env):
         self.model.continuous_states = sol_out.y[:, -1]
 
         obs = self.model.get_real(self.model_output_idx)
-        self.history.append(obs)
         return pd.DataFrame([obs], columns=flatten(self.model_output_names))
 
     @property
@@ -167,6 +167,12 @@ class ModelicaEnv(gym.Env):
         """
         logger.debug(f't: {self.sim_time_interval[1]}, ')
         return abs(self.sim_time_interval[1]) > self.time_end
+
+    def update_measurements(self, measurements: pd.DataFrame):
+        """
+        records measurements
+        """
+        self.__measurements = measurements
 
     def reset(self):
         """
@@ -187,9 +193,11 @@ class ModelicaEnv(gym.Env):
         self._setup_fmu()
         self.sim_time_interval = np.array([self.time_start, self.time_start + self.time_step_size])
         self.history.reset()
-        self.state = self._simulate()
+        self.__state = self._simulate()
+        self.__measurements = pd.DataFrame()
+        self.history.append(self.__state.join(self.__measurements))
 
-        return self.state
+        return self.__state
 
     def step(self, action):
         """
@@ -204,7 +212,7 @@ class ModelicaEnv(gym.Env):
                 """You are calling 'step()' even though this environment has already returned done = True.
                 You should always call 'reset()' once you receive 'done = True' -- any further steps are
                 undefined behavior.""")
-            return self.state, None, self.is_done
+            return self.__state, None, self.is_done
 
         # check if action is a list. If not - create list of length 1
         try:
@@ -229,9 +237,11 @@ class ModelicaEnv(gym.Env):
             self.model.set(*zip(*[(var, f(self.sim_time_interval[0])) for var, f in self.model_parameters.items()]))
 
         # Simulate and observe result state
-        self.state = self._simulate()
+        self.__state = self._simulate()
+        obs = self.__state.join(self.__measurements)
+        self.history.append(obs)
 
-        logger.debug("model output: {}, values: {}".format(flatten(self.model_output_names), self.state))
+        logger.debug("model output: {}, values: {}".format(flatten(self.model_output_names), self.__state))
 
         # Check if experiment has finished
         # Move simulation time interval if experiment continues
@@ -241,7 +251,7 @@ class ModelicaEnv(gym.Env):
         else:
             logger.debug("Experiment step done, experiment done.")
 
-        return self.state, self.reward(self.state), self.is_done, {}
+        return obs, self.reward(self.__state), self.is_done, {}
 
     def render(self, mode='human', close=False):
         """
