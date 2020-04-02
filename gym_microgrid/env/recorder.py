@@ -73,7 +73,7 @@ class FullHistory(EmptyHistory):
             if cols is not None:
                 raise ValueError('providing columns with DataFrames is not supported. '
                                  'Maybe you want to do ".append(df[cols])" instead.')
-            self.df = self.df.append(values)
+            self.df = self.df.append(values, ignore_index=True)
             if set(self.cols) is not set(self.df.columns):
                 # if colums have been added, we append them to the cols
                 newcols = [col for col in self.df.columns if col not in set(self.cols)]
