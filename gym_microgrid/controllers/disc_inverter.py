@@ -48,7 +48,7 @@ class Controller:
 
 class VoltageCtl(Controller):
     def __init__(self, VPIParams, IPIParams, tau, PdroopParams: DroopParams, QdroopParams: DroopParams, undersampling=1,
-                 history=EmptyHistory()):
+                 history=SingleHistory()):
         super().__init__(IPIParams, tau, undersampling, history)
         self._integralSum = 0
 
@@ -66,7 +66,7 @@ class VoltageCtl(Controller):
 
 class CurrentCtl(Controller):
     def __init__(self, IPIParams, tau, i_limit, Pdroop_param: InverseDroopParams,
-                 Qdroop_param: InverseDroopParams, undersampling=1, history=EmptyHistory()):
+                 Qdroop_param: InverseDroopParams, undersampling=1, history=SingleHistory()):
         super().__init__(IPIParams, tau, undersampling, history)
 
         self._i_limit = i_limit
@@ -77,9 +77,9 @@ class CurrentCtl(Controller):
 
 class MultiPhaseABCPIPIController(VoltageCtl):
     """
-    Implements a discrete multiphase PIPI voltage forming control with current
+    Implements a discrete multiphase PIPI voltage forming control with current 
     limiting. Has its own internal oscillator to keep track of the internal angle
-
+    
     Controls each phase individualy in the abc axis.
     """
 
@@ -197,7 +197,7 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
             self._prev_MV = dq0_to_abc(MVdq0, phase)
 
             # print("SPi: {}, MV: {}".format(SPI,MV))
-            self._prev_CV = CVIdq0
+
             self._undersampling_count = 0
 
             # Add intern measurment
@@ -245,7 +245,6 @@ class MultiPhaseDQCurrentController(CurrentCtl):
         self._lastIDQ = np.zeros(N_PHASE)
         self._prev_theta = 0
         self._prev_freq = 0
-
     def step(self, currentCV, voltageCV, idq0SP: np.ndarray):
         """
         Performs the calculations for a discrete step of the controller
@@ -299,7 +298,7 @@ class MultiPhaseDQCurrentController(CurrentCtl):
             # print("SP: {}, act: {}, fb {}".format(idq0SP,MVdq0,self._lastIDQ))
             # Transform the outputs from the controllers (dq0) to abc
             # also divide by SQRT(2) to ensure the transform is limited to [-1,1]
-            self._prev_MVdq0 = MVdq0
+
             self._prev_MV = dq0_to_abc_cos_sin(MVdq0, *self._prev_cossine)
             # print("SP: {}, act: {}, actabc {}".format(idq0SP,MVdq0,self._prev_MV))
             self.history.append([self._prev_freq])

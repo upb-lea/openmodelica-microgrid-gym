@@ -35,6 +35,10 @@ class EmptyHistory:
     def structured_cols(self, remaining_level=1):
         return flatten(self._structured_cols, remaining_level)
 
+    def __getitem__(self, item):
+        return self.df[item]
+
+
 
 class SingleHistory(EmptyHistory):
     """

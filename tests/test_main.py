@@ -55,7 +55,6 @@ def agent():
                                                 np.zeros(3)]})
     return mutable_params, agent
 
-
 @pytest.fixture()
 def env():
     conf = {'lc1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
@@ -91,12 +90,13 @@ def test_main_paramchange(agent, env):
     params['voltP'].val = 4
     runner.run(1)
     # env.history.df.to_hdf('test_main2.hd5', 'hist')
-    df = env.history.df.head(100)
+    df = env.history.df.head(50)
     df = df.reindex(sorted(df.columns), axis=1)
-    df2 = pd.read_hdf('test_main.hd5', 'hist').head(100)
+    df2 = pd.read_hdf('test_main.hd5', 'hist').head(50)
     df2 = df2.reindex(sorted(df2.columns), axis=1)
     assert df[out_params].to_numpy() != approx(df2[out_params].to_numpy(), 5e-3)
 
-    df2 = pd.read_hdf('test_main2.hd5', 'hist').head(100)
+    df2 = pd.read_hdf('test_main2.hd5', 'hist').head(50)
     df2 = df2.reindex(sorted(df2.columns), axis=1)
     assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-2)
+

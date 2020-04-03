@@ -1,17 +1,19 @@
 import numpy as np
 import pandas as pd
 
+from gym_microgrid.env import EmptyHistory
+
 
 class Agent:
-    def __init__(self):
-        pass
+    def __init__(self, history=EmptyHistory()):
+        self.history = history
 
     def reset(self):
         """
         Resets all agent buffers and discards unfinished episodes.
         TODO: Also set up the agent with respect to the environment (#actions, ...)
         """
-        pass
+        self.history.reset()
 
     def act(self, obs: pd.DataFrame) -> np.ndarray:
         """
@@ -36,3 +38,6 @@ class Agent:
         :return: DataFrame or nested list of DataFrames
         """
         return pd.DataFrame()
+
+    def render(self):
+        pass

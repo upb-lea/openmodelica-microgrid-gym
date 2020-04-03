@@ -183,7 +183,7 @@ class ModelicaEnv(gym.Env):
             elif miss_col_count:
                 self.history.cols = self.history.structured_cols() + cols
 
-        self.__measurements = pd.concat(tuple(zip(*measurements))[1])
+        self.__measurements = pd.concat(list(map(lambda df: df[1].reset_index(drop=True), measurements)), axis=1)
 
     def reset(self):
         """
@@ -262,7 +262,7 @@ class ModelicaEnv(gym.Env):
         else:
             logger.debug("Experiment step done, experiment done.")
 
-        return obs, self.reward(self.__state), self.is_done, {}
+        return obs, self.reward(obs), self.is_done, {}
 
     def render(self, mode='human', close=False):
         """
