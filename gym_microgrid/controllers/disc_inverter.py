@@ -183,7 +183,7 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
             CVVdq0 = abc_to_dq0(voltageCV, phase)
 
             # Voltage controller calculations
-            VSP = voltage * 1.732050807568877
+            VSP = voltage
             # Voltage SP in dq0 (static for the moment)
             SPVdq0 = [VSP, 0, 0]
             SPIdq0 = self._voltagePI.stepSPCV(SPVdq0, CVVdq0)
@@ -277,7 +277,7 @@ class MultiPhaseDQCurrentController(CurrentCtl):
                 # Determine the droop power setpoints
                 droopPI = self._droop_control.step(self._prev_freq) / inst_rms(voltageCV)
 
-                droopPI = droopPI / 1.732050807568877  # * 1.4142135623730951      # RMS to Peak
+                droopPI = droopPI * 1.4142135623730951  # RMS to Peak
 
                 droopPI = np.clip(droopPI, -self._i_limit, self._i_limit)
 
@@ -285,7 +285,7 @@ class MultiPhaseDQCurrentController(CurrentCtl):
                 droopQI = self._Qdroop_control.step(Vinst) / Vinst
 
                 # print("droop: {}, Vinst: {}".format(droopModification,Vinst))
-                droopQI = droopQI / 1.732050807568877  # * 1.4142135623730951      # RMS to Peak
+                droopQI = droopQI * 1.4142135623730951  # RMS to Peak
 
                 droopQI = np.clip(droopQI, -self._i_limit, self._i_limit)
 
