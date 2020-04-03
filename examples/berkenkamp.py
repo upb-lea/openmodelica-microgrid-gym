@@ -61,14 +61,22 @@ if __name__ == '__main__':
 
     # Define mutable parameters
     # mutable_params = dict(voltP=MutableFloat(25e-3))  #, voltI=MutableFloat(60))
-    mutable_params = dict(currentP=MutableFloat(12e-3))  # , voltI=MutableFloat(60))
+
+    mutable_params = dict(currentP=MutableFloat(12e-3))
+    # mutable_params = dict( currentI=MutableFloat(90))
+    # mutable_params = dict(currentP=MutableFloat(12e-3), currentI=MutableFloat(90))
 
     ctrl = dict()
     # Voltage PI parameters for the current sourcing inverter
     # voltage_dqp_iparams = PI_params(kP=mutable_params['voltP'], kI=mutable_params['voltI'], limits=(-iLimit, iLimit))
     voltage_dqp_iparams = PI_params(kP=25e-3, kI=60, limits=(-iLimit, iLimit))
+
     # Current PI parameters for the voltage sourcing inverter
     current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=90, limits=(-1, 1))
+    # current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI= mutable_params['currentI'], limits=(-1, 1))
+    #current_dqp_iparams = PI_params(kP=0.008, kI=mutable_params['currentI'], limits=(-1, 1))
+
+
     # Droop of the active power Watt/Hz, delta_t
     droop_param = DroopParams(DroopGain, 0.005, nomFreq)
     # Droop of the reactive power VAR/Volt Var.s/Volt

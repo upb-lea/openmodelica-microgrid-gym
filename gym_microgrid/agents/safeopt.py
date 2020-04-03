@@ -30,7 +30,16 @@ class SafeOptAgent(StaticControlAgent):
     def reset(self):
         # reinstantiate kernel
         # self.kernel = type(self.kernel)(**self.kernel.to_dict())
+
+        # Kp
         self.kernel = GPy.kern.Matern32(input_dim=1, variance=2., lengthscale=.005)
+
+        # Ki
+        # self.kernel = GPy.kern.Matern32(input_dim=1, variance=2., lengthscale=100.)
+
+        # Kp, Ki
+        #self.kernel = GPy.kern.Matern32(input_dim=1, variance=2., lengthscale=.005)
+
 
         self.params.reset()
         self.optimizer = None
@@ -57,8 +66,18 @@ class SafeOptAgent(StaticControlAgent):
             # Norm for Safe-point
             J = 1 / self.episode_reward / self.inital_Performance
 
+            # Kp
             bounds = [(-0.005, 0.02)]
             noise_var = 0.005 ** 2  # Measurement noise sigma_omega
+
+            # Ki
+            # bounds = [(10, 200)]
+            noise_var = 0.05 ** 2  # Measurement noise sigma_omega
+
+            # Kp, Ki
+            # bounds = [(-0.005, 0.02), (10, 200)]
+            #noise_var = 0.05 ** 2  # Measurement noise sigma_omega
+
             gp = GPy.models.GPRegression(np.array([self.params[:]]),
                                          np.array([[J]]), self.kernel,
                                          noise_var=noise_var)
