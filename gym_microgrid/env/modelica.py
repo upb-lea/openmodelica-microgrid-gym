@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 from os.path import basename
-from typing import Sequence, Callable, List, Union
+from typing import Sequence, Callable, List, Union, Tuple
 
 import gym
 import numpy as np
@@ -11,6 +11,8 @@ from pyfmi import load_fmu
 from pyfmi.fmi import FMUModelME2
 from scipy import integrate
 import matplotlib.pyplot as plt
+
+from gym_microgrid.common.itertools_ import flatten
 from gym_microgrid.env.recorder import FullHistory, EmptyHistory
 
 logger = logging.getLogger(__name__)
@@ -167,17 +169,21 @@ class ModelicaEnv(gym.Env):
         logger.debug(f't: {self.sim_time_interval[1]}, ')
         return abs(self.sim_time_interval[1]) > self.time_end
 
-    def update_measurements(self, measurements: Union[pd.DataFrame, List]):
+    def update_measurements(self, measurements: Union[pd.DataFrame, List[Tuple[List, pd.DataFrame]]]):
         """
         records measurements
         """
         if isinstance(measurements, pd.DataFrame):
-            measurements = [measurements]
-        for df in measurements:
-            self.history.cols = self.history.structured_cols(None) + [col for col in df.columns if
-                                                                      col not in set(self.history.cols)]
+            measurements = [(measurements.colums, measurements)]
+        for cols, df in measurements:
+            miss_col_count = len(set(flatten(cols)) - set(self.history.cols))
+            if 0 < miss_col_count < len(flatten(cols)):
+                raise ValueError(
+                    f'some of the columns are already added, this should not happen: cols:"{cols}";self.history.cols:"{self.history.cols}"')
+            elif miss_col_count:
+                self.history.cols = self.history.structured_cols() + cols
 
-        self.__measurements = pd.concat(measurements)
+        self.__measurements = pd.concat(tuple(zip(*measurements))[1])
 
     def reset(self):
         """
@@ -278,7 +284,7 @@ class ModelicaEnv(gym.Env):
                 for cols in self.history.structured_cols():
                     df = self.history.df[cols].copy()
                     df.index = self.history.df.index * self.time_step_size
-                    df.plot()
+                    df.plot(legend=True)
                     plt.show()
 
         elif self.viz_mode == 'step':

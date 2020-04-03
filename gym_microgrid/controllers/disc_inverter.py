@@ -154,7 +154,8 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
 
         super().__init__(VPIParams, IPIParams, tau, PdroopParams, QdroopParams, undersampling,
                          history)
-        self.history.cols = ['phase', 'SPVdq0', 'SPIdq0', 'M_dq0', 'SPIabc']
+        self.history.cols = ['phase', [f'SPV{s}' for s in 'dq0'], [f'SPI{s}' for s in 'dq0'], [f'M{s}' for s in 'dq0'],
+                             [f'SPI{s}' for s in 'abc']]
         self._prev_CV = np.zeros(N_PHASE)
 
     def step(self, currentCV, voltageCV):
@@ -200,7 +201,7 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
             self._undersampling_count = 0
 
             # Add intern measurment
-            self.history.append([phase, SPVdq0, SPIdq0, MVdq0, dq0_to_abc(SPIdq0, phase)])
+            self.history.append([phase, *SPVdq0, *SPIdq0, *MVdq0, *dq0_to_abc(SPIdq0, phase)])
 
 
         else:
