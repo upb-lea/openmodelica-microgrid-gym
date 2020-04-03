@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 
 class Agent:
@@ -12,7 +13,7 @@ class Agent:
         """
         pass
 
-    def act(self, obs: np.ndarray) -> np.ndarray:
+    def act(self, obs: pd.DataFrame) -> np.ndarray:
         """
         select an action with respect to the state
         this might update the internal state with respect to the history.
@@ -28,3 +29,10 @@ class Agent:
         :return:
         """
         pass
+
+    def measure(self) -> pd.DataFrame:
+        """
+
+        :return: DataFrame or nested list of DataFrames
+        """
+        return pd.DataFrame()

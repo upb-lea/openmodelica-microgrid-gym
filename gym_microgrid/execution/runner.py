@@ -6,6 +6,7 @@ from gym import Env
 from tqdm import tqdm
 
 from gym_microgrid.agents import Agent
+from gym_microgrid.env import ModelicaEnv
 
 
 class Runner:
@@ -14,7 +15,7 @@ class Runner:
     It handles communication between agent and environment and handles the execution of multiple epochs
     """
 
-    def __init__(self, agent: Agent, env: Env):
+    def __init__(self, agent: Agent, env: ModelicaEnv):
         self.agent = agent
         self.env = env
 
@@ -29,6 +30,7 @@ class Runner:
             while not done:
                 self.agent.observe(r, done)
                 act = self.agent.act(obs)
+                self.env.update_measurements(self.agent.measure())
                 obs, r, done, info = self.env.step(act)
                 if visualize:
                     self.env.render()

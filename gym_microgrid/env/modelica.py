@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 from os.path import basename
-from typing import Sequence, Callable
+from typing import Sequence, Callable, List, Union, Tuple
 
 import gym
 import numpy as np
@@ -83,13 +83,15 @@ class ModelicaEnv(gym.Env):
         # if there are parameters, we will convert all scalars to constant functions.
         self.model_parameters = model_params and {var: (val if isinstance(val, Callable) else lambda t: val) for
                                                   var, val in model_params.items()}
-        self.model_input_names = model_input
-        self.model_output_names = model_output
+
         self.sim_time_interval = None
-        self.state = None
+        self.__state = None
+        self.__measurements = None
         self.record_states = viz_mode == 'episode'
         self.history = history
-        self.history.cols = flatten(self.model_output_names)
+        self.history.cols = model_output
+        self.model_input_names = model_input
+        self.model_output_names = self.history.cols
 
         # OpenAI Gym requirements
         self.action_space = gym.spaces.Discrete(3)
@@ -117,7 +119,7 @@ class ModelicaEnv(gym.Env):
 
         # precalculating indices for more efficient lookup
         self.model_output_idx = np.array(
-            [self.model.get_variable_valueref(k) for k in flatten(self.model_output_names)])
+            [self.model.get_variable_valueref(k) for k in self.model_output_names])
 
     def _calc_jac(self, t, x):
         # get state and derivative value reference lists
@@ -155,8 +157,7 @@ class ModelicaEnv(gym.Env):
         self.model.continuous_states = sol_out.y[:, -1]
 
         obs = self.model.get_real(self.model_output_idx)
-        self.history.append(obs)
-        return pd.DataFrame([obs], columns=flatten(self.model_output_names))
+        return pd.DataFrame([obs], columns=self.model_output_names)
 
     @property
     def is_done(self) -> bool:
@@ -167,6 +168,22 @@ class ModelicaEnv(gym.Env):
         """
         logger.debug(f't: {self.sim_time_interval[1]}, ')
         return abs(self.sim_time_interval[1]) > self.time_end
+
+    def update_measurements(self, measurements: Union[pd.DataFrame, List[Tuple[List, pd.DataFrame]]]):
+        """
+        records measurements
+        """
+        if isinstance(measurements, pd.DataFrame):
+            measurements = [(measurements.colums, measurements)]
+        for cols, df in measurements:
+            miss_col_count = len(set(flatten(cols)) - set(self.history.cols))
+            if 0 < miss_col_count < len(flatten(cols)):
+                raise ValueError(
+                    f'some of the columns are already added, this should not happen: cols:"{cols}";self.history.cols:"{self.history.cols}"')
+            elif miss_col_count:
+                self.history.cols = self.history.structured_cols() + cols
+
+        self.__measurements = pd.concat(tuple(zip(*measurements))[1])
 
     def reset(self):
         """
@@ -187,9 +204,11 @@ class ModelicaEnv(gym.Env):
         self._setup_fmu()
         self.sim_time_interval = np.array([self.time_start, self.time_start + self.time_step_size])
         self.history.reset()
-        self.state = self._simulate()
+        self.__state = self._simulate()
+        self.__measurements = pd.DataFrame()
+        self.history.append(self.__state.join(self.__measurements))
 
-        return self.state
+        return self.__state
 
     def step(self, action):
         """
@@ -204,7 +223,7 @@ class ModelicaEnv(gym.Env):
                 """You are calling 'step()' even though this environment has already returned done = True.
                 You should always call 'reset()' once you receive 'done = True' -- any further steps are
                 undefined behavior.""")
-            return self.state, None, self.is_done
+            return self.__state, None, self.is_done
 
         # check if action is a list. If not - create list of length 1
         try:
@@ -229,9 +248,11 @@ class ModelicaEnv(gym.Env):
             self.model.set(*zip(*[(var, f(self.sim_time_interval[0])) for var, f in self.model_parameters.items()]))
 
         # Simulate and observe result state
-        self.state = self._simulate()
+        self.__state = self._simulate()
+        obs = self.__state.join(self.__measurements)
+        self.history.append(obs)
 
-        logger.debug("model output: {}, values: {}".format(flatten(self.model_output_names), self.state))
+        logger.debug("model output: {}, values: {}".format(self.model_output_names, self.__state))
 
         # Check if experiment has finished
         # Move simulation time interval if experiment continues
@@ -241,7 +262,7 @@ class ModelicaEnv(gym.Env):
         else:
             logger.debug("Experiment step done, experiment done.")
 
-        return self.state, self.reward(self.state), self.is_done, {}
+        return obs, self.reward(self.__state), self.is_done, {}
 
     def render(self, mode='human', close=False):
         """
@@ -260,14 +281,12 @@ class ModelicaEnv(gym.Env):
                 # TODO close plot
                 pass
             else:
-                # TODO create the plot
-                for cols in flatten(self.model_output_names, 1):
+                for cols in self.history.structured_cols():
                     df = self.history.df[cols].copy()
                     df.index = self.history.df.index * self.time_step_size
-                    df.plot()
+                    df.plot(legend=True)
                     plt.show()
-                # print(self.history)
-                pass
+
         elif self.viz_mode == 'step':
             # TODO update plot
             pass

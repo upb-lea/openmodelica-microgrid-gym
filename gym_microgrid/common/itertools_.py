@@ -37,6 +37,8 @@ def flatten(data, remaining_levels=0):
         data = list(data.values())
     # count levels and collapse to keep the levels as needed
     depth = nested_depth(data)
+    if remaining_levels is None:
+        remaining_levels = depth - 1
     return list(collapse(data, levels=depth - remaining_levels - 1))
 
 

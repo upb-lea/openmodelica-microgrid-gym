@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Union, List
 
 from gym_microgrid.agents import Agent
 from gym_microgrid.common.itertools_ import fill_params
@@ -16,8 +16,7 @@ class StaticControlAgent(Agent):
         self.obs_template = observation_action_mapping
 
     def reset(self):
-        for ctrl in self.controllers.values():
-            ctrl.reset()
+        self.prepare_episode()
 
     def act(self, state: pd.DataFrame):
         """
@@ -28,7 +27,7 @@ class StaticControlAgent(Agent):
         obs = fill_params(self.obs_template, state)
         controls = list()
         for key, params in obs.items():
-            controls.append(self.controllers[key].step(*params)[0])
+            controls.append(self.controllers[key].step(*params))
 
         return np.append(*controls)
 
@@ -38,9 +37,13 @@ class StaticControlAgent(Agent):
             # safeopt update step
             # TODO
             # reset episode reward
-            self.episode_reward = 0
+            self.prepare_episode()
         # on other steps we don't need to do anything
 
-    def render(self):
-        # TODO plot the GP
-        pass
+    def measure(self) -> Union[pd.DataFrame, List]:
+        return [(ctrl.history.structured_cols(None), ctrl.history.df.tail(1)) for ctrl in self.controllers.values()]
+
+    def prepare_episode(self):
+        for ctrl in self.controllers.values():
+            ctrl.reset()
+        self.episode_reward = 0
