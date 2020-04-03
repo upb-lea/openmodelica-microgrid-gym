@@ -837,11 +837,11 @@ package grid
         Placement(visible = true, transformation(origin = {0, -18}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
       Modelica.Electrical.Analog.Basic.Inductor inductor3(L = L3) annotation(
         Placement(visible = true, transformation(origin = {60, 8}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
-      grid.components.resistor resistor1 annotation(
+      grid.components.resistor resistor1(R=R1) annotation(
         Placement(visible = true, transformation(origin = {-40, -20}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
-      grid.components.resistor resistor2 annotation(
+      grid.components.resistor resistor2(R=R2) annotation(
         Placement(visible = true, transformation(origin = {0, 12}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
-      grid.components.resistor resistor3 annotation(
+      grid.components.resistor resistor3(R=R3) annotation(
         Placement(visible = true, transformation(origin = {60, 34}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
     equation
       connect(resistor1.n, inductor1.p) annotation(
