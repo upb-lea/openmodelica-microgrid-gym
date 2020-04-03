@@ -1,5 +1,4 @@
 delta_t = 1e-4
-V_dc = 1000
 nomFreq = 50
 nomVoltPeak = 230 * 1.414
 iLimit = 30
@@ -40,7 +39,6 @@ if __name__ == '__main__':
     ctrl['slave'] = MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, iLimit,
                                                   droop_param, qdroop_param)
 
-    # TODO add V_dc into the controllers as output gain
     agent = StaticControlAgent(ctrl, {'master': [np.array([f'lc1.inductor{i + 1}.i' for i in range(3)]),
                                                  np.array([f'lc1.capacitor{i + 1}.v' for i in range(3)])],
                                       'slave': [np.array([f'lcl1.inductor{i + 1}.i' for i in range(3)]),
@@ -49,12 +47,13 @@ if __name__ == '__main__':
 
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    viz_mode='episode',
-                   model_path='grid.pll.fmu',
+                   model_path='../fmu/grid.network.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output={
                        'lc1': [
                            ['inductor1.i', 'inductor2.i', 'inductor3.i'],
                            ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
+                       'rl1': [f'inductor{i}.i' for i in range(1, 4)],
                        'lcl1':
                            [['inductor1.i', 'inductor2.i', 'inductor3.i'],
                             ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]})
