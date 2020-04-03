@@ -20,37 +20,59 @@ logger = logging.getLogger(__name__)
 
 class ModelicaEnv(gym.Env):
     """
-    Superclass for all environments simulated with Modelica FMU exported.
-    Implements abstract logic, common to all such environments.
-
-    In addition, allows usage of simple reward function out of box:
-        positive reward is assigned if experiment goes on,
-        negative reward - when experiment is done.
-
-    To create your own environment inherit this class and implement:
-        _get_action_space(), _get_observation_space(), _is_done()
-    and provide required config, that describes your model.
-
-
-    If you need more sophisticated logic to be implemented - override methods of OpenAI Gym API
-    in the child-class: reset(), step(), render(), close()
-
-    All methods called on model are from implemented PyFMI API.
+    OpenAI gym Environment encapsulating an FMU model.
     """
 
     viz_modes = {'episode', 'step', None}
 
-    def __init__(self, time_step: float = 1e-4, reward_fun: callable = lambda obs: 1,
+    def __init__(self, time_step: float = 1e-4, time_start=0, reward_fun: callable = lambda obs: 1,
                  log_level: int = logging.WARNING, solver_method='LSODA', max_episode_steps: int = None,
                  model_params: dict = None,
                  model_input: Sequence[str] = None, model_output: Sequence[str] = None, model_path='grid.network.fmu',
-                 time_start=0,
                  viz_mode: str = 'episode', history: EmptyHistory = FullHistory()):
         """
-        :type model_params: dict
-        :param model_params: key is variable name, value is a scalar or a callable with parameter time
+        Initialize the Environment.
+        The environment can only be used after reset() is called.
+
+        :type time_step: float
+        :param time_step: step size of the simulation in seconds
+
+        :type time_step: float
+        :param time_start: offset of the time in seconds
+
+        :type reward_fun: callable
+        :param reward_fun:
+            The function receives the observation as a DataFrame and must return the reward of this timestep as float.
+
+        :type log_level: int
+        :param log_level: logging granularity. see logging in stdlib
+
+        :type solver_method: str
+        :param solver_method: solver of the scipy.integrate.solve_ivp function
+
+        :type max_episode_steps: int
+        :param max_episode_steps: maximum number of episode steps.
+            The end time of the episode is calculated by the time resolution and the number of steps.
+
+        :type model_params: list of strings
+        :param model_params: parameters of the FMU.
+
+            dictionary of variable names and scalars or callables.
+            If a callable is provided it is called every time step with the current time.
+
+        :param model_input:
+        :param model_output:
+        :param model_path:
+
+        :type viz_mode: string, optional
+        :param viz_mode: specifies how and if to render
+
+            - 'episode': render after the episode is finished
+            - 'step': render after each time step
+            - None: disable visualization
+
         :type history: EmptyHistory
-        :type viz_mode: str
+        :param history: history to store observations and measurements (from the agent) after each step
         """
         logger.setLevel(log_level)
         # Right now still there until we defined an other stop-criteria according to safeness
@@ -100,7 +122,8 @@ class ModelicaEnv(gym.Env):
 
     def _setup_fmu(self):
         """
-        Setup FMU
+        initialize fmu model in self.model
+        :return: None
         """
 
         self.model.setup_experiment(start_time=self.time_start)
@@ -122,6 +145,12 @@ class ModelicaEnv(gym.Env):
             [self.model.get_variable_valueref(k) for k in self.model_output_names])
 
     def _calc_jac(self, t, x):
+        """
+
+        :param t:
+        :param x:
+        :return:
+        """
         # get state and derivative value reference lists
         refs = [[s.value_reference for s in getattr(self.model, attr)().values()]
                 for attr in
@@ -172,6 +201,10 @@ class ModelicaEnv(gym.Env):
     def update_measurements(self, measurements: Union[pd.DataFrame, List[Tuple[List, pd.DataFrame]]]):
         """
         records measurements
+        :type Union[pd.DataFrame, List[Tuple[List, pd.DataFrame]]
+        :param measurements: measurements will be stored in an internal variable
+         and the columns of the self.history is updated to be able to store the measurements as well
+        :return: None
         """
         if isinstance(measurements, pd.DataFrame):
             measurements = [(measurements.colums, measurements)]
