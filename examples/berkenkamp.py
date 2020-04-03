@@ -2,7 +2,7 @@ import GPy
 
 from gym_microgrid.env import FullHistory
 
-delta_t = 5e-5
+delta_t = 1e-4
 V_dc = 1000
 nomFreq = 50
 nomVoltPeak = 230 * 1.414
@@ -18,7 +18,6 @@ from gym_microgrid import Runner
 from gym_microgrid.common import *
 
 import numpy as np
-
 
 class reward:
 
@@ -39,12 +38,18 @@ class reward:
 
         # Setpoints
         VSPdq0_master = np.array(agent.controllers['master'].history['SPVdq0'].iloc[-1])
-        ISPdq0_master = np.array(agent.controllers['master'].history['SPVdq0'].iloc[-1])
+        ISPdq0_master = np.array(agent.controllers['master'].history['SPIdq0'].iloc[-1])
 
-        error = np.sum((VSPdq0_master - Vdq0_master) ** 2, axis=0) + np.sum((ISPdq0_master - Idq0_master) ** 2, axis=0) \
+        VSPabc_master = dq0_to_abc(VSPdq0_master, phase)
+        ISPabc_master = dq0_to_abc(ISPdq0_master, phase)
+
+        # error = np.sum((VSPabc_master - Vabc_master) ** 2, axis=0) + np.sum((ISPabc_master - Iabc_master) ** 2, axis=0) \
+        #        + 0  #np.sum((Idq0_master - agent.controllers['master']._voltagePI.controllers)**4)
+
+        error = np.sum((ISPabc_master - Iabc_master) ** 2, axis=0) \
                 + 0  # np.sum((Idq0_master - agent.controllers['master']._voltagePI.controllers)**4)
 
-        return error
+        return -error
 
 
 if __name__ == '__main__':
@@ -55,14 +60,15 @@ if __name__ == '__main__':
     kernel = GPy.kern.Matern32(input_dim=len(bounds), lengthscale=.01)
 
     # Define mutable parameters
-    mutable_params = dict(voltP=MutableFloat(25e-3))  #, voltI=MutableFloat(60))
+    # mutable_params = dict(voltP=MutableFloat(25e-3))  #, voltI=MutableFloat(60))
+    mutable_params = dict(currentP=MutableFloat(12e-3))  # , voltI=MutableFloat(60))
 
     ctrl = dict()
     # Voltage PI parameters for the current sourcing inverter
     # voltage_dqp_iparams = PI_params(kP=mutable_params['voltP'], kI=mutable_params['voltI'], limits=(-iLimit, iLimit))
-    voltage_dqp_iparams = PI_params(kP=mutable_params['voltP'], kI=60, limits=(-iLimit, iLimit))
+    voltage_dqp_iparams = PI_params(kP=25e-3, kI=60, limits=(-iLimit, iLimit))
     # Current PI parameters for the voltage sourcing inverter
-    current_dqp_iparams = PI_params(kP=0.012, kI=90, limits=(-1, 1))
+    current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=90, limits=(-1, 1))
     # Droop of the active power Watt/Hz, delta_t
     droop_param = DroopParams(DroopGain, 0.005, nomFreq)
     # Droop of the reactive power VAR/Volt Var.s/Volt
@@ -88,15 +94,15 @@ if __name__ == '__main__':
                                       np.array([f'lc1.capacitor{i + 1}.v' for i in range(3)])],
                               slave=[np.array([f'lcl1.inductor{i + 1}.i' for i in range(3)]),
                                      np.array([f'lcl1.capacitor{i + 1}.v' for i in range(3)]),
-                                     np.zeros(3)]))
+                                     np.zeros(3)]), history=FullHistory())
 
     rew = reward(agent)
 
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    reward_fun=rew.rew_fun,
                    viz_mode='episode',
-                   max_episode_steps=300,
-                   model_path='grid.oneController.fmu',
+                   max_episode_steps=200,
+                   model_path='grid.oC.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
                                           ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
@@ -104,4 +110,4 @@ if __name__ == '__main__':
                                            ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]))
 
     runner = Runner(agent, env)
-    runner.run(10, visualize=True)
+    runner.run(15, visualize=True)
