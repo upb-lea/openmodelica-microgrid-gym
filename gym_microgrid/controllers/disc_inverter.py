@@ -235,7 +235,7 @@ class MultiPhaseDQCurrentController(CurrentCtl):
                     the setpoint every 10th controller call
         """
         super().__init__(IPIParams, tau, i_limit, Pdroop_param, Qdroop_param, undersampling, history)
-        self.history.cols = ['phase']
+        self.history.cols = ['freq']
 
         # Three controllers  for each axis (d,q,0)
         self._pll = PLL(pllPIParams, self._ts)
@@ -302,5 +302,5 @@ class MultiPhaseDQCurrentController(CurrentCtl):
             self._prev_MVdq0 = MVdq0
             self._prev_MV = dq0_to_abc_cos_sin(MVdq0, *self._prev_cossine)
             # print("SP: {}, act: {}, actabc {}".format(idq0SP,MVdq0,self._prev_MV))
-
+            self.history.append([self._prev_freq])
         return self._prev_MV

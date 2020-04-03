@@ -8,7 +8,7 @@ from pytest import approx
 def env():
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    viz_mode=None,
-                   model_path='test.fmu',
+                   model_path='../fmu/test.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output={'lc1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
@@ -25,9 +25,9 @@ def test_step(env):
     np.random.seed(1)
     env.reset()
     obs, r, done, _ = env.step(np.random.random(6))
-    assert obs.to_numpy()[0] == approx(
-        [3.548958e-02, 6.157956e-02, -5.862613e-05, 1.727147e-01, 2.851154e-01, 3.294574e-03, 2.536135e-02,
-         1.192695e-02, 7.840170e-03, 1.426348e-01, 8.746552e-02, 3.908457e-02])
+    assert obs.to_numpy()[0] == approx([3.54844812e+01, 6.15702788e+01, -5.85093688e-02, 1.72978825e+02,
+                                        2.85563336e+02, 3.29671269e+00, 2.53610151e+01, 1.19274553e+01,
+                                        7.83990524e+00, 1.42650770e+02, 8.74848857e+01, 3.90866066e+01])
     assert r == 1
     assert not done
 
@@ -51,7 +51,7 @@ def test_params_simple():
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    viz_mode=None,
                    max_episode_steps=100,
-                   model_path='test.fmu',
+                   model_path='../fmu/test.fmu',
                    model_params=dict(i1p1=lambda t: np.sin(t), i1p2=3),
                    model_input=['i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output={'lc1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
@@ -60,8 +60,8 @@ def test_params_simple():
                                           ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]})
     env.reset()
     obs, r, done, _ = env.step(np.random.random(4))
-    assert obs.to_numpy()[0] == approx([-5.32812108e-04, 2.56906733e-01, 3.54883017e-02, 2.53605852e-02,
-                                        1.16595698e+00, 1.72720287e-01, 6.11590476e-02, -2.20933938e-03,
-                                        2.53610394e-02, 3.04877618e-01, 1.05669912e-01, 1.42644541e-01])
+    assert obs.to_numpy()[0] == approx([-5.32817321e-01, 2.56879233e+02, 3.54844767e+01, 2.53699101e+01,
+                                        1.16778955e+03, 1.72978940e+02, 6.11590023e+01, -2.20936110e+00,
+                                        2.53610173e+01, 3.04879591e+02, 1.05708749e+02, 1.42650768e+02])
     assert r == 1
     assert not done

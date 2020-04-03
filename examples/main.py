@@ -63,7 +63,8 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
 
     controller = MultiPhaseDQ0PIPIController(voltageDQPIparams, currentDQPIparams,
                                              delta_t, droopParam, qdroopParam,
-                                             undersampling=1, n_phase=3)
+                                             undersampling=1)
+    controller.reset()
 
     # Discrete controller implementation for a DQ based Current controller for the current sourcing inverter
     # Droop of the active power Watts/Hz, W.s/Hz
@@ -81,7 +82,7 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
 
     slave_controller = MultiPhaseDQCurrentController(currentDQPIparams, pllparams, delta_t, iLimit, droopParam,
                                                      qdroopParam, undersampling=1)
-
+    slave_controller.reset()
     episode_lengths = np.array([])
 
     for episode in range(n_episodes):
@@ -122,10 +123,11 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
 
             startContSim = time.time()
             # cossin, freq, theta,debug =pll.step(CVV)
-            mod_indSlave, freq, Idq0, mod_dq0 = slave_controller.step(CVI2, CVV2, [0, 0, 0])
+            mod_indSlave = slave_controller.step(CVI2, CVV2, [0, 0, 0])
 
             # Perform controller calculations
-            mod_ind, CVI1dq = controller.step(CVI1, CVV1)
+            mod_ind = controller.step(CVI1, CVV1)
+            freqHist.append(slave_controller.history.df['freq'])
 
             # Average voltages from modulation indices created by current controller
 
@@ -137,15 +139,9 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
             # Accumulate time spent computing controller actions
             cont_time = cont_time + time.time() - startContSim
 
-            currentHist.append(CVI1dq)
             currentsHist.append(CVI2)
             voltageHist.append(CVV2)
 
-            # TODO: This changes the data. If its only for plotting, than the plotting axis should be cropped instead – sheid
-            freq = np.clip(freq, 49, 51)
-
-            freqHist.append(freq)
-            currentsHistdq0.append(Idq0)
             # Record the start time of the simulation for performance metrics
             startSim = time.time()
 
@@ -169,23 +165,23 @@ def grid_simulation(sim_env, max_number_of_steps=N, n_episodes=1, visualize=Fals
     plt.title('Current of current source inverter')
     plt.show()
 
-    plt.plot(timeHist, currentHist)
-    plt.ylabel('Current 1 [A]')
-    plt.title('Current of voltage source')
-    plt.legend(['d', 'q', '0'])
-    plt.show()
+    # plt.plot(timeHist, currentHist)
+    # plt.ylabel('Current 1 [A]')
+    # plt.title('Current of voltage source')
+    # plt.legend(['d', 'q', '0'])
+    # plt.show()
 
-    plt.plot(timeHist, currentsHistdq0)
-    plt.ylabel('Current [A]')
-    plt.title('Current of current source inverter (DQ0)')
-    plt.legend(['d', 'q', '0'])
-    plt.show()
-    """
-    """
-    plt.plot(timeHist, voltageHist)
-    plt.title('Voltage of inverter')
-    plt.ylabel('Voltage [V]')
-    plt.show()
+    # plt.plot(timeHist, currentsHistdq0)
+    # plt.ylabel('Current [A]')
+    # plt.title('Current of current source inverter (DQ0)')
+    # plt.legend(['d', 'q', '0'])
+    # plt.show()
+    # """
+    # """
+    # plt.plot(timeHist, voltageHist)
+    # plt.title('Voltage of inverter')
+    # plt.ylabel('Voltage [V]')
+    # plt.show()
 
     plt.plot(timeHist, freqHist)
     plt.ylabel('Frequency [Hz]')
@@ -253,6 +249,7 @@ def run_rl_experiments(n_experiments=1, n_episodes=1, visualize=False, time_step
     sim_time_s = []
     cont_time_s = []
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
+                   model_path='../fmu/grid.network.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output=['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i',
                                  'lc1.capacitor1.v', 'lc1.capacitor2.v', 'lc1.capacitor3.v',
@@ -275,7 +272,7 @@ def run_rl_experiments(n_experiments=1, n_episodes=1, visualize=False, time_step
 
 
 def _get_average_voltage(arr):
-    return arr * V_dc
+    return arr
 
 
 if __name__ == "__main__":

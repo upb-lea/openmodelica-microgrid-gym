@@ -1,0 +1,2 @@
+rm -rf modelDescription.xml binaries sources documentation
+f grid_network.sh grid_network.bat grid_network.makefile grid_network_init.xml

@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 
 from gym_microgrid.agents.util import MutableFloat
+from gym_microgrid.common.itertools_ import flatten
 from gym_microgrid.controllers import *
 
 
@@ -57,20 +58,22 @@ def agent():
 
 @pytest.fixture()
 def env():
+    conf = {'lc1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
+                    ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
+            'lcl1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
+                     ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]}
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    viz_mode=None,
-                   model_path='test.fmu',
+                   model_path='../fmu/test.fmu',
                    max_episode_steps=100,
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
-                   model_output={'lc1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                         ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
-                                 'lcl1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]})
+                   model_output=conf)
 
-    return env
+    return env, flatten(conf)
 
 
 def test_main(agent, env):
+    env, out_params = env
     runner = Runner(agent[1], env)
     runner.run(1)
     # env.history.df.to_hdf('test_main.hd5', 'hist')
@@ -78,22 +81,22 @@ def test_main(agent, env):
     df = df.reindex(sorted(df.columns), axis=1)
     df2 = pd.read_hdf('test_main.hd5', 'hist').head(100)
     df2 = df2.reindex(sorted(df2.columns), axis=1)
-    assert df[df2.columns].to_numpy() == approx(df2.to_numpy(), 5e-2)
+    assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-2)
 
 
 def test_main_paramchange(agent, env):
     params, agent = agent
+    env, out_params = env
     runner = Runner(agent, env)
     params['voltP'].val = 4
     runner.run(1)
-
     # env.history.df.to_hdf('test_main2.hd5', 'hist')
     df = env.history.df.head(100)
     df = df.reindex(sorted(df.columns), axis=1)
     df2 = pd.read_hdf('test_main.hd5', 'hist').head(100)
     df2 = df2.reindex(sorted(df2.columns), axis=1)
-    assert df[df2.columns].to_numpy() != approx(df2.to_numpy(), 5e-3)
+    assert df[out_params].to_numpy() != approx(df2[out_params].to_numpy(), 5e-3)
 
     df2 = pd.read_hdf('test_main2.hd5', 'hist').head(100)
     df2 = df2.reindex(sorted(df2.columns), axis=1)
-    assert df[df2.columns].to_numpy() == approx(df2.to_numpy(), 5e-2)
+    assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-2)
