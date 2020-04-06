@@ -12,10 +12,10 @@ gym\_microgrid.agents.agent module
    :undoc-members:
    :show-inheritance:
 
-gym\_microgrid.agents.saveopt module
+gym\_microgrid.agents.safeopt module
 ------------------------------------
 
-.. automodule:: gym_microgrid.agents.saveopt
+.. automodule:: gym_microgrid.agents.safeopt
    :members:
    :undoc-members:
    :show-inheritance:
