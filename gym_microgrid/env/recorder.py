@@ -22,7 +22,26 @@ class EmptyHistory:
         self.df = pd.DataFrame([], columns=self.cols)
 
     def append(self, values, cols=None):
-        pass
+        if isinstance(values, pd.DataFrame):
+            if cols is not None:
+                raise ValueError('providing columns with DataFrames is not supported. '
+                                 'Maybe you want to do ".append(df[cols])" instead.')
+            self.df = self._append(values)
+        elif isinstance(values, Sequence):
+            self.df = self._append(pd.DataFrame([values], columns=cols or self.cols))
+        else:
+            raise ValueError('"values" must be a sequence or DataFrame')
+
+    def update(self, values, cols=None):
+        if isinstance(values, pd.DataFrame):
+            if cols is not None:
+                raise ValueError('providing columns with DataFrames is not supported. '
+                                 'Maybe you want to do ".append(df[cols])" instead.')
+            self.df.iloc[-1] = values.iloc[-1]
+        elif isinstance(values, Sequence):
+            self.df.iloc[-1] = pd.DataFrame([values], columns=cols or self.cols).iloc[-1]
+        else:
+            raise ValueError('"values" must be a sequence or DataFrame')
 
     @property
     def cols(self):
@@ -38,53 +57,23 @@ class EmptyHistory:
     def __getitem__(self, item):
         return self.df[item]
 
+    def _append(self, values):
+        pass
 
 
 class SingleHistory(EmptyHistory):
     """
-    Full history that stores all data
+    Single history that stores only the last added value
     """
 
-    # TODO improve inheritancy, DRY out code
-    def append(self, values, cols=None):
-        newcols = []
-        if isinstance(values, pd.DataFrame):
-            if cols is not None:
-                raise ValueError('providing columns with DataFrames is not supported. '
-                                 'Maybe you want to do ".append(df[cols])" instead.')
-            self.df = values
-            if set(self.cols) is not set(self.df.columns):
-                # if colums have been added, we append them to the cols
-                newcols = [col for col in self.df.columns if col not in set(self.cols)]
-        elif isinstance(values, Sequence):
-            self.df = pd.DataFrame([values], columns=cols or self.cols)
-            if cols is not None:
-                newcols = [col for col in cols if col not in set(self.cols)]
-        else:
-            raise ValueError('"values" must be a sequence or DataFrame')
+    def _append(self, new):
+        return new
 
-        self._structured_cols = self.structured_cols(None) + newcols
 
 class FullHistory(EmptyHistory):
     """
     Full history that stores all data
     """
 
-    def append(self, values, cols=None):
-        newcols = []
-        if isinstance(values, pd.DataFrame):
-            if cols is not None:
-                raise ValueError('providing columns with DataFrames is not supported. '
-                                 'Maybe you want to do ".append(df[cols])" instead.')
-            self.df = self.df.append(values, ignore_index=True)
-            if set(self.cols) is not set(self.df.columns):
-                # if colums have been added, we append them to the cols
-                newcols = [col for col in self.df.columns if col not in set(self.cols)]
-        elif isinstance(values, Sequence):
-            self.df = self.df.append(pd.DataFrame([values], columns=cols or self.cols), ignore_index=True)
-            if cols is not None:
-                newcols = [col for col in cols if col not in set(self.cols)]
-        else:
-            raise ValueError('"values" must be a sequence or DataFrame')
-
-        self._structured_cols = self.structured_cols(None) + newcols
+    def _append(self, new):
+        return self.df.append(new, ignore_index=True)
