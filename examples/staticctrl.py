@@ -47,6 +47,7 @@ if __name__ == '__main__':
 
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    viz_mode='episode',
+                   viz_cols=['master.*'],
                    model_path='../fmu/grid.network.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output={
@@ -56,7 +57,8 @@ if __name__ == '__main__':
                        'rl1': [f'inductor{i}.i' for i in range(1, 4)],
                        'lcl1':
                            [['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                            ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]})
+                            ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]},
+                   )
 
     runner = Runner(agent, env)
     runner.run(1, visualize=True)

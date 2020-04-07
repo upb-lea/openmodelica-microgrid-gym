@@ -1,11 +1,10 @@
 from typing import Dict, Union, List
 
 from gym_microgrid.agents import Agent
-from gym_microgrid.common.itertools_ import fill_params
+from gym_microgrid.common.itertools_ import fill_params, nested_map
 from gym_microgrid.controllers import Controller
 
 from gym_microgrid.env import EmptyHistory
-
 
 import pandas as pd
 import numpy as np
@@ -42,8 +41,16 @@ class StaticControlAgent(Agent):
             self.prepare_episode()
         # on other steps we don't need to do anything
 
+    @property
     def measure(self) -> Union[pd.DataFrame, List]:
-        return [(ctrl.history.structured_cols(None), ctrl.history.df.tail(1)) for ctrl in self.controllers.values()]
+        measurements = []
+        for name, ctrl in self.controllers.items():
+            prepend = lambda col: '.'.join([name, col])
+            measurements.append(
+                [nested_map(ctrl.history.structured_cols(None), prepend),
+                 ctrl.history.df.tail(1).rename(columns=prepend)])
+
+        return measurements
 
     def prepare_episode(self):
         for ctrl in self.controllers.values():
