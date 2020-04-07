@@ -302,7 +302,8 @@ class MultiPhaseDQCurrentController(CurrentCtl):
         :param history: Dataframe to store internal data
         """
         super().__init__(IPIParams, tau, i_limit, Pdroop_param, Qdroop_param, undersampling, history)
-        # self.history.cols = ['freq', 'phase', [f'CVI{s}' for s in 'dq0'], [f'SPI{s}' for s in 'dq0'], [f'm{s}' for s in 'dq0']]
+        self.history.cols = ['freq', 'phase', [f'CVI{s}' for s in 'dq0'], [f'SPI{s}' for s in 'dq0'],
+                             [f'm{s}' for s in 'dq0']]
 
         # Three controllers  for each axis (d,q,0)
         self._pll = PLL(pllPIParams, self._ts)
@@ -359,6 +360,6 @@ class MultiPhaseDQCurrentController(CurrentCtl):
         # also divide by SQRT(2) to ensure the transform is limited to [-1,1]
 
         control = dq0_to_abc_cos_sin(MVdq0, *self._prev_cossine)
-        #self.history.append([self._prev_freq, self._prev_theta, *self._lastIDQ, *idq0SP, *MVdq0])
+        self.history.append([self._prev_freq, self._prev_theta, *self._lastIDQ, *idq0SP, *MVdq0])
         return control
 

@@ -30,14 +30,14 @@ def rew_fun(obs):
     Vabc_master = obs[[f'lc1.capacitor{i + 1}.v' for i in range(3)]].to_numpy()[0]
     Iabc_master = obs[[f'lc1.inductor{i + 1}.i' for i in range(3)]].to_numpy()[0]
 
-    phase = obs[['phase']].to_numpy()[0, 0]
+    phase = obs[['master.phase']].to_numpy()[0, 0]
     # = agent.controllers['master'].history['phase'].iloc[-1]
     Vdq0_master = abc_to_dq0(Vabc_master, phase)
     Idq0_master = abc_to_dq0(Iabc_master, phase)
 
     # Setpoints
-    VSPdq0_master = obs[[f'SPV{k}' for k in 'dq0']].to_numpy()[0]
-    ISPdq0_master = obs[[f'SPI{k}' for k in 'dq0']].to_numpy()[0]
+    VSPdq0_master = obs[['master.'f'SPV{k}' for k in 'dq0']].to_numpy()[0]
+    ISPdq0_master = obs[['master.'f'SPI{k}' for k in 'dq0']].to_numpy()[0]
     # np.array(agent.controllers['master'].history['SPVdq0'].iloc[-1])
     # ISPdq0_master = np.array(agent.controllers['master'].history['SPIdq0'].iloc[-1])
 
