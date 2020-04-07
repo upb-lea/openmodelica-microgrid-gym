@@ -215,8 +215,12 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
         """
         super().__init__(VPIParams, IPIParams, tau, PdroopParams, QdroopParams, undersampling,
                          history)
-        self.history.cols = ['phase', [f'SPV{s}' for s in 'dq0'], [f'SPI{s}' for s in 'dq0'], [f'M{s}' for s in 'dq0'],
-                             [f'SPI{s}' for s in 'abc']]
+        self.history.cols = ['phase', [f'SPV{s}' for s in 'dq0'], [f'CVV{s}' for s in 'dq0'],
+                             [f'SPV{s}' for s in 'abc'],
+                             [f'SPI{s}' for s in 'dq0'], [f'CVI{s}' for s in 'dq0'], [f'SPI{s}' for s in 'abc'],
+                             [f'm{s}' for s in 'dq0'],
+                             'instPow', 'instQ', 'freq']
+
         self._prev_CV = np.zeros(N_PHASE)
 
     def control(self, currentCV, voltageCV, **kwargs):
@@ -256,7 +260,9 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
         MVdq0 = self._currentPI.stepSPCV(SPIdq0, CVIdq0)
 
         # Add intern measurment
-        self.history.append([phase, *SPVdq0, *SPIdq0, *MVdq0, *dq0_to_abc(SPIdq0, phase)])
+        self.history.append(
+            [phase, *SPVdq0, *CVVdq0, *dq0_to_abc(SPVdq0, phase), *SPIdq0, *CVIdq0, *dq0_to_abc(SPIdq0, phase), *MVdq0,
+             instPow, instQ, freq])
 
         # Transform the MVs back to the abc frame
         return dq0_to_abc(MVdq0, phase)
@@ -296,7 +302,7 @@ class MultiPhaseDQCurrentController(CurrentCtl):
         :param history: Dataframe to store internal data
         """
         super().__init__(IPIParams, tau, i_limit, Pdroop_param, Qdroop_param, undersampling, history)
-        self.history.cols = ['freq']
+        # self.history.cols = ['freq', 'phase', [f'CVI{s}' for s in 'dq0'], [f'SPI{s}' for s in 'dq0'], [f'm{s}' for s in 'dq0']]
 
         # Three controllers  for each axis (d,q,0)
         self._pll = PLL(pllPIParams, self._ts)
@@ -353,5 +359,6 @@ class MultiPhaseDQCurrentController(CurrentCtl):
         # also divide by SQRT(2) to ensure the transform is limited to [-1,1]
 
         control = dq0_to_abc_cos_sin(MVdq0, *self._prev_cossine)
-        self.history.append([self._prev_freq])
+        #self.history.append([self._prev_freq, self._prev_theta, *self._lastIDQ, *idq0SP, *MVdq0])
         return control
+
