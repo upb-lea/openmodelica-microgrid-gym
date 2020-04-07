@@ -1,3 +1,5 @@
+import logging
+
 delta_t = 1e-4
 nomFreq = 50
 nomVoltPeak = 230 * 1.414
@@ -12,6 +14,8 @@ from gym_microgrid.agents import StaticControlAgent
 from gym_microgrid import Runner
 
 import numpy as np
+
+logging.basicConfig()
 
 if __name__ == '__main__':
     ctrl = dict()
@@ -47,7 +51,8 @@ if __name__ == '__main__':
 
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    viz_mode='episode',
-                   viz_cols=['master.*'],
+                   # viz_cols=['master.*'],
+                   log_level=logging.INFO,
                    model_path='../fmu/grid.network.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output={

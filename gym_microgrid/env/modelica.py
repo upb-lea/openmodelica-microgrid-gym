@@ -83,7 +83,6 @@ class ModelicaEnv(gym.Env):
         :type history: EmptyHistory
         :param history: history to store observations and measurements (from the agent) after each step
         """
-        logger.setLevel(log_level)
         # Right now still there until we defined an other stop-criteria according to safeness
         if model_input is None:
             raise ValueError('Please specify model_input variables from your OM FMU.')
@@ -125,8 +124,8 @@ class ModelicaEnv(gym.Env):
         # variable names are flattened to a list if they have specified in the nested dict manner
         self.model_output_names = self.history.cols
         if viz_cols is None:
-            logging.info('Provide the option "viz_cols" if you wish to select only specific plots. '
-                         'The default behaviour is to plot all data series')
+            logger.info('Provide the option "viz_cols" if you wish to select only specific plots. '
+                        'The default behaviour is to plot all data series')
             self.viz_col_regex = '.*'
         elif isinstance(viz_cols, list):
             self.viz_col_regex = '|'.join([translate(glob) for glob in viz_cols])
