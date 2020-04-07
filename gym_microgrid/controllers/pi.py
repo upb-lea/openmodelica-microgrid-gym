@@ -7,14 +7,18 @@ N_phase = 3
 
 class PIController:
     """
-    Implements a basic PI controller.
-    Uses back calculation for anti-windup
+    Implements a basic, discrete PI controller.
+    Uses back calculation for anti-windup.
     """
 
     def __init__(self, PI_param: PI_params, ts):
         """
-        :param PI_param: The PI_Parameters object with the PI controller
-        parameters
+        :type PI_param: PI_params
+        :param PI_param: The PI_Parameters object with the PI controller parameters (kP, kI, kB for the gains of the
+            proportional, integral and anti-windup part and the limits of the output)
+
+        :type ts: float
+        :param ts: Sample time
         """
         self._params = PI_param
         self.integralSum = 0
@@ -22,15 +26,18 @@ class PIController:
         self._ts = ts
 
     def reset(self):
+        """
+        Resets the Integrator
+        """
         self.integralSum = 0
 
     def step(self, error):
         """
-        implements a step of a basic PI controller with anti-windup by back-calculation
+        Implements a step of a basic PI controller with anti-windup by back-calculation
 
-        :param error: control error to act on
-        :return: the calculated PI controller response to the error, using the
-                PI_Parameters provided during initialisation.
+        :param error: Control error to act on
+        :return: The calculated PI controller response to the error, using the
+                PI_Parameters provided during initialisation, clipped due to the defined limits
         """
 
         self.integralSum = self.integralSum + (self._params.kI * error + self.windup_compensation) * self._ts
@@ -43,26 +50,32 @@ class PIController:
 class MultiPhasePIController:
     """
     Implements a number of PI controllers for use in multiphase systems
-    Essentially a number of identical PI controllers to use in parrallel
-    
+    Number of phases is set to N_phase = 3
     """
 
     def __init__(self, piParams, ts):
         """
-        :params piParams:PI_Parameter object for the PI controllers
-        :params n_phase: the number of phases to be controlled
+        :type PI_param: PI_params
+        :param PI_param: The PI_Parameters object with the PI controller parameters (kP, kI, kB for the gains of the
+            proportional, integral and anti-windup part and the limits of the output)
+
+        :type ts: float
+        :param ts: Sample time
         """
         self.controllers = [PIController(piParams, ts) for _ in range(N_phase)]
 
     def reset(self):
-        # Reset all controllers
+        """
+        Resets all controllers
+        """
         for ctl in self.controllers:
             ctl.reset()
 
     def step(self, error):
         """
-        :params error: List of n_phase errors to be calculated by the controllers
-        :returns output: the controller outputs in a list
+        :type error: np.ndarray
+        :param error: Floats of N_phase errors to be calculated by the controllers
+        :return: List of the calculated PI controller response to the error
         """
         # Check if number of error inputs equals number of phases
         if len(error) != len(self.controllers):
@@ -77,12 +90,14 @@ class MultiPhasePIController:
 
     def stepSPCV(self, SP: np.ndarray, CV: np.ndarray):
         """
-        Performs a controller step calculating the error itself using the lists
+        Performs a controller step calculating the error itself using the array of
         Setpoints (SP) and Controlled Variables (CV, feedback)
+
+        :type SP: np.ndarray
+        :param SP: Floats of setpoints
+        :type CV: np.ndarray
+        :param CV: Floats of system state to be controlled (feedback)
         
-        :params SP: A list of the setpoints
-        :params CV: A list of the system state to be controlled (feedback)
-        
-        :return output: A list of the controller outputs.
+        :return output: An array of the controller outputs.
         """
         return self.step(SP - CV)

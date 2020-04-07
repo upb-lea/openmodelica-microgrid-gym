@@ -1,7 +1,6 @@
 class Filter:
     """
     An empty Filter defining a base interface for any inherenting classes
-    Mightnot be needed, but my use of Java suggests it may be useful.
     """
 
     def step(self, value):
@@ -15,7 +14,10 @@ class PT1Filter(Filter):
 
     def __init__(self, filtParams, ts):
         """
+        :type filtParams: DroopParams or InverseDroopParams
         :param filtParams: The filter params
+        :type ts: float
+        :param ts: Sample time
         """
         self._params = filtParams
         self._integral = 0
@@ -25,8 +27,9 @@ class PT1Filter(Filter):
         """
         Implements a first order PT1 filter on the input
 
-        :param val_in: new input
-        :return omega: The new output
+        :type val_in: float
+        :param val_in: Filter input
+        :return: Filtered output
         """
 
         output = val_in * self._params.gain - self._integral
@@ -54,7 +57,10 @@ class DroopController(PT1Filter):
 
     def __init__(self, DroopParams, ts):
         """
-        :param Droopparams: The droop params
+        :type DroopParams: DroopParams
+        :param DroopParams: The droop parameters (gain, tau, nom_value)
+        :type ts: float
+        :param ts: Sample time
         """
         self._droopParams = DroopParams
         super().__init__(DroopParams, ts)
@@ -63,8 +69,9 @@ class DroopController(PT1Filter):
         """
         Implements a first order response on the input, using the initialised params
 
-        :param val_in: new input
-        :return omega: The new setpoint
+        :type val_in: float
+        :param val_in: Input - instantaneous power/reactive power
+        :return f/V: frequency or voltage, depending on the load and nominal value
         """
 
         return super().step(val_in) + self._droopParams.nom_val
@@ -82,8 +89,10 @@ class InverseDroopController(DroopController):
 
     def __init__(self, DroopParams, ts):
         """
-        :param Droopparams: The InverseDroopControllerParams for the droop
-        controller
+        :type DroopParams: InverseDroopParams (gain, tau, nom_value, tau_filt)
+        :param DroopParams: The InverseDroopControllerParams for the droop controller
+        :type ts: float
+        :param ts: Sample time
         """
         super().__init__(DroopParams, ts)
         self._params = DroopParams
@@ -94,9 +103,10 @@ class InverseDroopController(DroopController):
     def step(self, val_in):
         """
         Implements a inverse of the first order system
+        :type val_in: float
         :param val_in: The result of a first order response to be reversed
 
-        :return: The new setpoint
+        :return f/V: frequency or voltage, depending on the load and nominal value
         """
         val_in = self._droop_filt.step(val_in - self._params.nom_val)
 
