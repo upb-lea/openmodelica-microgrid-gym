@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    reward_fun=rew_fun,
-                   # selected_viz_series=['freq', 'lc1.*'],
+                   viz_cols=['freq', 'lc1.*'],
                    log_level=logging.INFO,
                    viz_mode='episode',
                    max_episode_steps=400,
