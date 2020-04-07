@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 import logging
 from os.path import basename
 from typing import Sequence, Callable, List, Union, Tuple
@@ -10,6 +11,7 @@ import scipy
 from pyfmi import load_fmu
 from pyfmi.fmi import FMUModelME2
 from scipy import integrate
+from fnmatch import translate
 import matplotlib.pyplot as plt
 
 from gym_microgrid.common.itertools_ import flatten
@@ -29,7 +31,7 @@ class ModelicaEnv(gym.Env):
                  log_level: int = logging.WARNING, solver_method='LSODA', max_episode_steps: int = None,
                  model_params: dict = None,
                  model_input: Sequence[str] = None, model_output: Sequence[str] = None, model_path='grid.network.fmu',
-                 viz_mode: str = 'episode', history: EmptyHistory = FullHistory()):
+                 viz_mode: str = 'episode', selected_viz_series=None, history: EmptyHistory = FullHistory()):
         """
         Initialize the Environment.
         The environment can only be used after reset() is called.
@@ -70,6 +72,13 @@ class ModelicaEnv(gym.Env):
             - 'episode': render after the episode is finished
             - 'step': render after each time step
             - None: disable visualization
+
+        :type selected_viz_series: list, str, optional
+        :param selected_viz_series: enables specific columns while plotting
+             - None: all columns will be used for vizualization (default)
+             - string: will be interpret as regex. all fully matched columns names will be enabled
+             - list of strings: Each string might be a unix-shell style wildcard like "*.i"
+                                to match all data series ending with ".i".
 
         :type history: EmptyHistory
         :param history: history to store observations and measurements (from the agent) after each step
@@ -113,7 +122,21 @@ class ModelicaEnv(gym.Env):
         self.history = history
         self.history.cols = model_output
         self.model_input_names = model_input
+        # variable names are flattened to a list if they have specified in the nested dict manner
         self.model_output_names = self.history.cols
+        if selected_viz_series is None:
+            logging.info('Provide the option "selected_viz_series" if you wish to select only specific plots. '
+                         'The default behaviour is to plot all data series')
+            self.viz_col_regex = '.*'
+        elif isinstance(selected_viz_series, list):
+            self.viz_col_regex = '|'.join([translate(glob) for glob in selected_viz_series])
+        elif isinstance(selected_viz_series, str):
+            # is directly interpret as regex
+            self.viz_col_regex = selected_viz_series
+        else:
+            raise ValueError('"selected_vis_series" must be one of the following:'
+                             ' None, str(regex), list of strings (list of shell like globbing patterns) '
+                             f'and not {type(selected_viz_series)}')
 
         # OpenAI Gym requirements
         self.action_space = gym.spaces.Discrete(3)
@@ -315,6 +338,11 @@ class ModelicaEnv(gym.Env):
                 pass
             else:
                 for cols in self.history.structured_cols():
+                    if not isinstance(cols, list):
+                        cols = [cols]
+                    cols = [col for col in cols if re.fullmatch(self.viz_col_regex, col)]
+                    if not cols:
+                        continue
                     df = self.history.df[cols].copy()
                     df.index = self.history.df.index * self.time_step_size
                     df.plot(legend=True)
