@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    viz_mode='episode',
-                   # viz_cols=['master.*'],
+                   viz_cols=['*.m[dq0]', 'slave.freq', 'lcl1.*'],
                    log_level=logging.INFO,
                    model_path='../fmu/grid.network.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
