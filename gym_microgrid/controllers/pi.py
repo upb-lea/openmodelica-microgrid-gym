@@ -73,9 +73,9 @@ class MultiPhasePIController:
 
     def step(self, error):
         """
-        :type error: numpy array of floats
-        :param error: List of N_phase errors to be calculated by the controllers
-        :returns output: List of the calculated PI controller response to the error
+        :type error: np.ndarray
+        :param error: Floats of N_phase errors to be calculated by the controllers
+        :return: List of the calculated PI controller response to the error
         """
         # Check if number of error inputs equals number of phases
         if len(error) != len(self.controllers):
@@ -93,10 +93,10 @@ class MultiPhasePIController:
         Performs a controller step calculating the error itself using the array of
         Setpoints (SP) and Controlled Variables (CV, feedback)
 
-        :type SP: numpy array of floats
-        :param SP: Setpoints
-        :type CV: numpy array of floats
-        :param CV: System state to be controlled (feedback)
+        :type SP: np.ndarray
+        :param SP: Floats of setpoints
+        :type CV: np.ndarray
+        :param CV: Floats of system state to be controlled (feedback)
         
         :return output: An array of the controller outputs.
         """
