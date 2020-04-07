@@ -302,7 +302,8 @@ class MultiPhaseDQCurrentController(CurrentCtl):
         :param history: Dataframe to store internal data
         """
         super().__init__(IPIParams, tau, i_limit, Pdroop_param, Qdroop_param, undersampling, history)
-        self.history.cols = ['freq', 'phase', [f'CVI{s}' for s in 'dq0'], [f'SPI{s}' for s in 'dq0'],
+        self.history.cols = ['instPow', 'instQ', 'freq', 'phase', [f'CVI{s}' for s in 'dq0'],
+                             [f'SPI{s}' for s in 'dq0'],
                              [f'm{s}' for s in 'dq0']]
 
         # Three controllers  for each axis (d,q,0)
@@ -331,6 +332,9 @@ class MultiPhaseDQCurrentController(CurrentCtl):
 
         :return: Modulation indices for the current sourcing inverter in ABC
         """
+        # Calulate P&Q for slave
+        instPow = -inst_power(voltageCV, currentCV)
+        instQ = -inst_reactive(voltageCV, currentCV)
 
         Vinst = inst_rms(voltageCV)
         # Get current phase information from the voltage measurements
@@ -360,6 +364,6 @@ class MultiPhaseDQCurrentController(CurrentCtl):
         # also divide by SQRT(2) to ensure the transform is limited to [-1,1]
 
         control = dq0_to_abc_cos_sin(MVdq0, *self._prev_cossine)
-        self.history.append([self._prev_freq, self._prev_theta, *self._lastIDQ, *idq0SP, *MVdq0])
+        self.history.append([instPow, instQ, self._prev_freq, self._prev_theta, *self._lastIDQ, *idq0SP, *MVdq0])
         return control
 
