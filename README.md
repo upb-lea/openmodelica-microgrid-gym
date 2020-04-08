@@ -12,6 +12,8 @@ The is built upon the [OpenAI Gym Environments](https://gym.openai.com/) for rei
 Therefore, the toolbox is specifically designed for running reinforcement 
 learning algorithms to train agents controlling the Microgrids.
 
+Read the [User Guide](docs/user_guide/user_guide.md)
+
 [Read the detailed docs!](https://git.uni-paderborn.de/walli/reinforcement-learning-microgrid)
 
 

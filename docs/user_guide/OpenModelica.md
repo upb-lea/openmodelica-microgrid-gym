@@ -7,7 +7,7 @@
 ####Installation of OpenModelica
 
 
-OMG was create by using v1.17, but in general, it is recommended to use the [nightly build](https://openmodelica.org/developersresources/nightly-builds).
+OMG was create by using [OMEdit](https://openmodelica.org/download/download-windows) v1.16
 
 ---
 #### Creating Microgrids with OpenModelica
