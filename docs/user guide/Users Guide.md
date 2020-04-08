@@ -1,4 +1,4 @@
-#  Welcome to OpenModelica Microgrid Gym (OMG) Users Guide
+#  Welcome to OpenModelica Microgrid Gym (OMG) User Guide
 ![](../pictures/microgrid.jpg)
 
 #Table of contents
@@ -9,6 +9,8 @@
     * Losses
     * PLL
 * [Creating FMU´s](FMU.md) 
+    * Creating FMU´s
+    * Merge FMU´s
 * [Examples](examples.md) 
     * Berkenkamp
     * staticctrl

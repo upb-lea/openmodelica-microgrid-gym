@@ -11,7 +11,7 @@ OMG was create by using v1.17, but in general, it is recommended to use the [nig
 
 ---
 #### Creating Microgrids with OpenModelica
-The microgrids are created with a userdefined library provided in the [grid.mo](../../fmu)
+The microgrids are created with a userdefined library provided in the [grid.mo](../../fmu) located in the folder fmu.
 
 The package "grid" contains a library with every components required for creating the microgrids.
 
