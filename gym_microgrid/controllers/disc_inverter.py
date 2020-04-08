@@ -177,12 +177,12 @@ class MultiPhaseABCPIPIController(VoltageCtl):
 
     def control(self, currentCV: np.ndarray, voltageCV: np.ndarray, **kwargs):
         instPow = -inst_power(voltageCV, currentCV)
-        freq = self._droopController.step(instPow)
+        freq = self._PdroopController.step(instPow)
         # Get the next phase rotation angle to implement
         phase = self._phaseDDS.step(freq)
 
         instQ = -inst_reactive(voltageCV, currentCV)
-        voltage = self._droopQController.step(instQ)
+        voltage = self._QdroopController.step(instQ)
 
         VSP = voltage * 1.732050807568877
         # Voltage SP in dq0 (static for the moment)
