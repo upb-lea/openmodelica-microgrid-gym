@@ -83,7 +83,7 @@ class SafeOptAgent(StaticControlAgent):
             gp = GPy.models.GPRegression(np.array([self.params[:]]),
                                          np.array([[J]]), self.kernel,
                                          noise_var=noise_var)
-            self.optimizer = SafeOptSwarm(gp, 0., bounds=bounds, threshold=1)
+            self.optimizer = SafeOptSwarm(gp, 0.5, bounds=bounds, threshold=1)
 
         else:
 

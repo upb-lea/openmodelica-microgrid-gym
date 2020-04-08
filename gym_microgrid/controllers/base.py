@@ -97,6 +97,9 @@ class PLL:
 
         return self._prev_cossin, freq, theta, debug
 
+    def reset(self):
+        self._dds.reset()
+
     @staticmethod
     def __phase_comp(cossin_x, cossin_i):
         """

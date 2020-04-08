@@ -23,6 +23,12 @@ class PT1Filter(Filter):
         self._integral = 0
         self._ts = ts
 
+    def reset(self):
+        """
+        Resets the filter Integrator
+        """
+        self._integral = 0
+
     def step(self, val_in):
         """
         Implements a first order PT1 filter on the input
