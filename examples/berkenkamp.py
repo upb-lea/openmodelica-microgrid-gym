@@ -13,7 +13,7 @@ DroopGain = 40000.0  # W/Hz
 QDroopGain = 1000.0  # VAR/V
 
 import gym
-from gym_microgrid.controllers import PI_params, DroopParams, MultiPhaseDQ0PIPIController, \
+from gym_microgrid.auxiliaries import PI_params, DroopParams, MultiPhaseDQ0PIPIController, \
     MultiPhaseDQCurrentController, InverseDroopParams, PLLParams, MutableFloat
 from gym_microgrid.agents import StaticControlAgent, SafeOptAgent
 from gym_microgrid import Runner

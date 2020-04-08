@@ -1,5 +1,5 @@
 import logging
-from gym_microgrid.controllers import PI_params
+from gym_microgrid.auxiliaries import PI_params
 import numpy as np
 
 N_phase = 3

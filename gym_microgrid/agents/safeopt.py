@@ -6,7 +6,7 @@ from safeopt import SafeOptSwarm
 
 from gym_microgrid.agents.staticctrl import StaticControlAgent
 from gym_microgrid.agents.util import MutableParams
-from gym_microgrid.controllers import Controller
+from gym_microgrid.auxiliaries import Controller
 from gym_microgrid.env import EmptyHistory
 
 import matplotlib.pyplot as plt

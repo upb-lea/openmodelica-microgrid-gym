@@ -2,7 +2,7 @@ from typing import Dict, Union, List
 
 from gym_microgrid.agents import Agent
 from gym_microgrid.common.itertools_ import fill_params, nested_map
-from gym_microgrid.controllers import Controller
+from gym_microgrid.auxiliaries import Controller
 
 from gym_microgrid.env import EmptyHistory
 

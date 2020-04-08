@@ -1,8 +1,8 @@
 import math
 
 from gym_microgrid.common import inst_rms, abc_to_alpha_beta, cos_sin
-from gym_microgrid.controllers import PLLParams
-from gym_microgrid.controllers.pi import PIController
+from gym_microgrid.auxiliaries import PLLParams
+from gym_microgrid.auxiliaries.pi import PIController
 
 
 class DDS:
