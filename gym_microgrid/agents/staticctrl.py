@@ -17,7 +17,6 @@ class StaticControlAgent(Agent):
         self.controllers = ctrls
         self.obs_template = observation_action_mapping
 
-
     def act(self, state: pd.DataFrame):
         """
 
@@ -48,3 +47,11 @@ class StaticControlAgent(Agent):
                  ctrl.history.df.tail(1).rename(columns=prepend)])
 
         return measurements
+
+    def prepare_episode(self):
+        """
+        Prepares the next episode; resets all controllers and filters (inital value of integrators...)
+        """
+        for ctrl in self.controllers.values():
+            ctrl.reset()
+        self.episode_reward = 0
