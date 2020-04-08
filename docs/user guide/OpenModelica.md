@@ -1,0 +1,46 @@
+#  OpenModelica
+
+
+[OpenModelica](https://openmodelica.org/) is an open-source Modelica-based modeling and simulation environment intended for industrial and academic usage.
+
+---
+####Installation of OpenModelica
+
+
+OMG was create by using v1.17, but in general, it is recommended to use the [nightly build](https://openmodelica.org/developersresources/nightly-builds).
+
+---
+#### Creating Microgrids with OpenModelica
+The microgrids are created with a userdefined library provided in the [grid.mo](../../fmu)
+
+The package "grid" contains a library with every components required for creating the microgrids.
+
+![](../pictures/library.jpg)
+
+It contains several packages (red P) with predefined components, filters, loads etc.
+Gridmodels and test-settings, which provide for example a direct sine-voltage to the inputs, are placed directly in the package (Blue M, after loading with doubleclick shown as input/output diagram like "network" in the picture above). 
+
+![](../pictures/omedit.jpg)
+
+Main component of the grids are the three-phase inverters.
+They consist of three input voltages controlled by a cascaded PIPI controller in python.
+Default nomenclature for those inputs is i1p1 for "**i**nverter 1 **p**hase 1" etc, but it can be changed in the python code (model_input=['one', 'two',...] in the env=gym.make() call).
+
+**Important**:  By using filters/loads with inductors or capacitors, leave the initialization in the provided settings. Changes are likely to result in errors while creating the FMU or running the python files. 
+  
+
+The provided examples are designed for two inverters, more flexibility is planned for future versions.
+
+####Losses
+
+In the default example "network", no losses in the filters are included. They can be added by using parts out of the "filter" package instead of the "ideal_filter" package. 
+Due to a big increase of components and equations in the ODE-system, the simulation time will increase.
+
+For larger simulations with a demand of losses, it is recommended to create user defined filters with only the resistors which are needed for the calculation.
+To modify them, create a new package (ctrl+N, specialization: package), duplicate the part which is do modify in the new package (rightklick on it, duplicate, select the previously created package in path) and modify it there. 
+
+####PLL
+
+The PLL blocks are working for simulations in OpenModelica, but out of structural reasons, the PLL is calculated in Python.
+
+   
