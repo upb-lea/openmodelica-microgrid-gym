@@ -14,6 +14,7 @@ class Agent:
         TODO: Also set up the agent with respect to the environment (#actions, ...)
         """
         self.history.reset()
+        self.prepare_episode()
 
     def act(self, obs: pd.DataFrame) -> np.ndarray:
         """
@@ -41,3 +42,11 @@ class Agent:
 
     def render(self):
         pass
+
+    def prepare_episode(self):
+        """
+        Prepares the next episode; resets all controllers and filters (inital value of integrators...)
+        """
+        for ctrl in self.controllers.values():
+            ctrl.reset()
+        self.episode_reward = 0
