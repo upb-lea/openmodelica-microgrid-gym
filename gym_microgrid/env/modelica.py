@@ -26,11 +26,12 @@ class ModelicaEnv(gym.Env):
     """
 
     viz_modes = {'episode', 'step', None}
+    """Set of all valid visualisation modes"""
 
     def __init__(self, time_step: float = 1e-4, time_start: float = 0, reward_fun: callable = lambda obs: 1,
                  log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: int = None,
-                 model_params: dict = None, model_input: Optional[Sequence[str]] = None,
-                 model_output: Sequence[str] = None, model_path: str = 'grid.network.fmu',
+                 model_params: Optional[dict] = None, model_input: Optional[Sequence[str]] = None,
+                 model_output: Optional[Union[dict, Sequence[str]]] = None, model_path: str = 'grid.network.fmu',
                  viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[str]]] = None,
                  history: EmptyHistory = FullHistory()):
         """
@@ -51,9 +52,18 @@ class ModelicaEnv(gym.Env):
 
             dictionary of variable names and scalars or callables.
             If a callable is provided it is called every time step with the current time.
-        :param model_input:
-        :param model_output:
-        :param model_path:
+        :param model_input: list of strings. Each string representing a FMU input variable.
+        :param model_output: nested dictionaries containing nested lists of strings.
+         The keys of the nested dictionaries will be flattened down and appended to their children and finally prepended
+         to the strings in the nested lists. The strings final strings represent variables from the FMU and the nesting
+         of the lists conveys structure used in the visualisation
+
+         >>> {'inverter': {'condensator': ['i', 'v']}}
+
+         results in
+
+         >>> ['inverter.condensator.i', 'inverter.condensator.v']
+        :param model_path: Path to the FMU
         :param viz_mode: specifies how and if to render
 
             - 'episode': render after the episode is finished
@@ -66,7 +76,6 @@ class ModelicaEnv(gym.Env):
                                 to match all data series ending with ".i".
         :param history: history to store observations and measurements (from the agent) after each step
         """
-        # Right now still there until we defined an other stop-criteria according to safeness
         if model_input is None:
             raise ValueError('Please specify model_input variables from your OM FMU.')
         if model_output is None:
@@ -209,6 +218,7 @@ class ModelicaEnv(gym.Env):
 
         :return: True if simulation time exceeded
         """
+        # TODO allow for other stopping criteria
         logger.debug(f't: {self.sim_time_interval[1]}, ')
         return abs(self.sim_time_interval[1]) > self.time_end
 
@@ -241,7 +251,6 @@ class ModelicaEnv(gym.Env):
             * sets simulation start time to 0
             * sets initial parameters of the model
             * initializes the model
-            * sets environment class attributes, e.g. start and stop time.
         :return: state of the environment after resetting.
         """
         logger.debug("Experiment reset was called. Resetting the model.")
@@ -258,12 +267,14 @@ class ModelicaEnv(gym.Env):
 
         return self.__state
 
-    def step(self, action):
+    def step(self, action: Sequence) -> Tuple[pd.DataFrame, float, bool, dict]:
         """
         OpenAI Gym API. Determines how one simulation step is performed for the environment.
         Simulation step is execution of the given action in a current state of the environment.
+
         :param action: action to be executed.
         :return: state, reward, is done, info
+
          The state also contains the measurements passed through by update_measurements
         """
         logger.debug("Experiment next step was called.")
@@ -272,7 +283,7 @@ class ModelicaEnv(gym.Env):
                 """You are calling 'step()' even though this environment has already returned done = True.
                 You should always call 'reset()' once you receive 'done = True' -- any further steps are
                 undefined behavior.""")
-            return self.__state, None, self.is_done
+            return self.__state, None, True, None
 
         # check if action is a list. If not - create list of length 1
         try:
@@ -313,15 +324,14 @@ class ModelicaEnv(gym.Env):
 
         return obs, self.reward(obs), self.is_done, {}
 
-    def render(self, mode='human', close=False):
+    def render(self, mode: str = 'human', close: bool = False):
         """
         OpenAI Gym API. Determines how current environment state should be rendered.
         Does nothing at the moment
 
-        :param mode: rendering mode. Read more in Gym docs.
+        :param mode: (ignored) rendering mode. Read more in Gym docs.
         :param close: flag if rendering procedure should be finished and resources cleaned.
         Used, when environment is closed.
-        :return: rendering result
         """
         if self.viz_mode is None:
             return True
@@ -344,12 +354,13 @@ class ModelicaEnv(gym.Env):
         elif self.viz_mode == 'step':
             # TODO update plot
             pass
-        return True
 
-    def close(self):
+    def close(self) -> bool:
         """
         OpenAI Gym API. Closes environment and all related resources.
         Closes rendering.
+
         :return: True on success
         """
-        return self.render(close=True)
+        self.render(close=True)
+        return True
