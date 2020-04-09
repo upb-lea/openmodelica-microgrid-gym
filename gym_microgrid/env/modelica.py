@@ -100,7 +100,8 @@ class ModelicaEnv(gym.Env):
         # Parameters required by this implementation
         self.time_start = time_start
         self.time_step_size = time_step
-        self.time_end = np.inf if max_episode_steps is None else self.time_start + max_episode_steps * self.time_step_size
+        self.time_end = np.inf if max_episode_steps is None \
+            else self.time_start + max_episode_steps * self.time_step_size
 
         # if there are parameters, we will convert all scalars to constant functions.
         self.model_parameters = model_params and {var: (val if isinstance(val, Callable) else lambda t: val) for
@@ -236,12 +237,12 @@ class ModelicaEnv(gym.Env):
         for cols, df in measurements:
             miss_col_count = len(set(flatten(cols)) - set(self.history.cols))
             if 0 < miss_col_count < len(flatten(cols)):
-                raise ValueError(
-                    f'some of the columns are already added, this should not happen: cols:"{cols}";self.history.cols:"{self.history.cols}"')
+                raise ValueError('some of the columns are already added, this should not happen: '
+                                 f'cols:"{cols}"; self.history.cols:"{self.history.cols}"')
             elif miss_col_count:
                 self.history.cols = self.history.structured_cols() + cols
 
-        self.__measurements = pd.concat(list(map(lambda df: df[1].reset_index(drop=True), measurements)), axis=1)
+        self.__measurements = pd.concat(list(map(lambda df_: df_[1].reset_index(drop=True), measurements)), axis=1)
 
     def reset(self) -> pd.DataFrame:
         """
@@ -283,7 +284,7 @@ class ModelicaEnv(gym.Env):
                 """You are calling 'step()' even though this environment has already returned done = True.
                 You should always call 'reset()' once you receive 'done = True' -- any further steps are
                 undefined behavior.""")
-            return self.__state, None, True, None
+            return self.__state, -np.inf, True, {}
 
         # check if action is a list. If not - create list of length 1
         try:
@@ -294,9 +295,8 @@ class ModelicaEnv(gym.Env):
 
         # Check if number of model inputs equals number of values passed
         if len(action) != len(list(self.model_input_names)):
-            message = "List of values for model inputs should be of the length {}," \
-                      "equal to the number of model inputs. Actual length {}".format(
-                len(list(self.model_input_names)), len(action))
+            message = f'List of values for model inputs should be of the length {len(list(self.model_input_names))},'
+            f'equal to the number of model inputs. Actual length {len(action)}'
             logging.error(message)
             raise ValueError(message)
 
