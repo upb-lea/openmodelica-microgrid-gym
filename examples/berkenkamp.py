@@ -63,7 +63,7 @@ if __name__ == '__main__':
     # Define mutable parameters
     # mutable_params = dict(voltP=MutableFloat(25e-3))  #, voltI=MutableFloat(60))
 
-    # mutable_params = dict(currentP=MutableFloat(10e-3))
+    # mutable_params = dict(currentP=MutableFloat(3.5e-3))
     # mutable_params = dict( currentI=MutableFloat(90))
     mutable_params = dict(currentP=MutableFloat(12e-3), currentI=MutableFloat(90))
 
@@ -111,7 +111,7 @@ if __name__ == '__main__':
                    viz_cols=['master.freq', 'lc1.*'],
                    log_level=logging.INFO,
                    viz_mode='episode',
-                   max_episode_steps=100,
+                   max_episode_steps=400,
                    model_path='../fmu/grid.network_singleController.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
@@ -120,4 +120,4 @@ if __name__ == '__main__':
                                            ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]))
 
     runner = Runner(agent, env)
-    runner.run(10, visualise_env=True)
+    runner.run(20, visualise_env=True)
