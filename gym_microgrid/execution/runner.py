@@ -1,8 +1,6 @@
 """
 This class will handle the execution
 """
-
-from gym import Env
 from tqdm import tqdm
 
 from gym_microgrid.agents import Agent

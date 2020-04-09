@@ -1,31 +1,36 @@
-"""
-transform this:
-{'lc1': [
-   ['inductor1.i', 'inductor2.i', 'inductor3.i'],
-   ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
- 'lcl1': [
-    ['inductor1.i', 'inductor2.i', 'inductor3.i'],
-    ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]}
-
-to:
-['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i',
- 'lc1.capacitor1.v', 'lc1.capacitor2.v', 'lc1.capacitor3.v',
- 'lcl1.inductor1.i', 'lcl1.inductor2.i', 'lcl1.inductor3.i',
- 'lcl1.capacitor1.v', 'lcl1.capacitor2.v', 'lcl1.capacitor3.v']
-or:
-[['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i'],
- ['lc1.capacitor1.v', 'lc1.capacitor2.v', 'lc1.capacitor3.v'],
- ['lcl1.inductor1.i', 'lcl1.inductor2.i', 'lcl1.inductor3.i'],
- ['lcl1.capacitor1.v', 'lcl1.capacitor2.v', 'lcl1.capacitor3.v']]
-"""
-from typing import Sequence, Callable, Mapping, Union
+from typing import Sequence, Callable, Mapping, Union, List, Any
 
 import pandas as pd
 from more_itertools import collapse
 import numpy as np
 
 
-def flatten(data, remaining_levels=0):
+def flatten(data, remaining_levels: int = 0) -> List[Union[Any, str]]:
+    """
+    transform this:
+    {'lc1': [
+       ['inductor1.i', 'inductor2.i', 'inductor3.i'],
+       ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
+     'lcl1': [
+        ['inductor1.i', 'inductor2.i', 'inductor3.i'],
+        ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]}
+
+    to:
+    ['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i',
+     'lc1.capacitor1.v', 'lc1.capacitor2.v', 'lc1.capacitor3.v',
+     'lcl1.inductor1.i', 'lcl1.inductor2.i', 'lcl1.inductor3.i',
+     'lcl1.capacitor1.v', 'lcl1.capacitor2.v', 'lcl1.capacitor3.v']
+    or:
+    [['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i'],
+     ['lc1.capacitor1.v', 'lc1.capacitor2.v', 'lc1.capacitor3.v'],
+     ['lcl1.inductor1.i', 'lcl1.inductor2.i', 'lcl1.inductor3.i'],
+    ['lcl1.capacitor1.v', 'lcl1.capacitor2.v', 'lcl1.capacitor3.v']]
+
+
+    :param data:
+    :param remaining_levels:
+    :return:
+    """
     # collapse outer dicts
     if isinstance(data, dict):
         # flatten all the dicts
@@ -43,6 +48,12 @@ def flatten(data, remaining_levels=0):
 
 
 def nested_map(l: Union[Sequence, Mapping, object], fun: Callable):
+    """
+
+    :param l:
+    :param fun:
+    :return:
+    """
     if isinstance(l, Mapping):
         return {k: nested_map(v, fun) for k, v in l.items()}
     if isinstance(l, (list, tuple)):

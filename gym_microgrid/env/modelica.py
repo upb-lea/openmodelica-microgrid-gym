@@ -28,7 +28,8 @@ class ModelicaEnv(gym.Env):
     viz_modes = {'episode', 'step', None}
     """Set of all valid visualisation modes"""
 
-    def __init__(self, time_step: float = 1e-4, time_start: float = 0, reward_fun: callable = lambda obs: 1,
+    def __init__(self, time_step: float = 1e-4, time_start: float = 0,
+                 reward_fun: Callable[[pd.DataFrame], float] = lambda obs: 1,
                  log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: int = None,
                  model_params: Optional[dict] = None, model_input: Optional[Sequence[str]] = None,
                  model_output: Optional[Union[dict, Sequence[str]]] = None, model_path: str = 'grid.network.fmu',
