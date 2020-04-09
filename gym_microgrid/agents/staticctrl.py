@@ -17,7 +17,7 @@ class StaticControlAgent(Agent):
         self.controllers = ctrls
         self.obs_template = observation_action_mapping
 
-    def act(self, state: pd.DataFrame):
+    def act(self, state: pd.Series):
         """
 
         :param state: the agent is stateless. the state is stored in the controllers.
@@ -38,13 +38,12 @@ class StaticControlAgent(Agent):
         # on other steps we don't need to do anything
 
     @property
-    def measure(self) -> Union[pd.DataFrame, List]:
+    def measurement(self) -> Union[pd.Series, List]:
         measurements = []
         for name, ctrl in self.controllers.items():
             prepend = lambda col: '.'.join([name, col])
-            measurements.append(
-                [nested_map(ctrl.history.structured_cols(None), prepend),
-                 ctrl.history.df.tail(1).rename(columns=prepend)])
+            measurements.append((nested_map(ctrl.history.structured_cols(None), prepend),
+                                 ctrl.history.df.tail(1).rename(columns=prepend).squeeze()))
 
         return measurements
 

@@ -29,7 +29,7 @@ class ModelicaEnv(gym.Env):
     """Set of all valid visualisation modes"""
 
     def __init__(self, time_step: float = 1e-4, time_start: float = 0,
-                 reward_fun: Callable[[pd.DataFrame], float] = lambda obs: 1,
+                 reward_fun: Callable[[pd.Series], float] = lambda obs: 1,
                  log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: int = None,
                  model_params: Optional[dict] = None, model_input: Optional[Sequence[str]] = None,
                  model_output: Optional[Union[dict, Sequence[str]]] = None, model_path: str = 'grid.network.fmu',
@@ -43,7 +43,7 @@ class ModelicaEnv(gym.Env):
         :param time_start: offset of the time in seconds
 
         :param reward_fun:
-            The function receives the observation as a DataFrame and must return the reward of this timestep as float.
+            The function receives the observation as a pd.Series and must return the reward of this timestep as float.
         :param log_level: logging granularity. see logging in stdlib
         :param solver_method: solver of the scipy.integrate.solve_ivp function
         :param max_episode_steps: maximum number of episode steps.
@@ -192,7 +192,7 @@ class ModelicaEnv(gym.Env):
         dx = self.model.get_derivatives()
         return dx
 
-    def _simulate(self) -> pd.DataFrame:
+    def _simulate(self) -> pd.Series:
         """
         Executes simulation by FMU in the time interval [start_time; stop_time]
         currently saved in the environment.
@@ -211,7 +211,7 @@ class ModelicaEnv(gym.Env):
         self.model.continuous_states = sol_out.y[:, -1]
 
         obs = self.model.get_real(self.model_output_idx)
-        return pd.DataFrame([obs], columns=self.model_output_names)
+        return pd.Series(obs, index=self.model_output_names)
 
     @property
     def is_done(self) -> bool:
@@ -224,18 +224,18 @@ class ModelicaEnv(gym.Env):
         logger.debug(f't: {self.sim_time_interval[1]}, ')
         return abs(self.sim_time_interval[1]) > self.time_end
 
-    def update_measurements(self, measurements: Union[pd.DataFrame, List[Tuple[List, pd.DataFrame]]]):
+    def update_measurements(self, measurements: Union[pd.Series, List[Tuple[List, pd.Series]]]):
         """
         Store measurements into a internal field and update the columns of the history
 
         :param measurements:
          If provided as a list of tuples the first parameter of each tuple is a nested list of strings.
-         Each string is a column name of the DataFrame.
+         Each string is a column name of the pd.Series.
          The nesting structure provides grouping that is used for visualization.
         """
-        if isinstance(measurements, pd.DataFrame):
+        if isinstance(measurements, pd.Series):
             measurements = [(measurements.colums, measurements)]
-        for cols, df in measurements:
+        for cols, _ in measurements:
             miss_col_count = len(set(flatten(cols)) - set(self.history.cols))
             if 0 < miss_col_count < len(flatten(cols)):
                 raise ValueError('some of the columns are already added, this should not happen: '
@@ -243,9 +243,9 @@ class ModelicaEnv(gym.Env):
             elif miss_col_count:
                 self.history.cols = self.history.structured_cols() + cols
 
-        self.__measurements = pd.concat(list(map(lambda df_: df_[1].reset_index(drop=True), measurements)), axis=1)
+        self.__measurements = pd.concat(list(map(lambda ser: ser[1], measurements)))
 
-    def reset(self) -> pd.DataFrame:
+    def reset(self) -> pd.Series:
         """
         OpenAI Gym API. Restarts environment and sets it ready for experiments.
         In particular, does the following:
@@ -264,12 +264,12 @@ class ModelicaEnv(gym.Env):
         self.sim_time_interval = np.array([self.time_start, self.time_start + self.time_step_size])
         self.history.reset()
         self.__state = self._simulate()
-        self.__measurements = pd.DataFrame()
+        self.__measurements = pd.Series()
         self.history.append(self.__state)
 
         return self.__state
 
-    def step(self, action: Sequence) -> Tuple[pd.DataFrame, float, bool, dict]:
+    def step(self, action: Sequence) -> Tuple[pd.Series, float, bool, dict]:
         """
         OpenAI Gym API. Determines how one simulation step is performed for the environment.
         Simulation step is execution of the given action in a current state of the environment.
@@ -310,7 +310,7 @@ class ModelicaEnv(gym.Env):
 
         # Simulate and observe result state
         self.__state = self._simulate()
-        obs = self.__state.join(self.__measurements)
+        obs = self.__state.append(self.__measurements)
         self.history.append(obs)
 
         logger.debug("model output: {}, values: {}".format(self.model_output_names, self.__state))

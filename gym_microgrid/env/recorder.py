@@ -12,7 +12,7 @@ class EmptyHistory:
     This class will not actually store any data
     """
 
-    def __init__(self, cols: Optional[List[Union[List, str]]] = None):
+    def __init__(self, cols: object = None) -> object:
         """
 
         :param cols: nested lists of strings providing column names and hierarchical structure
@@ -30,39 +30,39 @@ class EmptyHistory:
         """
         self.df = pd.DataFrame([], columns=self.cols)
 
-    def append(self, values: Union[pd.DataFrame, np.ndarray], cols: Optional[List[str]] = None):
+    def append(self, values: Union[pd.Series, Sequence], cols: Optional[List[str]] = None):
         """
         Add new data sample to the history. The History class will determine how the data is updated
 
-        :param values: data. If provided as a DataFrame, the columns of the dataframe are used to map the columns
+        :param values: data. If provided as a pd.Series, the columns of the pd.Series are used to map the columns
         :param cols: only supported if values is a np.array. It will determine in which columns the data should be added
         """
-        if isinstance(values, pd.DataFrame):
+        if isinstance(values, pd.Series):
             if cols is not None:
-                raise ValueError('providing columns with DataFrames is not supported. '
-                                 'Maybe you want to do ".append(df[cols])" instead.')
-            self.df = self._append(values)
-        elif isinstance(values, Sequence):
+                raise ValueError('providing columns with Series is not supported. '
+                                 'Maybe you want to do ".append(series[idx])" instead.')
+            self.df = self._append(values.to_frame().T)
+        elif isinstance(values, (Sequence, np.ndarray)):
             self.df = self._append(pd.DataFrame([values], columns=cols or self.cols))
         else:
-            raise ValueError('"values" must be a sequence or DataFrame')
+            raise ValueError('"values" must be a sequence or pd.Series')
 
-    def update(self, values: Union[pd.DataFrame, np.ndarray], cols: Optional[List[str]] = None):
+    def update(self, values: Union[pd.Series, Sequence], cols: Optional[List[str]] = None):
         """
         Updates/Overrides/Extends the last entry of the history.
 
-        :param values: data. If provided as a DataFrame, the columns of the dataframe are used to map the columns
+        :param values: data. If provided as a pd.Series, the columns of the pd.Series are used to map the columns
         :param cols: only supported if values is a np.array. It will determine in which columns the data should be added
          """
-        if isinstance(values, pd.DataFrame):
+        if isinstance(values, pd.Series):
             if cols is not None:
-                raise ValueError('providing columns with DataFrames is not supported. '
-                                 'Maybe you want to do ".append(df[cols])" instead.')
-            self.df.iloc[-1] = values.iloc[-1]
-        elif isinstance(values, Sequence):
+                raise ValueError('providing columns with Series is not supported. '
+                                 'Maybe you want to do ".append(series[idx])" instead.')
+            self.df.iloc[-1] = values.to_frame().T
+        elif isinstance(values, (Sequence, np.ndarray)):
             self.df.iloc[-1] = pd.DataFrame([values], columns=cols or self.cols).iloc[-1]
         else:
-            raise ValueError('"values" must be a sequence or DataFrame')
+            raise ValueError('"values" must be a sequence or Series')
 
     @property
     def cols(self) -> List[str]:

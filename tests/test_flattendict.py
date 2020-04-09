@@ -65,9 +65,9 @@ def test_nested_depth(i, o):
 
 
 @pytest.mark.parametrize('tmpl,data,result',
-                         [[dict(a=['a', 'b', 'c']), pd.DataFrame([dict(a=1, b=2, c=3)]), dict(a=[1, 2, 3])],
+                         [[dict(a=['a', 'b', 'c']), pd.Series(dict(a=1, b=2, c=3)), dict(a=[1, 2, 3])],
                           [dict(a=[np.array(['a', 'b', 'c']), np.array(['d', 'b', 'c']), 1]),
-                           pd.DataFrame([dict(a=1, b=2, c=3, d=4)]),
+                           pd.Series(dict(a=1, b=2, c=3, d=4)),
                            dict(a=[np.array([1., 2., 3.]), np.array([4., 2., 3.]), 1])]])
 def test_fill_params(tmpl, data, result):
     # properly testing datastructures with nested numpy arrays is complicated because of "ambiguous truthness"

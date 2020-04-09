@@ -1,4 +1,4 @@
-from typing import Sequence, Callable, Mapping, Union, List, Any
+from typing import Sequence, Callable, Mapping, Union, List, Any, Tuple
 
 import pandas as pd
 from more_itertools import collapse
@@ -68,16 +68,30 @@ def nested_map(l: Union[Sequence, Mapping, object], fun: Callable):
     return fun(l)
 
 
-def nested_depth(l: Sequence) -> int:
-    if isinstance(l, list):
+def nested_depth(l: Union[Any, List, Tuple]) -> int:
+    """
+    Calculate the maximum depth of a nested sequence.
+
+    :param l: nested sequence. The containing data structures are currently restricted to lists and tuples,
+     because allowing any sequence would also result in traversing strings for example
+    :return: maximum depth
+    """
+    if isinstance(l, (list, tuple, set)):
         if l:
             # if the list contains elements
-            return max((nested_depth(l_) for l_ in l)) + 1
+            return 1 + max((nested_depth(l_) for l_ in l))
         return 1
     return 0
 
 
-def fill_params(template, df: pd.DataFrame):
-    d = df.iloc[0].to_dict()
+def fill_params(template, df: pd.Series):
+    """
+    Uses a template, that can be traversed by nested_map. Every entry is interpret as a column key of a dataframe
+
+    :param template:
+    :param df:
+    :return:
+    """
+    d = df.to_dict()
     # keep key if there is no substitute
     return nested_map(template, lambda k: d.get(k, k))

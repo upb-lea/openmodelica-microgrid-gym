@@ -16,7 +16,7 @@ class Agent:
         self.history.reset()
         self.prepare_episode()
 
-    def act(self, obs: pd.DataFrame) -> np.ndarray:
+    def act(self, obs: pd.Series) -> np.ndarray:
         """
         select an action with respect to the state
         this might update the internal state with respect to the history.
@@ -33,12 +33,13 @@ class Agent:
         """
         pass
 
-    def measure(self) -> pd.DataFrame:
+    @property
+    def measurement(self) -> pd.Series:
         """
 
         :return: DataFrame or nested list of DataFrames
         """
-        return pd.DataFrame()
+        return pd.Series()
 
     def render(self):
         pass
