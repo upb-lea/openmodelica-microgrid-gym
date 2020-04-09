@@ -1,4 +1,4 @@
-from typing import Sequence, Callable, Mapping, Union, List, Any, Tuple
+from typing import Sequence, Callable, Mapping, Union, List, Any, Tuple, Dict
 
 import pandas as pd
 from more_itertools import collapse
@@ -47,8 +47,9 @@ def flatten(data, remaining_levels: int = 0) -> List[Union[Any, str]]:
     return list(collapse(data, levels=depth - remaining_levels - 1))
 
 
-def nested_map(l: Union[Sequence, Mapping, object], fun: Callable):
+def nested_map(l: Union[list, tuple, Mapping, np.ndarray], fun: Callable):
     """
+
 
     :param l:
     :param fun:
@@ -84,14 +85,19 @@ def nested_depth(l: Union[Any, List, Tuple]) -> int:
     return 0
 
 
-def fill_params(template, df: pd.Series):
+def fill_params(template, data: Union[pd.Series, Mapping]):
     """
-    Uses a template, that can be traversed by nested_map. Every entry is interpret as a column key of a dataframe
+    Uses a template, that can be traversed by nested_map.
+    Each entry in the template, that is a key in the mapping is replaced by the value it is mapped to.
 
-    :param template:
-    :param df:
+    :param template: template containing keys
+    :param data: mapping of keys to values
     :return:
     """
-    d = df.to_dict()
+    if isinstance(data, pd.Series):
+        data = data.to_dict()
+    elif not isinstance(data, Mapping):
+        raise ValueError("must be a mapping")
+
     # keep key if there is no substitute
-    return nested_map(template, lambda k: d.get(k, k))
+    return nested_map(template, lambda k: data.get(k, k))

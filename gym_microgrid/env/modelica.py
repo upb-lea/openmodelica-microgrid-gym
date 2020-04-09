@@ -159,7 +159,7 @@ class ModelicaEnv(gym.Env):
         self.model_output_idx = np.array(
             [self.model.get_variable_valueref(k) for k in self.model_output_names])
 
-    def _calc_jac(self, t, x) -> np.ndarray:
+    def _calc_jac(self, t, x) -> np.ndarray:  # noqa
         """
         Compose Jacobian matrix from the directional derivatives of the FMU model.
         This function will be called by the scipy.integrate.solve_ivp solver,
@@ -208,7 +208,7 @@ class ModelicaEnv(gym.Env):
         sol_out = scipy.integrate.solve_ivp(
             self._get_deriv, self.sim_time_interval, x_0, method=self.solver_method, jac=self._calc_jac)
         # get the last solution of the solver
-        self.model.continuous_states = sol_out.y[:, -1]
+        self.model.continuous_states = sol_out.y[:, -1]  # noqa
 
         obs = self.model.get_real(self.model_output_idx)
         return pd.Series(obs, index=self.model_output_names)
