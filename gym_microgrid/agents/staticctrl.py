@@ -38,6 +38,8 @@ class StaticControlAgent(Agent):
         for key, params in obs.items():
             controls.append(self.controllers[key].step(*params))
 
+        if len(controls) == 1:
+            return controls[0]
         return np.append(*controls)
 
     def observe(self, reward: float, terminated: bool):
