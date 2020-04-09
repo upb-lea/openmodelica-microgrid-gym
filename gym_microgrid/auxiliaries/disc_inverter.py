@@ -235,8 +235,6 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
         SPVdq0 = np.array([VSP, 0, 0])
         SPIdq0 = self._voltagePI.step(SPVdq0, CVVdq0)
 
-        # SPIdq0 = [15, 0, 0]
-
         # Current controller calculations
         MVdq0 = self._currentPI.step(SPIdq0, CVIdq0)
 
