@@ -2,7 +2,7 @@ from datetime import datetime
 import re
 import logging
 from os.path import basename
-from typing import Sequence, Callable, List, Union, Tuple
+from typing import Sequence, Callable, List, Union, Tuple, Optional
 
 import gym
 import numpy as np
@@ -27,60 +27,43 @@ class ModelicaEnv(gym.Env):
 
     viz_modes = {'episode', 'step', None}
 
-    def __init__(self, time_step: float = 1e-4, time_start=0, reward_fun: callable = lambda obs: 1,
-                 log_level: int = logging.WARNING, solver_method='LSODA', max_episode_steps: int = None,
-                 model_params: dict = None,
-                 model_input: Sequence[str] = None, model_output: Sequence[str] = None, model_path='grid.network.fmu',
-                 viz_mode: str = 'episode', viz_cols=None, history: EmptyHistory = FullHistory()):
+    def __init__(self, time_step: float = 1e-4, time_start: float = 0, reward_fun: callable = lambda obs: 1,
+                 log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: int = None,
+                 model_params: dict = None, model_input: Optional[Sequence[str]] = None,
+                 model_output: Sequence[str] = None, model_path: str = 'grid.network.fmu',
+                 viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[str]]] = None,
+                 history: EmptyHistory = FullHistory()):
         """
         Initialize the Environment.
         The environment can only be used after reset() is called.
 
-        :type time_step: float
         :param time_step: step size of the simulation in seconds
-
-        :type time_step: float
         :param time_start: offset of the time in seconds
 
-        :type reward_fun: callable
         :param reward_fun:
             The function receives the observation as a DataFrame and must return the reward of this timestep as float.
-
-        :type log_level: int
         :param log_level: logging granularity. see logging in stdlib
-
-        :type solver_method: str
         :param solver_method: solver of the scipy.integrate.solve_ivp function
-
-        :type max_episode_steps: int
         :param max_episode_steps: maximum number of episode steps.
             The end time of the episode is calculated by the time resolution and the number of steps.
 
-        :type model_params: list of strings
         :param model_params: parameters of the FMU.
 
             dictionary of variable names and scalars or callables.
             If a callable is provided it is called every time step with the current time.
-
         :param model_input:
         :param model_output:
         :param model_path:
-
-        :type viz_mode: string, optional
         :param viz_mode: specifies how and if to render
 
             - 'episode': render after the episode is finished
             - 'step': render after each time step
             - None: disable visualization
-
-        :type viz_cols: list, str, optional
         :param viz_cols: enables specific columns while plotting
              - None: all columns will be used for vizualization (default)
              - string: will be interpret as regex. all fully matched columns names will be enabled
              - list of strings: Each string might be a unix-shell style wildcard like "*.i"
                                 to match all data series ending with ".i".
-
-        :type history: EmptyHistory
         :param history: history to store observations and measurements (from the agent) after each step
         """
         # Right now still there until we defined an other stop-criteria according to safeness
@@ -144,8 +127,7 @@ class ModelicaEnv(gym.Env):
 
     def _setup_fmu(self):
         """
-        initialize fmu model in self.model
-        :return: None
+        Initialize fmu model in self.model
         """
 
         self.model.setup_experiment(start_time=self.time_start)
@@ -166,12 +148,15 @@ class ModelicaEnv(gym.Env):
         self.model_output_idx = np.array(
             [self.model.get_variable_valueref(k) for k in self.model_output_names])
 
-    def _calc_jac(self, t, x):
+    def _calc_jac(self, t, x) -> np.ndarray:
         """
+        Compose Jacobian matrix from the directional derivatives of the FMU model.
+        This function will be called by the scipy.integrate.solve_ivp solver,
+        therefore we have to obey the expected signature.
 
-        :param t:
-        :param x:
-        :return:
+        :param t: time (ignored)
+        :param x: state (ignored)
+        :return: the Jacobian matrix
         """
         # get state and derivative value reference lists
         refs = [[s.value_reference for s in getattr(self.model, attr)().values()]
@@ -181,7 +166,14 @@ class ModelicaEnv(gym.Env):
         np.apply_along_axis(lambda col: self.model.get_directional_derivative(*refs, col), 0, jacobian)
         return jacobian
 
-    def _get_deriv(self, t, x):
+    def _get_deriv(self, t: float, x: np.ndarray) -> np.ndarray:
+        """
+        Retrieve derivatives at given time and with given state from the FMU model
+
+        :param t: time
+        :param x: 1d float array of continuous states
+        :return: 1d float array of derivatives
+        """
         self.model.time = t
         self.model.continuous_states = x.copy(order='C')
 
@@ -189,12 +181,12 @@ class ModelicaEnv(gym.Env):
         dx = self.model.get_derivatives()
         return dx
 
-    def _simulate(self):
+    def _simulate(self) -> pd.DataFrame:
         """
         Executes simulation by FMU in the time interval [start_time; stop_time]
         currently saved in the environment.
 
-        :return: resulting state of the environment.
+        :return: resulting state of the environment
         """
         logger.debug(f'Simulation started for time interval {self.sim_time_interval[0]}-{self.sim_time_interval[1]}')
 
@@ -222,11 +214,12 @@ class ModelicaEnv(gym.Env):
 
     def update_measurements(self, measurements: Union[pd.DataFrame, List[Tuple[List, pd.DataFrame]]]):
         """
-        records measurements
-        :type Union[pd.DataFrame, List[Tuple[List, pd.DataFrame]]
-        :param measurements: measurements will be stored in an internal variable
-         and the columns of the self.history is updated to be able to store the measurements as well
-        :return: None
+        Store measurements into a internal field and update the columns of the history
+
+        :param measurements:
+         If provided as a list of tuples the first parameter of each tuple is a nested list of strings.
+         Each string is a column name of the DataFrame.
+         The nesting structure provides grouping that is used for visualization.
         """
         if isinstance(measurements, pd.DataFrame):
             measurements = [(measurements.colums, measurements)]
@@ -240,7 +233,7 @@ class ModelicaEnv(gym.Env):
 
         self.__measurements = pd.concat(list(map(lambda df: df[1].reset_index(drop=True), measurements)), axis=1)
 
-    def reset(self):
+    def reset(self) -> pd.DataFrame:
         """
         OpenAI Gym API. Restarts environment and sets it ready for experiments.
         In particular, does the following:
@@ -249,7 +242,7 @@ class ModelicaEnv(gym.Env):
             * sets initial parameters of the model
             * initializes the model
             * sets environment class attributes, e.g. start and stop time.
-        :return: state of the environment after resetting
+        :return: state of the environment after resetting.
         """
         logger.debug("Experiment reset was called. Resetting the model.")
 
@@ -261,7 +254,7 @@ class ModelicaEnv(gym.Env):
         self.history.reset()
         self.__state = self._simulate()
         self.__measurements = pd.DataFrame()
-        self.history.append(self.__state.join(self.__measurements))
+        self.history.append(self.__state)
 
         return self.__state
 
@@ -271,6 +264,7 @@ class ModelicaEnv(gym.Env):
         Simulation step is execution of the given action in a current state of the environment.
         :param action: action to be executed.
         :return: state, reward, is done, info
+         The state also contains the measurements passed through by update_measurements
         """
         logger.debug("Experiment next step was called.")
         if self.is_done:

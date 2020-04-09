@@ -11,3 +11,5 @@ more_itertools>=7
 pytest>=5.2.1[tests]
 
 safeopt>=0.15[safeopt]
+
+sphinx-autodoc-typehints>1.10[doc]
