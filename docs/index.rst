@@ -53,7 +53,7 @@ For the creation of additional grid contellations, Openmodelica (nightly build r
    :titlesonly:
    :caption: API:
 
-   api/modules
+   api/gym_microgrid
 
 
 

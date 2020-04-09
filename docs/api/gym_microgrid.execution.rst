@@ -1,17 +1,12 @@
-gym\_microgrid.execution package
+gym\_microgrid.execution
 ================================
 
 Submodules
 ----------
 
-gym\_microgrid.execution.runner module
---------------------------------------
+.. toctree::
 
-.. automodule:: gym_microgrid.execution.runner
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
+   gym_microgrid.execution.runner
 
 Module contents
 ---------------

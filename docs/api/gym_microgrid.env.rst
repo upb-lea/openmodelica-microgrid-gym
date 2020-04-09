@@ -1,25 +1,13 @@
-gym\_microgrid.env package
+gym\_microgrid.env
 ==========================
 
 Submodules
 ----------
 
-gym\_microgrid.env.modelica module
-----------------------------------
+.. toctree::
 
-.. automodule:: gym_microgrid.env.modelica
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-gym\_microgrid.env.recorder module
-----------------------------------
-
-.. automodule:: gym_microgrid.env.recorder
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
+   gym_microgrid.env.modelica
+   gym_microgrid.env.recorder
 
 Module contents
 ---------------
