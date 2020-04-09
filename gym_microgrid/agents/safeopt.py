@@ -33,13 +33,13 @@ class SafeOptAgent(StaticControlAgent):
         # self.kernel = type(self.kernel)(**self.kernel.to_dict())
 
         # Kp
-        self.kernel = GPy.kern.Matern32(input_dim=1, variance=2., lengthscale=.005)
+        self.kernel = GPy.kern.Matern32(input_dim=1, variance=2., lengthscale=.0005)
 
         # Ki
-        # self.kernel = GPy.kern.Matern32(input_dim=1, variance=2., lengthscale=100.)
+        # self.kernel = GPy.kern.Matern32(input_dim=1, variance=2., lengthscale=50.)
 
         # Kp, Ki
-        # self.kernel = GPy.kern.Matern32(input_dim=1, variance=2., lengthscale=.005)
+        #self.kernel = GPy.kern.Matern32(input_dim=2, variance=2., lengthscale=[.001, 5.], ARD=True)
 
         self.params.reset()
         self.optimizer = None
@@ -63,32 +63,36 @@ class SafeOptAgent(StaticControlAgent):
     def update_params(self):
         if self.optimizer is None:
             # First Iteration
-            self.inital_Performance = 1 / self.episode_reward
-
+            # self.inital_Performance = 1 / self.episode_reward
+            self.inital_Performance = self.episode_reward
             # Norm for Safe-point
-            J = 1 / self.episode_reward / self.inital_Performance
+            # J = 1 / self.episode_reward / self.inital_Performance
+
+            J = self.inital_Performance
 
             # Kp
-            bounds = [(-0.005, 0.02)]
+            bounds = [(0.003, 0.02)]
             noise_var = 0.0005 ** 2  # Measurement noise sigma_omega
 
             # Ki
-            # bounds = [(10, 200)]
-            # noise_var = 0.05 ** 2  # Measurement noise sigma_omega
+            # bounds = [(1, 155)]
+            #noise_var = 0.05 ** 2  # Measurement noise sigma_omega
 
             # Kp, Ki
-            # bounds = [(-0.005, 0.02), (10, 200)]
-            # noise_var = 0.05 ** 2  # Measurement noise sigma_omega
+            # bounds = [(-0.005, 0.02), (10, 155)]
+            #noise_var = 0.05 ** 2  # Measurement noise sigma_omega
 
             gp = GPy.models.GPRegression(np.array([self.params[:]]),
                                          np.array([[J]]), self.kernel,
                                          noise_var=noise_var)
-            self.optimizer = SafeOptSwarm(gp, 0.5, bounds=bounds, threshold=1)
+            self.optimizer = SafeOptSwarm(gp, 1.2 * J, bounds=bounds, threshold=1)
 
         else:
 
             # J = self.episode_reward - self.inital_reward + 0.5
-            J = 1 / self.episode_reward / self.inital_Performance
+            # J = 1 / self.episode_reward / self.inital_Performance
+
+            J = self.episode_reward
 
             self.optimizer.add_new_data_point(self.params[:], J)
 
