@@ -66,4 +66,4 @@ if __name__ == '__main__':
                    )
 
     runner = Runner(agent, env)
-    runner.run(1, visualize=True)
+    runner.run(1, visualise_env=True)

@@ -120,4 +120,4 @@ if __name__ == '__main__':
                                            ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]))
 
     runner = Runner(agent, env)
-    runner.run(10, visualize=True)
+    runner.run(10, visualise_env=True)
