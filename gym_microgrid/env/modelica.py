@@ -2,7 +2,7 @@ from datetime import datetime
 import re
 import logging
 from os.path import basename
-from typing import Sequence, Callable, List, Union, Tuple, Optional
+from typing import Sequence, Callable, List, Union, Tuple, Optional, Mapping
 
 import gym
 import numpy as np
@@ -109,8 +109,8 @@ class ModelicaEnv(gym.Env):
                                                   var, val in model_params.items()}
 
         self.sim_time_interval = None
-        self.__state = None
-        self.__measurements = None
+        self.__state = pd.Series()
+        self.__measurements = pd.Series()
         self.record_states = viz_mode == 'episode'
         self.history = history
         self.history.cols = model_output
@@ -243,7 +243,7 @@ class ModelicaEnv(gym.Env):
             elif miss_col_count:
                 self.history.cols = self.history.structured_cols() + cols
 
-        self.__measurements = pd.concat(list(map(lambda ser: ser[1], measurements)))
+        self.__measurements = pd.concat(list(map(lambda ser: ser[1], measurements)))  # type: pd.Series
 
     def reset(self) -> pd.Series:
         """
@@ -269,7 +269,7 @@ class ModelicaEnv(gym.Env):
 
         return self.__state
 
-    def step(self, action: Sequence) -> Tuple[pd.Series, float, bool, dict]:
+    def step(self, action: Sequence) -> Tuple[pd.Series, float, bool, Mapping]:
         """
         OpenAI Gym API. Determines how one simulation step is performed for the environment.
         Simulation step is execution of the given action in a current state of the environment.
@@ -323,7 +323,8 @@ class ModelicaEnv(gym.Env):
         else:
             logger.debug("Experiment step done, experiment done.")
 
-        return obs, self.reward(obs), self.is_done, {}
+        # only return the state, the agent does not need the measurements
+        return self.__state, self.reward(obs), self.is_done, dict(self.__measurements)
 
     def render(self, mode: str = 'human', close: bool = False):
         """
