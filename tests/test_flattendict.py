@@ -52,11 +52,11 @@ def test_flatten(i, o):
 
 
 def test_nested_map():
-    assert nested_map(['a', 'b', 'c'], lambda x: 'p' + x) == ['pa', 'pb', 'pc']
+    assert nested_map(lambda x: 'p' + x, ['a', 'b', 'c']) == ['pa', 'pb', 'pc']
 
 
 def test_nested_map1():
-    assert np.array_equal(nested_map(np.array(['a', 'b', 'c']), len), np.array([1, 1, 1]))
+    assert np.array_equal(nested_map(len, np.array(['a', 'b', 'c'])), np.array([1, 1, 1]))
 
 
 @pytest.mark.parametrize('i,o', [[1, 0], [[1], 1], [[], 1], [[[], 1], 2], [result_1, 2], [result_1_2, 2]])

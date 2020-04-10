@@ -43,7 +43,7 @@ class StaticControlAgent(Agent):
         for name, ctrl in self.controllers.items():
             def prepend(col): return '.'.join([name, col])
 
-            measurements.append((nested_map(ctrl.history.structured_cols(None), prepend),
+            measurements.append((nested_map(prepend, ctrl.history.structured_cols(None)),
                                  ctrl.history.df.tail(1).rename(columns=prepend).squeeze()))
 
         return measurements
