@@ -1,4 +1,4 @@
-from typing import Sequence, Callable, Mapping, Union, List, Any, Tuple, Dict
+from typing import Callable, Mapping, Union, List, Any, Tuple
 
 import pandas as pd
 from more_itertools import collapse

@@ -8,8 +8,9 @@ pandas>=1.0.1
 tqdm>=4
 more_itertools>=7
 
-pytest>=5.2.1[tests]
+pytest>=5.2.1 [tests]
 
-safeopt>=0.15[safeopt]
+safeopt>=0.15 [safeopt]
+GPy>=1.9.9 [safeopt]
 
-sphinx-autodoc-typehints>1.10[doc]
+sphinx-autodoc-typehints>1.10 [doc]

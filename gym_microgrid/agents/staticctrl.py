@@ -41,7 +41,8 @@ class StaticControlAgent(Agent):
     def measurement(self) -> Union[pd.Series, List]:
         measurements = []
         for name, ctrl in self.controllers.items():
-            prepend = lambda col: '.'.join([name, col])
+            def prepend(col): return '.'.join([name, col])
+
             measurements.append((nested_map(ctrl.history.structured_cols(None), prepend),
                                  ctrl.history.df.tail(1).rename(columns=prepend).squeeze()))
 

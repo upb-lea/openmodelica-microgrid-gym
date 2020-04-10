@@ -1,8 +1,12 @@
 from typing import Sequence
 
 
-class MutableFloat():
+class MutableFloat:
     def __init__(self, f: float):
+        """
+
+        :param f:
+        """
         self._f = f
 
     def __float__(self):
@@ -13,17 +17,25 @@ class MutableFloat():
 
     @property
     def val(self):
+        """
+
+        :return:
+        """
         return self._f
 
     @val.setter
     def val(self, v):
+        """
+
+        :param v:
+        """
         self._f = v
 
 
 class MutableParams:
-    def __init__(self, vars: Sequence[MutableFloat]):
-        self.vars = vars
-        self.defaults = [float(v) for v in vars]
+    def __init__(self, params: Sequence[MutableFloat]):
+        self.vars = params
+        self.defaults = [float(v) for v in params]
 
     def reset(self):
         for var, default in zip(self.vars, self.defaults):

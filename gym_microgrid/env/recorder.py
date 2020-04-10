@@ -1,4 +1,4 @@
-from typing import Sequence, Any, List, Optional, Union
+from typing import Sequence, List, Optional, Union
 
 import pandas as pd
 import numpy as np
@@ -12,7 +12,7 @@ class EmptyHistory:
     This class will not actually store any data
     """
 
-    def __init__(self, cols: object = None) -> object:
+    def __init__(self, cols: List[Union[List, str]] = None):
         """
 
         :param cols: nested lists of strings providing column names and hierarchical structure
@@ -40,7 +40,7 @@ class EmptyHistory:
         if isinstance(values, pd.Series):
             if cols is not None:
                 raise ValueError('providing columns with Series is not supported. '
-                                 'Maybe you want to do ".append(series[idx])" instead.')
+                                 'Maybe you want to do ".append(series[idx])    " instead.')
             self.df = self._append(values.to_frame().T)
         elif isinstance(values, (Sequence, np.ndarray)):
             self.df = self._append(pd.DataFrame([values], columns=cols or self.cols))
@@ -82,7 +82,7 @@ class EmptyHistory:
         """
         self._structured_cols = val
 
-    def structured_cols(self, remaining_level: int = 1) -> List[Union[List, str]]:
+    def structured_cols(self, remaining_level: Optional[int] = 1) -> List[Union[List, str]]:
         """
         Get columns with the specified amount of levels retained
 

@@ -1,3 +1,6 @@
+from gym_microgrid.auxiliaries import InverseDroopParams
+
+
 class Filter:
     """
     An empty Filter defining a base interface for any inherenting classes
@@ -93,12 +96,11 @@ class InverseDroopController(DroopController):
     Ignores the first order element if gain is set to 0, providing a linear gain
     """
 
-    def __init__(self, DroopParams, ts):
+    def __init__(self, DroopParams: InverseDroopParams, ts: float):
         """
-        :type DroopParams: InverseDroopParams (gain, tau, nom_value, tau_filt)
+
         :param DroopParams: The InverseDroopControllerParams for the droop controller
-        :type ts: float
-        :param ts: Sample time
+        :param ts: Sample step size
         """
         super().__init__(DroopParams, ts)
         self._params = DroopParams
@@ -106,17 +108,16 @@ class InverseDroopController(DroopController):
         self._ts = ts
         self._droop_filt = PT1Filter(DroopParams.derivativeFiltParams, ts)
 
-    def step(self, val_in):
+    def step(self, val_in: float):
         """
         Implements a inverse of the first order system
-        :type val_in: float
-        :param val_in: The result of a first order response to be reversed
 
+        :param val_in: The result of a first order response to be reversed
         :return f/V: frequency or voltage, depending on the load and nominal value
         """
         val_in = self._droop_filt.step(val_in - self._params.nom_val)
 
-        derivative = (val_in - self._prev_val) / (self._ts)
+        derivative = (val_in - self._prev_val) / self._ts
         derivative = derivative * self._params.tau
 
         self._prev_val = val_in

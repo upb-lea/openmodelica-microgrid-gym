@@ -11,13 +11,10 @@ class PIController:
     Uses back calculation for anti-windup.
     """
 
-    def __init__(self, PI_param: PI_params, ts):
+    def __init__(self, PI_param: PI_params, ts: float):
         """
-        :type PI_param: PI_params
         :param PI_param: The PI_Parameters object with the PI controller parameters (kP, kI, kB for the gains of the
             proportional, integral and anti-windup part and the limits of the output)
-
-        :type ts: float
         :param ts: Sample time
         """
         self._params = PI_param
@@ -31,7 +28,7 @@ class PIController:
         """
         self.integralSum = 0
 
-    def step(self, error):
+    def step(self, error: float) -> float:
         """
         Implements a step of a basic PI controller with anti-windup by back-calculation
 
@@ -44,7 +41,7 @@ class PIController:
         output = self._params.kP * error + self.integralSum
         clipped = np.clip(output, *self._params.limits)
         self.windup_compensation = (output - clipped) * self._params.kB
-        return clipped
+        return clipped.squeeze()
 
 
 class MultiPhasePIController:
@@ -53,16 +50,14 @@ class MultiPhasePIController:
     Number of phases is set to N_phase = 3
     """
 
-    def __init__(self, piParams, ts):
+    def __init__(self, PI_param: PI_params, ts: float):
         """
-        :type PI_param: PI_params
+
         :param PI_param: The PI_Parameters object with the PI controller parameters (kP, kI, kB for the gains of the
             proportional, integral and anti-windup part and the limits of the output)
-
-        :type ts: float
         :param ts: Sample time
         """
-        self.controllers = [PIController(piParams, ts) for _ in range(N_phase)]
+        self.controllers = [PIController(PI_param, ts) for _ in range(N_phase)]
 
     def reset(self):
         """
@@ -71,33 +66,24 @@ class MultiPhasePIController:
         for ctl in self.controllers:
             ctl.reset()
 
-    def step(self, error):
-        """
-        :type error: np.ndarray
-        :param error: Floats of N_phase errors to be calculated by the controllers
-        :return: List of the calculated PI controller response to the error
-        """
-        # Check if number of error inputs equals number of phases
-        if len(error) != len(self.controllers):
-            message = 'List of values for error inputs should be of the length {},' \
-                      'equal to the number of model inputs. Actual length {}'.format(
-                len(self.controllers), len(error))
-            logging.error(message)
-            raise ValueError(message)
-
-        # perform all the steps for each phase
-        return [ctl.step(error[i]) for i, ctl in enumerate(self.controllers)]
-
-    def stepSPCV(self, SP: np.ndarray, CV: np.ndarray):
+    def step(self, SP: np.ndarray, CV: np.ndarray) -> np.ndarray:
         """
         Performs a controller step calculating the error itself using the array of
         Setpoints (SP) and Controlled Variables (CV, feedback)
 
-        :type SP: np.ndarray
         :param SP: Floats of setpoints
-        :type CV: np.ndarray
         :param CV: Floats of system state to be controlled (feedback)
         
         :return output: An array of the controller outputs.
         """
-        return self.step(SP - CV)
+
+        error = SP - CV
+
+        if len(error) != len(self.controllers):
+            message = f'List of values for error inputs should be of the length {len(self.controllers)}, '
+            f'equal to the number of model inputs. Actual length {len(error)}'
+            logging.error(message)
+            raise ValueError(message)
+
+        # perform all the steps for each phase
+        return np.array([ctl.step(error[i]) for i, ctl in enumerate(self.controllers)])

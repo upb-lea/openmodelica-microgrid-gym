@@ -1,6 +1,8 @@
-import math
+from typing import Tuple
 
-from gym_microgrid.common import inst_rms, abc_to_alpha_beta, cos_sin
+import numpy as np
+
+from gym_microgrid.common import abc_to_alpha_beta, cos_sin, normalise_abc
 from gym_microgrid.auxiliaries import PLLParams
 from gym_microgrid.auxiliaries.pi import PIController
 
@@ -12,18 +14,15 @@ class DDS:
     frequency.
     """
 
-    def __init__(self, ts, DDSMax: float = 1, theta_0: float = 0):
+    def __init__(self, ts: float, dds_max: float = 1, theta_0: float = 0):
         """
-        :type ts: float
         :param ts: Sample time
-        :type DDSMax: float
-        :param DDSMax: The value at which the DDS resets the integrator
-        :type theta_0: float
+        :param dds_max: The value at which the DDS resets the integrator
         :param theta_0: The initial value of the DDS upon initialisation (not reset)
         """
         self._integralSum = 0
         self._ts = ts
-        self._max = DDSMax
+        self._max = dds_max
         self._integralSum = theta_0
 
     def reset(self):
@@ -32,11 +31,10 @@ class DDS:
         """
         self._integralSum = 0
 
-    def step(self, freq):
+    def step(self, freq: float):
         """
         Advances the Oscilator
 
-        :type freq: float
         :param freq: Absolute frequency to oscillate at for the next time step
 
         :return theta: The angle in RADIANS [0:2pi]
@@ -47,7 +45,7 @@ class DDS:
         if self._integralSum > self._max:
             self._integralSum = self._integralSum - self._max
 
-        return self._integralSum * 2 * math.pi
+        return self._integralSum * 2 * np.pi
 
 
 class PLL:
@@ -56,11 +54,9 @@ class PLL:
     ABC voltage
     """
 
-    def __init__(self, params: PLLParams, ts):
+    def __init__(self, params: PLLParams, ts: float):
         """
-        :type params: PLLParams
         :param params: PI Params for controller (kP, kI, limits, kB, f_nom, theta_0)
-        :type ts: float
         :param ts: absolute sampling time for the controller
         """
         self._params = params
@@ -70,21 +66,19 @@ class PLL:
         self._dds = DDS(ts, params.theta_0)
 
         self._prev_cossin = cos_sin(params.theta_0)
-        self._sqrt2 = math.sqrt(2)
+        self._sqrt2 = np.sqrt(2)
 
-    def step(self, v_abc):
+    def step(self, v_abc: np.ndarray) -> Tuple[np.ndarray, float, float]:
         """
         Performs a discrete set of calculations for the PLL
 
-        :type v_abc: float
         :param v_abc: Voltages in the abc frame to track
 
         :return _prev_cossin: The internal cos-sin of the current phase angle
         :return freq: The frequency of the internal oscillator
         :return theta: The internal phase angle
-
         """
-        v_abc = self.__normalise_abc(v_abc)
+        v_abc = normalise_abc(v_abc)
         cossin_x = abc_to_alpha_beta(v_abc)
         dphi = self.__phase_comp(cossin_x, self._prev_cossin)
         freq = self._controller.step(dphi) + self._params.f_nom
@@ -92,44 +86,21 @@ class PLL:
         theta = self._dds.step(freq)
         self._prev_cossin = cos_sin(theta)
 
-        # debug vector that can be returned for debugging purposes
-        debug = [*self._prev_cossin, *cossin_x, theta]
-
-        return self._prev_cossin, freq, theta, debug
+        return self._prev_cossin, freq, theta
 
     def reset(self):
         self._dds.reset()
 
     @staticmethod
-    def __phase_comp(cossin_x, cossin_i):
+    def __phase_comp(cos_sin_x: np.ndarray, cos_sin_i: np.ndarray):
         """
-        The phase comparison calculation
-        uses sin(A-B)= sin(A)cos(B)-cos(A)sin(B) =  A-B (approximates for small A-B)
-        :type cossin_x: float
-        :param cossin_x: Alpha-beta components of the external angle to track,
-                    should be normalised [-1,1]
-        :type cossin_i: float
-        :param cossin_i: Alpha-beta components of the internal angle to compare
-                    to, should be normalised [-1,1]
+        The phase comparison calculation uses sin(A-B)= sin(A)cos(B)-cos(A)sin(B) =  A-B (approximates for small A-B)
+
+        :param cos_sin_x: Alpha-beta components of the external angle to track, should be normalised [-1,1]
+        :param cos_sin_i: Alpha-beta components of the internal angle to compare to, should be normalised [-1,1]
 
         :return dphi: The approximate error between the two phases
         """
-        dphi = (cossin_x[1] * cossin_i[0]) - (cossin_x[0] * cossin_i[1])
+        dphi = (cos_sin_x[1] * cos_sin_i[0]) - (cos_sin_x[0] * cos_sin_i[1])
 
         return dphi
-
-    def __normalise_abc(self, abc):
-        """
-        Normalises the abc magnitudes to the RMS of the 3 magnitudes
-        Determines the instantaneous RMS value of the 3 waveforms
-        :type abc: float
-        :param abc: Three phase magnitudes input
-
-        :return abc_norm: abc result normalised to [-1,1]
-        """
-        # Get the magnitude of the waveforms to normalise the PLL calcs
-        mag = inst_rms(abc)
-        if mag != 0:
-            abc = abc / mag
-
-        return abc

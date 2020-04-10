@@ -95,7 +95,6 @@ class SafeOptAgent(StaticControlAgent):
         self.history.append([J, self.params[:]])
         self.params[:] = self.optimizer.optimize()
 
-
     def render(self):
         plt.figure()
         self.optimizer.plot(1000)

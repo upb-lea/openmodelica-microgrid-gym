@@ -30,7 +30,8 @@ def dq0_to_abc_cos_sin(dq0, cos, sin):
     cossine etc
 
     :param dq0: The values in the dq0 reference frame
-    :param cossine: The cossine of the angle [cos(theta), sine (theta)]
+    :param cos: cos(theta)
+    :param sin: sin(theta)
 
     :return abc: The transformed space in the abc frame
     """
@@ -64,7 +65,8 @@ def dq0_to_abc_cos_sin_power_inv(dq0, cos, sin):
     SQRT(3/2) = 1.224744871391589)
 
     :param dq0: The values in the dq0 reference frame
-    :param cossine: The cossine of the angle [cos(theta), sine (theta)]
+    :param cos: cos(theta)
+    :param sin: sin(theta)
 
     :return abc: The transformed space in the abc frame
     """
@@ -90,7 +92,8 @@ def abc_to_dq0_cos_sin(abc: np.ndarray, cos: float, sin: float) -> np.ndarray:
     to minimise calls to calculate the cossine etc
 
     :param abc: The values in the abc reference frame
-    :param cossine: The cossine of the angle [cos(theta), sine (theta)]
+    :param cos: cos(theta)
+    :param sin: sin(theta)
 
     :return dq0: The transformed space in the abc frame
     """
@@ -127,17 +130,33 @@ def abc_to_alpha_beta(abc: np.ndarray) -> np.ndarray:
     return np.array([alpha, beta])
 
 
-def cos_sin(theta) -> tuple:
+def cos_sin(theta: float) -> np.ndarray:
     """
     Transforms from provided angle to the relavent cossine values
     :param theta: The angle [In RADIANS]
-    :return [alpha,beta]: The resultant cossine
+    :return: [alpha,beta] The resultant cossine
     """
-    return np.cos(theta), np.sin(theta)
+    return np.array([np.cos(theta), np.sin(theta)])
 
 
-def inst_rms(arr: np.ndarray):
+def inst_rms(arr: np.ndarray) -> float:
     return np.linalg.norm(arr) / 1.732050807568877
+
+
+def normalise_abc(abc: np.ndarray) -> np.ndarray:
+    """
+    Normalises the abc magnitudes to the RMS of the 3 magnitudes
+    Determines the instantaneous RMS value of the 3 waveforms
+
+    :param abc: Three phase magnitudes input
+    :return abc_norm: abc result normalised to [-1,1]
+    """
+    # Get the magnitude of the waveforms to normalise the PLL calcs
+    mag = inst_rms(abc)
+    if mag != 0:
+        abc = abc / mag
+
+    return abc
 
 
 def inst_power(varr: np.ndarray, iarr: np.ndarray):

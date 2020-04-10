@@ -10,16 +10,14 @@ from gym_microgrid.agents.util import MutableFloat
 
 
 class FilterParams:
-    """
-    Defines Filter Parameters
-
-    :type gain: MutableFloat
-    :param gain: Filter gain
-    :type tau: MutableFloat
-    :param tau: Filter time constant
-    """
 
     def __init__(self, gain: Union[MutableFloat, float], tau: Union[MutableFloat, float]):
+        """
+        Defines Filter Parameters
+
+        :param gain: Filter gain
+        :param tau: Filter time constant
+        """
         self._gain = gain
         self._tau = tau
 
@@ -39,18 +37,15 @@ class DroopParams(FilterParams):
 
     def __init__(self, gain: Union[MutableFloat, float], tau: Union[MutableFloat, float], nom_value: float = 0):
         """
-        :type gain: MutableFloat
-        :param gain: The droop gain
-        :type tau: MutableFloat
-        :param tau: The first order time constant [s]
-        :type nom_value: float
-        :param nom_value: An offset to add to the output of the droop (e.g. f = 50 Hz)
-        
-        EG for a P-f droop controller (for voltage forming inverter)
+        e.g. for a P-f droop controller (for voltage forming inverter)
             Inverter of 10kW, droop of 10% , tau of 1 sec, 50Hz
             Droop = gain = 1000 [W/Hz]
             tau = 1
             nomValue = 50 [Hz]
+
+        :param gain: The droop gain
+        :param tau: The first order time constant [s]
+        :param nom_value: An offset to add to the output of the droop (e.g. f = 50 Hz)
         """
         super().__init__(gain, tau)
         self.nom_val = nom_value
@@ -70,13 +65,9 @@ class InverseDroopParams(DroopParams):
     def __init__(self, droop: Union[MutableFloat, float], tau: Union[MutableFloat, float], nom_value: float = 0,
                  tau_filt: Union[MutableFloat, float] = 0):
         """
-        :type gain: MutableFloat
-        :param gain: The droop gain
-        :type tau: MutableFloat
+        :param droop: The droop gain
         :param tau: The first order time constant [s]
-        :type nom_value: float
         :param nom_value: An offset to add to the output of the droop (e.g. f = 50 Hz)
-        :type tau_filt: MutableFloat
         :param tau_filt: timeresolution for filter
         
         Explanation!!!
@@ -95,13 +86,9 @@ class PI_params:
     def __init__(self, kP: Union[MutableFloat, float], kI: Union[MutableFloat, float],
                  limits: Union[Tuple[MutableFloat, MutableFloat], Tuple[float, float]], kB: float = 1):
         """
-        :type kP: MutableFloat
         :param kP: Proportional gain
-        :type kI: MutableFloat
         :param kI: Intergral gain
-        :type limits: MutableFloat
         :param limits: Controller limits
-        :type kB: float
         :param kB: Anti-windup (back calculation)
         """
         self._kP = kP
@@ -119,7 +106,7 @@ class PI_params:
 
     @property
     def limits(self):
-        return [float(l) for l in self._limits]
+        return [float(limit) for limit in self._limits]
 
     @property
     def kB(self):
@@ -135,17 +122,11 @@ class PLLParams(PI_params):
                  limits: Union[Tuple[MutableFloat, MutableFloat], Tuple[float, float]],
                  kB: Union[MutableFloat, float] = 1, f_nom: float = 0, theta_0: float = 0):
         """
-        :type kP: MutableFloat
         :param kP: Proportional gain
-        :type kI: MutableFloat
         :param kI: Intergral gain
-        :type limits: MutableFloat
         :param limits: Controller limits
-        :type kB: float
         :param kB: Anti-windup (back calculation)
-        :type f_nom: float
         :param f_nom: Nominal grid frequency to track (e.g. 50 Hz)
-        :type theta_0: float
         :param theta_0: Inital angle
         """
         super().__init__(kP, kI, limits, kB)
