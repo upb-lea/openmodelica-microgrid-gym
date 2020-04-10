@@ -4,8 +4,9 @@ from typing import Sequence
 class MutableFloat:
     def __init__(self, f: float):
         """
+        Wrapper object to store a float and change/modify it in a call-by-reference manner
 
-        :param f:
+        :param f: float as initial data
         """
         self._f = f
 
@@ -18,26 +19,34 @@ class MutableFloat:
     @property
     def val(self):
         """
+        retrieve or update internal float variable
 
-        :return:
+        :getter: retrieve internal variable
+        :setter: substitute internal variable
         """
         return self._f
 
     @val.setter
-    def val(self, v):
-        """
-
-        :param v:
-        """
+    def val(self, v: float):
         self._f = v
 
 
 class MutableParams:
     def __init__(self, params: Sequence[MutableFloat]):
+        """
+        Wrapper object to access, modify and reset a sequence of float values in a call-by-reference manner
+
+        Supports slicing for getting and setting
+
+        :param params: initial values
+        """
         self.vars = params
         self.defaults = [float(v) for v in params]
 
     def reset(self):
+        """
+        Restore initial value of all variables
+        """
         for var, default in zip(self.vars, self.defaults):
             var.val = default
 
