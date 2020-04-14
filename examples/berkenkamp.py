@@ -63,9 +63,9 @@ if __name__ == '__main__':
     # Define mutable parameters
     # mutable_params = dict(voltP=MutableFloat(25e-3))  #, voltI=MutableFloat(60))
 
-    # mutable_params = dict(currentP=MutableFloat(3.5e-3))
+    mutable_params = dict(currentP=MutableFloat(3.5e-3))
     # mutable_params = dict( currentI=MutableFloat(90))
-    mutable_params = dict(currentP=MutableFloat(12e-3), currentI=MutableFloat(90))
+    # mutable_params = dict(currentP=MutableFloat(12e-3), currentI=MutableFloat(90))
 
     ctrl = dict()
     # Voltage PI parameters for the current sourcing inverter
@@ -73,9 +73,9 @@ if __name__ == '__main__':
     voltage_dqp_iparams = PI_params(kP=25e-3, kI=60, limits=(-iLimit, iLimit))
 
     # Current PI parameters for the voltage sourcing inverter
-    # current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=90, limits=(-1, 1))
+    current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=90, limits=(-1, 1))
     # current_dqp_iparams = PI_params(kP=0.01027, kI=mutable_params['currentI'], limits=(-1, 1))
-    current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
+    # current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
 
     # Droop of the active power Watt/Hz, delta_t
     droop_param = DroopParams(DroopGain, 0.005, nomFreq)
@@ -112,7 +112,7 @@ if __name__ == '__main__':
                    log_level=logging.INFO,
                    viz_mode='episode',
                    max_episode_steps=400,
-                   model_path='../fmu/grid.network_singleController.fmu',
+                   model_path='../fmu/grid.network.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
                                           ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
