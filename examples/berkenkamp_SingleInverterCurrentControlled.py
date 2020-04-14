@@ -8,7 +8,8 @@ delta_t = 1e-4
 V_dc = 1000
 nomFreq = 50
 nomVoltPeak = 230 * 1.414
-iLimit = 30
+iLimit = 25
+mu = 0.01
 DroopGain = 40000.0  # W/Hz
 QDroopGain = 1000.0  # VAR/V
 
@@ -47,8 +48,11 @@ def rew_fun(obs):
     # error = np.sum((VSPabc_master - Vabc_master) ** 2, axis=0) + np.sum((ISPabc_master - Iabc_master) ** 2, axis=0) \
     #        + 0  #np.sum((Idq0_master - agent.controllers['master']._voltagePI.controllers)**4)
 
+    if Iabc_master[0] > 25 or Iabc_master[1] > 25 or Iabc_master[2] > 25:
+        asd = 1
+
     error = np.sum((ISPabc_master - Iabc_master) ** 2, axis=0) \
-            + 0  # np.sum((Idq0_master - agent.controllers['master']._voltagePI.controllers)**4)
+            + -np.sum(mu * np.log(iLimit - np.abs(Iabc_master)), axis=0)
 
     return -error
 
