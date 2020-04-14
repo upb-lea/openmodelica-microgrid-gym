@@ -39,6 +39,17 @@ Due to a big increase of components and equations in the ODE-system, the simulat
 For larger simulations with a demand of losses, it is recommended to create user defined filters with only the resistors which are needed for the calculation.
 To modify them, create a new package (ctrl+N, specialization: package), duplicate the part which is do modify in the new package (rightklick on it, duplicate, select the previously created package in path) and modify it there. 
 
+
+#####Switches
+The possibility of generating loadsteps by adding or removing loads is desirable, but difficult to implement with the possibilities of OpenModelica
+Switches in OpenModelica - like in many other free modelling languages - are designed as resistors. A closed switch has a low resistance, an open switch a high one.
+"Removed" loads are still connected to the grid. Connections with resistors in such dimension cause numerical issues while simulating as the ODE system becomes stiff. 
+There are available solvers for stiff equation systems like BDF and Radau or ones with automatic stiffness detection, but using the switches often ran into non-converging systems and execution errors.
+
+The working alternative is a parameter-variation of the load. It is possible to change the parameters of any load during a simulation
+ and apply loadsteps in this way (see the topic  [pythoncode](Pythoncode.md)).
+
+
 ####PLL
 
 The PLL blocks are working for simulations in OpenModelica, but out of structural reasons, the PLL is calculated in Python.

@@ -3,7 +3,7 @@
 
 This User Guide covers all of OpenModelica Microgrids Gym toolboxes by topic area. Each of the following subsections introduces to a specific topic and discusses how OMG approaches problem. 
 
-For a quickstart, users can read the [readme](../../README.md)
+For a quickstart read the [readme](../../README.md)
 
 #Table of contents
 
@@ -13,10 +13,14 @@ For a quickstart, users can read the [readme](../../README.md)
     * Installation of OpenModelica
     * Creating Microgrids with Openmodelica
     * Losses
+    * Switches
     * PLL
 * [Creating FMU´s](FMU.md) 
     * Creating FMU´s
     * Merge FMU´s
+* [OMG Toolbox pythoncode](pythoncode.md)    
+    * Installation and requirements
+    * program structure
 * [Examples](examples.md) 
     * Berkenkamp
     * staticctrl

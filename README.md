@@ -31,7 +31,7 @@ pip install openmodelica_microgrid_gym
 
 ```
 git clone TODO: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 
-cd gym-electric-motor
+cd openmodelica_microgrid_gym
 # Then either
 python setup.py install
 # or alternatively
@@ -64,7 +64,7 @@ A save bayseian approach of a Reinforcement Learning agent is provided under exa
 
 ![](docs/pictures/berkenkamp.jpg)
 
-Running the main.py starts a simulation with a manually tuned cascaded PIPI controller
+Running the staticctrl.py starts a simulation with a manually tuned cascaded PIPI controller
 ![](docs/pictures/control.jpg)
 
 
