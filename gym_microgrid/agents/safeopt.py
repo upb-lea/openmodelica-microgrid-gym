@@ -82,15 +82,29 @@ class SafeOptAgent(StaticControlAgent):
             # bounds = [(-0.005, 0.02), (10, 155)]
             #noise_var = 0.05 ** 2  # Measurement noise sigma_omega
 
+            # Define Mean "Offset": Like BK: Assume Mean = Threshold (BK = 0, now = 20% below first (safe) J: means: if
+            # new Performance is 20 % lower than the inital we assume as unsafe)
+            mf = GPy.core.Mapping(1, 1)
+            mf.f = lambda x: 1.2 * J
+            mf.update_gradients = lambda a, b: 0
+            mf.gradients_X = lambda a, b: 0
+
+            gp = GPy.models.GPRegression(np.array([self.params[:]]),
+                                         np.array([[J]]), self.kernel,
+                                         noise_var=noise_var, mean_function=mf)
+            self.optimizer = SafeOptSwarm(gp, 1.2 * J, bounds=bounds, threshold=1)
+            """
+            # Mean Free GP - 
+            # ToDo: Still needed?
             gp = GPy.models.GPRegression(np.array([self.params[:]]),
                                          np.array([[J]]), self.kernel,
                                          noise_var=noise_var)
-            self.optimizer = SafeOptSwarm(gp, 1.2 * J, bounds=bounds, threshold=1)
-
+            self.optimizer = SafeOptSwarm(gp, 0, bounds=bounds, threshold=1)
+            """
         else:
 
             # J = self.episode_reward - self.inital_reward + 0.5
-            # J = 1 / self.episode_reward / self.inital_Performance
+            #J = 1 / self.episode_reward / self.inital_Performance
 
             J = self.episode_reward
 
