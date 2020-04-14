@@ -32,7 +32,7 @@ class ModelicaEnv(gym.Env):
                  reward_fun: Callable[[pd.Series], float] = lambda obs: 1,
                  log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: int = None,
                  model_params: Optional[dict] = None, model_input: Optional[Sequence[str]] = None,
-                 model_output: Optional[Union[dict, Sequence[str]]] = None, model_path: str = 'grid.network.fmu',
+                 model_output: Optional[Union[dict, Sequence[str]]] = None, model_path: str = '../fmu/grid.network.fmu',
                  viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[str]]] = None,
                  history: EmptyHistory = FullHistory()):
         """

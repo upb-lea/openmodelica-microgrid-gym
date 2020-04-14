@@ -11,6 +11,9 @@ It is recommended to install OMG via pip:
 
 Alternatively, you can clone the GitHub repository. A list of [requirements](../../requirements.txt) is provided in the home-directory.
 
+
+
+
 ```
 gym>=0.15.3
 PyFMI>=2.5.7
@@ -24,7 +27,7 @@ pytest>=5.2.1[tests]
 safeopt>=0.15[safeopt]
 ```
 
-### Program structure
+### Simulation settings
 
 Heart of the program structure is the creation of the environment via **gym.make()** in the main programm (in the folder example). Nearly every simulation setting can be done directly in here. Some of the most important ones are described in the following:
 
@@ -40,10 +43,53 @@ Heart of the program structure is the creation of the environment via **gym.make
 * **model_params:** Parameters for the simulation, which should be changed compared to the default values from the OpenModelica model. 
 Also usable for loadsteps as replacement for [switches](OpenModelica.md).
 
-Example which selts 
-``` 
-def f(t):
-    return 20 if t < .2 else 40
+Example which increases the resistors in the load after 0.2 seconds from 20 Ohm to 40 Ohm:
+    
+    def f(t):
+        return 20 if t < .2 else 40
 
-model_params={'rl.switch1.R': f, 'rl.switch2.R': f, 'rl.switch3.R': f},```
+    model_params={'rl.resistor1.R': f, 'rl.resistor.R': f, 'rl.resistor.R': f},
+
  
+* **model_input:** Input of the inverter in the fmu. Example according to the standard nomenclature:
+    ``` 
+    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
+    ``` 
+
+* **model_output:** Nested dictionaries containing nested lists of strings.
+         The keys of the nested dictionaries will be flattened down and appended to their children and finally prepended
+         to the strings in the nested lists. The strings final strings represent variables from the FMU and the nesting
+         of the lists conveys structure used in the visualisation
+
+         >>> {'inverter': {'condensator': ['i', 'v']}}
+
+   results in
+
+         >>> ['inverter.condensator.i', 'inverter.condensator.v']
+* **model_path:** relative path of the fmu data. Default: ../fmu/grid.network.fmu
+
+* **viz_mode:** specifies how and if to render
+
+       - 'episode': render after the episode is finished
+       - 'step': render after each time step
+       - None: disable visualization
+* **viz_cols:** enables specific columns while plotting
+
+        - None: all columns will be used for vizualization (default)
+        - string: will be interpret as regex. all fully matched columns names will be enabled
+        - list of strings: Each string might be a unix-shell style wildcard like "*.i"
+          to match all data series ending with ".i".
+
+
+### Data logging      
+To enable logging, the the root logger needs to be initialized in the main function. To do so, call:
+
+
+    import numpy as np
+
+    logging.basicConfig()
+
+    if __name__ == '__main__':
+        ctrl = dict()
+For further information about logging and the level see the [logging standard library](https://docs.python.org/3/library/logging.html).        
+

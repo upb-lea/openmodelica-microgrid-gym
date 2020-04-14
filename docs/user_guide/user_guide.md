@@ -20,8 +20,8 @@ For a quickstart read the [readme](../../README.md)
     * Merge FMU´s
 * [OMG Toolbox pythoncode](pythoncode.md)    
     * Installation and requirements
-    * program structure
+    * Simulation settings
+    * Data logging
 * [Examples](examples.md) 
-    * Berkenkamp
     * staticctrl
-     
+    * Berkenkamp
