@@ -53,7 +53,16 @@ For the creation of additional grid contellations, Openmodelica (nightly build r
    :titlesonly:
    :caption: API:
 
-   api/modules
+   api/gym_microgrid
+
+.. GENERATE APIDOC
+- sphinx-apidoc -o docs/api gym_microgrid/ -e
+- delete module.rst
+- remove package and module names:
+- execute regex '.* package$' ''
+- execute regex '.* module$' ''
+
+
 
 
 

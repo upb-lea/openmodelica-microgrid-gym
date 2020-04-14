@@ -1,7 +1,7 @@
 import pytest
 from pytest import approx
 
-from gym_microgrid.controllers import *
+from gym_microgrid.auxiliaries import *
 import numpy as np
 
 

@@ -52,11 +52,11 @@ def test_flatten(i, o):
 
 
 def test_nested_map():
-    assert nested_map(['a', 'b', 'c'], lambda x: 'p' + x) == ['pa', 'pb', 'pc']
+    assert nested_map(lambda x: 'p' + x, ['a', 'b', 'c']) == ['pa', 'pb', 'pc']
 
 
 def test_nested_map1():
-    assert np.array_equal(nested_map(np.array(['a', 'b', 'c']), len), np.array([1, 1, 1]))
+    assert np.array_equal(nested_map(len, np.array(['a', 'b', 'c'])), np.array([1, 1, 1]))
 
 
 @pytest.mark.parametrize('i,o', [[1, 0], [[1], 1], [[], 1], [[[], 1], 2], [result_1, 2], [result_1_2, 2]])
@@ -65,9 +65,9 @@ def test_nested_depth(i, o):
 
 
 @pytest.mark.parametrize('tmpl,data,result',
-                         [[dict(a=['a', 'b', 'c']), pd.DataFrame([dict(a=1, b=2, c=3)]), dict(a=[1, 2, 3])],
+                         [[dict(a=['a', 'b', 'c']), pd.Series(dict(a=1, b=2, c=3)), dict(a=[1, 2, 3])],
                           [dict(a=[np.array(['a', 'b', 'c']), np.array(['d', 'b', 'c']), 1]),
-                           pd.DataFrame([dict(a=1, b=2, c=3, d=4)]),
+                           pd.Series(dict(a=1, b=2, c=3, d=4)),
                            dict(a=[np.array([1., 2., 3.]), np.array([4., 2., 3.]), 1])]])
 def test_fill_params(tmpl, data, result):
     # properly testing datastructures with nested numpy arrays is complicated because of "ambiguous truthness"

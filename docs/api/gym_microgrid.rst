@@ -1,4 +1,4 @@
-gym\_microgrid package
+gym\_microgrid
 ======================
 
 Subpackages
@@ -7,8 +7,8 @@ Subpackages
 .. toctree::
 
    gym_microgrid.agents
+   gym_microgrid.auxiliaries
    gym_microgrid.common
-   gym_microgrid.controllers
    gym_microgrid.env
    gym_microgrid.execution
 

@@ -1,25 +1,13 @@
-gym\_microgrid.common package
+gym\_microgrid.common
 =============================
 
 Submodules
 ----------
 
-gym\_microgrid.common.itertools\_ module
-----------------------------------------
+.. toctree::
 
-.. automodule:: gym_microgrid.common.itertools_
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-gym\_microgrid.common.transforms module
----------------------------------------
-
-.. automodule:: gym_microgrid.common.transforms
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
+   gym_microgrid.common.itertools_
+   gym_microgrid.common.transforms
 
 Module contents
 ---------------
