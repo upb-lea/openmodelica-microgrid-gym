@@ -21,42 +21,29 @@ from gym_microgrid import Runner
 from gym_microgrid.common import *
 
 import numpy as np
+import pandas as pd
 
 
-def rew_fun(obs):
+def rew_fun(obs: pd.Series) -> float:
     """
     Defines the reward function for the enviroment. Uses the observations and setpoints to tell the quality of the
     used parameters.
     Takes Current measurements and setpoints so calculate the MSE and uses a logarithmic barrier function in case of the
-    boundary of the current limit.
+    boundary of the current limit. Barrier adjustable using parameter mu.
+
     :param obs: Observation from the enviroment (ControlVariables, e.g. Currents and voltages)
-    :return:
+    :return: Error as negative Reward
     """
 
 
     # Measurements
-
     Iabc_master = obs[[f'lc1.inductor{i + 1}.i' for i in range(3)]].to_numpy()
-
     phase = obs[['master.phase']].to_numpy()[0]
-    # = agent.controllers['master'].history['phase'].iloc[-1]
-    Vdq0_master = abc_to_dq0(Vabc_master, phase)
-    Idq0_master = abc_to_dq0(Iabc_master, phase)
+    # Idq0_master = abc_to_dq0(Iabc_master, phase)
 
     # Setpoints
-    # VSPdq0_master = obs[['master.'f'SPV{k}' for k in 'dq0']].to_numpy()[0]
     ISPdq0_master = obs[['master.'f'SPI{k}' for k in 'dq0']].to_numpy()
-    # np.array(agent.controllers['master'].history['SPVdq0'].iloc[-1])
-    # ISPdq0_master = np.array(agent.controllers['master'].history['SPIdq0'].iloc[-1])
-
-    # VSPabc_master = dq0_to_abc(VSPdq0_master, phase)
     ISPabc_master = dq0_to_abc(ISPdq0_master, phase)
-
-    # error = np.sum((VSPabc_master - Vabc_master) ** 2, axis=0) + np.sum((ISPabc_master - Iabc_master) ** 2, axis=0) \
-    #        + 0  #np.sum((Idq0_master - agent.controllers['master']._voltagePI.controllers)**4)
-
-    if Iabc_master[0] > 25 or Iabc_master[1] > 25 or Iabc_master[2] > 25:
-        asd = 1
 
     error = np.sum((ISPabc_master - Iabc_master) ** 2, axis=0) \
             + -np.sum(mu * np.log(iLimit - np.abs(Iabc_master)), axis=0)
