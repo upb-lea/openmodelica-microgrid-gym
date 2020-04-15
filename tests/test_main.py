@@ -9,7 +9,7 @@ import numpy as np
 
 from gym_microgrid.agents.util import MutableFloat
 from gym_microgrid.common.itertools_ import flatten
-from gym_microgrid.controllers import *
+from gym_microgrid.auxiliaries import *
 
 
 @pytest.fixture

@@ -22,7 +22,7 @@ def dq0_to_abc(dq0: np.ndarray, theta: float) -> np.ndarray:
     return dq0_to_abc_cos_sin(dq0, *cos_sin(theta))
 
 
-def dq0_to_abc_cos_sin(dq0, cos, sin):
+def dq0_to_abc_cos_sin(dq0: np.ndarray, cos: float, sin: float) -> np.ndarray:
     """
     Transforms from DQ frame to the abc frame using the provided cos-sin
     This implementation tries to improve on the dq0Toabc transform by
@@ -30,7 +30,8 @@ def dq0_to_abc_cos_sin(dq0, cos, sin):
     cossine etc
 
     :param dq0: The values in the dq0 reference frame
-    :param cossine: The cossine of the angle [cos(theta), sine (theta)]
+    :param cos: cos(theta)
+    :param sin: sin(theta)
 
     :return abc: The transformed space in the abc frame
     """
@@ -53,7 +54,7 @@ def dq0_to_abc_cos_sin(dq0, cos, sin):
     return np.array([a, b, c])
 
 
-def dq0_to_abc_cos_sin_power_inv(dq0, cos, sin):
+def dq0_to_abc_cos_sin_power_inv(dq0: np.ndarray, cos: float, sin: float) -> np.ndarray:
     """
     Transforms from DQ frame to the abc frame using the provided cos-sin
     This implementation tries to improve on the dq0Toabc transform by
@@ -64,16 +65,17 @@ def dq0_to_abc_cos_sin_power_inv(dq0, cos, sin):
     SQRT(3/2) = 1.224744871391589)
 
     :param dq0: The values in the dq0 reference frame
-    :param cossine: The cossine of the angle [cos(theta), sine (theta)]
+    :param cos: cos(theta)
+    :param sin: sin(theta)
 
     :return abc: The transformed space in the abc frame
     """
     return dq0_to_abc_cos_sin(dq0, cos, sin) * 1.224744871391589
 
 
-def abc_to_dq0(abc, theta):
+def abc_to_dq0(abc: np.ndarray, theta: float) -> np.ndarray:
     """
-    Transforms from abc frame to the dq0 frame using the provided angle
+    Transforms from abc frame to the dq0 frame using the provided angle theta
 
     :param abc: The values in the abc reference frame
     :param theta: The angle [radians]
@@ -90,7 +92,8 @@ def abc_to_dq0_cos_sin(abc: np.ndarray, cos: float, sin: float) -> np.ndarray:
     to minimise calls to calculate the cossine etc
 
     :param abc: The values in the abc reference frame
-    :param cossine: The cossine of the angle [cos(theta), sine (theta)]
+    :param cos: cos(theta)
+    :param sin: sin(theta)
 
     :return dq0: The transformed space in the abc frame
     """
@@ -127,24 +130,56 @@ def abc_to_alpha_beta(abc: np.ndarray) -> np.ndarray:
     return np.array([alpha, beta])
 
 
-def cos_sin(theta) -> tuple:
+def cos_sin(theta: float) -> np.ndarray:
     """
     Transforms from provided angle to the relavent cossine values
     :param theta: The angle [In RADIANS]
-    :return [alpha,beta]: The resultant cossine
+    :return: [alpha,beta] The resultant cossine
     """
-    return np.cos(theta), np.sin(theta)
+    return np.array([np.cos(theta), np.sin(theta)])
 
 
-def inst_rms(arr: np.ndarray):
+def inst_rms(arr: np.ndarray) -> float:
+    """
+    Calculates the instantaneous RMS (root mean sqare) value of the input arr
+    :param arr: Input
+    :return: RMS value of the arr
+    """
     return np.linalg.norm(arr) / 1.732050807568877
 
 
-def inst_power(varr: np.ndarray, iarr: np.ndarray):
-    # scalar product
+def normalise_abc(abc: np.ndarray) -> np.ndarray:
+    """
+    Normalises the abc magnitudes to the RMS of the 3 magnitudes
+    Determines the instantaneous RMS value of the 3 waveforms
+
+    :param abc: Three phase magnitudes input
+    :return abc_norm: abc result normalised to [-1,1]
+    """
+    # Get the magnitude of the waveforms to normalise the PLL calcs
+    mag = inst_rms(abc)
+    if mag != 0:
+        abc = abc / mag
+
+    return abc
+
+
+def inst_power(varr: np.ndarray, iarr: np.ndarray) -> float:
+    """
+    Calculates the instantaneous power
+    :param varr: voltage
+    :param iarr: current
+    :return: instantaneous power
+    """
     return varr @ iarr
 
 
 def inst_reactive(varr: np.ndarray, iarr: np.ndarray):
+    """
+    Calculates the instantaneous reactive power
+    :param varr: voltage
+    :param iarr: current
+    :return: instantaneous reactive power
+    """
     # vline = np.array([varr[1] - varr[2], varr[2] - varr[0], varr[0] - varr[1]]) # Linevoltages cal using np.roll
     return -0.5773502691896258 * (np.roll(varr, -1) - np.roll(varr, -2)) @ iarr

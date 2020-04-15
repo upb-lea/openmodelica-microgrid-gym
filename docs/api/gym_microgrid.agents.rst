@@ -1,41 +1,15 @@
-gym\_microgrid.agents package
+gym\_microgrid.agents
 =============================
 
 Submodules
 ----------
 
-gym\_microgrid.agents.agent module
-----------------------------------
+.. toctree::
 
-.. automodule:: gym_microgrid.agents.agent
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-gym\_microgrid.agents.safeopt module
-------------------------------------
-
-.. automodule:: gym_microgrid.agents.safeopt
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-gym\_microgrid.agents.staticctrl module
----------------------------------------
-
-.. automodule:: gym_microgrid.agents.staticctrl
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-gym\_microgrid.agents.util module
----------------------------------
-
-.. automodule:: gym_microgrid.agents.util
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
+   gym_microgrid.agents.agent
+   gym_microgrid.agents.safeopt
+   gym_microgrid.agents.staticctrl
+   gym_microgrid.agents.util
 
 Module contents
 ---------------

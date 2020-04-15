@@ -11,6 +11,8 @@ The is built upon the [OpenAI Gym Environments](https://gym.openai.com/) for rei
 Therefore, the toolbox is specifically designed for running reinforcement 
 learning algorithms to train agents controlling the Microgrids.
 
+Read the [User Guide](docs/user_guide/user_guide.md)
+
 [Read the detailed docs!](https://git.uni-paderborn.de/walli/reinforcement-learning-microgrid)
 
 
@@ -28,7 +30,7 @@ pip install openmodelica_microgrid_gym
 
 ```
 git clone TODO: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 
-cd gym-electric-motor
+cd openmodelica_microgrid_gym
 # Then either
 python setup.py install
 # or alternatively
@@ -61,7 +63,7 @@ A save bayseian approach of a Reinforcement Learning agent is provided under exa
 
 ![](docs/pictures/berkenkamp.jpg)
 
-Running the main.py starts a simulation with a manually tuned cascaded PIPI controller
+Running the staticctrl.py starts a simulation with a manually tuned cascaded PIPI controller
 ![](docs/pictures/control.jpg)
 
 
@@ -72,8 +74,8 @@ Every user defined settings can be directly done in the example program.
 
  
 
-### Running Unit Tests with Pytest
-To run the unit tests ''pytest'' is required.
+### Running Tests with Pytest
+To run the tests ''pytest'' is required.
 All tests can be found in the ''tests'' folder.
 Execute pytest in the project's root folder:
 ```
@@ -86,8 +88,8 @@ or with test coverage:
 All tests shall pass.
 
 ### Citation
-A whitepaper for this framework is available under [arxiv.org/abs/1910.09434
-](https://arxiv.org/abs/1910.09434). Please use the following BibTeX entry for citing us:
+A whitepaper for this framework is available under [arxiv.org/XXXX
+](https://arxiv.org/XXXX). Please use the following BibTeX entry for citing us:
 ```
 @misc{LEA2020reinforcementMG,
     title={Towards a Reinforcement Learning Environment Toolbox for Intelligent Smart Grid Control},
