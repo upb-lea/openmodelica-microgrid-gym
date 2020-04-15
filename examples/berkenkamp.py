@@ -30,7 +30,7 @@ def rew_fun(obs):
     Vabc_master = obs[[f'lc1.capacitor{i + 1}.v' for i in range(3)]].to_numpy()[0]
     Iabc_master = obs[[f'lc1.inductor{i + 1}.i' for i in range(3)]].to_numpy()[0]
 
-    phase = obs[['master.phase']].to_numpy()[0, 0]
+    phase = obs[['master.phase']].to_numpy()[0]
     # = agent.controllers['master'].history['phase'].iloc[-1]
     Vdq0_master = abc_to_dq0(Vabc_master, phase)
     Idq0_master = abc_to_dq0(Iabc_master, phase)
