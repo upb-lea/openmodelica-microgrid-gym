@@ -43,3 +43,5 @@ class Runner:
             self.agent.observe(r, done)
             self.env.close()
             self.agent.render()
+
+        print(self.agent.history.df)

@@ -44,6 +44,8 @@ class ModelicaEnv(gym.Env):
 
         :param reward_fun:
             The function receives the observation as a pd.Series and must return the reward of this timestep as float.
+            In case of a failure this function should return np.nan or -np.inf or None.
+            Should have no side-effects
         :param log_level: logging granularity. see logging in stdlib
         :param solver_method: solver of the scipy.integrate.solve_ivp function
         :param max_episode_steps: maximum number of episode steps.
@@ -97,6 +99,7 @@ class ModelicaEnv(gym.Env):
 
         # if you reward policy is different from just reward/penalty - implement custom step method
         self.reward = reward_fun
+        self._failed = False
 
         # Parameters required by this implementation
         self.time_start = time_start
@@ -220,6 +223,9 @@ class ModelicaEnv(gym.Env):
 
         :return: True if simulation time exceeded
         """
+        if self._failed:
+            logger.info(f'reward was extreme, episode terminated')
+            return True
         # TODO allow for other stopping criteria
         logger.debug(f't: {self.sim_time_interval[1]}, ')
         return abs(self.sim_time_interval[1]) > self.time_end
@@ -266,6 +272,7 @@ class ModelicaEnv(gym.Env):
         self.__state = self._simulate()
         self.__measurements = pd.Series()
         self.history.append(self.__state)
+        self._failed = False
 
         return self.__state
 
@@ -323,8 +330,11 @@ class ModelicaEnv(gym.Env):
         else:
             logger.debug("Experiment step done, experiment done.")
 
+        reward = self.reward(obs)
+        self._failed = np.isnan(reward) or np.isinf(reward) and reward < 0 or reward is None
+
         # only return the state, the agent does not need the measurements
-        return self.__state, self.reward(obs), self.is_done, dict(self.__measurements)
+        return self.__state, reward, self.is_done, dict(self.__measurements)
 
     def render(self, mode: str = 'human', close: bool = False):
         """
