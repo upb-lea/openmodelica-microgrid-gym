@@ -33,13 +33,13 @@ class SafeOptAgent(StaticControlAgent):
         # self.kernel = type(self.kernel)(**self.kernel.to_dict())
 
         # Kp
-        self.kernel = GPy.kern.Matern32(input_dim=1, variance=2., lengthscale=.0005)
+        # self.kernel = GPy.kern.Matern32(input_dim=1, variance=2., lengthscale=.001)
 
         # Ki
         # self.kernel = GPy.kern.Matern32(input_dim=1, variance=2., lengthscale=50.)
 
         # Kp, Ki
-        #self.kernel = GPy.kern.Matern32(input_dim=2, variance=2., lengthscale=[.001, 5.], ARD=True)
+        self.kernel = GPy.kern.Matern32(input_dim=2, variance=2., lengthscale=[.004, 20.], ARD=True)
 
         self.params.reset()
         self.optimizer = None
@@ -79,12 +79,12 @@ class SafeOptAgent(StaticControlAgent):
             #noise_var = 0.05 ** 2  # Measurement noise sigma_omega
 
             # Kp, Ki
-            # bounds = [(-0.005, 0.02), (10, 155)]
-            #noise_var = 0.05 ** 2  # Measurement noise sigma_omega
+            bounds = [(0.001, 0.015), (50, 155)]
+            noise_var = 0.05 ** 2  # Measurement noise sigma_omega
 
             # Define Mean "Offset": Like BK: Assume Mean = Threshold (BK = 0, now = 20% below first (safe) J: means: if
             # new Performance is 20 % lower than the inital we assume as unsafe)
-            mf = GPy.core.Mapping(1, 1)
+            mf = GPy.core.Mapping(2, 1)
             mf.f = lambda x: 1.2 * J
             mf.update_gradients = lambda a, b: 0
             mf.gradients_X = lambda a, b: 0
@@ -103,8 +103,9 @@ class SafeOptAgent(StaticControlAgent):
             """
         else:
 
-            # J = self.episode_reward - self.inital_reward + 0.5
-            #J = 1 / self.episode_reward / self.inital_Performance
+            if np.isnan(self.episode_reward):
+                # set r to doubled (negative!) initial reward
+                self.episode_reward = 2 * self.inital_Performance
 
             J = self.episode_reward
 
