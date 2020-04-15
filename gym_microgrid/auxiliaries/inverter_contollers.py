@@ -1,7 +1,7 @@
 from gym_microgrid.env.recorder import SingleHistory, EmptyHistory
 from .filter import DroopController, InverseDroopController
 from .base import DDS, PLL
-from .pi import MultiPhasePIController
+from .pi_controllers import MultiPhasePIController
 from .params import *
 from gym_microgrid.common import *
 

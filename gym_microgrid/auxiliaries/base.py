@@ -4,7 +4,7 @@ import numpy as np
 
 from gym_microgrid.common import abc_to_alpha_beta, cos_sin, normalise_abc
 from gym_microgrid.auxiliaries import PLLParams
-from gym_microgrid.auxiliaries.pi import PIController
+from gym_microgrid.auxiliaries.pi_controllers import PIController
 
 
 class DDS:
