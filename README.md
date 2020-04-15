@@ -1,7 +1,6 @@
 # OpenModelica Microgrid Gym (OMG)
 ![](docs/pictures/microgrid.jpg)
 
-[![License](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://github.com/upb-lea/gym-electric-motor/blob/master/LICENSE)
 
 __The OpenModelica Microgrid Gym (OMG) package is a software toolbox for the
 simulation and optimisation of Microgrids.__ 
