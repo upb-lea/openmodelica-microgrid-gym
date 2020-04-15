@@ -400,7 +400,7 @@ class MultiPhaseDQCurrentSourcingController(VoltageCtl):
         SPIdq0 = idq0SP
 
         # Current controller calculations
-        MVdq0 = self._currentPI.stepSPCV(SPIdq0, CVIdq0)
+        MVdq0 = self._currentPI.step(SPIdq0, CVIdq0)
 
         # Add intern measurment
         self.history.append(
