@@ -1,4 +1,5 @@
-from typing import Dict, Union
+import importlib
+from typing import Dict, Union, Any
 
 import GPy
 from GPy.kern import Kern
@@ -15,11 +16,14 @@ import numpy as np
 
 
 class SafeOptAgent(StaticControlAgent):
-    def __init__(self, mutable_params: Union[dict, list], kernel: Kern, ctrls: Dict[str, Controller],
+    def __init__(self, mutable_params: Union[dict, list], kernel: Kern, gp_params: Dict[str, Any],
+                 ctrls: Dict[str, Controller],
                  observation_action_mapping: dict, history=EmptyHistory()):
         self.params = MutableParams(
             list(mutable_params.values()) if isinstance(mutable_params, dict) else mutable_params)
         self.kernel = kernel
+        self.bounds = gp_params['bounds']
+        self.noise_var = gp_params['noise_var']
 
         self.episode_reward = None
         self.optimizer = None
@@ -30,16 +34,13 @@ class SafeOptAgent(StaticControlAgent):
 
     def reset(self):
         # reinstantiate kernel
-        # self.kernel = type(self.kernel)(**self.kernel.to_dict())
 
-        # Kp
-        # self.kernel = GPy.kern.Matern32(input_dim=1, variance=2., lengthscale=.001)
-
-        # Ki
-        # self.kernel = GPy.kern.Matern32(input_dim=1, variance=2., lengthscale=50.)
-
-        # Kp, Ki
-        self.kernel = GPy.kern.Matern32(input_dim=2, variance=2., lengthscale=[.004, 20.], ARD=True)
+        kernel_params = self.kernel.to_dict()
+        cls_name = kernel_params['class']
+        mod = importlib.import_module('.'.join(cls_name.split('.')[:-1]))
+        cls = getattr(mod, cls_name.split('.')[-1])
+        remaining_params = {k: v for k, v in kernel_params.items() if k not in {'class', 'useGPU'}}
+        self.kernel = cls(**remaining_params)
 
         self.params.reset()
         self.optimizer = None
@@ -70,29 +71,18 @@ class SafeOptAgent(StaticControlAgent):
 
             J = self.inital_Performance
 
-            # Kp
-            bounds = [(0.003, 0.02)]
-            noise_var = 0.0005 ** 2  # Measurement noise sigma_omega
-
-            # Ki
-            # bounds = [(1, 155)]
-            #noise_var = 0.05 ** 2  # Measurement noise sigma_omega
-
-            # Kp, Ki
-            bounds = [(0.001, 0.015), (50, 155)]
-            noise_var = 0.05 ** 2  # Measurement noise sigma_omega
 
             # Define Mean "Offset": Like BK: Assume Mean = Threshold (BK = 0, now = 20% below first (safe) J: means: if
             # new Performance is 20 % lower than the inital we assume as unsafe)
-            mf = GPy.core.Mapping(2, 1)
+            mf = GPy.core.Mapping(len(self.bounds), 1)
             mf.f = lambda x: 1.2 * J
             mf.update_gradients = lambda a, b: 0
             mf.gradients_X = lambda a, b: 0
 
             gp = GPy.models.GPRegression(np.array([self.params[:]]),
                                          np.array([[J]]), self.kernel,
-                                         noise_var=noise_var, mean_function=mf)
-            self.optimizer = SafeOptSwarm(gp, 1.2 * J, bounds=bounds, threshold=1)
+                                         noise_var=self.noise_var, mean_function=mf)
+            self.optimizer = SafeOptSwarm(gp, 1.2 * J, bounds=self.bounds, threshold=1)
             """
             # Mean Free GP - 
             # ToDo: Still needed?
