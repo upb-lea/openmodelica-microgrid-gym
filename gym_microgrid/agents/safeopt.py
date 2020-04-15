@@ -19,6 +19,19 @@ class SafeOptAgent(StaticControlAgent):
     def __init__(self, mutable_params: Union[dict, list], kernel: Kern, gp_params: Dict[str, Any],
                  ctrls: Dict[str, Controller],
                  observation_action_mapping: dict, history=EmptyHistory()):
+        """
+        Agent to execute safeopt algorithm (https://arxiv.org/abs/1509.01066) to control the environment by using
+        auxiliary controllers and Gaussian process to adopt the controller parameters (mutable_params) to safely
+        increase the performance.
+
+        :param mutable_params: safe inital controller parameters to adopt
+        :param kernel: kernel for the Gaussian process unsing GPy
+        :param gp_params: kernel parameters like bounds and lengthscale
+        :param ctrls: Controllers that are feed with the observations and exert actions on the environment
+        :param observation_action_mapping: form controller keys to observation keys, whose observation values will be
+         passed to the controller
+        :param history:Storage of internal data
+        """
         self.params = MutableParams(
             list(mutable_params.values()) if isinstance(mutable_params, dict) else mutable_params)
         self.kernel = kernel
@@ -33,6 +46,9 @@ class SafeOptAgent(StaticControlAgent):
         self.history.cols = ['J', 'Params']
 
     def reset(self):
+        """
+        Resets the kernel, episodic reward and the optimizer
+        """
         # reinstantiate kernel
 
         kernel_params = self.kernel.to_dict()
@@ -50,6 +66,13 @@ class SafeOptAgent(StaticControlAgent):
         return super().reset()
 
     def observe(self, reward, terminated):
+        """
+        Makes an observation of the enviroment.
+        If terminated, then caclulates the performance and the next values for the parameters using safeopt
+        :param reward: reward of the simulation step
+        :param terminated: True if episode is over or aborted
+        :return:
+        """
         self._iterations += 1
         self.episode_reward += reward or 0
         if terminated:
@@ -62,6 +85,9 @@ class SafeOptAgent(StaticControlAgent):
         # on other steps we don't need to do anything
 
     def update_params(self):
+        """
+        Sets up the Gaussian process in the first episodes, updates the parameters in the following.
+        """
         if self.optimizer is None:
             # First Iteration
             # self.inital_Performance = 1 / self.episode_reward
@@ -105,6 +131,9 @@ class SafeOptAgent(StaticControlAgent):
         self.params[:] = self.optimizer.optimize()
 
     def render(self):
+        """
+        Renders the results for the performance
+        """
         plt.figure()
         self.optimizer.plot(1000)
         plt.show()
