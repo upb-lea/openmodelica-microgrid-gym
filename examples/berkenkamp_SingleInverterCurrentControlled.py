@@ -1,28 +1,35 @@
+#####################################
+# Example using a FMU by OpenModelica and safeopt algorithm to find "optimal" controller parameters.
+# Simulationsetup: Inverter supplying 15 A d-current to an RL-load via 2 LC filters
+# Controller: PI current controller
+
+
+
 import logging
 
 import GPy
 
 from gym_microgrid.env import FullHistory
-
-delta_t = 1e-4
-V_dc = 1000
-nomFreq = 50
-nomVoltPeak = 230 * 1.414
-iLimit = 30
-mu = 0.05
-DroopGain = 40000.0  # W/Hz
-QDroopGain = 1000.0  # VAR/V
-
 import gym
-from gym_microgrid.auxiliaries import PI_params, DroopParams, MultiPhaseDQ0PIPIController, \
-    InverseDroopParams, PLLParams, MutableFloat, MultiPhaseDQCurrentSourcingController
-from gym_microgrid.agents import StaticControlAgent, SafeOptAgent
+from gym_microgrid.auxiliaries import PI_params, DroopParams, MutableFloat, MultiPhaseDQCurrentSourcingController
+from gym_microgrid.agents import SafeOptAgent
 from gym_microgrid import Runner
 from gym_microgrid.common import *
 
 import numpy as np
 import pandas as pd
 
+# Simulation definitons
+delta_t = 1e-4  # time step size / s
+V_dc = 1000  # / V
+nomFreq = 50  # / Hz
+nomVoltPeak = 230 * 1.414  # / V
+iLimit = 30  # / A
+mu = 0.05  # Factor for barrier function (see below)
+DroopGain = 40000.0  # / W/Hz
+QDroopGain = 1000.0  # / VAR/V
+
+i_ref = np.array([15, 0, 0])  # / A
 
 def rew_fun(obs: pd.Series) -> float:
     """
@@ -52,28 +59,26 @@ def rew_fun(obs: pd.Series) -> float:
 
 
 if __name__ == '__main__':
+    #####################################
+    # Definitions for the GP
+    # Bounds on the inputs variable Kp, Ki - For single parameter adaption use only one dimension
+    bounds = [(0.001, 0.015), (50, 155)]
+    noise_var = 0.05 ** 2  # Measurement noise sigma_omega
 
-    # Bounds on the inputs variable
-    bounds = [(-0.1, 0.2)]
+    # Length scale for the parameter variation [Kp, Ki] for the GP
+    lengthscale = [.004, 20.]
 
-    # Define Kernel
-    kernel = GPy.kern.Matern32(input_dim=len(bounds), lengthscale=.01)
+    # Definition of the kernel
+    kernel = GPy.kern.Matern32(input_dim=2, variance=2., lengthscale=lengthscale, ARD=True)
 
-    # Define mutable parametersnp.sum((ISPabc_master - Iabc_master) ** 2)
-    # mutable_params = dict(voltP=MutableFloat(25e-3))  #, voltI=MutableFloat(60))
-
-    # mutable_params = dict(currentP=MutableFloat(10e-3))
-    # mutable_params = dict( currentI=MutableFloat(90))
-    mutable_params = dict(currentP=MutableFloat(7e-3), currentI=MutableFloat(90))
-
+    #####################################
+    # Definition of the controllers
+    # mutable_params = Parameters (Kp & Ki of the current controller of the inverter) to change using safeopt
+    # algorithms in the safeopt agent to find an "optimal" PI controller parameters Kp and Ki
     ctrl = dict()
-
+    mutable_params = dict(currentP=MutableFloat(7e-3), currentI=MutableFloat(90))
     # PI parameters for the current Controller of the inverter
-    # mutable_params define which parameter is adjusted via optimaization (kp, ki or kp&ki)
-    # current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=90, limits=(-1, 1))
-    # current_dqp_iparams = PI_params(kP=0.01027, kI=mutable_params['currentI'], limits=(-1, 1))
     current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
-
     # Droop of the active power Watt/Hz, delta_t
     droop_param = DroopParams(DroopGain, 0.005, nomFreq)
     # Droop of the reactive power VAR/Volt Var.s/Volt
@@ -81,13 +86,22 @@ if __name__ == '__main__':
 
     ctrl['master'] = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, droop_param, qdroop_param)
 
-    agent = SafeOptAgent(mutable_params, kernel, ctrl,
+    #####################################
+    # Definition of the agent
+    # Agent using the safeopt algorithm by Berkenkamp
+    # (https://arxiv.org/abs/1509.01066)
+    # as example to
+    agent = SafeOptAgent(mutable_params, kernel, dict(bounds=bounds, noise_var=noise_var), ctrl,
                          dict(master=[np.array([f'lc1.inductor{i + 1}.i' for i in range(3)]),
-                                      np.array([f'lc1.capacitor{i + 1}.v' for i in range(3)]), np.array([15, 0, 0])],
+                                      np.array([f'lc1.capacitor{i + 1}.v' for i in range(3)]), i_ref],
                               ),
                          history=FullHistory()
                          )
 
+    #####################################
+    # Definition of the enviroment using a FMU created by OpenModelica
+    # (https://www.openmodelica.org/)
+    # Using an inverter supplying a load
     env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
                    reward_fun=rew_fun,
                    # viz_cols=['master.freq', 'master.CVI*', 'lc1.ind*'],
@@ -101,5 +115,8 @@ if __name__ == '__main__':
                                           ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']])
                    )
 
+    #####################################
+    # Execution of the experiment
+    # Using a runner to execute 10 different episodes
     runner = Runner(agent, env)
-    runner.run(30, visualise_env=True)
+    runner.run(10, visualise_env=True)
