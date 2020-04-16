@@ -110,14 +110,7 @@ class SafeOptAgent(StaticControlAgent):
                                          np.array([[J]]), self.kernel,
                                          noise_var=self.noise_var, mean_function=mf)
             self.optimizer = SafeOptSwarm(gp, 1.2 * J, bounds=self.bounds, threshold=1)
-            """
-            # Mean Free GP - 
-            # ToDo: Still needed?
-            gp = GPy.models.GPRegression(np.array([self.params[:]]),
-                                         np.array([[J]]), self.kernel,
-                                         noise_var=noise_var)
-            self.optimizer = SafeOptSwarm(gp, 0, bounds=bounds, threshold=1)
-            """
+
         else:
 
             if np.isnan(self.episode_reward):
