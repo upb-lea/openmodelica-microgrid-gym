@@ -23,9 +23,21 @@ numpy>=1.17.2
 pandas>=1.0.1
 tqdm>=4
 more_itertools>=7
-pytest>=5.2.1[tests]
-safeopt>=0.15[safeopt]
+
+pytest>=5.2.1 [tests]
+tables>=3.4.1 [tests]
+
+
+safeopt>=0.15 [safeopt]
+GPy>=1.9.9 [safeopt]
+
+sphinx-autodoc-typehints>1.10 [doc]
 ```
+
+**Hint:** If you are running a windows, PyFMI might throw some errors while installing via pip.
+It can be installed via _conda_ by running:
+
+    conda install -c conda-forge pyfmi 
 
 ### Simulation settings
 

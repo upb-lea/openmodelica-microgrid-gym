@@ -2,10 +2,14 @@
 
 ####staticctrl.py
 
-The example staticctrl.py is the default function to check a scpecific set of control parameters and if your simulation is running.
+The example staticctrl.py is the default function to check a scpecific set of control parameters and if the simulation is running.
 In the default setings, plots of the abc signal as well as the dq0 signals of the master and slave are provided.
 
-A short introduction to experimental controller tuning with some hints can be found [here](controller_tuning.md).
+By default, the following small network will be simulated:
+
+![](../pictures/network.png)
+
+A short introduction to experimental controller tuning with some hints can be found [here](controller_tuning.html).
 
 If the controller works fine, a three phase voltage similar to the following one should be one of the plots. 
 
@@ -46,9 +50,7 @@ figure below.
 
 ![](../pictures/Modell.png)
 
-The shown model is the enviroment for the agent which is built in the open source software OpenModelica 
-(https://www.openmodelica.org/) and exported as functional mock-up interface (FMU).
-The FMU is used in the environment (link?) to build up a gym env like the examples from OpenAI Gym 
+The [generated FMU](fmu.html) is used in the environment to build up a gym env like the examples from OpenAI Gym 
 (https://gym.openai.com/). 
 The gym enviroment is defined in (examples/berkenkamp.py, line 103).
 It generates a gym environment using 
