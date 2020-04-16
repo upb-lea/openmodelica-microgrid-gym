@@ -3,15 +3,17 @@
 
 [OpenModelica](https://openmodelica.org/) is an open-source Modelica-based modeling and simulation environment intended for industrial and academic usage.
 
----
+
 ####Installation of OpenModelica
 
 
 OMG was create by using [OMEdit](https://openmodelica.org/download/download-windows) v1.16
 
----
+Using a Linux, sometimes appear some problems by trying to install OpenModelica. In this case, try to download the pre-built [virtual machine](https://openmodelica.org/download/virtual-machine.) 
+
+
 #### Creating Microgrids with OpenModelica
-The microgrids are created with a userdefined library provided in the [grid.mo](../../fmu) located in the folder fmu.
+The microgrids are created with a userdefined library provided in the modelica model _grid.mo_ located in the folder fmu.
 
 The package "grid" contains a library with every components required for creating the microgrids.
 

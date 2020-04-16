@@ -11,15 +11,11 @@ The is built upon the [OpenAI Gym Environments](https://gym.openai.com/) for rei
 Therefore, the toolbox is specifically designed for running reinforcement 
 learning algorithms to train agents controlling the Microgrids.
 
-Read the [User Guide](docs/user_guide/user_guide.md)
-
-[Read the detailed docs!](https://git.uni-paderborn.de/walli/reinforcement-learning-microgrid)
-
-
+ A more detailled description of the project is presented in the [User Guide](/user_guide/user_guide.html)
 
 ## Installation
 
-#####Install Python environment
+#### Install Python environment
 - Install OpenModelica MicrogridGym from PyPI (recommended):
 
 ```
@@ -37,11 +33,20 @@ python setup.py install
 pip install -e .
 ```
 
-#####Installation of OpenModelica
+**Hint:** If you are running a windows, PyFMI might throw some errors while installing via pip.
+It can be installed via _conda_ by running:
 
-OMG was create by using v1.17, but in general, it is recommended to use the [nightly build](https://openmodelica.org/developersresources/nightly-builds). 
+    conda install -c conda-forge pyfmi 
 
-##Getting started
+
+#### Installation of OpenModelica
+
+OMG was create by using [OMEdit](https://openmodelica.org/download/download-windows) v1.16
+
+Using a Linux, sometimes appear some problems by trying to install OpenModelica. In this case, try to download the pre-built [virtual machine](https://openmodelica.org/download/virtual-machine). 
+
+
+## Getting started
 
 
 
@@ -58,14 +63,13 @@ You can either use one of the provided FMUs (Windows and Linux, 64-bit, both inc
 ```
 path\reinforcement_learning_microgrid\reinforcement_learning_microgrid\fmu> omc create_fmu.mos
 ```
+Running the staticctrl.py starts a simulation with a manually tuned cascaded PIPI controller
+
+![](docs/pictures/control.jpg)
 
 A save bayseian approach of a Reinforcement Learning agent is provided under examples/berkamkamp.py.
 
-![](docs/pictures/berkenkamp.jpg)
-
-Running the staticctrl.py starts a simulation with a manually tuned cascaded PIPI controller
-![](docs/pictures/control.jpg)
-
+![](docs/pictures/kp_kp_J.png)
 
 Every user defined settings can be directly done in the example program. 
 
@@ -90,8 +94,8 @@ All tests shall pass.
 ### Citation
 A whitepaper for this framework will be avaiable soon. Please use the following BibTeX entry for citing us:
 ```
-@misc{LEA2020reinforcementMG,
-    title={Towards a Reinforcement Learning Environment Toolbox for Intelligent Smart Grid Control},
+@misc{LEA2020XXXXXXX,
+    title={XXXXXXXXXX},
     author={Daniel Weber and Stefan Heid and Henrik Bode and Oliver Wallscheid},
     year={2020},
     eprint={XXXXX},
