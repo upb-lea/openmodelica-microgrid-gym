@@ -4,17 +4,17 @@
 # Controller: PI current controller
 
 
-
 import logging
 
 import GPy
 
-from gym_microgrid.env import FullHistory
 import gym
-from gym_microgrid.auxiliaries import PI_params, DroopParams, MutableFloat, MultiPhaseDQCurrentSourcingController
-from gym_microgrid.agents import SafeOptAgent
-from gym_microgrid import Runner
-from gym_microgrid.common import *
+from openmodelica_microgrid_gym.env import FullHistory
+from openmodelica_microgrid_gym.auxiliaries import PI_params, DroopParams, MutableFloat, \
+    MultiPhaseDQCurrentSourcingController
+from openmodelica_microgrid_gym.agents import SafeOptAgent
+from openmodelica_microgrid_gym import Runner
+from openmodelica_microgrid_gym.common import *
 
 import numpy as np
 import pandas as pd
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     # Definition of the enviroment using a FMU created by OpenModelica
     # (https://www.openmodelica.org/)
     # Using an inverter supplying a load
-    env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
+    env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=rew_fun,
                    # viz_cols=['master.freq', 'master.CVI*', 'lc1.ind*'],
                    viz_cols=['lc1.ind*'],

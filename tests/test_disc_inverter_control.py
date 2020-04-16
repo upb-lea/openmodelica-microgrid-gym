@@ -1,7 +1,7 @@
 import pytest
 from pytest import approx
 
-from gym_microgrid.auxiliaries import *
+from openmodelica_microgrid_gym.auxiliaries import *
 import numpy as np
 
 

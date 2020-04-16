@@ -1,4 +1,4 @@
-from gym_microgrid.env import FullHistory
+from openmodelica_microgrid_gym.env import FullHistory
 import pandas as pd
 import numpy as np
 

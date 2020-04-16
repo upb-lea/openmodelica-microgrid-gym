@@ -1,6 +1,6 @@
 import pytest
 from pytest import approx
-from gym_microgrid.common import *
+from openmodelica_microgrid_gym.common import *
 
 
 @pytest.fixture

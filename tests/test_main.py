@@ -2,14 +2,14 @@ import gym
 import pytest
 from pytest import approx
 
-from gym_microgrid import Runner
-from gym_microgrid.agents import StaticControlAgent
+from openmodelica_microgrid_gym import Runner
+from openmodelica_microgrid_gym.agents import StaticControlAgent
 import pandas as pd
 import numpy as np
 
-from gym_microgrid.agents.util import MutableFloat
-from gym_microgrid.common.itertools_ import flatten
-from gym_microgrid.auxiliaries import *
+from openmodelica_microgrid_gym.agents.util import MutableFloat
+from openmodelica_microgrid_gym.common.itertools_ import flatten
+from openmodelica_microgrid_gym.auxiliaries import *
 
 
 @pytest.fixture
@@ -61,7 +61,7 @@ def env():
                     ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
             'lcl1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
                      ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]}
-    env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
+    env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode=None,
                    model_path='../fmu/test.fmu',
                    max_episode_steps=100,

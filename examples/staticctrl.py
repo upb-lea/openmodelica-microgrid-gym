@@ -8,10 +8,10 @@ DroopGain = 40000.0  # W/Hz
 QDroopGain = 1000.0  # VAR/V
 
 import gym
-from gym_microgrid.auxiliaries import PI_params, DroopParams, MultiPhaseDQ0PIPIController, \
+from openmodelica_microgrid_gym.auxiliaries import PI_params, DroopParams, MultiPhaseDQ0PIPIController, \
     MultiPhaseDQCurrentController, InverseDroopParams, PLLParams
-from gym_microgrid.agents import StaticControlAgent
-from gym_microgrid import Runner
+from openmodelica_microgrid_gym.agents import StaticControlAgent
+from openmodelica_microgrid_gym import Runner
 
 import numpy as np
 
@@ -49,7 +49,7 @@ if __name__ == '__main__':
                                                 np.array([f'lcl1.capacitor{i + 1}.v' for i in range(3)]),
                                                 np.zeros(3)]})
 
-    env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
+    env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode='episode',
                    viz_cols=['*.m[dq0]', 'slave.freq', 'lcl1.*'],
                    log_level=logging.INFO,

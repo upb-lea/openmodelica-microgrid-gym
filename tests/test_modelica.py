@@ -6,7 +6,7 @@ from pytest import approx
 
 @pytest.fixture
 def env():
-    env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
+    env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode=None,
                    model_path='../fmu/test.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
@@ -48,7 +48,7 @@ def test_proper_reset(env):
 
 def test_params_simple():
     np.random.seed(1)
-    env = gym.make('gym_microgrid:ModelicaEnv_test-v1',
+    env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode=None,
                    max_episode_steps=100,
                    model_path='../fmu/test.fmu',
