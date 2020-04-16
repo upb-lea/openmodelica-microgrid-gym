@@ -1,6 +1,6 @@
 #####################################
 # Example using a FMU by OpenModelica and safeopt algorithm to find "optimal" controller parameters.
-# Simulationsetup: Inverter supplying 15 A d-current to an RL-load via 2 LC filters
+# Simulationsetup: Inverter supplying 15 A d-current to an RL-load via a LC filters
 # Controller: PI current controller
 
 
@@ -21,39 +21,40 @@ import pandas as pd
 
 # Simulation definitons
 delta_t = 1e-4  # time step size / s
-V_dc = 1000  # / V
-nomFreq = 50  # / Hz
-nomVoltPeak = 230 * 1.414  # / V
-iLimit = 30  # / A
+V_dc = 1000  # DC-link voltage / V
+nomFreq = 50  # grid frequency / Hz
+nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
+iLimit = 30  # current limit / A
 mu = 0.05  # Factor for barrier function (see below)
-DroopGain = 40000.0  # / W/Hz
-QDroopGain = 1000.0  # / VAR/V
+DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
+QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 
-i_ref = np.array([15, 0, 0])  # / A
+i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
+
 
 def rew_fun(obs: pd.Series) -> float:
     """
-    Defines the reward function for the enviroment. Uses the observations and setpoints to tell the quality of the
+    Defines the reward function for the environment. Uses the observations and setpoints to evaluate the quality of the
     used parameters.
-    Takes Current measurements and setpoints so calculate the MSE and uses a logarithmic barrier function in case of the
-    boundary of the current limit. Barrier adjustable using parameter mu.
+    Takes current measurements and setpoints so calculate the MSE control error and uses a logarithmic barrier function
+    in case of violating the current limit. Barrier adjustable using parameter mu.
 
-    :param obs: Observation from the enviroment (ControlVariables, e.g. Currents and voltages)
-    :return: Error as negative Reward
+    :param obs: Observation from the environment (ControlVariables, e.g. currents and voltages)
+    :return: Error as negative reward
     """
 
-
     # Measurements
-    Iabc_master = obs[[f'lc1.inductor{i + 1}.i' for i in range(3)]].to_numpy()
+    Iabc_master = obs[[f'lc1.inductor{i + 1}.i' for i in range(3)]].to_numpy()  # 3 phase currents at LC inductors
     phase = obs[['master.phase']].to_numpy()[0]
-    # Idq0_master = abc_to_dq0(Iabc_master, phase)
 
     # Setpoints
-    ISPdq0_master = obs[['master.'f'SPI{k}' for k in 'dq0']].to_numpy()
-    ISPabc_master = dq0_to_abc(ISPdq0_master, phase)
+    ISPdq0_master = obs[['master.'f'SPI{k}' for k in 'dq0']].to_numpy()  # setting dq reference
+    ISPabc_master = dq0_to_abc(ISPdq0_master, phase)  # convert dq setpoints into three-phase abc coordinates
 
+    # control error = MSE of reference minus measurements plus barrier penalty for violating the current constraint
     error = np.sum((ISPabc_master - Iabc_master) ** 2, axis=0) \
             + -np.sum(mu * np.log(iLimit - np.abs(Iabc_master)), axis=0)
+
 
     return -error.squeeze()
 
