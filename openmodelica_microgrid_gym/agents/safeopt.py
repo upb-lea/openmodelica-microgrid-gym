@@ -102,14 +102,14 @@ class SafeOptAgent(StaticControlAgent):
             # Define Mean "Offset": Like BK: Assume Mean = Threshold (BK = 0, now = 20% below first (safe) J: means: if
             # new Performance is 20 % lower than the inital we assume as unsafe)
             mf = GPy.core.Mapping(len(self.bounds), 1)
-            mf.f = lambda x: 1.2 * J
+            mf.f = lambda x: 1.3 * J
             mf.update_gradients = lambda a, b: 0
             mf.gradients_X = lambda a, b: 0
 
             gp = GPy.models.GPRegression(np.array([self.params[:]]),
                                          np.array([[J]]), self.kernel,
                                          noise_var=self.noise_var, mean_function=mf)
-            self.optimizer = SafeOptSwarm(gp, 1.2 * J, bounds=self.bounds, threshold=1)
+            self.optimizer = SafeOptSwarm(gp, 1.3 * J, bounds=self.bounds, threshold=1)
 
         else:
 
