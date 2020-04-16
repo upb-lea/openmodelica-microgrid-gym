@@ -1,25 +1,21 @@
-
-
-Welcome to Reinforcement Learning in Micrigrids (RLMG) documentation!
+Welcome to OpenModelica Microgrid Gym Toolbox documentation!
 =====================================================================
 
 
-The Reinforcement Learning in Micrigrids (RLMG) package is a software toolbox for the simulation of different microgrids to
+The OpenModelica Microgrid Gym (OMG) package is a software toolbox for the simulation of different microgrids to
 train and test reinforcement learning agents and to compare them with classical parameter tuning.
 
 
-Getting started
-***************************
 
-A quick start guide can be found in the following Readme-File.
+
 
 .. toctree::
    :maxdepth: 1
-   :caption: RLMG Readme:
+   :caption: Getting started:
 
    parts/readme
 
-
+A quick start guide can be found in the this readme file.
 
 
 
@@ -45,7 +41,7 @@ For the creation of additional grid contellations, Openmodelica (nightly build r
    :titlesonly:
    :caption: User Guide:
 
-   parts/modules
+   parts/user_guide/userguide
 
 
 .. toctree::

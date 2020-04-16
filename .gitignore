@@ -2,7 +2,7 @@
 __pycache__/
 .mypy_cache/
 *.fmu.txt
-*.fmu
+
 /docs/_build/
 
 /fmu/binaries/win64/

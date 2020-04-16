@@ -88,8 +88,7 @@ or with test coverage:
 All tests shall pass.
 
 ### Citation
-A whitepaper for this framework is available under [arxiv.org/XXXX
-](https://arxiv.org/XXXX). Please use the following BibTeX entry for citing us:
+A whitepaper for this framework will be avaiable soon. Please use the following BibTeX entry for citing us:
 ```
 @misc{LEA2020reinforcementMG,
     title={Towards a Reinforcement Learning Environment Toolbox for Intelligent Smart Grid Control},
