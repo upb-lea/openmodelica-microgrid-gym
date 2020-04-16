@@ -36,8 +36,9 @@ pip install -e .
 **Hint:** If you are running a windows, PyFMI might throw some errors while installing via pip.
 It can be installed via _conda_ by running:
 
-    conda install -c conda-forge pyfmi 
-
+```
+conda install -c conda-forge pyfmi 
+```
 
 #### Installation of OpenModelica
 
