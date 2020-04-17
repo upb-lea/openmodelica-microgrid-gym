@@ -288,7 +288,7 @@ class ModelicaEnv(gym.Env):
         """
         logger.debug("Experiment next step was called.")
         if self.is_done:
-            logging.warning(
+            logger.warning(
                 """You are calling 'step()' even though this environment has already returned done = True.
                 You should always call 'reset()' once you receive 'done = True' -- any further steps are
                 undefined behavior.""")
@@ -299,13 +299,13 @@ class ModelicaEnv(gym.Env):
             iter(action)
         except TypeError:
             action = [action]
-            logging.warning("Model input values (action) should be passed as a list")
+            logger.warning("Model input values (action) should be passed as a list")
 
         # Check if number of model inputs equals number of values passed
         if len(action) != len(list(self.model_input_names)):
             message = f'List of values for model inputs should be of the length {len(list(self.model_input_names))},'
             f'equal to the number of model inputs. Actual length {len(action)}'
-            logging.error(message)
+            logger.error(message)
             raise ValueError(message)
 
         # Set input values of the model
