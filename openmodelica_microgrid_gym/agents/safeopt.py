@@ -19,7 +19,7 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 class SafeOptAgent(StaticControlAgent):
-    def __init__(self, mutable_params: Union[dict, list], kernel: Kern, gp_params: Dict[str, Any],
+    def __init__(self, mutable_params: Union[dict, list], abort_reward: int, kernel: Kern, gp_params: Dict[str, Any],
                  ctrls: Dict[str, Controller],
                  observation_action_mapping: dict, history=EmptyHistory()):
         """
@@ -28,6 +28,8 @@ class SafeOptAgent(StaticControlAgent):
         increase the performance.
 
         :param mutable_params: safe inital controller parameters to adopt
+        :param abort_reward: factor to multiply with the initial reward to give back an abort_reward-times higher
+               negative reward in case of limit exceeded
         :param kernel: kernel for the Gaussian process unsing GPy
         :param gp_params: kernel parameters like bounds and lengthscale
         :param ctrls: Controllers that are feed with the observations and exert actions on the environment
@@ -44,8 +46,7 @@ class SafeOptAgent(StaticControlAgent):
         self.safe_threshold = gp_params['safe_threshold']
         self.explore_threshold = gp_params['explore_threshold']
 
-        self.punishment
-
+        self.abort_reward = abort_reward
         self.episode_reward = None
         self.optimizer = None
         self.inital_Performance = None
@@ -124,10 +125,11 @@ class SafeOptAgent(StaticControlAgent):
 
             if np.isnan(self.episode_reward):
                 # set r to doubled (negative!) initial reward
-                self.episode_reward = 300 * self.inital_Performance
+                self.episode_reward = self.abort_reward * self.inital_Performance
                 # toDo: set reward to -inf and stop agent?
                 # warning mit logger
-                logger.warning('UNSAFE! Limit exceeded, epsiode abort')
+                logger.warning('UNSAFE! Limit exceeded, epsiode abort, give a reward of {} times the'
+                               'initial reward'.format(self.abort_reward))
 
             J = self.episode_reward
 
