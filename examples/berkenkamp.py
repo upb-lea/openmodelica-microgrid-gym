@@ -20,12 +20,15 @@ import numpy as np
 import pandas as pd
 
 # Simulation definitons
-delta_t = 1e-4  # time step size / s
+delta_t = 0.5e-4  # time step size / s
+num_episodes = 15  # number of Bayes-Opt iterations
+max_episode_steps = 300  # number of simulation steps per episode
 V_dc = 1000  # DC-link voltage / V
 nomFreq = 50  # grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
 iLimit = 30  # current limit / A
-mu = 0.05  # Factor for barrier function (see below)
+iNominal = 20  # nominal current / A
+mu = 1  # Factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 
@@ -52,8 +55,8 @@ def rew_fun(obs: pd.Series) -> float:
     ISPabc_master = dq0_to_abc(ISPdq0_master, phase)  # convert dq setpoints into three-phase abc coordinates
 
     # control error = MSE of reference minus measurements plus barrier penalty for violating the current constraint
-    error = np.sum((ISPabc_master - Iabc_master) ** 2, axis=0) \
-            + -np.sum(mu * np.log(iLimit - np.abs(Iabc_master)), axis=0)
+    error = np.sum((np.abs((ISPabc_master - Iabc_master)) / iLimit) ** 0.5, axis=0) \
+            + -np.sum(mu * np.log(1 - np.maximum(np.abs(Iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0) * max_episode_steps
 
 
     return -error.squeeze()
@@ -63,29 +66,30 @@ if __name__ == '__main__':
     #####################################
     # Definitions for the GP
     # Bounds on the inputs variable Kp, Ki - For single parameter adaption use only one dimension
-    bounds = [(0.001, 0.015), (50, 155)]
-    noise_var = 0.05 ** 2  # Measurement noise sigma_omega
+    bounds = [(0.001, 0.015)]#, (50, 155)]
+    noise_var = 0.001 ** 2  # Measurement noise sigma_omega
 
     # Length scale for the parameter variation [Kp, Ki] for the GP
-    lengthscale = [.004, 20.]
+    lengthscale = [.004]# , 20.]
 
     # Definition of the kernel
-    kernel = GPy.kern.Matern32(input_dim=2, variance=2., lengthscale=lengthscale, ARD=True)
+    kernel = GPy.kern.Matern32(input_dim=1, variance=0.025, lengthscale=lengthscale, ARD=True)
 
     #####################################
     # Definition of the controllers
     # mutable_params = Parameters (Kp & Ki of the current controller of the inverter) to change using safeopt
     # algorithms in the safeopt agent to find an "optimal" PI controller parameters Kp and Ki
     ctrl = dict()
-    mutable_params = dict(currentP=MutableFloat(7e-3), currentI=MutableFloat(90))
+    mutable_params = dict(currentP=MutableFloat(7e-3))#, currentI=MutableFloat(90))
     # PI parameters for the current Controller of the inverter
-    current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
+    #current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
+    current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=90, limits=(-1, 1))
     # Droop of the active power Watt/Hz, delta_t
     droop_param = DroopParams(DroopGain, 0.005, nomFreq)
     # Droop of the reactive power VAR/Volt Var.s/Volt
     qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
 
-    ctrl['master'] = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, droop_param, qdroop_param)
+    ctrl['master'] = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t,  droop_param, qdroop_param, undersampling=2)
 
     #####################################
     # Definition of the agent
@@ -105,11 +109,12 @@ if __name__ == '__main__':
     # Using an inverter supplying a load
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=rew_fun,
+                   time_step = delta_t,
                    # viz_cols=['master.freq', 'master.CVI*', 'lc1.ind*'],
                    viz_cols=['lc1.ind*'],
                    log_level=logging.INFO,
                    viz_mode='episode',
-                   max_episode_steps=200,
+                   max_episode_steps=max_episode_steps,
                    model_path='../fmu/grid.network_singleInverter.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3'],
                    model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
@@ -120,4 +125,4 @@ if __name__ == '__main__':
     # Execution of the experiment
     # Using a runner to execute 10 different episodes
     runner = Runner(agent, env)
-    runner.run(10, visualise_env=True)
+    runner.run(num_episodes, visualise_env=True)
