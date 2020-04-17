@@ -29,7 +29,7 @@ nomFreq = 50  # grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
 iLimit = 30  # current limit / A
 iNominal = 20  # nominal current / A
-mu = 1  # Factor for barrier function (see below)
+mu = 0.8  # Factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 
@@ -47,13 +47,13 @@ def rew_fun(obs: pd.Series) -> float:
     :return: Error as negative reward
     """
 
-    # Measurements
+    # Measurements: 3 Currents through the inductors of the inverter -> Control variables (CV)
     Iabc_master = obs[[f'lc1.inductor{i + 1}.i' for i in range(3)]].to_numpy()  # 3 phase currents at LC inductors
-    phase = obs[['master.phase']].to_numpy()[0]
+    phase = obs[['master.phase']].to_numpy()[0]  # Phase from the master controller needed for transformation
 
     # Setpoints
     ISPdq0_master = obs[['master.'f'SPI{k}' for k in 'dq0']].to_numpy()  # setting dq reference
-    ISPabc_master = dq0_to_abc(ISPdq0_master, phase)  # convert dq setpoints into three-phase abc coordinates
+    ISPabc_master = dq0_to_abc(ISPdq0_master, phase)  # convert dq set-points into three-phase abc coordinates
 
     # control error = mean-root-error of reference minus measurements
     # plus barrier penalty for violating the current constraint
@@ -67,30 +67,53 @@ def rew_fun(obs: pd.Series) -> float:
 if __name__ == '__main__':
     #####################################
     # Definitions for the GP
-    # Bounds on the inputs variable Kp, Ki - For single parameter adaption use only one dimension
-    bounds = [(0.001, 0.015)]  # , (50, 155)]
+    prior_mean = 2  # Mean factor of the GP prior mean which is multiplied with the first performance of the initial set
+    bounds = [(0.001, 0.015)]  # Bounds on the input variable Kp
     noise_var = 0.001 ** 2  # Measurement noise sigma_omega
+    prior_var = 0.05  # Prior variance of the GP
+    lengthscale = [.004]  # Length scale for the parameter variation [Kp] for the GP
 
-    # Length scale for the parameter variation [Kp, Ki] for the GP
-    lengthscale = [.004]  # , 20.]
+    # If the performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
+    # the inital Performance: safe_threshold = 1.2 means, performance measurements for parameter-change are seen as
+    # unsafe, if the new measured performance drops below 20% of the initial performance of the initial safe (!)
+    # parameter set
+    safe_threshold = 2
+
+    # The algorithm will not try to expand any points that are below this threshold. This makes the algorithm stop
+    # expanding points eventually.
+    # is multiplied with the first performance of the initial set by the factor below:
+    explore_threshold = 2
+
+    # Factor to multiply with the initial reward to give back an abort_reward-times higher negative reward in case of
+    # limit exceeded
+    abort_reward = 10
 
     # Definition of the kernel
-    kernel = GPy.kern.Matern32(input_dim=1, variance=0.025, lengthscale=lengthscale, ARD=True)
+    kernel = GPy.kern.Matern32(input_dim=len(bounds), variance=prior_var, lengthscale=lengthscale, ARD=True)
 
     #####################################
     # Definition of the controllers
-    # mutable_params = Parameters (Kp & Ki of the current controller of the inverter) to change using safeopt
-    # algorithms in the safeopt agent to find an "optimal" PI controller parameters Kp and Ki
-    ctrl = dict()
-    mutable_params = dict(currentP=MutableFloat(7e-3))  # , currentI=MutableFloat(90))
-    # PI parameters for the current Controller of the inverter
-    # current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
+
+    ctrl = dict()  # empty dictionary for the the controller(s)
+
+    # mutable_params = Parameter (Kp of the current controller of the inverter) to change using safeopt algorithms in
+    # the safeopt agent to find an "optimal" PI controller parameter Kp using the safe inital parameter
+    mutable_params = dict(currentP=MutableFloat(7e-3))
+
+    # Define the PI parameters for the current Controller of the inverter
     current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=90, limits=(-1, 1))
-    # Droop of the active power Watt/Hz, delta_t
+
+    # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
+    # filter and the nominal Frequenzy
+    # Droop controller used to calculate the virtual frequency drop due to load
     droop_param = DroopParams(DroopGain, 0.005, nomFreq)
-    # Droop of the reactive power VAR/Volt Var.s/Volt
+
+    # Define the Q-droop parameters for the inverter of the reactive power VAR/Volt, delta_t (0.002) used for the
+    # filter and the nominal voltage
+    # ToDo: needed? Due to class definition still inside
     qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
 
+    # Define a current sourcing inverter as master inverter using the pi and droop parameters from abouve
     ctrl['master'] = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, droop_param, qdroop_param,
                                                            undersampling=2)
 
@@ -98,8 +121,16 @@ if __name__ == '__main__':
     # Definition of the agent
     # Agent using the safeopt algorithm by Berkenkamp
     # (https://arxiv.org/abs/1509.01066)
-    # as example to
-    agent = SafeOptAgent(mutable_params, kernel, dict(bounds=bounds, noise_var=noise_var), ctrl,
+    # as example
+    # Arguments described above
+    # history is used to store results
+    agent = SafeOptAgent(mutable_params,
+                         abort_reward,
+                         kernel,
+                         dict(bounds=bounds, noise_var=noise_var, prior_mean=prior_mean,
+                              safe_threshold=safe_threshold, explore_threshold=explore_threshold
+                              ),
+                         ctrl,
                          dict(master=[np.array([f'lc1.inductor{i + 1}.i' for i in range(3)]),
                                       np.array([f'lc1.capacitor{i + 1}.v' for i in range(3)]), i_ref],
                               ),
@@ -110,6 +141,13 @@ if __name__ == '__main__':
     # Definition of the enviroment using a FMU created by OpenModelica
     # (https://www.openmodelica.org/)
     # Using an inverter supplying a load
+    # - using the reward function described above as callable in the env
+    # - viz_cols used to choose which measurement values should be displayed (here only the 3 currents across the
+    #   inductors of the inverters (alternatively also the grid frequency and the currents transformed by the agent to
+    #   dq0
+    # - inputs to the models are the connection points to the inverters (see user guide for more)
+    # - model outputs are the the 3 currents through the inductors and the 3 voltages across the capacitors
+    # ToDo: v_caps needed?
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=rew_fun,
                    time_step=delta_t,
