@@ -102,20 +102,20 @@ class SafeOptAgent(StaticControlAgent):
             # Define Mean "Offset": Like BK: Assume Mean = Threshold (BK = 0, now = 20% below first (safe) J: means: if
             # new Performance is 20 % lower than the inital we assume as unsafe)
             mf = GPy.core.Mapping(len(self.bounds), 1)
-            mf.f = lambda x: 1.3 * J
+            mf.f = lambda x: 2 * J
             mf.update_gradients = lambda a, b: 0
             mf.gradients_X = lambda a, b: 0
 
             gp = GPy.models.GPRegression(np.array([self.params[:]]),
                                          np.array([[J]]), self.kernel,
                                          noise_var=self.noise_var, mean_function=mf)
-            self.optimizer = SafeOptSwarm(gp, 1.3 * J, bounds=self.bounds, threshold=1)
+            self.optimizer = SafeOptSwarm(gp, 2 * J, bounds=self.bounds, threshold=-100)
 
         else:
 
             if np.isnan(self.episode_reward):
                 # set r to doubled (negative!) initial reward
-                self.episode_reward = 2 * self.inital_Performance
+                self.episode_reward = 300 * self.inital_Performance
 
             J = self.episode_reward
 
@@ -131,3 +131,10 @@ class SafeOptAgent(StaticControlAgent):
         plt.figure()
         self.optimizer.plot(1000)
         plt.show()
+
+    def prepare_episode(self):
+        """
+        Prepares the next episode; reset iteration counting variable and call superclass to reset controllers
+        """
+        self._iterations = 0
+        super().prepare_episode()
