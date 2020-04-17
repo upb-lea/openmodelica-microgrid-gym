@@ -69,7 +69,7 @@ class StaticControlAgent(Agent):
 
     def prepare_episode(self):
         """
-        Prepares the next episode; resets all controllers and filters (inital value of integrators...)
+        Prepares the next episode; resets all controllers and filters (initial value of integrators...)
         """
         for ctrl in self.controllers.values():
             ctrl.reset()
