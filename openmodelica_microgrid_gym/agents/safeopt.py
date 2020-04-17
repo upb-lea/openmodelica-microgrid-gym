@@ -5,6 +5,8 @@ import GPy
 from GPy.kern import Kern
 from safeopt import SafeOptSwarm
 
+import logging
+
 from openmodelica_microgrid_gym.agents.staticctrl import StaticControlAgent
 from openmodelica_microgrid_gym.agents.util import MutableParams
 from openmodelica_microgrid_gym.auxiliaries import Controller
@@ -14,6 +16,7 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 
+logger = logging.getLogger(__name__)
 
 class SafeOptAgent(StaticControlAgent):
     def __init__(self, mutable_params: Union[dict, list], kernel: Kern, gp_params: Dict[str, Any],
@@ -37,6 +40,11 @@ class SafeOptAgent(StaticControlAgent):
         self.kernel = kernel
         self.bounds = gp_params['bounds']
         self.noise_var = gp_params['noise_var']
+        self.prior_mean = gp_params['prior_mean']
+        self.safe_threshold = gp_params['safe_threshold']
+        self.explore_threshold = gp_params['explore_threshold']
+
+        self.punishment
 
         self.episode_reward = None
         self.optimizer = None
@@ -102,20 +110,24 @@ class SafeOptAgent(StaticControlAgent):
             # Define Mean "Offset": Like BK: Assume Mean = Threshold (BK = 0, now = 20% below first (safe) J: means: if
             # new Performance is 20 % lower than the inital we assume as unsafe)
             mf = GPy.core.Mapping(len(self.bounds), 1)
-            mf.f = lambda x: 2 * J
+            mf.f = lambda x: self.prior_mean * J
             mf.update_gradients = lambda a, b: 0
             mf.gradients_X = lambda a, b: 0
 
             gp = GPy.models.GPRegression(np.array([self.params[:]]),
                                          np.array([[J]]), self.kernel,
                                          noise_var=self.noise_var, mean_function=mf)
-            self.optimizer = SafeOptSwarm(gp, 2 * J, bounds=self.bounds, threshold=-100)
+            self.optimizer = SafeOptSwarm(gp, self.safe_threshold * J, bounds=self.bounds,
+                                          threshold=self.explore_threshold * J)
 
         else:
 
             if np.isnan(self.episode_reward):
                 # set r to doubled (negative!) initial reward
                 self.episode_reward = 300 * self.inital_Performance
+                # toDo: set reward to -inf and stop agent?
+                # warning mit logger
+                logger.warning('UNSAFE! Limit exceeded, epsiode abort')
 
             J = self.episode_reward
 
