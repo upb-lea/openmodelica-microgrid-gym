@@ -32,18 +32,18 @@ class FilterParams:
 
 class DroopParams(FilterParams):
     """
-    Defines Droop Parameters needed for the droop-controller
+    Defines droop parameters needed for the droop-controller for a voltage forming inverter
     """
 
     def __init__(self, gain: Union[MutableFloat, float], tau: Union[MutableFloat, float], nom_value: float = 0):
         """
         e.g. for a P-f droop controller (for voltage forming inverter)
-            Inverter of 10kW, droop of 10% , tau of 1 sec, 50Hz
+            Inverter of 10 kW, droop of 10% , tau of 1 sec, 50 Hz
             Droop = gain = 1000 [W/Hz]
             tau = 1
             nomValue = 50 [Hz]
 
-        :param gain: The droop gain
+        :param gain: The droop gain [W/Hz or VA/V], gets inverted
         :param tau: The first order time constant [s]
         :param nom_value: An offset to add to the output of the droop (e.g. f = 50 Hz)
         """
@@ -59,18 +59,22 @@ class DroopParams(FilterParams):
 
 class InverseDroopParams(DroopParams):
     """
-    Implements a basic P,f droop controller
+    Defines droop parameters needed for the droop-controller for a current sourcing inverter
     """
 
     def __init__(self, droop: Union[MutableFloat, float], tau: Union[MutableFloat, float], nom_value: float = 0,
                  tau_filt: Union[MutableFloat, float] = 0):
         """
-        :param droop: The droop gain
+        e.g. for a f-P droop controller (for current sourcing inverter)
+            Inverter of 10 kW, droop of 10% , tau of 1 sec, 50 Hz
+            Droop = gain = 1000 [W/Hz]
+            tau = 1
+            nomValue = 50 [Hz]
+        :param droop: The droop gain [W/Hz or VA/V] - Defines the power output due to the frequency/voltage change from
+                      nom_val
         :param tau: The first order time constant [s]
         :param nom_value: An offset to add to the output of the droop (e.g. f = 50 Hz)
         :param tau_filt: timeresolution for filter
-        
-        Explanation!!!
         """
 
         super().__init__(droop, tau, nom_value)
