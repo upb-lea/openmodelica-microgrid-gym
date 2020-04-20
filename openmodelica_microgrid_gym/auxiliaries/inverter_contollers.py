@@ -1,5 +1,5 @@
 from openmodelica_microgrid_gym.env.recorder import SingleHistory, EmptyHistory
-from .filter import DroopController, InverseDroopController
+from .droop_controllers import DroopController, InverseDroopController
 from .base import DDS, PLL
 from .pi_controllers import MultiPhasePIController
 from .params import *
