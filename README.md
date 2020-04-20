@@ -7,7 +7,7 @@ simulation and optimization of microgrids.__
 
 The main characteristics of the toolbox are the plug-and-play grid design in OpenModelica and the ready-to-go approach of simply Reinfrocement Learning (RL) agents. 
 
-The OMG toolbox is built upon the [OpenAI Gym environments](https://gym.openai.com/). 
+The OMG toolbox is built upon the [OpenAI Gym](https://gym.openai.com/) environment definition framework. 
 Therefore, the toolbox is specifically designed for running reinforcement 
 learning algorithms to train agents controlling the Microgrids.
 
