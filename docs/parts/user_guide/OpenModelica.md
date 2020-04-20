@@ -7,9 +7,9 @@
 ####Installation of OpenModelica
 
 
-OMG was create by using [OMEdit](https://openmodelica.org/download/download-windows) v1.16
+OMG was create by using [OMEdit](https://openmodelica.org/download/download-windows) v1.16.
 
-Using a Linux, sometimes appear some problems by trying to install OpenModelica. In this case, try to download the pre-built [virtual machine](https://openmodelica.org/download/virtual-machine.) 
+Using a Linux, sometimes appear some problems by trying to install OpenModelica. In this case, try to download the pre-built [virtual machine](https://openmodelica.org/download/virtual-machine). 
 
 
 #### Creating Microgrids with OpenModelica

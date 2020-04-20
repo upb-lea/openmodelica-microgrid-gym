@@ -93,8 +93,7 @@ Example which increases the resistors in the load after 0.2 seconds from 20 Ohm 
 ####Setting of v_DC
 
 
-The DC Supply Voltage v_DC can be set either directly in the [OpenModelica model](OpenModelica.html#setting-of-v-dc) or via Python.
- The default value is 1000 V. It can be changed in the environment creation with the line:
+The DC Supply Voltage v_DC can be set either directly in the [OpenModelica model](OpenModelica.html#setting-of-v-dc) or via Python. The default value is 1000 V. It can be changed in the environment creation with the line:
  
     model_params={'inverter1.v_DC': 700, 'inverter2.v_DC': 500}, 
 

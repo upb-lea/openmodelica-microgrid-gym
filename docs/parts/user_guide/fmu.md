@@ -1,7 +1,6 @@
 #  FMU
 
-The Functional Mock-up Interface ([FMI](https://fmi-standard.org/)) is a free standard that defines a container
- and an interface to exchange dynamic models using a combination of XML files, binaries and C code zipped into a single file.
+The Functional Mock-up Interface ([FMI](https://fmi-standard.org/)) is a free standard that defines a container and an interface to exchange dynamic models using a combination of XML files, binaries and C code zipped into a single file.
 The generated files for the exchange are called Functional Mock-up Units (FMU). The binaries are platform-specific, so a linux user can´t run a FMU which is created on a windows machine.  
 
 There are two versions of the FMI Standard. The OMG Toolbox uses **FMI 2.0**. Furthermore there are two simulationtypes, co-simulation (CS) and model exchange (ME). 
@@ -32,8 +31,7 @@ OpenModelica.Scripting.translateModelFMU(grid.network, version="2.0", fmuType = 
 
 The lines in between are setting flags for the FMU-creation. The target-language is C++ instead of the default C because of a missing implementation of directional derivatives in C
 
-It is possible to create FMU´s directly in OpenMelica (File -> Export -> FMU). Settings for this can be done
- in Tools -> Options -> Simulation (Target language and Translation Flags) and Tools -> Options -> FMU for the Version, type, name and path. This way is not recommended because of the possibility to miss flags like the initialisation. Furthermore, problems with the providing of directional derivatives occured.
+It is possible to create FMU´s directly in OpenMelica (File -> Export -> FMU). Settings for this can be done in Tools -> Options -> Simulation (Target language and Translation Flags) and Tools -> Options -> FMU for the Version, type, name and path. This way is not recommended because of the possibility to miss flags like the initialisation. Furthermore, problems with the providing of directional derivatives occured.
 
 
 
