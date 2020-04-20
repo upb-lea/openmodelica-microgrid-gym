@@ -1,4 +1,4 @@
-# OMG Pythoncode - Installation and general remarks
+# Installation and general remarks
 
 Following is an introduction to the Pythoncode written for th OMG toolbox.
 
@@ -11,8 +11,6 @@ pip install openmodelica_microgrid_gym
 ```
 
 Alternatively, you can clone the GitHub repository. A list of [requirements](../../requirements.txt) is provided in the home-directory.
-
-
 
 ```
 gym>=0.15.3
@@ -73,11 +71,11 @@ Example which increases the resistors in the load after 0.2 seconds from 20 Ohm 
          to the strings in the nested lists. The strings final strings represent variables from the FMU and the nesting
          of the lists conveys structure used in the visualisation
 
-         >>> {'inverter': {'condensator': ['i', 'v']}}
+      >>> {'inverter': {'condensator': ['i', 'v']}}
 
    results in
-
-         >>> ['inverter.condensator.i', 'inverter.condensator.v']
+      
+      >>> ['inverter.condensator.i', 'inverter.condensator.v']
 * **model_path:** relative path of the fmu data. Default: ../fmu/grid.network.fmu
 
 * **viz_mode:** specifies how and if to render

@@ -1,23 +1,8 @@
 Welcome to OpenModelica Microgrid Gym Toolbox documentation!
 =====================================================================
 
-
 The OpenModelica Microgrid Gym (OMG) package is a software toolbox for the simulation of different microgrids to
 train and test reinforcement learning agents and to compare them with classical parameter tuning.
-
-
-
-
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Getting started:
-
-   parts/readme
-
-A quick start guide can be found in the this readme file.
-
-
 
 Content
 *******
@@ -31,17 +16,17 @@ reference generators. In this part, the basic interfaces of each module are spec
 For the creation of additional grid contellations, Openmodelica (nightly build recommended) can be used. 
 
 
-.. automodule:: examples
-    :members:
-
-
-
 .. toctree::
    :maxdepth: 4
    :titlesonly:
    :caption: User Guide:
 
-   parts/user_guide/userguide
+   parts/user_guide/user_guide
+   parts/user_guide/OpenModelica
+   parts/user_guide/fmu
+   parts/user_guide/Pythoncode
+   parts/user_guide/examples
+   parts/user_guide/controller_tuning
 
 
 .. toctree::
@@ -57,12 +42,6 @@ For the creation of additional grid contellations, Openmodelica (nightly build r
 .. - remove package and module names:
 ..   - execute regex '.* package$' ''
 ..   - execute regex '.* module$' ''
-
-
-
-
-
-
 
 
 Indices and tables

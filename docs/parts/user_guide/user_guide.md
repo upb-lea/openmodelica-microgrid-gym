@@ -1,4 +1,4 @@
-#  Welcome to OpenModelica Microgrid Gym (OMG) User Guide
+#  Getting Started
 ![](../pictures/microgrid.jpg)
 
 This User Guide covers all of OpenModelica Microgrids Gym toolboxes by topic area. Each of the following steps is introduced in a more detailed way in the different chapters of this users guide. 
