@@ -3,7 +3,7 @@
 # Simulation setup: Single inverter supplying 15 A d-current to an RL-load via a LC filter
 # Controller: PI current controller which integral gain is fixed and the proportional gain is optimized by SafeOpt
 # (1D example)
-
+# toDo: Change doku from Kp to Kp&Ki
 
 import logging
 
@@ -20,16 +20,28 @@ from openmodelica_microgrid_gym.common import *
 import numpy as np
 import pandas as pd
 
+# Choose which controller parameters should be adjusted.
+# - adjust_Kp_only == True: 1D example: Only Kp ot the PI parameter is adjusted
+# - adjust_Ki_only == True: 1D example: Only Ki ot the PI parameter is adjusted
+# - adjust_Kp_and_Ki == True: 2D example: Kp and Ki are adjusted
+# ATTENTION! Choose only one parameter as TRUE!
+adjust_Kp_only = True
+adjust_Ki_only = False
+adjust_Kp_and_Ki = False
+# summe aus 3 mal true = 1, sonst Fehler
+if sum([adjust_Kp_only, adjust_Ki_only, adjust_Kp_and_Ki]) is not 1:
+    raise ValueError("ATTENTION! Choose only one of the adjustable controller parameter as TRUE (l.30ff.)!")
+
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 300  # number of simulation steps per episode
 num_episodes = 15  # number of simulation episodes (i.e. SafeOpt iterations)
-V_dc = 1000  # DC-link voltage / V
+v_DC = 700  # DC-link voltage / V; will be set as model parameter in the fmu
 nomFreq = 50  # grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
 iLimit = 30  # current limit / A
 iNominal = 20  # nominal current / A
-mu = 0.8  # Factor for barrier function (see below)
+mu = 2  # Factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 
@@ -68,10 +80,22 @@ if __name__ == '__main__':
     #####################################
     # Definitions for the GP
     prior_mean = 2  # Mean factor of the GP prior mean which is multiplied with the first performance of the initial set
-    bounds = [(0.001, 0.015)]  # Bounds on the input variable Kp
     noise_var = 0.001 ** 2  # Measurement noise sigma_omega
-    prior_var = 0.05  # Prior variance of the GP
-    lengthscale = [.004]  # Length scale for the parameter variation [Kp] for the GP
+    prior_var = 0.1  # Prior variance of the GP
+
+    if adjust_Kp_only:
+        bounds = [(0.00, 0.03)]  # Bounds on the input variable Kp
+        lengthscale = [.01]  # Length scale for the parameter variation [Kp] for the GP
+
+    # For 1D example, if Ki should be adjusted instead of Kp, choose adjust_Kp == False
+    if adjust_Ki_only:
+        bounds = [(0, 300)]  # Bounds on the input variable Ki
+        lengthscale = [50.]  # Length scale for the parameter variation [Ki] for the GP
+
+    # For 2D example, choose Kp and Ki as mutable parameter (below) and define bounds and lengthscale for both of them
+    if adjust_Kp_and_Ki:
+        bounds = [(0.0, 0.03), (0, 300)]
+        lengthscale = [.01, 50.]
 
     # If the performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
     # the inital Performance: safe_threshold = 1.2 means, performance measurements for parameter-change are seen as
@@ -96,12 +120,23 @@ if __name__ == '__main__':
 
     ctrl = dict()  # empty dictionary for the the controller(s)
 
-    # mutable_params = Parameter (Kp of the current controller of the inverter) to change using safeopt algorithms in
-    # the safeopt agent to find an "optimal" PI controller parameter Kp using the safe inital parameter
-    mutable_params = dict(currentP=MutableFloat(7e-3))
+    if adjust_Kp_only:
+        # mutable_params = Parameter (Kp of the current controller of the inverter) to change using safeopt algorithms in
+        # the safeopt agent to find an "optimal" PI controller parameter Kp using the safe inital parameter
+        mutable_params = dict(currentP=MutableFloat(10e-3))
 
-    # Define the PI parameters for the current Controller of the inverter
-    current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=90, limits=(-1, 1))
+        # Define the PI parameters for the current Controller of the inverter
+        current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=115, limits=(-1, 1))
+
+    # For 1D example, if Ki should be adjusted instead of Kp, choose adjust_Kp == False
+    if adjust_Ki_only:
+        mutable_params = dict(currentI=MutableFloat(10))
+        current_dqp_iparams = PI_params(kP=10e-3, kI=mutable_params['currentI'], limits=(-1, 1))
+
+    # For 2D example, choose Kp and Ki as mutable parameter
+    if adjust_Kp_and_Ki:
+        mutable_params = dict(currentP=MutableFloat(10e-3), currentI=MutableFloat(10))
+        current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
 
     # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
     # filter and the nominal Frequenzy
@@ -156,6 +191,7 @@ if __name__ == '__main__':
                    log_level=logging.INFO,
                    viz_mode='episode',
                    max_episode_steps=max_episode_steps,
+                   # model_params={'inverter1.v_DC': v_DC}, # if v_DC should not be default = 1000 V
                    model_path='../fmu/grid.network_singleInverter.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3'],
                    model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
