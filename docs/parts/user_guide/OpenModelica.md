@@ -48,8 +48,18 @@ Switches in OpenModelica - like in many other free modelling languages - are des
 "Removed" loads are still connected to the grid. Connections with resistors in such dimension cause numerical issues while simulating as the ODE system becomes stiff. 
 There are available solvers for stiff equation systems like BDF and Radau or ones with automatic stiffness detection, but using the switches often ran into non-converging systems and execution errors.
 
-The working alternative is a parameter-variation of the load. It is possible to change the parameters of any load during a simulation
- and apply loadsteps in this way (see the topic  [pythoncode](Pythoncode.md)).
+The working alternative is a parameter-variation of the load. It is possible to change the parameters of any load during a simulation 
+and apply loadsteps in this way (see the topic  [pythoncode](Pythoncode.html)).
+
+#### Setting of v_DC
+
+The DC Supply Voltage v_DC can be set either directly in the OpenModelica model or via [Python](Pythoncode.html#setting-of-v-dc). In the Model, doubleclick in your network on the 
+inverter, and change the parameter _v_DC_ to the demanded value. All three phases of the inverter will be supplied with the same DC voltage. 
+The default value is 1000 Volt. The default value can be changed with a right-click on an inverter, _open class_, select _text view_ on the top left corner of the model canvas, 
+and change change the number in the following code line to the demanded default value:
+
+      parameter Real v_DC = 1000;
+      
 
 
 ####PLL

@@ -870,7 +870,7 @@ package grid
       //  input Real regler1;
       //  input Real regler2;
       //  input Real regler3;
-      parameter Real gain = 1000;
+      parameter Real v_DC = 1000;
       Modelica.Electrical.Analog.Basic.Ground ground1 annotation(
         Placement(visible = true, transformation(origin = {-74, -82}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Electrical.Analog.Sources.SignalVoltage signalVoltage1 annotation(
@@ -891,11 +891,11 @@ package grid
         Placement(visible = true, transformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Electrical.Analog.Interfaces.Pin pin1 annotation(
         Placement(visible = true, transformation(origin = {100, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      Modelica.Blocks.Math.Gain gain3(k = gain) annotation(
+      Modelica.Blocks.Math.Gain gain3(k = v_DC) annotation(
         Placement(visible = true, transformation(origin = {-26, 60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      Modelica.Blocks.Math.Gain gain1(k = gain) annotation(
+      Modelica.Blocks.Math.Gain gain1(k = v_DC) annotation(
         Placement(visible = true, transformation(origin = {-26, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      Modelica.Blocks.Math.Gain gain2(k = gain) annotation(
+      Modelica.Blocks.Math.Gain gain2(k = v_DC) annotation(
         Placement(visible = true, transformation(origin = {-26, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     equation
       connect(signalVoltage2.p, pin2) annotation(
