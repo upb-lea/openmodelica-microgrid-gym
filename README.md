@@ -62,7 +62,7 @@ You can either use one of the provided FMUs (Windows and Linux, 64-bit, both inc
 
 
 ```
-path\reinforcement_learning_microgrid\reinforcement_learning_microgrid\fmu> omc create_fmu.mos
+openmodelica_microgrid_gym\fmu> omc create_fmu.mos
 ```
 Running the staticctrl.py starts a simulation with a manually tuned cascaded PIPI controller
 
@@ -74,7 +74,7 @@ A save bayseian approach of a Reinforcement Learning agent is provided under exa
 
 Every user defined settings can be directly done in the example program. 
 
-* `env = gem.make(environment-id, **kwargs)`  
+* `env = gym.make(environment-id, **kwargs)`  
     Returns an instantiated grid environment. Provide any additional settings right here (see full documentation for all possibilities)
 
  

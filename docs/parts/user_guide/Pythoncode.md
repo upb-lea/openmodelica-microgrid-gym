@@ -6,11 +6,11 @@ Following is an introduction to the Pythoncode written for th OMG toolbox.
 
 It is recommended to install OMG via pip:
 
-``pip install openmodelica_microgrid_gym
-``
+```
+pip install openmodelica_microgrid_gym
+```
 
 Alternatively, you can clone the GitHub repository. A list of [requirements](../../requirements.txt) is provided in the home-directory.
-
 
 
 
