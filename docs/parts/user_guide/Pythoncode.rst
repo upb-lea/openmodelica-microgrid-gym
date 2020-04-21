@@ -1,12 +1,12 @@
-Installation and general remarks
+Installation and General Remarks
 ================================
 
 
-Following is an introduction to the Pythoncode written for th OMG
-toolbox.
+In the following, an introduction to the Python code written for th OMG
+toolbox is presented.
 
 
-Installation and requirements
+Installation and Requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It is recommended to install OMG via pip:
@@ -29,7 +29,7 @@ while installing via pip. It can be installed via *conda* by running:
 
     conda install -c conda-forge pyfmi 
 
-Simulation settings
+Simulation Settings
 ~~~~~~~~~~~~~~~~~~~
 
 Heart of the program structure is the creation of the environment via
@@ -42,8 +42,8 @@ important ones are described in the following. For further information, see the 
    high simulation time. 1e-4 seems to be a good compromise as many real
    controllers operate in timesteps like this.
 
--  **reward\_fun:** Callable - Reward function for the RL-Algorithm. Minimal value
-   of rewards is for example used as lower bound for the safe bayseian
+-  **reward\_fun:** Callable - Reward function for the RL-algorithm. Minimal value
+   of rewards is for example used as lower bound for the safe Bayseian
    algorithm (see single_inverter_current_control_safe_opt.py). Has to be adjusted problem-specific.
 
 -  **solver\_method:** Solver used for the ODE system. Every solver from
@@ -75,7 +75,7 @@ Example which increases the resistors in the load after 0.2 seconds from
 Setting of v\_DC
 ~~~~~~~~~~~~~~~~
 
-The DC Supply Voltage v\_DC can be set either directly in the
+The DC supply voltage v\_DC can be set either directly in the
 `OpenModelica model <OpenModelica.html#setting-of-v-dc>`__ or via
 Python. The default value is 1000 V. It can be changed in the
 environment creation with the line:
@@ -88,7 +88,7 @@ It will be set for every of the three phases of the inverter. Take care
 to set the param for every inverter which should no have the default
 supply voltage of 1000 V.
 
-Data logging
+Data Logging
 ~~~~~~~~~~~~
 
 To enable logging, the root logger needs to be initialized in the

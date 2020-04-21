@@ -1,5 +1,8 @@
-FMU
-===
+Functional Mock-up Unit (FMU)
+=============================
+
+What is FMI and FMU?
+^^^^^^^^^^^^^^^^^^^^
 
 The Functional Mock-up Interface (`FMI <https://fmi-standard.org/>`__)
 is a free standard that defines a container and an interface to exchange
@@ -9,10 +12,10 @@ called Functional Mock-up Units (FMU). The binaries are
 platform-specific, so a linux user can´t run a FMU which is created on a
 windows machine.
 
-There are two versions of the FMI Standard. The OMG Toolbox uses **FMI
-2.0**. Furthermore there are two simulationtypes, co-simulation (CS) and
-model exchange (ME). Co-Simulation has an included solver in the FMU,
-model exchange provides the possibility to use solvers in python. Due to
+There are two versions of the FMI standard. The OMG toolbox uses **FMI
+2.0**. Furthermore, there are two simulation types, co-simulation (CS) and
+model exchange (ME). Co-simulation has an included solver in the FMU,
+model exchange provides the possibility to use solvers in Python. Due to
 a lack of implicit solvers in CS, the OMG toolbox uses **ME**.
 
 Create FMU´s
@@ -48,11 +51,11 @@ The lines in between are setting flags for the FMU-creation. The
 target-language is C++ instead of the default C because of a missing
 implementation of directional derivatives in C.
 
-It is possible to create FMUs directly in OpenMelica (File -> Export ->
+It is possible to create FMUs directly in OpenModelica (File -> Export ->
 FMU). Settings for this can be done in Tools -> Options -> Simulation
 (Target language and Translation Flags) and Tools -> Options -> FMU for
 the Version, type, name and path. This way is not recommended because of
-the possibility to miss flags like the initialisation. Furthermore,
+the possibility to miss flags like the initialization. Furthermore,
 problems with the providing of directional derivatives occured.
 
 Merge FMUs

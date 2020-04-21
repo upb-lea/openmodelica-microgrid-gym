@@ -20,8 +20,8 @@ sys.setrecursionlimit(1500)
 # -- Project information -----------------------------------------------------
 
 project = 'OpenModelica Microgrid'
-copyright = '2020, Wallscheid, Weber, Heid, Bode'
-author = 'Wallscheid, Weber, Heid, Bode'
+copyright = '2020, Bode, Heid, Wallscheid, Weber'
+author = 'Bode, Heid, Wallscheid, Weber'
 
 # The short X.Y version
 version = ''

@@ -1,4 +1,4 @@
-Controller tuning hints
+Controller Tuning Hints
 =======================
 
 1. Current controller of primary inverter
@@ -20,23 +20,22 @@ Controller tuning hints
    Ki of the voltage controller. Can tune Kp then Ki, finally Kp again
    if both can’t be tuned at the same time.
 
-3. PLL of Secondary inverter
+3. PLL of secondary inverter
 
-   -  With primary inverter providing a constant frequency start tuning
-      Kp, Ki of the PLL. Noise on the frequency output of the PLL is
-      acceptable, as long as the output phasors of the PLL accurately
-      match the incoming voltage signal.
-   -  The secondary inverter power electronics should be
-      disconnected/open-circuit for this.
-   -  If possible inject step changes to the frequency setpoint of the
-      primary inverter, watching how accurately the PLL tracks the
-      external voltage reference. Continue tuning if necessary.
-
+-   With primary inverter providing a constant frequency start tuning
+    Kp, Ki of the PLL. Noise on the frequency output of the PLL is
+    acceptable, as long as the output phasors of the PLL accurately
+    match the incoming voltage signal.
+-   The secondary inverter power electronics should be
+    disconnected/open-circuit for this.
+-   If possible inject step changes to the frequency setpoint of the
+    primary inverter, watching how accurately the PLL tracks the
+    external voltage reference. Continue tuning if necessary.
 
 4. Current controller of secondary inverter
 
--  With the PLL of the secondary inverter locked to the primary inverter
-   tune the Kp, Ki of the current controller. No droops at this stage.
+-   With the PLL of the secondary inverter locked to the primary inverter
+    tune the Kp, Ki of the current controller. No droops at this stage.
 
    -  Might need to create a step change for the setpoint for this to
       test accurate tracking.
@@ -46,11 +45,11 @@ Controller tuning hints
 5. Droop of the primary inverter
 
 -  This isn’t really a tuning step as the parameters won’t affect any
-   other systems.
+   other system.
 
 6. Droops of the secondary inverter
 
--  Firstly the filter for the frequency and the voltage feedback to the
+-  Firstly, the filter for the frequency and the voltage feedback to the
    droop controllers should be set before tuning the droop.
 -  Tune the droop controllers of the secondary inverter.
 

@@ -10,30 +10,30 @@ single\_inverter\_current\_control\_safe\_opt.py
 .. :file:: ../../../examples/single\_inverter\_current\_control\_safe\_opt.py
 
 
-In this example a three phase inverter is supplying via a filter (lc1) a
-load (rl1) like shown in the figure below. From that model a FMU is
+In this example a three phase inverter is supplying a load (rl1) via a filter (lc1)
+like shown in the figure below. From that model a FMU is
 built to create the environment.
 
 .. figure:: ../pictures/Modell.png
    :alt: 
 
-An optimization methode developed by Berkenkamp et al.
+An optimization method developed by Berkenkamp et al.
 (https://arxiv.org/abs/1509.01066) called Safe Controller Optimization -
 safeopt - is used which takes a Gaussian process and Bayesian
 optimization to safely determine "optimal" controller parameters. The
-goal of the standard PI current controller is to supply a 15 A d-current
+goal of the standard PI current controller is to supply an exemplary 15 A d-current
 to the load.
 
 The `generated FMU <fmu.html>`__ is used in the environment to build up
 a gym env like the examples from OpenAI Gym (https://gym.openai.com/).
-The gym enviroment is defined in (examples/single\_inverter\_current\_control\_safe\_opt.py, line 103).
+The gym enviroment is defined in (examples/single\_inverter\_current\_control\_safe\_opt.py).
 It generates a gym environment using
 
- - reward function (line 51)
- - plotting the inductor values (current) from the lc1-filter (which should be controlled) like shown in the figure below
- - simulating 300 timesteps of delta\_t of the FMU grid.network\_singleInverter.fmu (Generated from the model in the plot abouve)
- - using the setpoints for the inverters (modulation indices) i1p{1,2,3} as inputs
- - and the inductor currents and capactitor voltages of lc1-filter as ouptuts
+ - a reward function,
+ - plotting the inductor values (current) from the lc1-filter (which should be controlled) like shown in the figure below,
+ - simulating 300 timesteps of delta\_t of the FMU grid.network\_singleInverter.fmu (generated from the model in the plot above),
+ - using the setpoints for the inverters (modulation indices) i1p{1,2,3} as inputs,
+ - and the inductor currents and capacitor voltages of lc1-filter as outputs.
 
 .. figure:: ../pictures/i_abc_bk_kp15_Ki121.png
    :alt: 
@@ -41,45 +41,39 @@ It generates a gym environment using
 The agent used in this simple RL-example is taken from the class
 **SafeOptAgent**. It contains the controller a
 **MultiPhaseDQCurrentSourcingController**, which consists of multiphase
-(3) PI controllers to controll the current across the inductor of the
+(3) PI controllers to control the current across the inductor of the
 lc1-filter. There are also droop controllers implemented to calculate
-e.g. the frequency drop due to load. The agent's task is to find better
-parameters for the current controllers (Kp & Ki). Therefore they are
+e.g. the frequency drop due to load changes. The agent's task is to find better
+parameters for the current controllers (Kp & Ki). Therefore, they are
 defined as mutable\_params (e.g.
-examples/single\_inverter\_current\_control\_safe\_opt.py, line 126) to
-adopt them between the episodes. The safeopt algorithm uses a Gaussian
-process to estimate the performance of the controller. Therefore the
-bounds (e.g. examples/single\_inverter\_current\_control\_safe\_opt.py,
-line 97) and the lengthscale (eg.
-examples/single\_inverter\_current\_control\_safe\_opt.py, line 98) for
-the parameters (Kp and Ki) have to be defined.
+examples/single\_inverter\_current\_control\_safe\_opt.py) to
+adopt them between the episodes. The SafeOpt algorithm uses a Gaussian
+process to estimate the performance of the controller. Thus, the
+bounds and the lengthscale (c.f. examples/single\_inverter\_current\_control\_safe\_opt.py) for
+the gain parameters (Kp and Ki) have to be defined.
 
-One can adjust one of the parameters (Kp or Ki) (1D) or both of them
-(2D) using the algorithm. Therefore the parameters in line 28-30 have to
-be adjusted:
+One can adjust one of the parameters (Kp or Ki) (1D case) or both of them
+(2D case) using the algorithm. Therefore, the following flag parameters have to
+be adjusted accoridngly:
 
- - To adjust only Kp set **adjust\_Kp\_only** == True (and all other parametes as False!)
- - To adjust only Ki set **adjust\_Ki\_only** == True (and all other parametes as False!)
- - Toadjust only Kp and Ki set **adjust\_Kp\_and\_Ki** == True (and all other parametes as False!)
+ - To adjust only Kp set **adjust\_Kp\_only** == True (and all other parameters as False!)
+ - To adjust only Ki set **adjust\_Ki\_only** == True (and all other parameters as False!)
+ - To adjust only Kp and Ki set **adjust\_Kp\_and\_Ki** == True (and all other parameters as False!)
 
-Due to safeopt the agent need a safe starting point (Kp and Ki). Then it
+Due to SafeOpt the agent need a safe starting point (Kp and Ki). Then it
 tries to calculate safely parameters with better performance. The
-performance is calculated using the reward function from the enviroment
-defined in the function
-(examples/single\_inverter\_current\_control\_safe\_opt.py, line 51).
+performance is calculated using the reward function from the environment.
 There the mean-root-error (RME) from the measured currents and the setpoints are
-calculated. Additionally a barrier function is used to avoid
-over-currents. The function can be adjusted using the parameter mu in
-(examples/single\_inverter\_current\_control\_safe\_opt.py, line 44). In
-case of an over-current the episode is aborted and a performance of the
-abort\_reward-times (line 144) initial reward (negative) is given back.
+calculated. Additionally a barrier function is used to penalize
+over-currents. The barrier function can be adjusted using the parameter mu.
+
 The safe threshold for the agent is set as safe\_threshold-times of
-the inital performance. (agents/safeopt.py, line 85) E.g.
+the initial performance (c.f. agents/safeopt.py). For example,
 safe\_threshold = 1.2 and the initial reward is -10 the safe threshold
 would be -12.
 
 In the end of the script a **Runner** is used to execute 10 episodes
-using the agent to control the enviroment. For every episode the
+using the agent to control the environment. For every episode the
 controlled currents and the performance function as a function of Kp
 and/or Ki are plotted.
 
@@ -87,8 +81,8 @@ Some exemplary results are shown below:
 
 -  If the parameter **adjust\_Kp\_only** is True, the agent tries to
    find an optimal value for the proportional gain (Kp) of the
-   controller in the range of [0, 0.03] (bounds, line 87) with a
-   lengthscale of 0.01 (line 88). In the figure below on the x-axis is
+   controller in the range of [0, 0.03] with a
+   lengthscale of 0.01. In the figure below on the x-axis is
    the value for Kp and on the y-axis the performance value calculated
    using the reward function mentioned above.
 
@@ -97,8 +91,7 @@ Some exemplary results are shown below:
 
 -  If the parameter **adjust\_Ki\_only** is True, the agent tries to
    find an optimal value for the integral gain (Ki) of the controller in
-   the range of [0, 300] (bounds, line 92) with a lengthscale of 50
-   (line 93). In the figure below on the x-axis is the value for Ki and
+   the range of [0, 300]  with a lengthscale of 50. In the figure below on the x-axis is the value for Ki and
    on the y-axis the performance value calculated using the reward
    function mentioned above.
 
@@ -107,18 +100,17 @@ Some exemplary results are shown below:
 
 The - due to the algorithm - "unsafe" point on the right (for Kp as well
 as for Ki) is not due to overcurrent but due to bad performance due to
-permanent control error. The resulting currents for Kp = 0.01 and Ki = 0
- ("unsafe" point on the right in the figure above)
+permanent control error. The resulting currents for Kp = 0.01 and Ki = 0 ("unsafe" point on the right in the figure above)
 is shown in the picture below. Due to the high error compared to the
 reference value (15 A d-current), the performance is as bad as the
-algorithm deifnes it as unsafe - in comparison to the performance
-reached using the intial controller parameters.
+algorithm defines it as unsafe - in comparison to the performance
+reached using the initial controller parameters.
 
 .. figure:: ../pictures/i_abc_ki_J_bad.png
    :alt: 
 
 -  If the parameter **adjust\_Kp\_and\_Ki** is True, the agent tries to
-   find an optimal value for the propotional gain (Kp) as well as for
+   find an optimal value for the proportional gain (Kp) as well as for
    the integral gain (Ki) of the controller in the ranges of [0, 0.03]
    and a lengthscale of 0.01 for Kp and a range of [0, 300] and a
    lengthscale of 50 for Ki. In the figure below on the x-axis is the
@@ -153,18 +145,18 @@ Iteration, performance J, Params [Kp, Ki]
     14 -1.561142                    [0.03, 42.1020413015999]
 
 The best performance in this short example of -0.280167 produces the
-parameterset of Kp = 0.0132... and Ki = 135.244...
+parameter set of Kp = 0.0132... and Ki = 135.244...
 
 two_inverter_static_droop_control.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In this example, a FMU generated by OpenModelica as gym environment containing two inverters, each connected via a
 filter to supply in parallel a RC load is used which is shown in the figure below.
-This example uses the in auxiliaries available controllers. One inverter is set up as voltage forming inverter with a
+This example uses the controllers as defined in the auxiliaries. One inverter is set up as voltage forming inverter with a
 direct droop controller which e.g. frequency drops due to the applied power. The other controller is used as current
 sourcing inverter with an inverse droop controller which reacts on the frequency and voltage change due to its droop
 control parameters by a power/reactive power change.
-In the default setings, plots of the abc signal as well as the dq0 signals of
+In the default settings, plots of the abc signal as well as the dq0 signals of
 the master and slave are provided.
 
 By default, the following small network will be simulated:
@@ -204,7 +196,7 @@ are listed as a model\_output:
                        )
 
 Hint: Every possible variable which is provided by the FMU can be seen
-the easiest in OpenModelica. Run the Simulation without input signals,
+the easiest in OpenModelica. Run the simulation without input signals,
 so every result for voltages and currents should be 0. On the bottom right side, you can select
 each component of the model in the tree structure. Clicking through the
 components until reaching the variable will show the whole variable name
