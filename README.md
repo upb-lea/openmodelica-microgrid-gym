@@ -3,7 +3,7 @@
 
 
 __The OpenModelica Microgrid Gym (OMG) package is a software toolbox for the
-simulation and optimization of microgrids based on energy conversion by power electronic converters.__ 
+simulation and control optimization of microgrids based on energy conversion by power electronic converters.__ 
 
 The main characteristics of the toolbox are the plug-and-play grid design and simulation in OpenModelica as well as the ready-to-go approach of intuitive reinfrocement learning (RL) approaches through a Python interface. 
 
