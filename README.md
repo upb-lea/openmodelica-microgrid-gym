@@ -9,7 +9,7 @@ The main characteristics of the toolbox are the plug-and-play grid design and si
 
 The OMG toolbox is built upon the [OpenAI Gym](https://gym.openai.com/) environment definition framework. 
 Therefore, the toolbox is specifically designed for running reinforcement 
-learning algorithms to train agents controlling power electronic converters in microgrids.
+learning algorithms to train agents controlling power electronic converters in microgrids. Nevertheless, also arbritary classical control approaches can be combined and tested using the OMG interface.
 
 A more detailled description of the project is presented in the [user guide](/user_guide/user_guide.html)
 
