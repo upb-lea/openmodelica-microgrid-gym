@@ -184,7 +184,7 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
     Controls each phase individualy in the dq0 axis.
     """
 
-    def __init__(self, VPIParams: PI_params, IPIParams: PLLParams, tau: float,
+    def __init__(self, VPIParams: PI_params, IPIParams: PI_params, tau: float,
                  Pdroop_param: DroopParams, Qdroop_param: DroopParams,
                  undersampling: int = 1, history: EmptyHistory = SingleHistory()):
         """
