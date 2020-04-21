@@ -97,7 +97,7 @@ if __name__ == '__main__':
         lengthscale = [.01, 50.]
 
     # If the performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
-    # the inital Performance: safe_threshold = 1.2 means, performance measurements for parameter-change are seen as
+    # the initial Performance: safe_threshold = 1.2 means, performance measurements for parameter-change are seen as
     # unsafe, if the new measured performance drops below 20% of the initial performance of the initial safe (!)
     # parameter set
     safe_threshold = 2
