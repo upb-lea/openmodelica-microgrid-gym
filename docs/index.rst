@@ -1,7 +1,7 @@
 Welcome to OpenModelica Microgrid Gym Toolbox documentation!
 =====================================================================
 
-The OpenModelica Microgrid Gym (OMG) package is a software toolbox for the simulation of different microgrids to
+The OpenModelica Microgrid Gym (OMG) package is a software toolbox for the simulation of different microgrids and to
 train and test reinforcement learning agents and to compare them with classical parameter tuning.
 
 Content
@@ -13,7 +13,7 @@ For quick start, one of these can be selected and used out of the box.
 
 The documentation of the base classes is important for the development of own modules like further reward functions or
 reference generators. In this part, the basic interfaces of each module are specified.
-For the creation of additional grid contellations, Openmodelica (nightly build recommended) can be used. 
+For the creation of additional grid constellations, Openmodelica (nightly build recommended) can be used.
 
 
 .. toctree::

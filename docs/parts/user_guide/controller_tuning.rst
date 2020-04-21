@@ -4,7 +4,7 @@ Controller tuning hints
 1. Current controller of primary inverter
 
 -  With no droop, in other words constant mains frequency, apply a short
-   circuit to inverter and tune Kp,Ki of the current controller. Can
+   circuit to inverter and tune Kp, Ki of the current controller. Can
    tune Kp then Ki, finally Kp again if both can’t be tuned at the same
    time.
 
@@ -17,7 +17,7 @@ Controller tuning hints
 2. Voltage controller of primary inverter
 
 -  With no droop and an open circuit load of just the inverter tune Kp,
-   Ki of the current controller. Can tune Kp then Ki, finally Kp again
+   Ki of the voltage controller. Can tune Kp then Ki, finally Kp again
    if both can’t be tuned at the same time.
 
 3. PLL of Secondary inverter
@@ -31,6 +31,7 @@ Controller tuning hints
    -  If possible inject step changes to the frequency setpoint of the
       primary inverter, watching how accurately the PLL tracks the
       external voltage reference. Continue tuning if necessary.
+
 
 4. Current controller of secondary inverter
 

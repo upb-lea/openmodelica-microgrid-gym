@@ -16,7 +16,7 @@ It is recommended to install OMG via pip:
     pip install openmodelica_microgrid_gym
 
 Alternatively, you can clone the GitHub repository. A list of
-requirementsis provided in the
+requirements is provided in the
 home-directory.
 
 .. literalinclude:: ../../../requirements.txt
@@ -42,9 +42,9 @@ important ones are described in the following. For further information, see the 
    high simulation time. 1e-4 seems to be a good compromise as many real
    controllers operate in timesteps like this.
 
--  **reward\_fun:** Reward function for the RL-Algorithm. Minimal value
+-  **reward\_fun:** Callable - Reward function for the RL-Algorithm. Minimal value
    of rewards is for example used as lower bound for the safe bayseian
-   algorithm (see berkenkamp.py)
+   algorithm (see single_inverter_current_control_safe_opt.py). Has to be adjusted problem-specific.
 
 -  **solver\_method:** Solver used for the ODE system. Every solver from
    `scipy.integrate.solve\_ivp <https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html>`__
@@ -91,7 +91,7 @@ supply voltage of 1000 V.
 Data logging
 ~~~~~~~~~~~~
 
-To enable logging, the the root logger needs to be initialized in the
+To enable logging, the root logger needs to be initialized in the
 main function. To do so, call:
 
 ::
