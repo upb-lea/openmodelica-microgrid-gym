@@ -1,7 +1,7 @@
 #####################################
 # Example using a FMU by OpenModelica as gym environment containing two inverters, each connected via an LC-filter to
 # supply in parallel a rc load.
-# This example uses the in axillaries available controllers. One inverter is set up as voltage formin inverter with a
+# This example uses the in auxiliaries available controllers. One inverter is set up as voltage forming inverter with a
 # direct droop controller which e.g. frequency drops due to the applied power. The other controller is used as current
 # sourcing inverter with an inverse droop controller which reacts on the frequency and voltage change due to its droop
 # control parameters by a power/reactive power change.
@@ -16,8 +16,8 @@ from openmodelica_microgrid_gym import Runner
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
-max_episode_steps = 300  # number of simulation steps per episode
-num_episodes = 11  # number of simulation episodes (i.e. SafeOpt iterations)
+max_episode_steps = 600  # number of simulation steps per episode
+num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 700  # DC-link voltage / V; will be set as model parameter in the fmu
 nomFreq = 50  # grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
