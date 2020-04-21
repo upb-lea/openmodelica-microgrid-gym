@@ -34,9 +34,9 @@ if sum([adjust_Kp_only, adjust_Ki_only, adjust_Kp_and_Ki]) is not 1:
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
-max_episode_steps = 300  # number of simulation steps per episode
-num_episodes = 15  # number of simulation episodes (i.e. SafeOpt iterations)
-v_DC = 700  # DC-link voltage / V; will be set as model parameter in the FMU
+max_episode_steps = 2500  # number of simulation steps per episode
+num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
+v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
 iLimit = 30  # inverter current limit / A
@@ -188,7 +188,7 @@ if __name__ == '__main__':
                    log_level=logging.INFO,
                    viz_mode='episode',
                    max_episode_steps=max_episode_steps,
-                   # model_params={'inverter1.v_DC': v_DC}, # if v_DC should not be default = 1000 V
+                   model_params={'inverter1.v_DC': v_DC},
                    model_path='../fmu/grid.network_singleInverter.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3'],
                    model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],

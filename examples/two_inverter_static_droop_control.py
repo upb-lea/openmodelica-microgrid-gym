@@ -19,7 +19,7 @@ delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 2500  # number of simulation steps per episode
 num_episodes = 1    # number of simulation episodes
 # (here, only 1 episode makes sense since simulation conditions don't change in this example)
-v_DC = 700  # DC-link voltage / V; will be set as model parameter in the fmu
+v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the fmu
 nomFreq = 50  # grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
 iLimit = 30  # current limit / A
@@ -73,6 +73,7 @@ if __name__ == '__main__':
                    viz_cols=['*.m[dq0]', 'slave.freq', 'lcl1.*'],
                    log_level=logging.INFO,
                    max_episode_steps=max_episode_steps,
+                   model_params={'inverter1.v_DC': v_DC},
                    model_path='../fmu/grid.network.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output={
