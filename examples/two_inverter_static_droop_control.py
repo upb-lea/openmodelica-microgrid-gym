@@ -1,10 +1,10 @@
 #####################################
 # Example using a FMU by OpenModelica as gym environment containing two inverters, each connected via an LC-filter to
-# supply in parallel a rc load.
-# This example uses the in auxiliaries available controllers. One inverter is set up as voltage forming inverter with a
-# direct droop controller which e.g. frequency drops due to the applied power. The other controller is used as current
-# sourcing inverter with an inverse droop controller which reacts on the frequency and voltage change due to its droop
-# control parameters by a power/reactive power change.
+# supply in parallel a RC load.
+# This example uses the available standard controllers as defined in the 'auxiliaries' folder.
+# One inverter is set up as voltage forming inverter with a direct droop controller.
+# The other controller is used as current sourcing inverter with an inverse droop controller which reacts on the
+# frequency and voltage change due to its droop control parameters by a power/reactive power change.
 
 import logging
 import gym
@@ -16,8 +16,9 @@ from openmodelica_microgrid_gym import Runner
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
-max_episode_steps = 600  # number of simulation steps per episode
-num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
+max_episode_steps = 2500  # number of simulation steps per episode
+num_episodes = 1    # number of simulation episodes
+# (here, only 1 episode makes sense since simulation conditions don't change in this example)
 v_DC = 700  # DC-link voltage / V; will be set as model parameter in the fmu
 nomFreq = 50  # grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -26,36 +27,34 @@ iNominal = 20  # nominal current / A
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 
-
 logging.basicConfig()
 
 if __name__ == '__main__':
     ctrl = dict()  # Empty dict which shall include all controllers
 
     #####################################
-    # Define voltage forming inverter as master
-    # Voltage PI parameters for the current sourcing inverter
+    # Define the voltage forming inverter as master
+    # Voltage control PI gain parameters for the voltage sourcing inverter
     voltage_dqp_iparams = PI_params(kP=0.025, kI=60, limits=(-iLimit, iLimit))
-    # Current PI parameters for the voltage sourcing inverter
+    # Current control PI gain parameters for the voltage sourcing inverter
     current_dqp_iparams = PI_params(kP=0.012, kI=90, limits=(-1, 1))
-    # Droop of the active power Watt/Hz, delta_t
+    # Droop characteristic for the active power Watt/Hz, delta_t
     droop_param = DroopParams(DroopGain, 0.005, nomFreq)
-    # Droop of the reactive power VAR/Volt Var.s/Volt
+    # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
     qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
     # Add to dict
     ctrl['master'] = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param,
                                                  qdroop_param)
 
     #####################################
-    # Define current sourcing inverter as slave
-    # Discrete controller implementation for a DQ based Current controller for the current sourcing inverter
-    # Current PI parameters for the current sourcing inverter
+    # Define the current sourcing inverter as slave
+    # Current control PI gain parameters for the current sourcing inverter
     current_dqp_iparams = PI_params(kP=0.005, kI=200, limits=(-1, 1))
-    # PI params for the PLL in the current forming inverter
+    # PI gain parameters for the PLL in the current forming inverter
     pll_params = PLLParams(kP=10, kI=200, limits=(-10000, 10000), f_nom=nomFreq)
-    # Droop of the active power Watts/Hz, W.s/Hz
+    # Droop characteristic for the active power Watts/Hz, W.s/Hz
     droop_param = InverseDroopParams(DroopGain, 0, nomFreq, tau_filt=0.04)
-    # Droop of the reactive power VAR/Volt Var.s/Volt
+    # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
     qdroop_param = InverseDroopParams(100, 0, nomVoltPeak, tau_filt=0.01)
     # Add to dict
     ctrl['slave'] = MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, iLimit,
