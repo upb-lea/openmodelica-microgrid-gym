@@ -1,8 +1,8 @@
 #####################################
 # Example using a FMU by OpenModelica and safeopt algorithm to find "optimal" controller parameters.
 # Simulation setup: Single inverter supplying 15 A d-current to an RL-load via a LC filter
-# Controller: PI current controller which integral gain is fixed and the proportional gain is optimized by SafeOpt
-# (1D example)
+# Controller: PI current controller is optimized by SafeOpt
+
 
 import logging
 
