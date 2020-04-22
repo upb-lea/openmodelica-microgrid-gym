@@ -1,0 +1,25 @@
+language: python
+
+install:
+  - pip install -r requirements.txt --prefer-binary
+  - pip install -r requirements_dev.txt
+
+dist: bionic
+services:
+  - xvfb
+
+script: 
+  - pytest --cov=./
+  - cd docs
+  - make html
+  - touch _build/html/.nojekyll
+  - bash <(curl -s https://codecov.io/bash)  # code coverage report upload
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $TRAVIS_TOKEN  # shared with travis-ci.org dashboard
+  keep-history: true
+  on:
+    branch: master
+  local_dir: docs/_build/html/
