@@ -63,7 +63,7 @@ class PLL:
         self._controller = PIController(params, ts)
 
         # Uses a DDS oscillator to keep track of the internal angle
-        self._dds = DDS(ts, params.theta_0)
+        self._dds = DDS(ts=ts, theta_0=params.theta_0)
 
         self._prev_cossin = cos_sin(params.theta_0)
         self._sqrt2 = np.sqrt(2)
