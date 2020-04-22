@@ -20,7 +20,7 @@ OpenModelica Microgrid Gym
 
 
 .. figure:: docs/pictures/microgrid.jpg
-      :alt:
+    :figwidth: 100%
 
 **The OpenModelica Microgrid Gym (OMG) package is a software toolbox for the
 simulation and control optimization of microgrids based on energy conversion by power electronic converters.**
@@ -87,10 +87,12 @@ You can either use one of the provided FMUs (Windows and Linux, 64-bit, both inc
 Running the ``staticctrl.py`` starts a simulation with a manually tuned cascaded PIPI controller
 
 .. figure:: docs/pictures/control.jpg
+    :figwidth: 60%
 
 A save Bayesian approach of a reinforcement learning agent is provided under examples/berkamkamp.py.
 
 .. figure:: docs/pictures/kp_kp_J.png
+    :figwidth: 60%
 
 Every user defined settings can be directly done in the example program.
 
