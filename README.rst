@@ -24,11 +24,14 @@ OpenModelica Microgrid Gym
 **The OpenModelica Microgrid Gym (OMG) package is a software toolbox for the
 simulation and control optimization of microgrids based on energy conversion by power electronic converters.**
 
-The main characteristics of the toolbox are the plug-and-play grid design and simulation in OpenModelica as well as the ready-to-go approach of intuitive reinfrocement learning (RL) approaches through a Python interface.
+The main characteristics of the toolbox are the plug-and-play grid design and simulation in OpenModelica as well as
+the ready-to-go approach of intuitive reinfrocement learning (RL) approaches through a Python interface.
 
-The OMG toolbox is built upon the `OpenAI Gym<https://gym.openai.com/>`_ environment definition framework.
+The OMG toolbox is built upon the `OpenAI Gym`_ environment definition framework.
 Therefore, the toolbox is specifically designed for running reinforcement
 learning algorithms to train agents controlling power electronic converters in microgrids. Nevertheless, also arbritary classical control approaches can be combined and tested using the OMG interface.
+
+.. _OpenAI Gym: <https://gym.openai.com/>
 
 * Free software: GNU General Public License v3
 * Documentation: https://openmodelica-microgrid-gym.readthedocs.io.
@@ -63,17 +66,20 @@ It can be installed via _conda_ by running::
 Installation of OpenModelica
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-OMG was create by using `OMEdit<https://openmodelica.org/download/download-windows>`_ v1.16
+OMG was create by using `OMEdit`_ v1.16
 
-Using a Linux, sometimes appear some problems by trying to install OpenModelica.
-In this case, try to download the pre-built `virtual machine<https://openmodelica.org/download/virtual-machine>`_.
+In this case, try to download the pre-built `virtual machine`_.
 
+.. _OMEdit: https://openmodelica.org/download/download-windows
+.. _virtual machine: https://openmodelica.org/download/virtual-machine
 
 Getting started
 ---------------
 
 
-OMG uses the `FMI standard<https://fmi-standard.org/>`_ for the exchange of the model between OpenModelica and python.
+OMG uses the `FMI standard`_ for the exchange of the model between OpenModelica and python.
+
+.. _FMI standard: https://fmi-standard.org/
 
 An example network consisting out of two inverters, three filters and an inductive load.
 
