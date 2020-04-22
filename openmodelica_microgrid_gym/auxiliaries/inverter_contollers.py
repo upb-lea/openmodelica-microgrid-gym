@@ -307,12 +307,12 @@ class MultiPhaseDQCurrentController(CurrentCtl):
         self._lastIDQ = abc_to_dq0_cos_sin(currentCV, *self._prev_cossine)
 
         droop = np.zeros(2)
-        if Vinst > 200:
+        if Vinst > 150:
             # Determine the droop power setpoints
-            droopPI = self._PdroopController.step(self._prev_freq) / inst_rms(voltageCV)
+            droopPI = (self._PdroopController.step(self._prev_freq) / inst_rms(voltageCV)) / 3
 
             # Determine the droop reactive power set points
-            droopQI = self._QdroopController.step(Vinst) / Vinst
+            droopQI = (self._QdroopController.step(Vinst) / Vinst) / 3
             droop = np.array([droopPI, droopQI])
 
             droop = droop * 1.4142135623730951  # RMS to Peak
