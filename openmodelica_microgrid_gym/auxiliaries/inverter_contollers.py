@@ -261,7 +261,8 @@ class MultiPhaseDQCurrentController(CurrentCtl):
 
     def __init__(self, IPIParams: PI_params, pllPIParams: PLLParams, tau: float, i_limit: float,
                  Pdroop_param: InverseDroopParams, Qdroop_param: InverseDroopParams,
-                 undersampling: int = 1, history: EmptyHistory = SingleHistory()):
+                 lower_droop_voltage_threshold: float = 150., undersampling: int = 1,
+                 history: EmptyHistory = SingleHistory()):
         """
         :param IPIParams: PI_parameter for the current control loop
         :param pllPIParams: PI parameters for the PLL controller
@@ -269,6 +270,8 @@ class MultiPhaseDQCurrentController(CurrentCtl):
         :param i_limit: Current limit
         :param Pdroop_param: Droop parameters for P-droop
         :param Qdroop_param: Droop parameters for Q-droop
+        :param lower_droop_voltage_threshold: Grid voltage threshold from where the controller starts to react on the
+               voltage and frequency in the grid
         :param undersampling: Control is applied every undersmpling* cycles
                 :param history: Dataframe to store internal data
         """
@@ -282,6 +285,7 @@ class MultiPhaseDQCurrentController(CurrentCtl):
         self._lastIDQ = np.zeros(N_PHASE)
         self._prev_theta = 0
         self._prev_freq = 0
+        self.lower_droop_voltage_threshold = lower_droop_voltage_threshold
 
     def control(self, currentCV: np.ndarray, voltageCV: np.ndarray, idq0SP: np.ndarray = np.zeros(3), **kwargs):
         """
@@ -307,13 +311,14 @@ class MultiPhaseDQCurrentController(CurrentCtl):
         self._lastIDQ = abc_to_dq0_cos_sin(currentCV, *self._prev_cossine)
 
         droop = np.zeros(2)
-        if Vinst > 150:
+        if Vinst > self.lower_droop_voltage_threshold:
             # Determine the droop power setpoints
-            droopPI = (self._PdroopController.step(self._prev_freq) / inst_rms(voltageCV)) / 3
+            droopPI = (self._PdroopController.step(self._prev_freq) / inst_rms(voltageCV))
 
             # Determine the droop reactive power set points
-            droopQI = (self._QdroopController.step(Vinst) / Vinst) / 3
-            droop = np.array([droopPI, droopQI])
+            droopQI = (self._QdroopController.step(Vinst) / Vinst)
+            droop = np.array([droopPI, droopQI]) / 3  # devide by 3 due to here dq, but we want to set the e.g.
+            # d-setpoint in the sum of the phases abc
 
             droop = droop * 1.4142135623730951  # RMS to Peak
             droop = np.clip(droop, -self._i_limit, self._i_limit)
