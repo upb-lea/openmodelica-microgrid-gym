@@ -16,7 +16,7 @@ from openmodelica_microgrid_gym import Runner
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
-max_episode_steps = 2500  # number of simulation steps per episode
+max_episode_steps = 3000  # number of simulation steps per episode
 num_episodes = 1    # number of simulation episodes
 # (here, only 1 episode makes sense since simulation conditions don't change in this example)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the fmu
@@ -53,9 +53,9 @@ if __name__ == '__main__':
     # PI gain parameters for the PLL in the current forming inverter
     pll_params = PLLParams(kP=10, kI=200, limits=(-10000, 10000), f_nom=nomFreq)
     # Droop characteristic for the active power Watts/Hz, W.s/Hz
-    droop_param = InverseDroopParams(DroopGain, 0, nomFreq, tau_filt=0.04)
+    droop_param = InverseDroopParams(DroopGain, delta_t, nomFreq, tau_filt=0.04)
     # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
-    qdroop_param = InverseDroopParams(100, 0, nomVoltPeak, tau_filt=0.01)
+    qdroop_param = InverseDroopParams(50, delta_t, nomVoltPeak, tau_filt=0.01)
     # Add to dict
     ctrl['slave'] = MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, iLimit,
                                                   droop_param, qdroop_param)
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     # Define the environment
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode='episode',
-                   viz_cols=['*.m[dq0]', 'slave.freq', 'lcl1.*'],
+                   # viz_cols=['*.m[dq0]', 'slave.freq', 'lcl1.*'],
                    log_level=logging.INFO,
                    max_episode_steps=max_episode_steps,
                    model_params={'inverter1.v_DC': v_DC},
