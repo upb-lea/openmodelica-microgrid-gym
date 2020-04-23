@@ -5,7 +5,7 @@ OpenModelica Microgrid Gym
 .. image:: https://travis-ci.org/upb-lea/openmodelica-microgrid-gym.svg?branch=master
     :target: https://travis-ci.org/github/upb-lea/openmodelica-microgrid-gym
 
-.. image:: https://codecov.io/gh/upb-lea/openmodelica-microgrid-gym/branch/master/graph/badge.svg)
+.. image:: https://codecov.io/gh/upb-lea/openmodelica-microgrid-gym/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/upb-lea/openmodelica-microgrid-gym
 
 .. image:: https://img.shields.io/pypi/v/openmodelica_microgrid_gym.svg
