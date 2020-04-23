@@ -14,7 +14,7 @@ requirements = []
 
 setup_requirements = ['pytest-runner', ]
 
-test_requirements = ['pytest>=3', ]
+test_requirements = ['pytest>=3', 'tables>=3.4.1']
 
 setup(
     author="LEA - Uni Paderborn",
