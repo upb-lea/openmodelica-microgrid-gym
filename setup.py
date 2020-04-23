@@ -42,7 +42,8 @@ setup(
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
+    extras_require={'safeopt': ['safeopt>=0.16', 'GPy>=1.9.9']},
     url='https://github.com/upb-lea/openmodelica_microgrid_gym',
-    version='0.0.1',
+    version='0.1.0',
     zip_safe=False,
 )
