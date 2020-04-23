@@ -63,7 +63,7 @@ def env():
                      ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]}
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode=None,
-                   model_path='../fmu/test.fmu',
+                   model_path='fmu/test.fmu',
                    max_episode_steps=100,
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output=conf)
@@ -78,7 +78,7 @@ def test_main(agent, env):
     # env.history.df.to_hdf('test_main.hd5', 'hist')
     df = env.history.df.head(100)
     df = df.reindex(sorted(df.columns), axis=1)
-    df2 = pd.read_hdf('test_main.hd5', 'hist').head(100)
+    df2 = pd.read_hdf('tests/test_main.hd5', 'hist').head(100)
     df2 = df2.reindex(sorted(df2.columns), axis=1)
     assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-2)
 
@@ -92,11 +92,11 @@ def test_main_paramchange(agent, env):
     # env.history.df.to_hdf('test_main2.hd5', 'hist')
     df = env.history.df.head(50)
     df = df.reindex(sorted(df.columns), axis=1)
-    df2 = pd.read_hdf('test_main.hd5', 'hist').head(50)
+    df2 = pd.read_hdf('tests/test_main.hd5', 'hist').head(50)
     df2 = df2.reindex(sorted(df2.columns), axis=1)
     assert df[out_params].to_numpy() != approx(df2[out_params].to_numpy(), 5e-3)
 
-    df2 = pd.read_hdf('test_main2.hd5', 'hist').head(50)
+    df2 = pd.read_hdf('tests/test_main2.hd5', 'hist').head(50)
     df2 = df2.reindex(sorted(df2.columns), axis=1)
     assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-2)
 

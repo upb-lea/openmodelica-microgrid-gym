@@ -33,7 +33,7 @@ install:
   - pip install -r requirements_dev.txt
 
 script:
-  - pytest --rootdir=tests
+  - pytest
   - cd docs
   - make html
   - touch _build/html/.nojekyll
