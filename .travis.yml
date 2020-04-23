@@ -1,6 +1,8 @@
 language: python
 os: linux
 dist: bionic # ubuntu:bionic docker img
+python:
+  - "3.7"
 
 addons:
   apt:
