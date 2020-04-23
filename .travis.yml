@@ -6,9 +6,9 @@ python:
 
 addons:
   apt:
-  	packages:
-	  - wget
-	  - g++
+    packages:
+      - wget
+      - g++
    
 
 
