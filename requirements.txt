@@ -7,7 +7,7 @@ pandas>=1.0.1
 tqdm>=4
 more_itertools>=7
 
-PyFMI>=2.5
+#PyFMI>=2.5
 
 safeopt>=0.16[safeopt]
 GPy>=1.9.9[safeopt]

@@ -1,12 +1,36 @@
 language: python
+os: linux
+dist: bionic
+python:
+  - "3.7"
+
+addons:
+  apt:
+  	packages:
+	  - wget
+	  - g++
+   
+
 
 install:
-#  - pip install -r requirements_dev.txt
-#  - pip install -r requirements.txt --prefer-binary
+  - wget https://github.com/modelon-community/fmi-library/archive/2.2.tar.gz
+  - tar -xf 2.2.tar.gz
+  - cd fmi-library-${pkgver}
+  - mkdir -p build && cd build
+  - cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+  - make
+  - make install 
+   
+  - pip install numpy Cython
+  - wget https://github.com/modelon/PyFMI/archive/PyFMI-2.6.tar.gz
+  - tar -xf PyFMI-2.6.tar.gz
+  - cd PyFMI-PyFMI-2.6
+  - python setup.py build --fmil-home=/usr/
+  - python setup.py install --fmil-home=/usr/
 
-dist: bionic
-services:
-  - xvfb
+  - pip install -r requirements_dev.txt
+  - pip install -r requirements.txt --prefer-binary
+
 
 script: 
   - pytest --cov=./
@@ -17,9 +41,10 @@ script:
 
 deploy:
   provider: pages
-  skip_cleanup: true
-  github_token: $TRAVIS_TOKEN  # shared with travis-ci.org dashboard
-  keep-history: true
+  strategy: git
+  cleanup: false
+  token: $TRAVIS_TOKEN  # shared with travis-ci.org dashboard
+  keep_history: true
   on:
     branch: master
   local_dir: docs/_build/html/
