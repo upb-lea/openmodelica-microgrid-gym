@@ -15,7 +15,7 @@ addons:
 install:
   - wget https://github.com/modelon-community/fmi-library/archive/2.2.tar.gz
   - tar -xf 2.2.tar.gz
-  - cd fmi-library-${pkgver}
+  - cd fmi-library-2.2
   - mkdir -p build && cd build
   - cmake -DCMAKE_INSTALL_PREFIX=/usr ..
   - make
