@@ -28,10 +28,10 @@ pre-install:
 #  - python setup.py install --fmil-home=/usr/
 
 install:
-  - pip install -r requirements_dev.txt
+#  - pip install -r requirements_dev.txt
   - pip install -r requirements.txt
   - pip install .[all]
-
+  - pip install sphinx==2.4.4 m2r sphinx_rtd_theme sphinx-autodoc-typehints>1.10
 
 script:
   - pytest --cov=./

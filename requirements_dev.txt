@@ -5,6 +5,8 @@ tox==3.14.0
 coverage==4.5.4
 Sphinx==2.1
 sphinx-autodoc-typehints>1.10
+m2r
+sphinx_rtd_theme
 
 twine==1.14.0
 

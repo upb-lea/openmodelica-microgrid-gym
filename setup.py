@@ -10,9 +10,7 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = []
-
-setup_requirements = ['pytest-runner', ]
+setup_requirements = ['pytest-runner']
 
 test_requirements = ['pytest>=3', 'tables>=3.4.1']
 
@@ -32,7 +30,7 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     description="OpenModelica Microgrid Gym",
-    install_requires=requirements,
+    install_requires=[],
     license="GNU General Public License v3",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
@@ -42,7 +40,7 @@ setup(
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
-    extras_require={'safeopt': ['safeopt>=0.16', 'GPy>=1.9.9']},
+    extras_require={'examples': ['safeopt>=0.16', 'GPy>=1.9.9']},
     url='https://github.com/upb-lea/openmodelica_microgrid_gym',
     version='0.1.0',
     zip_safe=False,
