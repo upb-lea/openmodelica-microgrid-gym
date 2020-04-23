@@ -12,20 +12,20 @@ addons:
 
 
 pre-install:
-#  - wget https://github.com/modelon-community/fmi-library/archive/2.2.tar.gz
-#  - tar -xf 2.2.tar.gz
-#  - cd fmi-library-2.2
-#  - mkdir -p build && cd build
-#  - cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-#  - make
-#  - make install
-#
-#  - pip install numpy Cython
-#  - wget https://github.com/modelon/PyFMI/archive/PyFMI-2.6.tar.gz
-#  - tar -xf PyFMI-2.6.tar.gz
-#  - cd PyFMI-PyFMI-2.6
-#  - python setup.py build --fmil-home=/usr/
-#  - python setup.py install --fmil-home=/usr/
+  - wget https://github.com/modelon-community/fmi-library/archive/2.2.tar.gz
+  - tar -xf 2.2.tar.gz
+  - cd fmi-library-2.2
+  - mkdir -p build && cd build
+  - cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+  - make
+  - make install
+
+  - pip install numpy Cython
+  - wget https://github.com/modelon/PyFMI/archive/PyFMI-2.6.tar.gz
+  - tar -xf PyFMI-2.6.tar.gz
+  - cd PyFMI-PyFMI-2.6
+  - python setup.py build --fmil-home=/usr/
+  - python setup.py install --fmil-home=/usr/
 
 install:
   - pip install -r requirements.txt
