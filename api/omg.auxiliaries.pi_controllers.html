@@ -174,8 +174,98 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="omg-auxiliaries-pi-controllers">
-<h1>omg.auxiliaries.pi_controllers<a class="headerlink" href="#omg-auxiliaries-pi-controllers" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-openmodelica_microgrid_gym.auxiliaries.pi_controllers">
+<span id="omg-auxiliaries-pi-controllers"></span><h1>omg.auxiliaries.pi_controllers<a class="headerlink" href="#module-openmodelica_microgrid_gym.auxiliaries.pi_controllers" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="openmodelica_microgrid_gym.auxiliaries.pi_controllers.MultiPhasePIController">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.auxiliaries.pi_controllers.</code><code class="sig-name descname">MultiPhasePIController</code><span class="sig-paren">(</span><em class="sig-param">PI_param</em>, <em class="sig-param">ts</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/pi_controllers.html#MultiPhasePIController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.pi_controllers.MultiPhasePIController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Implements a number of PI controllers for use in multiphase systems
+Number of phases is set to N_phase = 3</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>PI_param</strong> (<a class="reference internal" href="omg.auxiliaries.params.html#openmodelica_microgrid_gym.auxiliaries.params.PI_params" title="openmodelica_microgrid_gym.auxiliaries.params.PI_params"><code class="xref py py-class docutils literal notranslate"><span class="pre">PI_params</span></code></a>) – The PI_Parameters object with the PI controller parameters (kP, kI, kB for the gains of the
+proportional, integral and anti-windup part and the limits of the output)</p></li>
+<li><p><strong>ts</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – Sample time</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.pi_controllers.MultiPhasePIController.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/pi_controllers.html#MultiPhasePIController.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.pi_controllers.MultiPhasePIController.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets all controllers</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.pi_controllers.MultiPhasePIController.step">
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">SP</em>, <em class="sig-param">CV</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/pi_controllers.html#MultiPhasePIController.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.pi_controllers.MultiPhasePIController.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs a controller step calculating the error itself using the array of
+Setpoints (SP) and Controlled Variables (CV, feedback)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>SP</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – Floats of setpoints</p></li>
+<li><p><strong>CV</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – Floats of system state to be controlled (feedback)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return output</dt>
+<dd class="field-even"><p>An array of the controller outputs.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="data">
+<dt id="openmodelica_microgrid_gym.auxiliaries.pi_controllers.N_phase">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.auxiliaries.pi_controllers.</code><code class="sig-name descname">N_phase</code><em class="property"> = 3</em><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.pi_controllers.N_phase" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="openmodelica_microgrid_gym.auxiliaries.pi_controllers.PIController">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.auxiliaries.pi_controllers.</code><code class="sig-name descname">PIController</code><span class="sig-paren">(</span><em class="sig-param">PI_param</em>, <em class="sig-param">ts</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/pi_controllers.html#PIController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.pi_controllers.PIController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Implements a basic, discrete PI controller.
+Uses back calculation for anti-windup.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>PI_param</strong> (<a class="reference internal" href="omg.auxiliaries.params.html#openmodelica_microgrid_gym.auxiliaries.params.PI_params" title="openmodelica_microgrid_gym.auxiliaries.params.PI_params"><code class="xref py py-class docutils literal notranslate"><span class="pre">PI_params</span></code></a>) – The PI_Parameters object with the PI controller parameters (kP, kI, kB for the gains of the
+proportional, integral and anti-windup part and the limits of the output)</p></li>
+<li><p><strong>ts</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – Sample time</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.pi_controllers.PIController.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/pi_controllers.html#PIController.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.pi_controllers.PIController.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the Integrator</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.pi_controllers.PIController.step">
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">error</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/pi_controllers.html#PIController.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.pi_controllers.PIController.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements a step of a basic PI controller with anti-windup by back-calculation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>error</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – Control error to act on</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The calculated PI controller response to the error, using the
+PI_Parameters provided during initialisation, clipped due to the defined limits</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

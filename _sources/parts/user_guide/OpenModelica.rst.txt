@@ -24,7 +24,7 @@ modelica model *grid.mo* located in the folder fmu.
 The package "grid" contains a library with components required for
 creating the power electronics-driven microgrids.
 
-.. figure:: ../pictures/library.jpg
+.. figure:: ../../pictures/library.jpg
    :alt: 
 
 It contains several packages (red 'P' symbol) with predefined components,
@@ -33,7 +33,7 @@ example a direct sine-voltage to the inputs, are placed directly in the
 package (blue 'M', after loading with doubleclick shown as input/output
 diagram like "network" in the picture above).
 
-.. figure:: ../pictures/omedit.jpg
+.. figure:: ../../pictures/omedit.jpg
    :alt: 
 
 Main components of any microgrid are the three-phase inverters. They consist

@@ -14,7 +14,7 @@ In this example a three phase inverter is supplying a load (rl1) via a filter (l
 like shown in the figure below. From that model a FMU is
 built to create the environment.
 
-.. figure:: ../pictures/Modell.png
+.. figure:: ../../pictures/Modell.png
    :alt: 
 
 An optimization method developed by Berkenkamp et al.
@@ -35,7 +35,7 @@ It generates a gym environment using
  - using the setpoints for the inverters (modulation indices) i1p{1,2,3} as inputs,
  - and the inductor currents and capacitor voltages of lc1-filter as outputs.
 
-.. figure:: ../pictures/i_abc_bk_kp15_Ki121.png
+.. figure:: ../../pictures/i_abc_bk_kp15_Ki121.png
    :alt: 
 
 The agent used in this simple RL-example is taken from the class
@@ -86,7 +86,7 @@ Some exemplary results are shown below:
    the value for Kp and on the y-axis the performance value calculated
    using the reward function mentioned above.
 
-.. figure:: ../pictures/kp_J.png
+.. figure:: ../../pictures/kp_J.png
    :alt: 
 
 -  If the parameter **adjust\_Ki\_only** is True, the agent tries to
@@ -95,7 +95,7 @@ Some exemplary results are shown below:
    on the y-axis the performance value calculated using the reward
    function mentioned above.
 
-.. figure:: ../pictures/ki_J.png
+.. figure:: ../../pictures/ki_J.png
    :alt: 
 
 The - due to the algorithm - "unsafe" point on the right (for Kp as well
@@ -106,7 +106,7 @@ reference value (15 A d-current), the performance is as bad as the
 algorithm defines it as unsafe - in comparison to the performance
 reached using the initial controller parameters.
 
-.. figure:: ../pictures/i_abc_ki_J_bad.png
+.. figure:: ../../pictures/i_abc_ki_J_bad.png
    :alt: 
 
 -  If the parameter **adjust\_Kp\_and\_Ki** is True, the agent tries to
@@ -117,7 +117,7 @@ reached using the initial controller parameters.
    value for Kp, the y-axis the value for Ki and the z-axis the
    performance value calculated using the reward function.
 
-.. figure:: ../pictures/kp_ki_J.png
+.. figure:: ../../pictures/kp_ki_J.png
    :alt: 
 
 The results of the algorithm are printed into the console in the form
@@ -161,7 +161,7 @@ the master and slave are provided.
 
 By default, the following small network will be simulated:
 
-.. figure:: ../pictures/network.png
+.. figure:: ../../pictures/network.png
    :alt: 
 
 A short introduction to experimental controller tuning with some hints
@@ -170,7 +170,7 @@ can be found `here <controller_tuning.html>`__.
 If the controller works fine, a three phase voltage similar to the
 following one should be one of the plots.
 
-.. figure:: ../pictures/abc.png
+.. figure:: ../../pictures/abc.png
    :alt: 
 
 Any other demanded signal which is provided by the FMU or saved during

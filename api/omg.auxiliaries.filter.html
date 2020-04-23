@@ -174,8 +174,55 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="omg-auxiliaries-filter">
-<h1>omg.auxiliaries.filter<a class="headerlink" href="#omg-auxiliaries-filter" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-openmodelica_microgrid_gym.auxiliaries.filter">
+<span id="omg-auxiliaries-filter"></span><h1>omg.auxiliaries.filter<a class="headerlink" href="#module-openmodelica_microgrid_gym.auxiliaries.filter" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="openmodelica_microgrid_gym.auxiliaries.filter.Filter">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.auxiliaries.filter.</code><code class="sig-name descname">Filter</code><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/filter.html#Filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.filter.Filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>An empty Filter defining a base interface for any inherenting classes</p>
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.filter.Filter.step">
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/filter.html#Filter.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.filter.Filter.step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="openmodelica_microgrid_gym.auxiliaries.filter.PT1Filter">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.auxiliaries.filter.</code><code class="sig-name descname">PT1Filter</code><span class="sig-paren">(</span><em class="sig-param">filtParams</em>, <em class="sig-param">ts</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/filter.html#PT1Filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.filter.PT1Filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#openmodelica_microgrid_gym.auxiliaries.filter.Filter" title="openmodelica_microgrid_gym.auxiliaries.filter.Filter"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.auxiliaries.filter.Filter</span></code></a></p>
+<p>A PT1 Filter implementation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filtParams</strong> (<a class="reference internal" href="omg.auxiliaries.html#openmodelica_microgrid_gym.auxiliaries.DroopParams" title="openmodelica_microgrid_gym.auxiliaries.DroopParams"><em>DroopParams</em></a><em> or </em><a class="reference internal" href="omg.auxiliaries.html#openmodelica_microgrid_gym.auxiliaries.InverseDroopParams" title="openmodelica_microgrid_gym.auxiliaries.InverseDroopParams"><em>InverseDroopParams</em></a>) – The filter params</p></li>
+<li><p><strong>ts</strong> (<em>float</em>) – Sample time</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.filter.PT1Filter.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/filter.html#PT1Filter.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.filter.PT1Filter.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the filter Integrator</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.filter.PT1Filter.step">
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">val_in</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/filter.html#PT1Filter.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.filter.PT1Filter.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements a first order PT1 filter on the input</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>val_in</strong> (<em>float</em>) – Filter input</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Filtered output</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

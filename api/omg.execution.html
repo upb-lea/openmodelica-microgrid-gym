@@ -178,8 +178,38 @@
 </ul>
 </div>
 </div>
-<div class="section" id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-openmodelica_microgrid_gym.execution">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-openmodelica_microgrid_gym.execution" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="openmodelica_microgrid_gym.execution.Runner">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.execution.</code><code class="sig-name descname">Runner</code><span class="sig-paren">(</span><em class="sig-param">agent</em>, <em class="sig-param">env</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/execution/runner.html#Runner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.execution.Runner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class will execute an agent on the environment.
+It handles communication between agent and environment and handles the execution of multiple epochs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>agent</strong> (<a class="reference internal" href="omg.agents.agent.html#openmodelica_microgrid_gym.agents.agent.Agent" title="openmodelica_microgrid_gym.agents.agent.Agent"><code class="xref py py-class docutils literal notranslate"><span class="pre">Agent</span></code></a>) – Agent that acts on the environment</p></li>
+<li><p><strong>env</strong> (<a class="reference internal" href="omg.env.modelica.html#openmodelica_microgrid_gym.env.modelica.ModelicaEnv" title="openmodelica_microgrid_gym.env.modelica.ModelicaEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelicaEnv</span></code></a>) – Environment tha Agent acts on</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.execution.Runner.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">n_episodes=10</em>, <em class="sig-param">visualise_env=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/execution/runner.html#Runner.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.execution.Runner.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trains/executes the agent on the environment for a number of epochs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_episodes</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of epochs to play</p></li>
+<li><p><strong>visualise_env</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – turns on visualization of the environment</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 

@@ -174,8 +174,90 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="omg-auxiliaries-base">
-<h1>omg.auxiliaries.base<a class="headerlink" href="#omg-auxiliaries-base" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-openmodelica_microgrid_gym.auxiliaries.base">
+<span id="omg-auxiliaries-base"></span><h1>omg.auxiliaries.base<a class="headerlink" href="#module-openmodelica_microgrid_gym.auxiliaries.base" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="openmodelica_microgrid_gym.auxiliaries.base.DDS">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.auxiliaries.base.</code><code class="sig-name descname">DDS</code><span class="sig-paren">(</span><em class="sig-param">ts</em>, <em class="sig-param">dds_max=1</em>, <em class="sig-param">theta_0=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/base.html#DDS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.base.DDS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Implements a basic Direct Digital Synthesizer (DDS) controller.
+Basically is a resetting integrator to provide a theta reference at a given
+frequency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – Sample time</p></li>
+<li><p><strong>dds_max</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – The value at which the DDS resets the integrator</p></li>
+<li><p><strong>theta_0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – The initial value of the DDS upon initialisation (not reset)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.base.DDS.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/base.html#DDS.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.base.DDS.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the DDS integrator to 0</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.base.DDS.step">
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">freq</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/base.html#DDS.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.base.DDS.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Advances the Oscilator</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>freq</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – Absolute frequency to oscillate at for the next time step</p>
+</dd>
+<dt class="field-even">Return theta</dt>
+<dd class="field-even"><p>The angle in RADIANS [0:2pi]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="openmodelica_microgrid_gym.auxiliaries.base.PLL">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.auxiliaries.base.</code><code class="sig-name descname">PLL</code><span class="sig-paren">(</span><em class="sig-param">params</em>, <em class="sig-param">ts</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/base.html#PLL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.base.PLL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Implements a basic PI controller based PLL to track the angle of a three-phase
+ABC voltage</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>params</strong> (<a class="reference internal" href="omg.auxiliaries.params.html#openmodelica_microgrid_gym.auxiliaries.params.PLLParams" title="openmodelica_microgrid_gym.auxiliaries.params.PLLParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">PLLParams</span></code></a>) – PI Params for controller (kP, kI, limits, kB, f_nom, theta_0)</p></li>
+<li><p><strong>ts</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – absolute sampling time for the controller</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.base.PLL.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/base.html#PLL.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.base.PLL.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.base.PLL.step">
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">v_abc</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/base.html#PLL.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.base.PLL.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs a discrete set of calculations for the PLL</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>v_abc</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – Voltages in the abc frame to track</p>
+</dd>
+<dt class="field-even">Return _prev_cossin</dt>
+<dd class="field-even"><p>The internal cos-sin of the current phase angle</p>
+</dd>
+<dt class="field-odd">Return freq</dt>
+<dd class="field-odd"><p>The frequency of the internal oscillator</p>
+</dd>
+<dt class="field-even">Return theta</dt>
+<dd class="field-even"><p>The internal phase angle</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

@@ -174,8 +174,155 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="omg-auxiliaries-params">
-<h1>omg.auxiliaries.params<a class="headerlink" href="#omg-auxiliaries-params" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-openmodelica_microgrid_gym.auxiliaries.params">
+<span id="omg-auxiliaries-params"></span><h1>omg.auxiliaries.params<a class="headerlink" href="#module-openmodelica_microgrid_gym.auxiliaries.params" title="Permalink to this headline">¶</a></h1>
+<p>The parameter classes wrap controller parameters.
+The fields are wrapped into properties in order to allow transparent usage of the MutableFloat wrapper</p>
+<dl class="class">
+<dt id="openmodelica_microgrid_gym.auxiliaries.params.DroopParams">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.auxiliaries.params.</code><code class="sig-name descname">DroopParams</code><span class="sig-paren">(</span><em class="sig-param">gain</em>, <em class="sig-param">tau</em>, <em class="sig-param">nom_value=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/params.html#DroopParams"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.params.DroopParams" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#openmodelica_microgrid_gym.auxiliaries.params.FilterParams" title="openmodelica_microgrid_gym.auxiliaries.params.FilterParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.auxiliaries.params.FilterParams</span></code></a></p>
+<p>Defines droop parameters needed for the droop-controller for a voltage forming inverter</p>
+<dl class="simple">
+<dt>e.g. for a P-f droop controller (for voltage forming inverter)</dt><dd><p>Inverter of 10 kW, droop of 10% , tau of 1 sec, 50 Hz
+Droop = gain = 1000 [W/Hz]
+tau = 1
+nomValue = 50 [Hz]</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gain</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="omg.agents.util.html#openmodelica_microgrid_gym.agents.util.MutableFloat" title="openmodelica_microgrid_gym.agents.util.MutableFloat"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableFloat</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – The droop gain [W/Hz or VA/V], gets inverted</p></li>
+<li><p><strong>tau</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="omg.agents.util.html#openmodelica_microgrid_gym.agents.util.MutableFloat" title="openmodelica_microgrid_gym.agents.util.MutableFloat"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableFloat</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – The first order time constant [s]</p></li>
+<li><p><strong>nom_value</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – An offset to add to the output of the droop (e.g. f = 50 Hz)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.params.DroopParams.gain">
+<em class="property">property </em><code class="sig-name descname">gain</code><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.params.DroopParams.gain" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="openmodelica_microgrid_gym.auxiliaries.params.FilterParams">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.auxiliaries.params.</code><code class="sig-name descname">FilterParams</code><span class="sig-paren">(</span><em class="sig-param">gain</em>, <em class="sig-param">tau</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/params.html#FilterParams"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.params.FilterParams" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Defines Filter Parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gain</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="omg.agents.util.html#openmodelica_microgrid_gym.agents.util.MutableFloat" title="openmodelica_microgrid_gym.agents.util.MutableFloat"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableFloat</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – Filter gain</p></li>
+<li><p><strong>tau</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="omg.agents.util.html#openmodelica_microgrid_gym.agents.util.MutableFloat" title="openmodelica_microgrid_gym.agents.util.MutableFloat"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableFloat</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – Filter time constant</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.params.FilterParams.gain">
+<em class="property">property </em><code class="sig-name descname">gain</code><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.params.FilterParams.gain" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.params.FilterParams.tau">
+<em class="property">property </em><code class="sig-name descname">tau</code><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.params.FilterParams.tau" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="openmodelica_microgrid_gym.auxiliaries.params.InverseDroopParams">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.auxiliaries.params.</code><code class="sig-name descname">InverseDroopParams</code><span class="sig-paren">(</span><em class="sig-param">droop</em>, <em class="sig-param">tau</em>, <em class="sig-param">nom_value=0</em>, <em class="sig-param">tau_filt=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/params.html#InverseDroopParams"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.params.InverseDroopParams" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#openmodelica_microgrid_gym.auxiliaries.params.DroopParams" title="openmodelica_microgrid_gym.auxiliaries.params.DroopParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.auxiliaries.params.DroopParams</span></code></a></p>
+<p>Defines droop parameters needed for the droop-controller for a current sourcing inverter</p>
+<dl class="simple">
+<dt>e.g. for a f-P droop controller (for current sourcing inverter)</dt><dd><p>Inverter of 10 kW, droop of 10% , tau of 1 sec, 50 Hz
+Droop = gain = 1000 [W/Hz]
+tau = 1
+nomValue = 50 [Hz]</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>droop</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="omg.agents.util.html#openmodelica_microgrid_gym.agents.util.MutableFloat" title="openmodelica_microgrid_gym.agents.util.MutableFloat"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableFloat</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – The droop gain [W/Hz or VA/V] - Defines the power output due to the frequency/voltage change from
+nom_val</p></li>
+<li><p><strong>tau</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="omg.agents.util.html#openmodelica_microgrid_gym.agents.util.MutableFloat" title="openmodelica_microgrid_gym.agents.util.MutableFloat"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableFloat</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – The first order time constant [s]</p></li>
+<li><p><strong>nom_value</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – An offset to add to the output of the droop (e.g. f = 50 Hz)</p></li>
+<li><p><strong>tau_filt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="omg.agents.util.html#openmodelica_microgrid_gym.agents.util.MutableFloat" title="openmodelica_microgrid_gym.agents.util.MutableFloat"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableFloat</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – timeresolution for filter</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="openmodelica_microgrid_gym.auxiliaries.params.PI_params">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.auxiliaries.params.</code><code class="sig-name descname">PI_params</code><span class="sig-paren">(</span><em class="sig-param">kP</em>, <em class="sig-param">kI</em>, <em class="sig-param">limits</em>, <em class="sig-param">kB=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/params.html#PI_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.params.PI_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The params for a basic PI Controller
+All fields are represented by properties to allow passing MutableFloats</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kP</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="omg.agents.util.html#openmodelica_microgrid_gym.agents.util.MutableFloat" title="openmodelica_microgrid_gym.agents.util.MutableFloat"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableFloat</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – Proportional gain</p></li>
+<li><p><strong>kI</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="omg.agents.util.html#openmodelica_microgrid_gym.agents.util.MutableFloat" title="openmodelica_microgrid_gym.agents.util.MutableFloat"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableFloat</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – Intergral gain</p></li>
+<li><p><strong>limits</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference internal" href="omg.agents.util.html#openmodelica_microgrid_gym.agents.util.MutableFloat" title="openmodelica_microgrid_gym.agents.util.MutableFloat"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableFloat</span></code></a>, <a class="reference internal" href="omg.agents.util.html#openmodelica_microgrid_gym.agents.util.MutableFloat" title="openmodelica_microgrid_gym.agents.util.MutableFloat"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableFloat</span></code></a>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]) – Controller limits</p></li>
+<li><p><strong>kB</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – Anti-windup (back calculation)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.params.PI_params.kB">
+<em class="property">property </em><code class="sig-name descname">kB</code><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.params.PI_params.kB" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.params.PI_params.kI">
+<em class="property">property </em><code class="sig-name descname">kI</code><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.params.PI_params.kI" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.params.PI_params.kP">
+<em class="property">property </em><code class="sig-name descname">kP</code><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.params.PI_params.kP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.params.PI_params.limits">
+<em class="property">property </em><code class="sig-name descname">limits</code><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.params.PI_params.limits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="openmodelica_microgrid_gym.auxiliaries.params.PLLParams">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.auxiliaries.params.</code><code class="sig-name descname">PLLParams</code><span class="sig-paren">(</span><em class="sig-param">kP</em>, <em class="sig-param">kI</em>, <em class="sig-param">limits</em>, <em class="sig-param">kB=1</em>, <em class="sig-param">f_nom=0</em>, <em class="sig-param">theta_0=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/auxiliaries/params.html#PLLParams"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.params.PLLParams" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#openmodelica_microgrid_gym.auxiliaries.params.PI_params" title="openmodelica_microgrid_gym.auxiliaries.params.PI_params"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.auxiliaries.params.PI_params</span></code></a></p>
+<p>The params for a Phase Lock Loop (PLL) to measure the frequency</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kP</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="omg.agents.util.html#openmodelica_microgrid_gym.agents.util.MutableFloat" title="openmodelica_microgrid_gym.agents.util.MutableFloat"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableFloat</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – Proportional gain</p></li>
+<li><p><strong>kI</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="omg.agents.util.html#openmodelica_microgrid_gym.agents.util.MutableFloat" title="openmodelica_microgrid_gym.agents.util.MutableFloat"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableFloat</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – Intergral gain</p></li>
+<li><p><strong>limits</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference internal" href="omg.agents.util.html#openmodelica_microgrid_gym.agents.util.MutableFloat" title="openmodelica_microgrid_gym.agents.util.MutableFloat"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableFloat</span></code></a>, <a class="reference internal" href="omg.agents.util.html#openmodelica_microgrid_gym.agents.util.MutableFloat" title="openmodelica_microgrid_gym.agents.util.MutableFloat"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableFloat</span></code></a>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]) – Controller limits</p></li>
+<li><p><strong>kB</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="omg.agents.util.html#openmodelica_microgrid_gym.agents.util.MutableFloat" title="openmodelica_microgrid_gym.agents.util.MutableFloat"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableFloat</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – Anti-windup (back calculation)</p></li>
+<li><p><strong>f_nom</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – Nominal grid frequency to track (e.g. 50 Hz)</p></li>
+<li><p><strong>theta_0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – Inital angle</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.params.PLLParams.f_nom">
+<em class="property">property </em><code class="sig-name descname">f_nom</code><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.params.PLLParams.f_nom" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.auxiliaries.params.PLLParams.theta_0">
+<em class="property">property </em><code class="sig-name descname">theta_0</code><a class="headerlink" href="#openmodelica_microgrid_gym.auxiliaries.params.PLLParams.theta_0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
 
 

@@ -171,8 +171,100 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="omg-common-itertools">
-<h1>omg.common.itertools_<a class="headerlink" href="#omg-common-itertools" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-openmodelica_microgrid_gym.common.itertools_">
+<span id="omg-common-itertools"></span><h1>omg.common.itertools_<a class="headerlink" href="#module-openmodelica_microgrid_gym.common.itertools_" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.common.itertools_.fill_params">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.common.itertools_.</code><code class="sig-name descname">fill_params</code><span class="sig-paren">(</span><em class="sig-param">template</em>, <em class="sig-param">data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/common/itertools_.html#fill_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.common.itertools_.fill_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses a template, that can be traversed by nested_map.
+Each entry in the template, that is a key in the mapping is replaced by the value it is mapped to.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>template</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]) – template containing keys</p></li>
+<li><p><strong>data</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>]) – mapping of keys to values</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.common.itertools_.flatten">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.common.itertools_.</code><code class="sig-name descname">flatten</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">remaining_levels=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/common/itertools_.html#flatten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.common.itertools_.flatten" title="Permalink to this definition">¶</a></dt>
+<dd><p>transform this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">[[</span><span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">],</span>
+<span class="gp">&gt;&gt;&gt; </span>             <span class="p">[</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">]]}}</span>
+</pre></div>
+</div>
+<p>results into</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="s1">&#39;a.b.i&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.v&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.k&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.h&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[[</span><span class="s1">&#39;a.b.i&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.v&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;a.b.k&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.h&#39;</span><span class="p">]]</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>]) – data to flatten. A nested dictionary containing nested lists as keys in the lowest level.</p></li>
+<li><p><strong>remaining_levels</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of levels to preserve in the nested list</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Flattened data as a nesteted list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.common.itertools_.nested_depth">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.common.itertools_.</code><code class="sig-name descname">nested_depth</code><span class="sig-paren">(</span><em class="sig-param">structure</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/common/itertools_.html#nested_depth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.common.itertools_.nested_depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the maximum depth of a nested sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>structure</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>) – nested sequence. The containing data structures are currently restricted to lists and tuples,
+because allowing any sequence would also result in traversing strings for example.
+If a single value is passed, the return is 0</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>maximum depth</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.common.itertools_.nested_map">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.common.itertools_.</code><code class="sig-name descname">nested_map</code><span class="sig-paren">(</span><em class="sig-param">fun</em>, <em class="sig-param">structure</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/common/itertools_.html#nested_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.common.itertools_.nested_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Traverses data structure and substitutes every element with the result of the callable</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fun</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>) – Callable to be applied to every value</p></li>
+<li><p><strong>structure</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]) – Nesting of dictionaries or lists. For mappings, the callable is applied to the values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 
 
