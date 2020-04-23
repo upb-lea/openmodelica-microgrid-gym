@@ -1,4 +1,4 @@
-# created with pipreqs
+## created with pipreqs
 gym>=0.15.3
 PyFMI>=2.5.7
 matplotlib>=3.1.1
@@ -8,11 +8,6 @@ pandas>=1.0.1
 tqdm>=4
 more_itertools>=7
 
-pytest>=5.2.1 [tests]
-tables>=3.4.1 [tests]
+safeopt>=0.16[safeopt]
+GPy>=1.9.9[safeopt]
 
-
-safeopt>=0.16 [safeopt]
-GPy>=1.9.9 [safeopt]
-
-sphinx-autodoc-typehints>1.10 [doc]
