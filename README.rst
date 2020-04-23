@@ -3,10 +3,13 @@ OpenModelica Microgrid Gym
 ==========================
 
 .. image:: https://travis-ci.org/upb-lea/openmodelica-microgrid-gym.svg?branch=master
-        :target: https://travis-ci.org/github/upb-lea/openmodelica-microgrid-gym
+    :target: https://travis-ci.org/github/upb-lea/openmodelica-microgrid-gym
+
+.. image:: https://codecov.io/gh/upb-lea/openmodelica-microgrid-gym/branch/master/graph/badge.svg)
+    :target: https://codecov.io/gh/upb-lea/openmodelica-microgrid-gym
 
 .. image:: https://img.shields.io/pypi/v/openmodelica_microgrid_gym.svg
-        :target: https://pypi.python.org/pypi/openmodelica_microgrid_gym
+    :target: https://pypi.python.org/pypi/openmodelica_microgrid_gym
 
 .. image:: https://pyup.io/repos/github/upb-lea/openmodelica_microgrid_gym/shield.svg
      :target: https://pyup.io/repos/github/upb-lea/openmodelica_microgrid_gym/
@@ -16,7 +19,6 @@ OpenModelica Microgrid Gym
      :target: LICENSE
 
 .. figure:: docs/pictures/microgrid.jpg
-    :alt:
 
 **The OpenModelica Microgrid Gym (OMG) package is a software toolbox for the
 simulation and control optimization of microgrids based on energy conversion by power electronic converters.**

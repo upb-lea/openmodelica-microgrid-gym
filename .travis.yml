@@ -32,11 +32,11 @@ install:
   - pip install -r requirements_dev.txt
 
 script:
-  #  - pytest --cov=./
+  - pytest --cov=./
   - cd docs
   - make html
   - touch _build/html/.nojekyll
-#  - bash <(curl -s https://codecov.io/bash)  # code coverage report upload
+  - bash <(curl -s https://codecov.io/bash)  # code coverage report upload
 
 deploy:
   provider: pages
