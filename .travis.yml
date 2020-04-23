@@ -26,13 +26,14 @@ install:
   - cd PyFMI-PyFMI-2.6
   - python setup.py install --fmil-home=../fmi-library-2.2/install/
   - cd ..
+  - rm -r PyFMI-PyFMI-2.6 fmi-library-2.2
 
   - pip install -r requirements.txt
   - pip install .[all]
   - pip install -r requirements_dev.txt
 
 script:
-  - pytest --cov=./
+  - pytest --cov=openmodelica-microgrid-gym/
   - cd docs
   - make html
   - touch _build/html/.nojekyll
