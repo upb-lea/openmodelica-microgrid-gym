@@ -2,12 +2,11 @@
 OpenModelica Microgrid Gym
 ==========================
 
+.. image:: https://travis-ci.org/upb-lea/openmodelica-microgrid-gym.svg?branch=master
+        :target: https://travis-ci.org/github/upb-lea/openmodelica-microgrid-gym
 
 .. image:: https://img.shields.io/pypi/v/openmodelica_microgrid_gym.svg
         :target: https://pypi.python.org/pypi/openmodelica_microgrid_gym
-
-.. image:: https://travis-ci.org/upb-lea/openmodelica-microgrid-gym.svg?branch=master
-        :target: https://travis-ci.org/github/upb-lea/openmodelica-microgrid-gym
 
 .. image:: https://pyup.io/repos/github/upb-lea/openmodelica_microgrid_gym/shield.svg
      :target: https://pyup.io/repos/github/upb-lea/openmodelica_microgrid_gym/
@@ -17,6 +16,7 @@ OpenModelica Microgrid Gym
      :target: LICENSE
 
 .. figure:: docs/pictures/microgrid.jpg
+    :alt:
 
 **The OpenModelica Microgrid Gym (OMG) package is a software toolbox for the
 simulation and control optimization of microgrids based on energy conversion by power electronic converters.**
@@ -28,7 +28,7 @@ The OMG toolbox is built upon the `OpenAI Gym`_ environment definition framework
 Therefore, the toolbox is specifically designed for running reinforcement
 learning algorithms to train agents controlling power electronic converters in microgrids. Nevertheless, also arbritary classical control approaches can be combined and tested using the OMG interface.
 
-.. _OpenAI Gym: <https://gym.openai.com/>
+.. _OpenAI Gym: https://gym.openai.com/
 
 * Free software: GNU General Public License v3
 * Documentation: https://upb-lea.github.io/openmodelica-microgrid-gym
@@ -47,23 +47,19 @@ Install Python environment
 
 - Or install from Github source::
 
-    git clone TODO: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    git clone https://github.com/upb-lea/openmodelica-microgrid-gym.git
     cd openmodelica_microgrid_gym
-    # Then either
     python setup.py install
-    # or alternatively
-    pip install -e .
 
-
-**Hint:** If you are running a Windows, PyFMI might throw some errors while installing via pip.
-It can be installed via _conda_ by running::
+**Hint:** PyFMI might throw some errors while installing via pip.
+It can be installed via ``conda`` by running::
 
     conda install -c conda-forge pyfmi
 
 Installation of OpenModelica
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-OMG was create by using `OMEdit`_ v1.16
+OMG was create by using OMEdit_ v1.16
 
 In this case, try to download the pre-built `virtual machine`_.
 
@@ -81,7 +77,8 @@ OMG uses the `FMI standard`_ for the exchange of the model between OpenModelica 
 An example network consisting out of two inverters, three filters and an inductive load.
 
 .. figure:: docs/pictures/omedit.jpg
-
+    :figwidth: 50%
+    :align: center
 
 You can either use one of the provided FMUs (Windows and Linux, 64-bit, both included in the grid.network.fmu) or create your own by running::
 
@@ -90,16 +87,20 @@ You can either use one of the provided FMUs (Windows and Linux, 64-bit, both inc
 Running the ``staticctrl.py`` starts a simulation with a manually tuned cascaded PIPI controller
 
 .. figure:: docs/pictures/control.jpg
+    :figwidth: 70%
+    :align: center
 
 A save Bayesian approach of a reinforcement learning agent is provided under examples/berkamkamp.py.
 
 .. figure:: docs/pictures/kp_kp_J.png
+    :figwidth: 30%
+    :align: center
 
 Every user defined settings can be directly done in the example program.
 
-.. code:: python
+.. code-block:: python
 
-    env = gym.make(environment-id, \*\*kwargs)
+    env = gym.make(environment-id, **kwargs)
 
 Returns an instantiated grid environment. Provide any additional settings right here (see full documentation for all possibilities)
 
