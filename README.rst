@@ -6,18 +6,15 @@ OpenModelica Microgrid Gym
 .. image:: https://img.shields.io/pypi/v/openmodelica_microgrid_gym.svg
         :target: https://pypi.python.org/pypi/openmodelica_microgrid_gym
 
-.. image:: https://img.shields.io/travis/upb-lea/openmodelica_microgrid_gym.svg
-        :target: https://travis-ci.com/upb-lea/openmodelica_microgrid_gym
-
-.. image:: https://readthedocs.org/projects/openmodelica-microgrid-gym/badge/?version=latest
-        :target: https://openmodelica-microgrid-gym.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Status
-
+.. image:: https://travis-ci.org/upb-lea/openmodelica-microgrid-gym.svg?branch=master
+        :target: https://travis-ci.org/github/upb-lea/openmodelica-microgrid-gym
 
 .. image:: https://pyup.io/repos/github/upb-lea/openmodelica_microgrid_gym/shield.svg
      :target: https://pyup.io/repos/github/upb-lea/openmodelica_microgrid_gym/
      :alt: Updates
 
+.. image:: https://img.shields.io/github/license/upb-lea/openmodelica-microgrid-gym
+     :target: LICENSE
 
 .. figure:: docs/pictures/microgrid.jpg
 
@@ -34,7 +31,7 @@ learning algorithms to train agents controlling power electronic converters in m
 .. _OpenAI Gym: <https://gym.openai.com/>
 
 * Free software: GNU General Public License v3
-* Documentation: https://openmodelica-microgrid-gym.readthedocs.io.
+* Documentation: https://upb-lea.github.io/openmodelica-microgrid-gym
 
 
 Installation
