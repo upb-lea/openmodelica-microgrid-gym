@@ -7,6 +7,8 @@ pytest==4.6.5
 pytest-cov
 pytest-runner==5.1
 tables>=3.4.1
+safeopt>=0.16
+GPy>=1.9.9
 
 Sphinx==2.1
 sphinx-autodoc-typehints>=1.10

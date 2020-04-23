@@ -12,7 +12,7 @@ with open('HISTORY.rst') as history_file:
 
 setup_requirements = ['pytest-runner']
 
-test_requirements = ['pytest>=3', 'tables>=3.4.1']
+test_requirements = ['pytest>=3', 'tables>=3.4.1', 'safeopt>=0.16', 'GPy>=1.9.9']
 
 setup(
     author="LEA - Uni Paderborn",
