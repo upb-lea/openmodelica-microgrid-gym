@@ -77,8 +77,6 @@ OMG uses the `FMI standard`_ for the exchange of the model between OpenModelica 
 An example network consisting out of two inverters, three filters and an inductive load.
 
 .. figure:: docs/pictures/omedit.jpg
-    :figwidth: 50%
-    :align: center
 
 You can either use one of the provided FMUs (Windows and Linux, 64-bit, both included in the grid.network.fmu) or create your own by running::
 
@@ -87,13 +85,13 @@ You can either use one of the provided FMUs (Windows and Linux, 64-bit, both inc
 Running the ``staticctrl.py`` starts a simulation with a manually tuned cascaded PIPI controller
 
 .. figure:: docs/pictures/control.jpg
-    :figwidth: 70%
+    :scale: 70%
     :align: center
 
 A save Bayesian approach of a reinforcement learning agent is provided under examples/berkamkamp.py.
 
 .. figure:: docs/pictures/kp_kp_J.png
-    :figwidth: 30%
+    :figwidth: 60%
     :align: center
 
 Every user defined settings can be directly done in the example program.
