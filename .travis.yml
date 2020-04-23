@@ -15,15 +15,17 @@ addons:
 install:
   - wget https://github.com/modelon-community/fmi-library/archive/2.2.tar.gz
   - tar -xf 2.2.tar.gz
-  - (cd fmi-library-2.2 && mkdir -p build && cd build
+  - cd fmi-library-2.2 && mkdir -p build && cd build
   - cmake -DCMAKE_INSTALL_PREFIX=../install ..
-  - make && make install)
+  - make && make install
+  - cd ../..
 
   - pip install numpy Cython
   - wget https://github.com/modelon/PyFMI/archive/PyFMI-2.6.tar.gz
   - tar -xf PyFMI-2.6.tar.gz
-  - (cd PyFMI-PyFMI-2.6
-  - python setup.py install --fmil-home=../fmi-library-2.2/install/)
+  - cd PyFMI-PyFMI-2.6
+  - python setup.py install --fmil-home=../fmi-library-2.2/install/
+  - cd ..
 
   - pip install -r requirements.txt
   - pip install .[all]
