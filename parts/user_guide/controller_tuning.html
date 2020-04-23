@@ -1,0 +1,287 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Controller Tuning Hints &mdash; OpenModelica Microgrid 2020 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="omg" href="../../api/omg.html" />
+    <link rel="prev" title="Examples" href="examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> OpenModelica Microgrid
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="user_guide.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="OpenModelica.html">OpenModelica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fmu.html">Functional Mock-up Unit (FMU)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Pythoncode.html">Installation and General Remarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Controller Tuning Hints</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/omg.html">omg</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">OpenModelica Microgrid</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+      <li>Controller Tuning Hints</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/parts/user_guide/controller_tuning.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="controller-tuning-hints">
+<h1>Controller Tuning Hints<a class="headerlink" href="#controller-tuning-hints" title="Permalink to this headline">¶</a></h1>
+<ol class="arabic simple">
+<li><p>Current controller of primary inverter</p></li>
+</ol>
+<ul class="simple">
+<li><p>With no droop, in other words constant mains frequency, apply a short
+circuit to inverter and tune Kp, Ki of the current controller. Can
+tune Kp then Ki, finally Kp again if both can’t be tuned at the same
+time.</p>
+<ul>
+<li><p>Try tune for 90-95% of max current. Not peak current limit, but
+maximum allowed during nominal operation.</p></li>
+<li><p>Ensure that the tuning does not allow the current to exceed the
+peak current limit. In real world scenarios this is when an
+inverter will shutoff or explode.</p></li>
+</ul>
+</li>
+</ul>
+<ol class="arabic simple" start="2">
+<li><p>Voltage controller of primary inverter</p></li>
+</ol>
+<ul class="simple">
+<li><p>With no droop and an open circuit load of just the inverter tune Kp,
+Ki of the voltage controller. Can tune Kp then Ki, finally Kp again
+if both can’t be tuned at the same time.</p></li>
+</ul>
+<ol class="arabic simple" start="3">
+<li><p>PLL of secondary inverter</p></li>
+</ol>
+<ul class="simple">
+<li><p>With primary inverter providing a constant frequency start tuning
+Kp, Ki of the PLL. Noise on the frequency output of the PLL is
+acceptable, as long as the output phasors of the PLL accurately
+match the incoming voltage signal.</p></li>
+<li><p>The secondary inverter power electronics should be
+disconnected/open-circuit for this.</p></li>
+<li><p>If possible inject step changes to the frequency setpoint of the
+primary inverter, watching how accurately the PLL tracks the
+external voltage reference. Continue tuning if necessary.</p></li>
+</ul>
+<ol class="arabic simple" start="4">
+<li><p>Current controller of secondary inverter</p></li>
+</ol>
+<ul class="simple">
+<li><p>With the PLL of the secondary inverter locked to the primary inverter
+tune the Kp, Ki of the current controller. No droops at this stage.</p></li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>Might need to create a step change for the setpoint for this to
+test accurate tracking.</p></li>
+<li><p>Try tune for 90-95% of max current. Not peak current limit, but
+maximum allowed during nominal operation.</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li><p>Droop of the primary inverter</p></li>
+</ol>
+<ul class="simple">
+<li><p>This isn’t really a tuning step as the parameters won’t affect any
+other system.</p></li>
+</ul>
+<ol class="arabic simple" start="6">
+<li><p>Droops of the secondary inverter</p></li>
+</ol>
+<ul class="simple">
+<li><p>Firstly, the filter for the frequency and the voltage feedback to the
+droop controllers should be set before tuning the droop.</p></li>
+<li><p>Tune the droop controllers of the secondary inverter.</p>
+<ul>
+<li><p>The frequency of the filter (for the frequency feedback from the
+PLL) affects the droop parameters and should thus be considered in
+the tuning.</p></li>
+</ul>
+</li>
+</ul>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../api/omg.html" class="btn btn-neutral float-right" title="omg" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="examples.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

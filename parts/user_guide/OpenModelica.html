@@ -1,0 +1,307 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>OpenModelica &mdash; OpenModelica Microgrid 2020 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Functional Mock-up Unit (FMU)" href="fmu.html" />
+    <link rel="prev" title="Getting Started" href="user_guide.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> OpenModelica Microgrid
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="user_guide.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">OpenModelica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fmu.html">Functional Mock-up Unit (FMU)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Pythoncode.html">Installation and General Remarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="controller_tuning.html">Controller Tuning Hints</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/omg.html">omg</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">OpenModelica Microgrid</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+      <li>OpenModelica</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/parts/user_guide/OpenModelica.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="openmodelica">
+<h1>OpenModelica<a class="headerlink" href="#openmodelica" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://openmodelica.org/">OpenModelica</a> is an open-source
+Modelica-based modeling and simulation environment intended for
+industrial and academic usage.</p>
+<div class="section" id="installation-of-openmodelica">
+<h2>Installation of OpenModelica<a class="headerlink" href="#installation-of-openmodelica" title="Permalink to this headline">¶</a></h2>
+<p>The models shown below were createf by using
+<a class="reference external" href="https://openmodelica.org/download/download-windows">OMEdit</a> v1.16.</p>
+<p>Using a Linux OS, sometimes may lead to problems while trying to install
+OpenModelica. In this case, try to download the pre-built <a class="reference external" href="https://openmodelica.org/download/virtual-machine">virtual
+machine</a>.</p>
+</div>
+<div class="section" id="creating-microgrids-with-openmodelica">
+<h2>Creating Microgrids with OpenModelica<a class="headerlink" href="#creating-microgrids-with-openmodelica" title="Permalink to this headline">¶</a></h2>
+<p>The microgrids are created with a  user defined library provided in the
+modelica model <em>grid.mo</em> located in the folder fmu.</p>
+<p>The package “grid” contains a library with components required for
+creating the power electronics-driven microgrids.</p>
+<div class="figure align-default">
+<img alt="" src="../../_images/library.jpg" />
+</div>
+<p>It contains several packages (red ‘P’ symbol) with predefined components,
+filters, loads etc. Gridmodels and test-settings, which provide for
+example a direct sine-voltage to the inputs, are placed directly in the
+package (blue ‘M’, after loading with doubleclick shown as input/output
+diagram like “network” in the picture above).</p>
+<div class="figure align-default">
+<img alt="" src="../../_images/omedit.jpg" />
+</div>
+<p>Main components of any microgrid are the three-phase inverters. They consist
+of three input voltages controlled by a cascaded PI-PI controller in
+Python. Default nomenclature for those inputs is i1p1 for
+“<strong>i</strong>nverter 1 <strong>p</strong>hase 1” etc, but it can be changed in the
+python code (model_input=[‘one’, ‘two’,…] in the env=gym.make()
+call).</p>
+<p><strong>Important</strong>: By using filters/loads with inductors or capacitors,
+leave the initialization in the provided settings. Changes are likely to
+result in errors while creating the FMU or running the Python files.</p>
+<p>The provided examples are designed for up to two inverters, but the underlying models can be
+easily extended in order to investigate on more complex microgrid topologies.
+Extended example showcases are also planed for future releases.</p>
+</div>
+<div class="section" id="power-losses">
+<h2>Power Losses<a class="headerlink" href="#power-losses" title="Permalink to this headline">¶</a></h2>
+<p>In the default example “network”, no power losses in the inverters or filters are included.
+For the latter they can be added by using parts out of the “filter” package instead of
+the “ideal_filter” package. Due to a big increase of components and
+equations in the ODE-system, the simulation time will increase.
+For modeling losses inside the power electronic converters, adding a model in the Python interface
+scripts is recommending. Integrating, e.g switching losses, directly in the OpenModelia model will
+require to reduce to simulation step size significantly.</p>
+<p>For larger simulations with a demand of power loss modeling, it is recommended to
+create user defined filters with only the resistors which are needed for
+the calculation. To modify them, create a new package (ctrl+N,
+specialization: package), duplicate the part which is to modify in the
+new package (right-click on it, duplicate, select the previously created
+package in path) and modify it there.</p>
+</div>
+<div class="section" id="switches-transistors">
+<h2>Switches / Transistors<a class="headerlink" href="#switches-transistors" title="Permalink to this headline">¶</a></h2>
+<p>Modeling switching-like events inside the model,
+e.g. triggering loadsteps by adding or removing loads, is
+desirable, but difficult to implement with the possibilities of
+OpenModelica. Switches in OpenModelica - like in many other free
+modelling languages - are designed as resistors. A closed switch has a
+low resistance, an open switch a high one. “Removed” loads are still
+connected to the grid. Connections with resistors in such dimension
+cause numerical issues while simulating as the ODE system becomes stiff.
+There are solvers available for stiff equation systems like BDF and
+Radau or ones with automatic stiffness detection, but using the switches
+often ran into non-converging systems and execution errors.</p>
+<p>The working alternative is a parameter-variation of the load. It is
+possible to change the parameters of any load during a simulation and
+apply loadsteps in this way (see the topic
+<a class="reference external" href="Pythoncode.html">Python code</a>).</p>
+</div>
+<div class="section" id="setting-of-v-dc">
+<h2>Setting of v_DC<a class="headerlink" href="#setting-of-v-dc" title="Permalink to this headline">¶</a></h2>
+<p>The DC supply voltage <em>v</em>_DC can be set either directly in the
+OpenModelica model or via <a class="reference external" href="Pythoncode.html#setting-of-v-dc">Python</a>.
+In the OM model, doubleclick in your network on the inverter, and change
+the parameter <em>v</em>_ DC to the demanded value. All three phases of the
+inverter will be supplied with the same DC voltage. The default value is
+1000 V. The default value can be changed with a right-click on an
+inverter, <em>open class</em>, select <em>text view</em> on the top left corner of the
+model canvas, and change the number in the following code line to
+the demanded default value:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">parameter</span> <span class="n">Real</span> <span class="n">v_DC</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="phase-locked-loop-pll">
+<h2>Phase-Locked Loop (PLL)<a class="headerlink" href="#phase-locked-loop-pll" title="Permalink to this headline">¶</a></h2>
+<p>The PLL blocks are working for simulations in OpenModelica, but out of
+structural reasons, the PLL is calculated in Python.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="fmu.html" class="btn btn-neutral float-right" title="Functional Mock-up Unit (FMU)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="user_guide.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
