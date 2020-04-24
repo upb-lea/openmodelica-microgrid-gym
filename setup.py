@@ -40,7 +40,11 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     extras_require={'examples': ['safeopt>=0.16', 'GPy>=1.9.9']},
-    url='https://github.com/upb-lea/openmodelica_microgrid_gym',
-    version='0.1.0',
+    url='https://github.com/upb-lea/openmodelica-microgrid-gym',
+    project_urls={
+        "Documentation": "https://upb-lea.github.io/openmodelica-microgrid-gym/",
+        "Source Code": "https://github.com/upb-lea/openmodelica-microgrid-gym",
+    },
+    version='0.0.1',
     zip_safe=False,
 )

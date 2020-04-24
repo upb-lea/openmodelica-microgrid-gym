@@ -76,14 +76,9 @@ Ready to contribute? Here's how to set up `openmodelica_microgrid_gym` for local
 
    Now you can make your changes locally.
 
-5. When you're done making changes, check that your changes pass flake8 and the
-   tests, including testing other Python versions with tox::
+5. When you're done making changes, check that your changes pass pytest::
 
-    $ flake8 openmodelica_microgrid_gym tests
-    $ python setup.py test or pytest
-    $ tox
-
-   To get flake8 and tox, just pip install them into your virtualenv.
+    $ pytest
 
 6. Commit your changes and push your branch to GitHub::
 

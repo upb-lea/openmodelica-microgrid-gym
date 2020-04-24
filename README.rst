@@ -21,7 +21,7 @@ OpenModelica Microgrid Gym
 .. image:: https://img.shields.io/github/license/upb-lea/openmodelica-microgrid-gym
      :target: LICENSE
 
-.. figure:: docs/pictures/microgrid.jpg
+.. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/raw/master/docs/pictures/microgrid.jpg
 
 **The OpenModelica Microgrid Gym (OMG) package is a software toolbox for the
 simulation and control optimization of microgrids based on energy conversion by power electronic converters.**
@@ -47,19 +47,18 @@ Install Python environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 - Install OpenModelica MicrogridGym from PyPI (recommended)::
 
-    pip install openmodelica_microgrid_gym
-
+    $ pip install openmodelica_microgrid_gym
 
 - Or install from Github source::
 
-    git clone https://github.com/upb-lea/openmodelica-microgrid-gym.git
-    cd openmodelica_microgrid_gym
-    python setup.py install
+    $ git clone https://github.com/upb-lea/openmodelica-microgrid-gym.git
+    $ cd openmodelica_microgrid_gym
+    $ python setup.py install
 
 **Hint:** PyFMI_ might throw some errors while installing via pip.
 It can be installed via ``conda`` by running::
 
-    conda install -c conda-forge pyfmi
+    $ conda install -c conda-forge pyfmi
 
 .. _PyFMI: https://github.com/modelon-community/PyFMI
 
@@ -83,7 +82,7 @@ OMG uses the `FMI standard`_ for the exchange of the model between OpenModelica 
 
 An example network consisting out of two inverters, three filters and an inductive load.
 
-.. figure:: docs/pictures/omedit.jpg
+.. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/raw/master/docs/pictures/omedit.jpg
 
 You can either use one of the provided FMUs (Windows and Linux, 64-bit, both included in the grid.network.fmu) or create your own by running::
 
@@ -91,13 +90,13 @@ You can either use one of the provided FMUs (Windows and Linux, 64-bit, both inc
 
 Running the ``staticctrl.py`` starts a simulation with a manually tuned cascaded PIPI controller
 
-.. figure:: docs/pictures/control.jpg
+.. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/raw/master/docs/pictures/control.jpg
     :scale: 70%
     :align: center
 
 A save Bayesian approach of a reinforcement learning agent is provided under examples/berkamkamp.py.
 
-.. figure:: docs/pictures/kp_kp_J.png
+.. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/raw/master/docs/pictures/kp_kp_J.png
     :figwidth: 60%
     :align: center
 
@@ -108,25 +107,6 @@ Every user defined settings can be directly done in the example program.
     env = gym.make(environment-id, **kwargs)
 
 Returns an instantiated grid environment. Provide any additional settings right here (see full documentation for all possibilities)
-
-
-
-Running Tests with Pytest
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To run the tests ``pytest`` is required.
-All tests can be found in the ``tests`` folder.
-
-Execute pytest in the project's root folder::
-
-    pytest
-
-or with test coverage::
-
-    pytest --cov=./
-
-All tests shall pass.
-
 
 Citation
 --------
@@ -141,6 +121,15 @@ A whitepaper for this framework will be avaiable soon. Please use the following 
         archivePrefix={arXiv},
         primaryClass={eess.SY}
     }
+
+
+Contributing
+------------
+
+Please refer to the `contribution guide`_.
+
+.. _`contribution guide`: https://github.com/upb-lea/openmodelica-microgrid-gym/blob/master/CONTRIBUTING.rst
+
 
 Credits
 -------

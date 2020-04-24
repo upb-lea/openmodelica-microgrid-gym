@@ -7,6 +7,7 @@ from openmodelica_microgrid_gym.env import ModelicaEnv
 from gym.envs.registration import register
 
 __all__ = ['Agent', 'ModelicaEnv', 'Runner']
+__version__ = '0.0.1'
 
 register(
     id='ModelicaEnv_test-v1',
