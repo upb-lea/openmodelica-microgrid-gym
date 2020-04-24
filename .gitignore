@@ -5,6 +5,11 @@ __pycache__/
 
 .coverage
 
+# release
+/openmodelica_microgrid_gym.egg-info/
+/dist/
+/.eggs/
+
 /docs/_build/
 
 /fmu/binaries/win64/

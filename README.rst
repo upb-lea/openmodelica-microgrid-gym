@@ -21,7 +21,7 @@ OpenModelica Microgrid Gym
 .. image:: https://img.shields.io/github/license/upb-lea/openmodelica-microgrid-gym
      :target: LICENSE
 
-.. figure:: docs/pictures/microgrid.jpg
+.. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/blob/master/docs/pictures/microgrid.jpg
 
 **The OpenModelica Microgrid Gym (OMG) package is a software toolbox for the
 simulation and control optimization of microgrids based on energy conversion by power electronic converters.**
@@ -83,7 +83,7 @@ OMG uses the `FMI standard`_ for the exchange of the model between OpenModelica 
 
 An example network consisting out of two inverters, three filters and an inductive load.
 
-.. figure:: docs/pictures/omedit.jpg
+.. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/blob/master/docs/pictures/omedit.jpg
 
 You can either use one of the provided FMUs (Windows and Linux, 64-bit, both included in the grid.network.fmu) or create your own by running::
 
@@ -91,13 +91,13 @@ You can either use one of the provided FMUs (Windows and Linux, 64-bit, both inc
 
 Running the ``staticctrl.py`` starts a simulation with a manually tuned cascaded PIPI controller
 
-.. figure:: docs/pictures/control.jpg
+.. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/blob/master/docs/pictures/control.jpg
     :scale: 70%
     :align: center
 
 A save Bayesian approach of a reinforcement learning agent is provided under examples/berkamkamp.py.
 
-.. figure:: docs/pictures/kp_kp_J.png
+.. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/blob/master/docs/pictures/kp_kp_J.png
     :figwidth: 60%
     :align: center
 
