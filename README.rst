@@ -5,6 +5,9 @@ OpenModelica Microgrid Gym
 .. image:: https://travis-ci.org/upb-lea/openmodelica-microgrid-gym.svg?branch=master
     :target: https://travis-ci.org/github/upb-lea/openmodelica-microgrid-gym
 
+.. image:: https://img.shields.io/badge/doc-success-success
+    :target: https://upb-lea.github.io/openmodelica-microgrid-gym
+
 .. image:: https://codecov.io/gh/upb-lea/openmodelica-microgrid-gym/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/upb-lea/openmodelica-microgrid-gym
 
@@ -53,10 +56,12 @@ Install Python environment
     cd openmodelica_microgrid_gym
     python setup.py install
 
-**Hint:** PyFMI might throw some errors while installing via pip.
+**Hint:** PyFMI_ might throw some errors while installing via pip.
 It can be installed via ``conda`` by running::
 
     conda install -c conda-forge pyfmi
+
+.. _PyFMI: https://github.com/modelon-community/PyFMI
 
 Installation of OpenModelica
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

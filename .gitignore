@@ -3,6 +3,8 @@ __pycache__/
 .mypy_cache/
 *.fmu.txt
 
+.coverage
+
 /docs/_build/
 
 /fmu/binaries/win64/
