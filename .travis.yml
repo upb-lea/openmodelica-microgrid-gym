@@ -40,11 +40,17 @@ script:
   - bash <(curl -s https://codecov.io/bash)  # code coverage report upload
 
 deploy:
-  provider: pages
-  strategy: git
-  skip_cleanup: true
-  github_token: $GITHUB_TOKEN  # shared with travis-ci.org dashboard
-  keep_history: true
-  on:
-    branch: master
-  local_dir: docs/_build/html/
+  - provider: pages
+    strategy: git
+    skip_cleanup: true
+    github_token: $GITHUB_TOKEN  # shared with travis-ci.org dashboard
+    keep_history: true
+    on:
+      branch: master
+    local_dir: docs/_build/html/
+
+  - provider: pypi
+    user: "__token__"
+    password: $PYPI_TOKEN
+    on:
+      tags: true
