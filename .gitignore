@@ -8,6 +8,7 @@ __pycache__/
 # release
 /openmodelica_microgrid_gym.egg-info/
 /dist/
+/build/
 /.eggs/
 
 /docs/_build/
