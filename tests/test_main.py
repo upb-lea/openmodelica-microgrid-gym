@@ -72,12 +72,11 @@ def env():
     return env, flatten(conf)
 
 
-@pytest.mark.xfail()
 def test_main(agent, env):
     env, out_params = env
     runner = Runner(agent[1], env)
     runner.run(1)
-    # env.history.df.to_hdf('test_main.hd5', 'hist')
+    # env.history.df.to_hdf('tests/test_main.hd5', 'hist')
     df = env.history.df.head(100)
     df = df.reindex(sorted(df.columns), axis=1)
     df2 = pd.read_hdf('tests/test_main.hd5', 'hist').head(100)
@@ -85,14 +84,13 @@ def test_main(agent, env):
     assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-2)
 
 
-@pytest.mark.xfail()
 def test_main_paramchange(agent, env):
     params, agent = agent
     env, out_params = env
     runner = Runner(agent, env)
     params['voltP'].val = 4
     runner.run(1)
-    # env.history.df.to_hdf('test_main2.hd5', 'hist')
+    # env.history.df.to_hdf('tests/test_main2.hd5', 'hist')
     df = env.history.df.head(50)
     df = df.reindex(sorted(df.columns), axis=1)
     df2 = pd.read_hdf('tests/test_main.hd5', 'hist').head(50)
