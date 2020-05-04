@@ -38,6 +38,7 @@ script:
   - make html
   - touch _build/html/.nojekyll
   - bash <(curl -s https://codecov.io/bash)  # code coverage report upload
+  - cd ..
 
 deploy:
   - provider: pages
@@ -52,5 +53,7 @@ deploy:
   - provider: pypi
     user: "__token__"
     password: $PYPI_TOKEN
+    distributions: "sdist bdist_wheel"
+    skip_existing: true
     on:
       tags: true
