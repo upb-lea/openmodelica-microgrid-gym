@@ -10,6 +10,9 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
+with open('requirements.txt', 'r') as f:
+    requirements = f.read().splitlines()
+
 setup_requirements = ['pytest-runner']
 
 test_requirements = ['pytest>=3', 'tables>=3.4.1', 'safeopt>=0.16', 'GPy>=1.9.9']
@@ -29,7 +32,7 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     description="OpenModelica Microgrid Gym",
-    install_requires=[],
+    install_requires=requirements,
     license="GNU General Public License v3",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
