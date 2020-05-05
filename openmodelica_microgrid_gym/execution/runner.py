@@ -29,13 +29,9 @@ class Runner:
         self.agent.reset()
 
         for _ in tqdm(range(n_episodes), desc='episodes', unit='epoch'):
-
             obs = self.env.reset()
-
             done, r = False, None
-
-            # inner progress bar will be automatically hidden if more than 50 episodes are simulated
-            for _ in tqdm(range(self.env.max_episode_steps), desc='steps', unit='step', disable=n_episodes > 50):
+            for _ in tqdm(range(self.env.max_episode_steps), desc='steps', unit='step', leave=False):
                 self.agent.observe(r, done)
                 act = self.agent.act(obs)
                 self.env.update_measurements(self.agent.measurement)
