@@ -43,7 +43,7 @@ Installation
 ------------
 
 
-Install Python environment
+Install Python Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 - Install OpenModelica MicrogridGym from PyPI (recommended)::
 
@@ -75,8 +75,28 @@ In this case, try to download the pre-built `virtual machine`_.
 Getting started
 ---------------
 
+The environment is initialized and run like any other OpenAI Gym
 
-OMG uses the `FMI standard`_ for the exchange of the model between OpenModelica and python.
+.. code-block:: python
+
+    import gym
+    import numpy as np
+
+    if __name__ == '__main__':
+        env = gym.make('openmodelica_microgrid_gym:ModelicaEnv-v1',
+                       model_input=['i1p1', 'i1p2', 'i1p3'],
+                       model_output=dict(lc1=['inductor1.i', 'inductor2.i', 'inductor3.i']),
+                       model_path='grid.network.fmu')
+
+        env.reset()
+        for _ in range(1000):
+            env.render()
+            env.step(np.random.random(3))  # pick three continous control actions randomly
+        env.close()
+
+
+
+OMG uses the `FMI standard`_ for the exchange of the model between OpenModelica and Python.
 
 .. _FMI standard: https://fmi-standard.org/
 
