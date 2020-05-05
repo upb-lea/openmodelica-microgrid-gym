@@ -1,32 +1,19 @@
 language: python
-os: linux
-dist: bionic # ubuntu:bionic docker img
+
 python:
-  - "3.7"
-
-addons:
-  apt:
-    packages:
-      - wget
-      - g++
-
-
+  - "3.7" # Travis Python is actually not used since we use conda, but this keeps it organized.
 
 install:
-  - wget https://github.com/modelon-community/fmi-library/archive/2.2.tar.gz
-  - tar -xf 2.2.tar.gz
-  - cd fmi-library-2.2 && mkdir -p build && cd build
-  - cmake -DCMAKE_INSTALL_PREFIX=../install ..
-  - make && make install
-  - cd ../..
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - source "$HOME/miniconda/etc/profile.d/conda.sh"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda info -a  # Useful for debugging any issues with conda
 
-  - pip install numpy Cython
-  - wget https://github.com/modelon/PyFMI/archive/PyFMI-2.6.tar.gz
-  - tar -xf PyFMI-2.6.tar.gz
-  - cd PyFMI-PyFMI-2.6
-  - python setup.py install --fmil-home=../fmi-library-2.2/install/
-  - cd ..
-  - rm -r PyFMI-PyFMI-2.6 fmi-library-2.2
+  - conda create -q -n venv  -c conda-forge python=$TRAVIS_PYTHON_VERSION pyfmi
+  - conda activate venv
 
   - pip install -r requirements.txt
   - pip install .[all]
@@ -38,7 +25,7 @@ script:
   - make html
   - touch _build/html/.nojekyll
   - bash <(curl -s https://codecov.io/bash)  # code coverage report upload
-  - cd ..
+  - cd $TRAVIS_BUILD_DIR
 
 deploy:
   - provider: pages
