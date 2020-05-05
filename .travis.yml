@@ -25,7 +25,7 @@ script:
   - make html
   - touch _build/html/.nojekyll
   - bash <(curl -s https://codecov.io/bash)  # code coverage report upload
-  - cd ..
+  - cd $TRAVIS_BUILD_DIR
 
 deploy:
   - provider: pages
