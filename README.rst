@@ -14,10 +14,6 @@ OpenModelica Microgrid Gym
 .. image:: https://img.shields.io/pypi/v/openmodelica_microgrid_gym.svg
     :target: https://pypi.python.org/pypi/openmodelica_microgrid_gym
 
-.. image:: https://pyup.io/repos/github/upb-lea/openmodelica_microgrid_gym/shield.svg
-     :target: https://pyup.io/repos/github/upb-lea/openmodelica_microgrid_gym/
-     :alt: Updates
-
 .. image:: https://img.shields.io/github/license/upb-lea/openmodelica-microgrid-gym
      :target: LICENSE
 
