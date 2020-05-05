@@ -19,7 +19,7 @@ install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - conda activate test-environment
 
-  - conda -c conda-forge pyfmi
+  - conda install -c conda-forge pyfmi
   - pip install -r requirements.txt
   - pip install .[all]
   - pip install -r requirements_dev.txt
