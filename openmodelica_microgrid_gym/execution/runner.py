@@ -33,13 +33,16 @@ class Runner:
             obs = self.env.reset()
 
             done, r = False, None
-            while not done:
+
+            for _ in tqdm(range(self.env.max_episode_steps), desc='steps', unit='step'):
                 self.agent.observe(r, done)
                 act = self.agent.act(obs)
                 self.env.update_measurements(self.agent.measurement)
                 obs, r, done, info = self.env.step(act)
                 if visualise_env:
                     self.env.render()
+                if done:
+                    break
             self.agent.observe(r, done)
             self.env.close()
             self.agent.render()

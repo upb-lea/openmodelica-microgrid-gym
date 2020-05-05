@@ -102,6 +102,7 @@ class ModelicaEnv(gym.Env):
         self._failed = False
 
         # Parameters required by this implementation
+        self.max_episode_steps = max_episode_steps
         self.time_start = time_start
         self.time_step_size = time_step
         self.time_end = np.inf if max_episode_steps is None \
