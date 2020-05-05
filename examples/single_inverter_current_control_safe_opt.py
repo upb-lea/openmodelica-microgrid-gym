@@ -20,17 +20,14 @@ import numpy as np
 import pandas as pd
 
 # Choose which controller parameters should be adjusted by SafeOpt.
-# - adjust_Kp_only == True: 1D example: Only the proportional gain Kp of the PI controller is adjusted
-# - adjust_Ki_only == True: 1D example: Only the integral gain Ki of the PI controller is adjusted
-# - adjust_Kp_and_Ki == True: 2D example: Kp and Ki are adjusted simultaneously
-# ATTENTION! Choose only one parameter as TRUE since the above selection represents separate optimization scenarios!
-adjust_Kp_only = True
-adjust_Ki_only = False
-adjust_Kp_and_Ki = False
+# - Kp: 1D example: Only the proportional gain Kp of the PI controller is adjusted
+# - Ki: 1D example: Only the integral gain Ki of the PI controller is adjusted
+# - Kpi: 2D example: Kp and Ki are adjusted simultaneously
+adjust = 'Kp'
 
 # Check if really only one simulation scenario was selected
-if sum([adjust_Kp_only, adjust_Ki_only, adjust_Kp_and_Ki]) is not 1:
-    raise ValueError("ATTENTION! Choose only one of the adjustable controller parameters as TRUE!")
+if adjust not in {'Kp', 'Ki', 'Kpi'}:
+    raise ValueError("Please set 'adjust' to one of the following values: 'Kp', 'Ki', 'Kpi'")
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
@@ -84,17 +81,19 @@ if __name__ == '__main__':
     noise_var = 0.001 ** 2  # measurement noise sigma_omega
     prior_var = 0.1  # prior variance of the GP
 
-    if adjust_Kp_only:
+    bounds = None
+    lengthscale = None
+    if adjust == 'Kp':
         bounds = [(0.00, 0.03)]  # bounds on the input variable Kp
         lengthscale = [.01]  # length scale for the parameter variation [Kp] for the GP
 
-    # For 1D example, if Ki should be adjusted instead of Kp, choose adjust_Kp == False
-    if adjust_Ki_only:
+    # For 1D example, if Ki should be adjusted
+    if adjust == 'Ki':
         bounds = [(0, 300)]  # bounds on the input variable Ki
         lengthscale = [50.]  # length scale for the parameter variation [Ki] for the GP
 
     # For 2D example, choose Kp and Ki as mutable parameters (below) and define bounds and lengthscale for both of them
-    if adjust_Kp_and_Ki:
+    if adjust == 'Kpi':
         bounds = [(0.0, 0.03), (0, 300)]
         lengthscale = [.01, 50.]
 
@@ -121,7 +120,9 @@ if __name__ == '__main__':
 
     ctrl = dict()  # empty dictionary for the controller(s)
 
-    if adjust_Kp_only:
+    mutable_params = None
+    current_dqp_iparams = None
+    if adjust == 'Kp':
         # mutable_params = parameter (Kp gain of the current controller of the inverter) to be optimized using
         # the SafeOpt algorithm
         mutable_params = dict(currentP=MutableFloat(10e-3))
@@ -129,13 +130,13 @@ if __name__ == '__main__':
         # Define the PI parameters for the current controller of the inverter
         current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=115, limits=(-1, 1))
 
-    # For 1D example, if Ki should be adjusted instead of Kp, choose adjust_Kp == False
-    if adjust_Ki_only:
+    # For 1D example, if Ki should be adjusted
+    elif adjust == 'Ki':
         mutable_params = dict(currentI=MutableFloat(10))
         current_dqp_iparams = PI_params(kP=10e-3, kI=mutable_params['currentI'], limits=(-1, 1))
 
     # For 2D example, choose Kp and Ki as mutable parameters
-    if adjust_Kp_and_Ki:
+    elif adjust == 'Kpi':
         mutable_params = dict(currentP=MutableFloat(10e-3), currentI=MutableFloat(10))
         current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
 
