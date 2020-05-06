@@ -5,6 +5,8 @@
 
 
 import logging
+from datetime import datetime
+from operator import itemgetter
 
 import GPy
 
@@ -23,7 +25,7 @@ import pandas as pd
 # - Kp: 1D example: Only the proportional gain Kp of the PI controller is adjusted
 # - Ki: 1D example: Only the integral gain Ki of the PI controller is adjusted
 # - Kpi: 2D example: Kp and Ki are adjusted simultaneously
-adjust = 'Ki'
+adjust = 'Kpi'
 
 # Check if really only one simulation scenario was selected
 if adjust not in {'Kp', 'Ki', 'Kpi'}:
@@ -31,8 +33,8 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
-max_episode_steps = 300  # number of simulation steps per episode
-num_episodes = 10  # number of simulation episodes (i.e. SafeOpt iterations)
+max_episode_steps = 30  # number of simulation steps per episode
+num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -94,8 +96,8 @@ if __name__ == '__main__':
 
     # For 2D example, choose Kp and Ki as mutable parameters (below) and define bounds and lengthscale for both of them
     if adjust == 'Kpi':
-        bounds = [(0.0, 0.03), (0, 300)]
-        lengthscale = [.01, 50.]
+        bounds = [(0, 300), (0.0, 0.03)]
+        lengthscale = [50., .01]
 
     # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
     # the initial performance: safe_threshold = 1.2 means. Performance measurements for optimization are seen as
@@ -158,7 +160,7 @@ if __name__ == '__main__':
     # The agent is using the SafeOpt algorithm by F. Berkenkamp (https://arxiv.org/abs/1509.01066) in this example
     # Arguments described above
     # History is used to store results
-    agent = SafeOptAgent(mutable_params,
+    agent = SafeOptAgent([v for k, v in sorted(mutable_params.items(), key=itemgetter(0))],
                          abort_reward,
                          kernel,
                          dict(bounds=bounds, noise_var=noise_var, prior_mean=prior_mean,
@@ -205,5 +207,18 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     agent.optimizer.plot(1000)
-    axes = plt.gca()
-    axes.get_figure().savefig("test.pdf")
+    ax = plt.gca()
+
+    ax.grid(which='both',zorder=1)
+
+    if adjust == 'Ki':
+        ax.set_xlabel(r'$K_\mathrm{i}\,/\,VA^{-1}s^{-1}$')
+        ax.set_ylabel(r'$J$')
+    elif adjust == 'Kpi':
+        agent.params.reset()
+        ax.set_xlabel(r'$K_\mathrm{i}\,/\,VA^{-1}s^{-1}$')
+        ax.set_ylabel(r'$K_\mathrm{p}\,/\,VA^{-1}$')
+        plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4, alpha=.5)
+
+    plt.tight_layout()
+    ax.get_figure().savefig(f'GP_model{datetime.now().isoformat()}.pgf')
