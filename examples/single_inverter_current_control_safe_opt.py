@@ -23,7 +23,7 @@ import pandas as pd
 # - Kp: 1D example: Only the proportional gain Kp of the PI controller is adjusted
 # - Ki: 1D example: Only the integral gain Ki of the PI controller is adjusted
 # - Kpi: 2D example: Kp and Ki are adjusted simultaneously
-adjust = 'Kp'
+adjust = 'Ki'
 
 # Check if really only one simulation scenario was selected
 if adjust not in {'Kp', 'Ki', 'Kpi'}:
@@ -151,7 +151,7 @@ if __name__ == '__main__':
 
     # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
     ctrl['master'] = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, droop_param, qdroop_param,
-                                                           undersampling=2)
+                                                           undersampling=1)
 
     #####################################
     # Definition of the optimization agent
@@ -185,7 +185,7 @@ if __name__ == '__main__':
                    reward_fun=rew_fun,
                    time_step=delta_t,
                    # viz_cols=['master.freq', 'master.CVI*', 'lc1.ind*'],
-                   viz_cols=['lc1.ind*'],
+                   viz_cols=['master.SPI[abc]', 'lc1.ind*'],
                    log_level=logging.INFO,
                    viz_mode='episode',
                    max_episode_steps=max_episode_steps,
@@ -201,3 +201,9 @@ if __name__ == '__main__':
     # Using a runner to execute 'num_episodes' different episodes (i.e. SafeOpt iterations)
     runner = Runner(agent, env)
     runner.run(num_episodes, visualise_env=True)
+
+    import matplotlib.pyplot as plt
+
+    agent.optimizer.plot(1000)
+    axes = plt.gca()
+    axes.get_figure().savefig("test.pdf")

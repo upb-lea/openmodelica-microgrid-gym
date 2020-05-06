@@ -353,16 +353,31 @@ class ModelicaEnv(gym.Env):
                 # TODO close plot
                 pass
             else:
-                for cols in self.history.structured_cols():
-                    if not isinstance(cols, list):
-                        cols = [cols]
-                    cols = [col for col in cols if re.fullmatch(self.viz_col_regex, col)]
-                    if not cols:
-                        continue
-                    df = self.history.df[cols].copy()
-                    df.index = self.history.df.index * self.time_step_size
-                    df.plot(legend=True)
-                    plt.show()
+                cols = self.history.structured_cols(0)
+                cols = [col for col in cols if re.fullmatch(self.viz_col_regex, col)]
+                df = self.history.df[cols].copy()
+                df.index = self.history.df.index * self.time_step_size
+
+
+                fig = plt.figure()
+                for i in range(3):
+                    col = f'lc1.inductor{i+1}.i'
+                    legend = dict(label='Measurement') if i == 1 else {}
+                    plt.plot(df[col].index, df[col], f'C{i}',**legend)
+
+                for s,i in zip('abc',range(3)):
+                    col = f'master.SPI{s}'
+                    legend = dict(label='Setpoint') if i == 1 else {}
+                    plt.plot(df[col].index, df[col], f'C{i}--', alpha=.5, **legend)
+
+                ax = plt.gca()
+                ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
+                ax.set_ylabel('$i_{\mathrm{abc}}\,/\,A$')
+
+                ax.grid(which='both')
+                ax.legend(loc='upper right')
+                plt.tight_layout()
+                fig.savefig(f"inductor_current_{datetime.now().isoformat()}.pgf")
 
         elif self.viz_mode == 'step':
             # TODO update plot
