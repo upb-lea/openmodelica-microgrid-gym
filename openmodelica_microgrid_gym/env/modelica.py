@@ -368,7 +368,8 @@ class ModelicaEnv(gym.Env):
                 for s,i in zip('abc',range(3)):
                     col = f'master.SPI{s}'
                     legend = dict(label='Setpoint') if i == 1 else {}
-                    plt.plot(df[col].index, df[col], f'C{i}--', alpha=.5, **legend)
+                    ser = df[col].iloc[1::2] #compensate undersampling
+                    plt.plot(ser.index, ser, f'C{i}--', alpha=.5, **legend)
 
                 ax = plt.gca()
                 ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
@@ -378,6 +379,7 @@ class ModelicaEnv(gym.Env):
                 ax.legend(loc='upper right')
                 plt.tight_layout()
                 fig.savefig(f"inductor_current_{datetime.now().isoformat()}.pgf")
+                fig.savefig(f"inductor_current_{datetime.now().isoformat()}.pdf")
 
         elif self.viz_mode == 'step':
             # TODO update plot

@@ -25,7 +25,7 @@ import pandas as pd
 # - Kp: 1D example: Only the proportional gain Kp of the PI controller is adjusted
 # - Ki: 1D example: Only the integral gain Ki of the PI controller is adjusted
 # - Kpi: 2D example: Kp and Ki are adjusted simultaneously
-adjust = 'Kpi'
+adjust = 'Ki'
 
 # Check if really only one simulation scenario was selected
 if adjust not in {'Kp', 'Ki', 'Kpi'}:
@@ -33,8 +33,8 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
-max_episode_steps = 30  # number of simulation steps per episode
-num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
+max_episode_steps = 300  # number of simulation steps per episode
+num_episodes = 15  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -127,7 +127,7 @@ if __name__ == '__main__':
     if adjust == 'Kp':
         # mutable_params = parameter (Kp gain of the current controller of the inverter) to be optimized using
         # the SafeOpt algorithm
-        mutable_params = dict(currentP=MutableFloat(10e-3))
+        mutable_params = dict(currentP=MutableFloat(5e-3))
 
         # Define the PI parameters for the current controller of the inverter
         current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=115, limits=(-1, 1))
@@ -135,11 +135,11 @@ if __name__ == '__main__':
     # For 1D example, if Ki should be adjusted
     elif adjust == 'Ki':
         mutable_params = dict(currentI=MutableFloat(10))
-        current_dqp_iparams = PI_params(kP=10e-3, kI=mutable_params['currentI'], limits=(-1, 1))
+        current_dqp_iparams = PI_params(kP=5e-3, kI=mutable_params['currentI'], limits=(-1, 1))
 
     # For 2D example, choose Kp and Ki as mutable parameters
     elif adjust == 'Kpi':
-        mutable_params = dict(currentP=MutableFloat(10e-3), currentI=MutableFloat(10))
+        mutable_params = dict(currentP=MutableFloat(5e-3), currentI=MutableFloat(10))
         current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
 
     # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
@@ -153,7 +153,7 @@ if __name__ == '__main__':
 
     # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
     ctrl['master'] = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, droop_param, qdroop_param,
-                                                           undersampling=1)
+                                                           undersampling=2)
 
     #####################################
     # Definition of the optimization agent
@@ -221,4 +221,6 @@ if __name__ == '__main__':
         plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4, alpha=.5)
 
     plt.tight_layout()
-    ax.get_figure().savefig(f'GP_model{datetime.now().isoformat()}.pgf')
+    fig = ax.get_figure()
+    fig.savefig(f'GP_model{datetime.now().isoformat()}.pgf')
+    fig.savefig(f'GP_model{datetime.now().isoformat()}.pdf')
