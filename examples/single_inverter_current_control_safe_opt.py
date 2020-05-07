@@ -60,7 +60,8 @@ params = {'backend': 'ps',
           'ytick.labelsize': 8,
           'text.usetex': True,
           'figure.figsize': [3.39, 2.5],
-          'font.family': 'serif'
+          'font.family': 'serif',
+          'lines.linewidth': 1
           }
 
 matplotlib.rcParams.update(params)
@@ -226,19 +227,19 @@ if __name__ == '__main__':
 
     import matplotlib.pyplot as plt
 
-    agent.optimizer.plot(1000)
+    agent.optimizer.plot(1000, ms=1)
     ax = plt.gca()
 
     ax.grid(which='both')
     ax.set_axisbelow(True)
 
     if adjust == 'Ki':
-        ax.set_xlabel(r'$K_\mathrm{i}\,/\,(VA^{-1}s^{-1})$')
+        ax.set_xlabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
         ax.set_ylabel(r'$J$')
     elif adjust == 'Kpi':
         agent.params.reset()
-        ax.set_xlabel(r'$K_\mathrm{i}\,/\,(VA^{-1}s^{-1})$')
-        ax.set_ylabel(r'$K_\mathrm{p}\,/\,(VA^{-1})$')
+        ax.set_xlabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
+        ax.set_ylabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
         ax.get_figure().axes[1].set_ylabel(r'$J$')
         plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4,
                  alpha=.5)
