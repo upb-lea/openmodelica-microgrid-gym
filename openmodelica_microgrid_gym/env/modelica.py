@@ -356,7 +356,7 @@ class ModelicaEnv(gym.Env):
                 cols = self.history.structured_cols(0)
                 cols = [col for col in cols if re.fullmatch(self.viz_col_regex, col)]
                 df = self.history.df[cols].copy()
-                df.index = self.history.df.index * self.time_step_size
+                df.index = self.history.df.index * self.time_step_size *1000
 
 
                 fig = plt.figure()
@@ -372,8 +372,8 @@ class ModelicaEnv(gym.Env):
                     plt.plot(ser.index, ser, f'C{i}--', alpha=.5, **legend)
 
                 ax = plt.gca()
-                ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
-                ax.set_ylabel('$i_{\mathrm{abc}}\,/\,A$')
+                ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+                ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
 
                 ax.grid(which='both')
                 ax.legend(loc='upper right')
