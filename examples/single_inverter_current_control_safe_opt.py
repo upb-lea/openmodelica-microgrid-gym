@@ -11,6 +11,8 @@ from operator import itemgetter
 import GPy
 
 import gym
+import matplotlib
+
 from openmodelica_microgrid_gym.env import FullHistory
 from openmodelica_microgrid_gym.auxiliaries import PI_params, DroopParams, MutableFloat, \
     MultiPhaseDQCurrentSourcingController
@@ -44,6 +46,24 @@ mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
+
+params = {'backend': 'ps',
+          'text.latex.preamble': [r'\usepackage{gensymb}'
+                                  r'\usepackage{amsmath,amssymb,mathtools}'
+                                  r'\newcommand{\mlutil}{\ensuremath{\operatorname{ml-util}}}'
+                                  r'\newcommand{\mlacc}{\ensuremath{\operatorname{ml-acc}}}'],
+          'axes.labelsize': 8,  # fontsize for x and y labels (was 10)
+          'axes.titlesize': 8,
+          'font.size': 8,  # was 10
+          'legend.fontsize': 8,  # was 10
+          'xtick.labelsize': 8,
+          'ytick.labelsize': 8,
+          'text.usetex': True,
+          'figure.figsize': [3.39, 2.5],
+          'font.family': 'serif'
+          }
+
+matplotlib.rcParams.update(params)
 
 
 def rew_fun(obs: pd.Series) -> float:
@@ -213,13 +233,15 @@ if __name__ == '__main__':
     ax.set_axisbelow(True)
 
     if adjust == 'Ki':
-        ax.set_xlabel(r'$K_\mathrm{i}\,/\,VA^{-1}s^{-1}$')
+        ax.set_xlabel(r'$K_\mathrm{i}\,/\,(VA^{-1}s^{-1})$')
         ax.set_ylabel(r'$J$')
     elif adjust == 'Kpi':
         agent.params.reset()
-        ax.set_xlabel(r'$K_\mathrm{i}\,/\,VA^{-1}s^{-1}$')
-        ax.set_ylabel(r'$K_\mathrm{p}\,/\,VA^{-1}$')
-        plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4, alpha=.5)
+        ax.set_xlabel(r'$K_\mathrm{i}\,/\,(VA^{-1}s^{-1})$')
+        ax.set_ylabel(r'$K_\mathrm{p}\,/\,(VA^{-1})$')
+        ax.get_figure().axes[1].set_ylabel(r'$J$')
+        plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4,
+                 alpha=.5)
 
     plt.tight_layout()
     fig = ax.get_figure()
