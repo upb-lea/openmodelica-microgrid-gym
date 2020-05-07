@@ -30,7 +30,7 @@ class ModelicaEnv(gym.Env):
 
     def __init__(self, time_step: float = 1e-4, time_start: float = 0,
                  reward_fun: Callable[[pd.Series], float] = lambda obs: 1,
-                 log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: int = None,
+                 log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: int = 200,
                  model_params: Optional[dict] = None, model_input: Optional[Sequence[str]] = None,
                  model_output: Optional[Union[dict, Sequence[str]]] = None, model_path: str = '../fmu/grid.network.fmu',
                  viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[str]]] = None,
@@ -241,7 +241,7 @@ class ModelicaEnv(gym.Env):
          The nesting structure provides grouping that is used for visualization.
         """
         if isinstance(measurements, pd.Series):
-            measurements = [(measurements.colums, measurements)]
+            measurements = [(measurements.index.to_list(), measurements)]
         for cols, _ in measurements:
             miss_col_count = len(set(flatten(cols)) - set(self.history.cols))
             if 0 < miss_col_count < len(flatten(cols)):
