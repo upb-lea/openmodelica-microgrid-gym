@@ -209,7 +209,8 @@ if __name__ == '__main__':
     agent.optimizer.plot(1000)
     ax = plt.gca()
 
-    ax.grid(which='both',zorder=1)
+    ax.grid(which='both')
+    ax.set_axisbelow(True)
 
     if adjust == 'Ki':
         ax.set_xlabel(r'$K_\mathrm{i}\,/\,VA^{-1}s^{-1}$')
