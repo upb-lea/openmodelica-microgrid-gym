@@ -41,20 +41,23 @@ Installation
 
 Install Python Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Since it is not possible to install PyFMI_, a package which is necessary for the communication between the python interface and the environment, via pip, we recommend to install this package in advance in a conda environment.
+
+- If conda is NOT installed on your PC, install miniconda for python 3.7::
+
+    $ https://conda.io/en/latest/miniconda.html
+
+- Create a new conda environment (for example in pycharm)
+
+- Install PyFMI from condaforge in terminal::
+
+    $ conda install -c conda-forge pyfmi
+
+
 - Install OpenModelica MicrogridGym from PyPI (recommended)::
 
     $ pip install openmodelica_microgrid_gym
 
-- Or install from Github source::
-
-    $ git clone https://github.com/upb-lea/openmodelica-microgrid-gym.git
-    $ cd openmodelica_microgrid_gym
-    $ python setup.py install
-
-**Hint:** PyFMI_ might throw some errors while installing via pip.
-It can be installed via ``conda`` by running::
-
-    $ conda install -c conda-forge pyfmi
 
 .. _PyFMI: https://github.com/modelon-community/PyFMI
 
@@ -63,7 +66,8 @@ Installation of OpenModelica
 
 OMG was create by using OMEdit_ v1.16
 
-In this case, try to download the pre-built `virtual machine`_.
+
+Installation of OMEdit might cause some problems with some Arch Linux distributions. In this case, try to download the pre-built `virtual machine`_.
 
 .. _OMEdit: https://openmodelica.org/download/download-windows
 .. _virtual machine: https://openmodelica.org/download/virtual-machine
