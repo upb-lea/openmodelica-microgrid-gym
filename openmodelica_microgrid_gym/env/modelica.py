@@ -2,7 +2,7 @@ from datetime import datetime
 import re
 import logging
 from os.path import basename
-from typing import Sequence, Callable, List, Union, Tuple, Optional, Mapping
+from typing import Sequence, Callable, List, Union, Tuple, Optional, Mapping, Dict
 
 import gym
 import numpy as np
@@ -31,7 +31,8 @@ class ModelicaEnv(gym.Env):
     def __init__(self, time_step: float = 1e-4, time_start: float = 0,
                  reward_fun: Callable[[pd.Series], float] = lambda obs: 1,
                  log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: int = None,
-                 model_params: Optional[dict] = None, model_input: Optional[Sequence[str]] = None,
+                 model_params: Optional[Dict[str, Union[Callable[[float], float], float]]] = None,
+                 model_input: Optional[Sequence[str]] = None,
                  model_output: Optional[Union[dict, Sequence[str]]] = None, model_path: str = '../fmu/grid.network.fmu',
                  viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[str]]] = None,
                  history: EmptyHistory = FullHistory()):
@@ -55,6 +56,7 @@ class ModelicaEnv(gym.Env):
 
             dictionary of variable names and scalars or callables.
             If a callable is provided it is called every time step with the current time.
+            This callable must return a float that is passed to the fmu.
         :param model_input: list of strings. Each string representing a FMU input variable.
         :param model_output: nested dictionaries containing nested lists of strings.
          The keys of the nested dictionaries will be flattened down and appended to their children and finally prepended
