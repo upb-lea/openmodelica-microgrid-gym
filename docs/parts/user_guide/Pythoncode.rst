@@ -69,7 +69,9 @@ Example which increases the resistors in the load after 0.2 seconds from
 
     model_params={'rl.resistor1.R': f, 'rl.resistor.R': f, 'rl.resistor.R': f},
 
-
+The function :code:`f` is passed as a callable (function reference).
+The environment will evaluate this function in every timestep passing this timestep as parameter to the function
+automatically.
 
 
 Setting of v\_DC
