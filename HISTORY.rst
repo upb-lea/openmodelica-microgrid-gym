@@ -5,9 +5,14 @@ History
 next
 ------------------
 
+* proper action and observation space (`#14`_)
 * resolved problem related to environment :code:`model_params` (`#21`_)
+
+|
+
 * documentation improvements (more examples, installation)
 
+.. _`#14`: https://github.com/upb-lea/openmodelica-microgrid-gym/issues/14
 .. _`#21`: https://github.com/upb-lea/openmodelica-microgrid-gym/issues/21
 
 
