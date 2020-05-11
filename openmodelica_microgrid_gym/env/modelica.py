@@ -142,9 +142,9 @@ class ModelicaEnv(gym.Env):
                              f'and not {type(viz_cols)}')
 
         # OpenAI Gym requirements
-        self.action_space = gym.spaces.Discrete(3)
-        high = np.array([self.time_end, np.inf])
-        self.observation_space = gym.spaces.Box(-high, high)
+        d_i, d_o = len(self.model_input_names), len(self.model_output_names)
+        self.action_space = gym.spaces.Box(low=np.full(d_i, -np.inf), high=np.full(d_i, np.inf))
+        self.observation_space = gym.spaces.Box(low=np.full(d_o, -np.inf), high=np.full(d_o, np.inf))
 
     def _setup_fmu(self):
         """

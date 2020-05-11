@@ -1,5 +1,4 @@
 import gym
-import numpy as np
 
 if __name__ == '__main__':
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv-v1',
@@ -10,5 +9,5 @@ if __name__ == '__main__':
     env.reset()
     for _ in range(1000):
         env.render()
-        env.step(np.random.random(3))  # take a random action
+        env.step(env.action_space.sample())  # take a random action
     env.close()
