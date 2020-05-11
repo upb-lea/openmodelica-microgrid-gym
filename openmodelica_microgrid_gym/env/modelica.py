@@ -1,8 +1,9 @@
 from datetime import datetime
 import re
 import logging
+from functools import partial
 from os.path import basename
-from typing import Sequence, Callable, List, Union, Tuple, Optional, Mapping
+from typing import Sequence, Callable, List, Union, Tuple, Optional, Mapping, Dict
 
 import gym
 import numpy as np
@@ -30,8 +31,9 @@ class ModelicaEnv(gym.Env):
 
     def __init__(self, time_step: float = 1e-4, time_start: float = 0,
                  reward_fun: Callable[[pd.Series], float] = lambda obs: 1,
-                 log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: int = 200,
-                 model_params: Optional[dict] = None, model_input: Optional[Sequence[str]] = None,
+                 log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: int = None,
+                 model_params: Optional[Dict[str, Union[Callable[[float], float], float]]] = None,
+                 model_input: Optional[Sequence[str]] = None,
                  model_output: Optional[Union[dict, Sequence[str]]] = None, model_path: str = '../fmu/grid.network.fmu',
                  viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[str]]] = None,
                  history: EmptyHistory = FullHistory()):
@@ -55,6 +57,7 @@ class ModelicaEnv(gym.Env):
 
             dictionary of variable names and scalars or callables.
             If a callable is provided it is called every time step with the current time.
+            This callable must return a float that is passed to the fmu.
         :param model_input: list of strings. Each string representing a FMU input variable.
         :param model_output: nested dictionaries containing nested lists of strings.
          The keys of the nested dictionaries will be flattened down and appended to their children and finally prepended
@@ -109,8 +112,11 @@ class ModelicaEnv(gym.Env):
             else self.time_start + max_episode_steps * self.time_step_size
 
         # if there are parameters, we will convert all scalars to constant functions.
-        self.model_parameters = model_params and {var: (val if isinstance(val, Callable) else lambda t: val) for
-                                                  var, val in model_params.items()}
+        model_params = model_params or dict()
+        # the "partial" is needed because of some absurd python behaviour https://stackoverflow.com/a/34021333/13310191
+        self.model_parameters = {var: (val if callable(val) else partial(lambda t, val_: val_, val_=val)) for var, val
+                                 in
+                                 model_params.items()}
 
         self.sim_time_interval = None
         self.__state = pd.Series()
@@ -119,7 +125,7 @@ class ModelicaEnv(gym.Env):
         self.history = history
         self.history.cols = model_output
         self.model_input_names = model_input
-        # variable names are flattened to a list if they have specified in the nested dict manner
+        # variable names are flattened to a list if they have specified in the nested dict manner)
         self.model_output_names = self.history.cols
         if viz_cols is None:
             logger.info('Provide the option "viz_cols" if you wish to select only specific plots. '
@@ -313,8 +319,9 @@ class ModelicaEnv(gym.Env):
         logger.debug("model input: {}, values: {}".format(self.model_input_names, action))
         self.model.set(list(self.model_input_names), list(action))
         if self.model_parameters:
+            values = [(var, f(self.sim_time_interval[0])) for var, f in self.model_parameters.items()]
             # list of keys and list of values
-            self.model.set(*zip(*[(var, f(self.sim_time_interval[0])) for var, f in self.model_parameters.items()]))
+            self.model.set(*zip(*values))
 
         # Simulate and observe result state
         self.__state = self._simulate()

@@ -47,21 +47,24 @@ def test_proper_reset(env):
 
 
 def test_params_simple():
+    def fun(t):
+        return t + 1
+
     np.random.seed(1)
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode=None,
                    max_episode_steps=100,
                    model_path='fmu/test.fmu',
-                   model_params=dict(i1p1=lambda t: np.sin(t), i1p2=3),
-                   model_input=['i1p3', 'i2p1', 'i2p2', 'i2p3'],
+                   model_params=dict(i1p1=lambda t: np.sin(t), i1p2=3, i1p3=fun),
+                   model_input=['i2p1', 'i2p2', 'i2p3'],
                    model_output={'lc1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
                                  'lcl1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
                                           ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]})
     env.reset()
-    obs, r, done, _ = env.step(np.random.random(4))
-    assert obs.to_numpy() == approx([-5.32817321e-01, 2.56879233e+02, 3.54844767e+01, 2.53699101e+01,
-                                     1.16778955e+03, 1.72978940e+02, 6.11590023e+01, -2.20936110e+00,
-                                     2.53610173e+01, 3.04879591e+02, 1.05708749e+02, 1.42650768e+02])
+    obs, r, done, _ = env.step(np.random.random(3))
+    assert obs.to_numpy() == approx([-3.08472072e-01, 2.56346548e+02, 8.56263731e+01, 1.46876784e+01,
+                                     1.19315365e+03, 3.89265210e+02, 3.54071687e+01, 5.89398985e+01,
+                                     -7.29991175e-01, 1.76505718e+02, 4.10540511e+02, 3.52688013e+01])
     assert r == 1
     assert not done
