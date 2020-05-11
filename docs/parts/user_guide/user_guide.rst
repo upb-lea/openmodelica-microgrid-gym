@@ -59,7 +59,7 @@ For the initialisation, the environment needs to be reseted, and env.render will
 The simulation will perform 1000 steps. A different random number will be provided to every of the three previously defined model_inputs.
 Afterwards, the inductor currents of the LC-filter "lc1"shown in the figure above will be plotted, which should result in three increasing and due to the random function noisy  lines.
 
-.. literalinclude:: ../../../examples/basic_example.py
+.. literalinclude:: ../../../examples/basic_env.py
    :linenos:
 
 
@@ -79,7 +79,7 @@ Since the inputs are used for both the agent and the environment, they are defin
 
 The environment is the same as above. Afterwards, the agent and the runner get defined, and the runner runs for one episode.
 
-.. literalinclude:: ../../../examples/basic_example_2.py
+.. literalinclude:: ../../../examples/simple_agent.py
    :linenos:
 
 

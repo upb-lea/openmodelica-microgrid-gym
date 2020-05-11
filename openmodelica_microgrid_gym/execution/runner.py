@@ -16,8 +16,9 @@ class Runner:
         :param agent: Agent that acts on the environment
         :param env: Environment tha Agent acts on
         """
-        self.agent = agent
         self.env = env
+        self.agent = agent
+        self.agent.env = env
 
     def run(self, n_episodes: int = 10, visualise_env: bool = False):
         """
@@ -43,5 +44,3 @@ class Runner:
             self.agent.observe(r, done)
             self.env.close()
             self.agent.render()
-
-        print(self.agent.history.df)

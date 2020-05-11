@@ -80,7 +80,6 @@ The environment is initialized and run like any other OpenAI Gym
 .. code-block:: python
 
     import gym
-    import numpy as np
 
     if __name__ == '__main__':
         env = gym.make('openmodelica_microgrid_gym:ModelicaEnv-v1',
@@ -91,7 +90,7 @@ The environment is initialized and run like any other OpenAI Gym
         env.reset()
         for _ in range(1000):
             env.render()
-            env.step(np.random.random(3))  # pick three continous control actions randomly
+            env.step(env.action_space.sample())  # pick three continous control actions randomly
         env.close()
 
 
@@ -119,14 +118,6 @@ A save Bayesian approach of a reinforcement learning agent is provided under exa
 .. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/raw/master/docs/pictures/kp_kp_J.png
     :figwidth: 60%
     :align: center
-
-Every user defined settings can be directly done in the example program.
-
-.. code-block:: python
-
-    env = gym.make(environment-id, **kwargs)
-
-Returns an instantiated grid environment. Provide any additional settings right here (see full documentation for all possibilities)
 
 Citation
 --------

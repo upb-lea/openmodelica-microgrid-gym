@@ -4,7 +4,7 @@ from openmodelica_microgrid_gym.agents import Agent
 from openmodelica_microgrid_gym.common.itertools_ import fill_params, nested_map
 from openmodelica_microgrid_gym.auxiliaries import Controller
 
-from openmodelica_microgrid_gym.env import EmptyHistory
+from openmodelica_microgrid_gym.env import EmptyHistory, ModelicaEnv
 
 import pandas as pd
 import numpy as np
@@ -12,7 +12,7 @@ import numpy as np
 
 class StaticControlAgent(Agent):
     def __init__(self, ctrls: Mapping[str, Controller], ctrl_to_obs: Mapping,
-                 history: EmptyHistory = EmptyHistory()):
+                 history: EmptyHistory = EmptyHistory(), env: ModelicaEnv = None):
         """
         Simple agent that controls the environment by using auxiliary controllers that are fully configured.
         The Agent does not learn anything.
@@ -20,8 +20,9 @@ class StaticControlAgent(Agent):
         :param ctrls: Controllers that are feed with the observations and exert actions on the environment
         :param ctrl_to_obs: form controller keys to observation keys, whose observation values will be passed to the controller
         :param history: Storage of internal data
+        :param env: reference to the environment (only needed when used in internal act function)
         """
-        super().__init__(history)
+        super().__init__(history, env)
         self.episode_reward = 0
         self.controllers = ctrls
         self.obs_template = ctrl_to_obs
