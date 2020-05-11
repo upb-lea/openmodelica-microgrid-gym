@@ -1,6 +1,7 @@
 from datetime import datetime
 import re
 import logging
+from functools import partial
 from os.path import basename
 from typing import Sequence, Callable, List, Union, Tuple, Optional, Mapping, Dict
 
@@ -111,8 +112,11 @@ class ModelicaEnv(gym.Env):
             else self.time_start + max_episode_steps * self.time_step_size
 
         # if there are parameters, we will convert all scalars to constant functions.
-        self.model_parameters = model_params and {var: (val if isinstance(val, Callable) else lambda t: val) for
-                                                  var, val in model_params.items()}
+        model_params = model_params or dict()
+        # the "partial" is needed because of some absurd python behaviour https://stackoverflow.com/a/34021333/13310191
+        self.model_parameters = {var: (val if callable(val) else partial(lambda t, val_: val_, val_=val)) for var, val
+                                 in
+                                 model_params.items()}
 
         self.sim_time_interval = None
         self.__state = pd.Series()
@@ -121,7 +125,7 @@ class ModelicaEnv(gym.Env):
         self.history = history
         self.history.cols = model_output
         self.model_input_names = model_input
-        # variable names are flattened to a list if they have specified in the nested dict manner
+        # variable names are flattened to a list if they have specified in the nested dict manner)
         self.model_output_names = self.history.cols
         if viz_cols is None:
             logger.info('Provide the option "viz_cols" if you wish to select only specific plots. '
@@ -315,8 +319,9 @@ class ModelicaEnv(gym.Env):
         logger.debug("model input: {}, values: {}".format(self.model_input_names, action))
         self.model.set(list(self.model_input_names), list(action))
         if self.model_parameters:
+            values = [(var, f(self.sim_time_interval[0])) for var, f in self.model_parameters.items()]
             # list of keys and list of values
-            self.model.set(*zip(*[(var, f(self.sim_time_interval[0])) for var, f in self.model_parameters.items()]))
+            self.model.set(*zip(*values))
 
         # Simulate and observe result state
         self.__state = self._simulate()
