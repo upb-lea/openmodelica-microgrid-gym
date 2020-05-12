@@ -126,7 +126,7 @@ A whitepaper for this framework will be avaiable soon. Please use the following 
 
     @misc{OMG2020,
         title={Towards a Scalable and Flexible Simulation and Testing Environment Toolbox for Intelligent Microgrid Control},
-        author={Daniel Weber and Stefan Heid and Henrik Bode and Eyke Hüllermeier and Oliver Wallscheid},
+        author={Henrik Bode and Stefan Heid and Daniel Weber and Eyke Hüllermeier and Oliver Wallscheid},
         year={2020},
         eprint={http://arxiv.org/abs/2005.04869},
         archivePrefix={arXiv},
