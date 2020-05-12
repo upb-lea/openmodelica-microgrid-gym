@@ -124,11 +124,11 @@ Citation
 
 A whitepaper for this framework will be avaiable soon. Please use the following BibTeX entry for citing us::
 
-    @misc{LEA2020XXXXXXX,
-        title={XXXXXXXXXX},
-        author={Daniel Weber and Stefan Heid and Henrik Bode and Oliver Wallscheid},
+    @misc{OMG2020,
+        title={Towards a Scalable and Flexible Simulation and Testing Environment Toolbox for Intelligent Microgrid Control},
+        author={Daniel Weber and Stefan Heid and Henrik Bode and Eyke Hüllermeier and Oliver Wallscheid},
         year={2020},
-        eprint={XXXXX},
+        eprint={http://arxiv.org/abs/2005.04869},
         archivePrefix={arXiv},
         primaryClass={eess.SY}
     }
