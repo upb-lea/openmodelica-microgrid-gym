@@ -8,3 +8,6 @@ tqdm>=4
 more_itertools>=7
 
 PyFMI>=2.5
+
+safeopt>=0.16
+GPy>=1.9.9

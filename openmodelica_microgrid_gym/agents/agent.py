@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
 
-from openmodelica_microgrid_gym.env import EmptyHistory
+from openmodelica_microgrid_gym.env import EmptyHistory, ModelicaEnv
 
 
 class Agent:
-    def __init__(self, history: EmptyHistory = EmptyHistory()):
+    def __init__(self, history: EmptyHistory = EmptyHistory(), env: ModelicaEnv = None):
         """
         Abstract base class for all Agents. The agent can act on the environment and observe its result.
         This class is aims to wrap the whole learning process into a class to simplify the implementation.
@@ -13,7 +13,9 @@ class Agent:
         This class is strongly inspired by the tensorforce library.
 
         :param history: used to store agent internal data for monitoring
+        :param env: reference to the environment (only needed when used in internal act function)
         """
+        self.env = env
         self.history = history
 
     def reset(self):

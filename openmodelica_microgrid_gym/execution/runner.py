@@ -16,8 +16,9 @@ class Runner:
         :param agent: Agent that acts on the environment
         :param env: Environment tha Agent acts on
         """
-        self.agent = agent
         self.env = env
+        self.agent = agent
+        self.agent.env = env
 
     def run(self, n_episodes: int = 10, visualise_env: bool = False):
         """
@@ -29,19 +30,17 @@ class Runner:
         self.agent.reset()
 
         for _ in tqdm(range(n_episodes), desc='episodes', unit='epoch'):
-
             obs = self.env.reset()
-
             done, r = False, None
-            while not done:
+            for _ in tqdm(range(self.env.max_episode_steps), desc='steps', unit='step', leave=False):
                 self.agent.observe(r, done)
                 act = self.agent.act(obs)
                 self.env.update_measurements(self.agent.measurement)
                 obs, r, done, info = self.env.step(act)
                 if visualise_env:
                     self.env.render()
+                if done:
+                    break
             self.agent.observe(r, done)
             self.env.close()
             self.agent.render()
-
-        print(self.agent.history.df)

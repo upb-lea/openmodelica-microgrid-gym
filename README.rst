@@ -14,10 +14,6 @@ OpenModelica Microgrid Gym
 .. image:: https://img.shields.io/pypi/v/openmodelica_microgrid_gym.svg
     :target: https://pypi.python.org/pypi/openmodelica_microgrid_gym
 
-.. image:: https://pyup.io/repos/github/upb-lea/openmodelica_microgrid_gym/shield.svg
-     :target: https://pyup.io/repos/github/upb-lea/openmodelica_microgrid_gym/
-     :alt: Updates
-
 .. image:: https://img.shields.io/github/license/upb-lea/openmodelica-microgrid-gym
      :target: LICENSE
 
@@ -43,22 +39,25 @@ Installation
 ------------
 
 
-Install Python environment
+Install Python Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Since it is not possible to install PyFMI_, a package which is necessary for the communication between the python interface and the environment, via pip, we recommend to install this package in advance in a conda environment.
+
+- If conda is NOT installed on your PC, install miniconda for python 3.7::
+
+    $ https://conda.io/en/latest/miniconda.html
+
+- Create a new conda environment (for example in pycharm)
+
+- Install PyFMI from condaforge in terminal::
+
+    $ conda install -c conda-forge pyfmi
+
+
 - Install OpenModelica MicrogridGym from PyPI (recommended)::
 
     $ pip install openmodelica_microgrid_gym
 
-- Or install from Github source::
-
-    $ git clone https://github.com/upb-lea/openmodelica-microgrid-gym.git
-    $ cd openmodelica_microgrid_gym
-    $ python setup.py install
-
-**Hint:** PyFMI_ might throw some errors while installing via pip.
-It can be installed via ``conda`` by running::
-
-    $ conda install -c conda-forge pyfmi
 
 .. _PyFMI: https://github.com/modelon-community/PyFMI
 
@@ -67,7 +66,8 @@ Installation of OpenModelica
 
 OMG was create by using OMEdit_ v1.16
 
-In this case, try to download the pre-built `virtual machine`_.
+
+Installation of OMEdit might cause some problems with some Arch Linux distributions. In this case, try to download the pre-built `virtual machine`_.
 
 .. _OMEdit: https://openmodelica.org/download/download-windows
 .. _virtual machine: https://openmodelica.org/download/virtual-machine
@@ -75,8 +75,27 @@ In this case, try to download the pre-built `virtual machine`_.
 Getting started
 ---------------
 
+The environment is initialized and run like any other OpenAI Gym
 
-OMG uses the `FMI standard`_ for the exchange of the model between OpenModelica and python.
+.. code-block:: python
+
+    import gym
+
+    if __name__ == '__main__':
+        env = gym.make('openmodelica_microgrid_gym:ModelicaEnv-v1',
+                       model_input=['i1p1', 'i1p2', 'i1p3'],
+                       model_output=dict(lc1=['inductor1.i', 'inductor2.i', 'inductor3.i']),
+                       model_path='grid.network.fmu')
+
+        env.reset()
+        for _ in range(1000):
+            env.render()
+            env.step(env.action_space.sample())  # pick three continous control actions randomly
+        env.close()
+
+
+
+OMG uses the `FMI standard`_ for the exchange of the model between OpenModelica and Python.
 
 .. _FMI standard: https://fmi-standard.org/
 
@@ -100,24 +119,16 @@ A save Bayesian approach of a reinforcement learning agent is provided under exa
     :figwidth: 60%
     :align: center
 
-Every user defined settings can be directly done in the example program.
-
-.. code-block:: python
-
-    env = gym.make(environment-id, **kwargs)
-
-Returns an instantiated grid environment. Provide any additional settings right here (see full documentation for all possibilities)
-
 Citation
 --------
 
-A whitepaper for this framework will be avaiable soon. Please use the following BibTeX entry for citing us::
+Please use the following BibTeX entry for citing us::
 
-    @misc{LEA2020XXXXXXX,
-        title={XXXXXXXXXX},
-        author={Daniel Weber and Stefan Heid and Henrik Bode and Oliver Wallscheid},
+    @misc{OMG2020,
+        title={Towards a Scalable and Flexible Simulation and Testing Environment Toolbox for Intelligent Microgrid Control},
+        author={Henrik Bode and Stefan Heid and Daniel Weber and Eyke Hüllermeier and Oliver Wallscheid},
         year={2020},
-        eprint={XXXXX},
+        eprint={http://arxiv.org/abs/2005.04869},
         archivePrefix={arXiv},
         primaryClass={eess.SY}
     }

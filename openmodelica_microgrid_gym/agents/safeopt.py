@@ -10,7 +10,7 @@ import logging
 from openmodelica_microgrid_gym.agents.staticctrl import StaticControlAgent
 from openmodelica_microgrid_gym.agents.util import MutableParams
 from openmodelica_microgrid_gym.auxiliaries import Controller
-from openmodelica_microgrid_gym.env import EmptyHistory
+from openmodelica_microgrid_gym.env import EmptyHistory, ModelicaEnv
 
 import matplotlib.pyplot as plt
 
@@ -18,10 +18,11 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+
 class SafeOptAgent(StaticControlAgent):
     def __init__(self, mutable_params: Union[dict, list], abort_reward: int, kernel: Kern, gp_params: Dict[str, Any],
                  ctrls: Dict[str, Controller],
-                 observation_action_mapping: dict, history=EmptyHistory()):
+                 observation_action_mapping: dict, history=EmptyHistory(), env: ModelicaEnv = None):
         """
         Agent to execute safeopt algorithm (https://arxiv.org/abs/1509.01066) to control the environment by using
         auxiliary controllers and Gaussian process to adopt the controller parameters (mutable_params) to safely
@@ -36,6 +37,7 @@ class SafeOptAgent(StaticControlAgent):
         :param observation_action_mapping: form controller keys to observation keys, whose observation values will be
          passed to the controller
         :param history:Storage of internal data
+        :param env: reference to the environment (only needed when used in internal act function)
         """
         self.params = MutableParams(
             list(mutable_params.values()) if isinstance(mutable_params, dict) else mutable_params)
@@ -51,7 +53,7 @@ class SafeOptAgent(StaticControlAgent):
         self.optimizer = None
         self.inital_Performance = None
         self._iterations = 0
-        super().__init__(ctrls, observation_action_mapping, history)
+        super().__init__(ctrls, observation_action_mapping, history, env)
         self.history.cols = ['J', 'Params']
 
     def reset(self):
@@ -106,7 +108,6 @@ class SafeOptAgent(StaticControlAgent):
             # J = 1 / self.episode_reward / self.inital_Performance
 
             J = self.inital_Performance
-
 
             # Define Mean "Offset": Like BK: Assume Mean = Threshold (BK = 0, now = 20% below first (safe) J: means: if
             # new Performance is 20 % lower than the inital we assume as unsafe)

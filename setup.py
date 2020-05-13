@@ -22,10 +22,12 @@ setup(
     author_email='upblea@mail.upb.de',
     python_requires='>=3.6',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
+        'Framework :: Sphinx',
+        'Topic :: Scientific/Engineering',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
@@ -48,6 +50,6 @@ setup(
         "Documentation": "https://upb-lea.github.io/openmodelica-microgrid-gym/",
         "Source Code": "https://github.com/upb-lea/openmodelica-microgrid-gym",
     },
-    version='0.1.2',
+    version='0.1.3',
     zip_safe=False,
 )
