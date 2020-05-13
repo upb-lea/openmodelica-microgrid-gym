@@ -1,0 +1,264 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>two_inverter_static_droop_control.py &mdash; OpenModelica Microgrid 2020 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Controller Tuning Hints" href="../controller_tuning.html" />
+    <link rel="prev" title="single_inverter_current_control_safe_opt.py" href="single_inverter_current_control_safe_opt.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> OpenModelica Microgrid
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../user_guide.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../OpenModelica.html">OpenModelica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fmu.html">Functional Mock-up Unit (FMU)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Pythoncode.html">Installation and General Remarks</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="single_inverter_current_control_safe_opt.html">single_inverter_current_control_safe_opt.py</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">two_inverter_static_droop_control.py</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../controller_tuning.html">Controller Tuning Hints</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.html">omg</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OpenModelica Microgrid</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../examples.html">Examples</a> &raquo;</li>
+        
+      <li>two_inverter_static_droop_control.py</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/parts/user_guide/examples/two_inverter_static_droop_control.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="two-inverter-static-droop-control-py">
+<h1>two_inverter_static_droop_control.py<a class="headerlink" href="#two-inverter-static-droop-control-py" title="Permalink to this headline">¶</a></h1>
+<p>In this example, a FMU generated by OpenModelica as gym environment containing two inverters, each connected via a
+filter to supply in parallel a RC load is used which is shown in the figure below.
+This example uses the controllers as defined in the auxiliaries. One inverter is set up as voltage forming inverter with a
+direct droop controller which e.g. frequency drops due to the applied power. The other controller is used as current
+sourcing inverter with an inverse droop controller which reacts on the frequency and voltage change due to its droop
+control parameters by a power/reactive power change.
+In the default settings, plots of the abc signal as well as the dq0 signals of
+the master and slave are provided.</p>
+<p>By default, the following small network will be simulated:</p>
+<div class="figure align-default">
+<img alt="../../../_images/network.png" src="../../../_images/network.png" />
+</div>
+<p>A short introduction to experimental controller tuning with some hints
+can be found <a class="reference external" href="controller_tuning.html">here</a>.</p>
+<p>If the controller works fine, a three phase voltage similar to the
+following one should be one of the plots.</p>
+<div class="figure align-default">
+<img alt="../../../_images/abc.png" src="../../../_images/abc.png" />
+</div>
+<p>Any other demanded signal which is provided by the FMU or saved during
+the simulating can be plotted by adding it to</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">viz_cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.m[dq0]&#39;</span><span class="p">,</span> <span class="s1">&#39;slave.freq&#39;</span><span class="p">,</span> <span class="s1">&#39;lcl1.*&#39;</span><span class="p">],</span>
+</pre></div>
+</div>
+<p>in the gym.make() command. Make sure that demanded signal from the fmu
+are listed as a model_output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model_output</span><span class="o">=</span><span class="p">{</span>
+                   <span class="s1">&#39;lc1&#39;</span><span class="p">:</span> <span class="p">[</span>
+                       <span class="p">[</span><span class="s1">&#39;inductor1.i&#39;</span><span class="p">,</span> <span class="s1">&#39;inductor2.i&#39;</span><span class="p">,</span> <span class="s1">&#39;inductor3.i&#39;</span><span class="p">],</span>
+                       <span class="p">[</span><span class="s1">&#39;capacitor1.v&#39;</span><span class="p">,</span> <span class="s1">&#39;capacitor2.v&#39;</span><span class="p">,</span> <span class="s1">&#39;capacitor3.v&#39;</span><span class="p">]],</span>
+                   <span class="s1">&#39;rl1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;inductor</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">.i&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)],</span>
+                   <span class="s1">&#39;lcl1&#39;</span><span class="p">:</span>
+                       <span class="p">[[</span><span class="s1">&#39;inductor1.i&#39;</span><span class="p">,</span> <span class="s1">&#39;inductor2.i&#39;</span><span class="p">,</span> <span class="s1">&#39;inductor3.i&#39;</span><span class="p">],</span>
+                        <span class="p">[</span><span class="s1">&#39;capacitor1.v&#39;</span><span class="p">,</span> <span class="s1">&#39;capacitor2.v&#39;</span><span class="p">,</span> <span class="s1">&#39;capacitor3.v&#39;</span><span class="p">]]},</span>
+                   <span class="p">)</span>
+</pre></div>
+</div>
+<p>Hint: Every possible variable which is provided by the FMU can be seen
+the easiest in OpenModelica. Run the simulation without input signals,
+so every result for voltages and currents should be 0. On the bottom right side, you can select
+each component of the model in the tree structure. Clicking through the
+components until reaching the variable will show the whole variable name
+(for example lcl2.inductor2.i) on top of the plotting window.</p>
+<p>The parameters of the controller like the control frequency delta_t,
+the voltage, frequency or droop characteristics can be set directly in
+the main function.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../controller_tuning.html" class="btn btn-neutral float-right" title="Controller Tuning Hints" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="single_inverter_current_control_safe_opt.html" class="btn btn-neutral float-left" title="single_inverter_current_control_safe_opt.py" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

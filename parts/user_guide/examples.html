@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Controller Tuning Hints" href="controller_tuning.html" />
+    <link rel="next" title="single_inverter_current_control_safe_opt.py" href="examples/single_inverter_current_control_safe_opt.html" />
     <link rel="prev" title="Installation and General Remarks" href="Pythoncode.html" /> 
 </head>
 
@@ -86,7 +86,11 @@
 <li class="toctree-l1"><a class="reference internal" href="OpenModelica.html">OpenModelica</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fmu.html">Functional Mock-up Unit (FMU)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Pythoncode.html">Installation and General Remarks</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/single_inverter_current_control_safe_opt.html">single_inverter_current_control_safe_opt.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/two_inverter_static_droop_control.html">two_inverter_static_droop_control.py</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="controller_tuning.html">Controller Tuning Hints</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API:</span></p>
@@ -158,189 +162,11 @@
             
   <div class="section" id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="single-inverter-current-control-safe-opt-py">
-<h2>single_inverter_current_control_safe_opt.py<a class="headerlink" href="#single-inverter-current-control-safe-opt-py" title="Permalink to this headline">¶</a></h2>
-<p>In this example a three phase inverter is supplying a load (rl1) via a filter (lc1)
-like shown in the figure below. From that model a FMU is
-built to create the environment.</p>
-<div class="figure align-default">
-<img alt="" src="../../_images/Modell.png" />
-</div>
-<p>An optimization method developed by Berkenkamp et al.
-(<a class="reference external" href="https://arxiv.org/abs/1509.01066">https://arxiv.org/abs/1509.01066</a>) called Safe Controller Optimization -
-safeopt - is used which takes a Gaussian process and Bayesian
-optimization to safely determine “optimal” controller parameters. The
-goal of the standard PI current controller is to supply an exemplary 15 A d-current
-to the load.</p>
-<p>The <a class="reference external" href="fmu.html">generated FMU</a> is used in the environment to build up
-a gym env like the examples from OpenAI Gym (<a class="reference external" href="https://gym.openai.com/">https://gym.openai.com/</a>).
-The gym enviroment is defined in (examples/single_inverter_current_control_safe_opt.py).
-It generates a gym environment using</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>a reward function,</p></li>
-<li><p>plotting the inductor values (current) from the lc1-filter (which should be controlled) like shown in the figure below,</p></li>
-<li><p>simulating 300 timesteps of delta_t of the FMU grid.network_singleInverter.fmu (generated from the model in the plot above),</p></li>
-<li><p>using the setpoints for the inverters (modulation indices) i1p{1,2,3} as inputs,</p></li>
-<li><p>and the inductor currents and capacitor voltages of lc1-filter as outputs.</p></li>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples/single_inverter_current_control_safe_opt.html">single_inverter_current_control_safe_opt.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/two_inverter_static_droop_control.html">two_inverter_static_droop_control.py</a></li>
 </ul>
-</div></blockquote>
-<div class="figure align-default">
-<img alt="" src="../../_images/i_abc_bk_kp15_Ki121.png" />
-</div>
-<p>The agent used in this simple RL-example is taken from the class
-<strong>SafeOptAgent</strong>. It contains the controller a
-<strong>MultiPhaseDQCurrentSourcingController</strong>, which consists of multiphase
-(3) PI controllers to control the current across the inductor of the
-lc1-filter. There are also droop controllers implemented to calculate
-e.g. the frequency drop due to load changes. The agent’s task is to find better
-parameters for the current controllers (Kp &amp; Ki). Therefore, they are
-defined as mutable_params (e.g.
-examples/single_inverter_current_control_safe_opt.py) to
-adopt them between the episodes. The SafeOpt algorithm uses a Gaussian
-process to estimate the performance of the controller. Thus, the
-bounds and the lengthscale (c.f. examples/single_inverter_current_control_safe_opt.py) for
-the gain parameters (Kp and Ki) have to be defined.</p>
-<p>One can adjust one of the parameters (Kp or Ki) (1D case) or both of them
-(2D case) using the algorithm. Therefore, the following flag parameters have to
-be adjusted accoridngly:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>To adjust only Kp set <strong>adjust_Kp_only</strong> == True (and all other parameters as False!)</p></li>
-<li><p>To adjust only Ki set <strong>adjust_Ki_only</strong> == True (and all other parameters as False!)</p></li>
-<li><p>To adjust only Kp and Ki set <strong>adjust_Kp_and_Ki</strong> == True (and all other parameters as False!)</p></li>
-</ul>
-</div></blockquote>
-<p>Due to SafeOpt the agent need a safe starting point (Kp and Ki). Then it
-tries to calculate safely parameters with better performance. The
-performance is calculated using the reward function from the environment.
-There the mean-root-error (RME) from the measured currents and the setpoints are
-calculated. Additionally a barrier function is used to penalize
-over-currents. The barrier function can be adjusted using the parameter mu.</p>
-<p>The safe threshold for the agent is set as safe_threshold-times of
-the initial performance (c.f. agents/safeopt.py). For example,
-safe_threshold = 1.2 and the initial reward is -10 the safe threshold
-would be -12.</p>
-<p>In the end of the script a <strong>Runner</strong> is used to execute 10 episodes
-using the agent to control the environment. For every episode the
-controlled currents and the performance function as a function of Kp
-and/or Ki are plotted.</p>
-<p>Some exemplary results are shown below:</p>
-<ul class="simple">
-<li><p>If the parameter <strong>adjust_Kp_only</strong> is True, the agent tries to
-find an optimal value for the proportional gain (Kp) of the
-controller in the range of [0, 0.03] with a
-lengthscale of 0.01. In the figure below on the x-axis is
-the value for Kp and on the y-axis the performance value calculated
-using the reward function mentioned above.</p></li>
-</ul>
-<div class="figure align-default">
-<img alt="" src="../../_images/kp_J.png" />
-</div>
-<ul class="simple">
-<li><p>If the parameter <strong>adjust_Ki_only</strong> is True, the agent tries to
-find an optimal value for the integral gain (Ki) of the controller in
-the range of [0, 300]  with a lengthscale of 50. In the figure below on the x-axis is the value for Ki and
-on the y-axis the performance value calculated using the reward
-function mentioned above.</p></li>
-</ul>
-<div class="figure align-default">
-<img alt="" src="../../_images/ki_J.png" />
-</div>
-<p>The - due to the algorithm - “unsafe” point on the right (for Kp as well
-as for Ki) is not due to overcurrent but due to bad performance due to
-permanent control error. The resulting currents for Kp = 0.01 and Ki = 0 (“unsafe” point on the right in the figure above)
-is shown in the picture below. Due to the high error compared to the
-reference value (15 A d-current), the performance is as bad as the
-algorithm defines it as unsafe - in comparison to the performance
-reached using the initial controller parameters.</p>
-<div class="figure align-default">
-<img alt="" src="../../_images/i_abc_ki_J_bad.png" />
-</div>
-<ul class="simple">
-<li><p>If the parameter <strong>adjust_Kp_and_Ki</strong> is True, the agent tries to
-find an optimal value for the proportional gain (Kp) as well as for
-the integral gain (Ki) of the controller in the ranges of [0, 0.03]
-and a lengthscale of 0.01 for Kp and a range of [0, 300] and a
-lengthscale of 50 for Ki. In the figure below on the x-axis is the
-value for Kp, the y-axis the value for Ki and the z-axis the
-performance value calculated using the reward function.</p></li>
-</ul>
-<div class="figure align-default">
-<img alt="" src="../../_images/kp_ki_J.png" />
-</div>
-<p>The results of the algorithm are printed into the console in the form
-like below:</p>
-<p>Iteration, performance J, Params [Kp, Ki]</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>       <span class="n">J</span>                                      <span class="n">Params</span>
-<span class="mi">0</span>  <span class="o">-</span><span class="mf">0.527522</span>                                <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">]</span>
-<span class="mi">1</span>  <span class="o">-</span><span class="mf">0.442648</span>    <span class="p">[</span><span class="mf">0.01517286546392185</span><span class="p">,</span> <span class="mf">14.85163114970222</span><span class="p">]</span>
-<span class="mi">2</span>  <span class="o">-</span><span class="mf">0.318154</span>    <span class="p">[</span><span class="mf">0.01426989823624961</span><span class="p">,</span> <span class="mf">44.96747682456248</span><span class="p">]</span>
-<span class="mi">3</span>  <span class="o">-</span><span class="mf">0.296940</span>   <span class="p">[</span><span class="mf">0.007935547159879385</span><span class="p">,</span> <span class="mf">63.12800825929393</span><span class="p">]</span>
-<span class="mi">4</span>  <span class="o">-</span><span class="mf">0.286636</span>    <span class="p">[</span><span class="mf">0.01482713453607815</span><span class="p">,</span> <span class="mf">88.70170996759624</span><span class="p">]</span>
-<span class="mi">5</span>  <span class="o">-</span><span class="mf">0.286815</span>  <span class="p">[</span><span class="mf">0.006770598304777539</span><span class="p">,</span> <span class="mf">108.12303673537075</span><span class="p">]</span>
-<span class="mi">6</span>  <span class="o">-</span><span class="mf">0.280167</span>  <span class="p">[</span><span class="mf">0.013261084415467694</span><span class="p">,</span> <span class="mf">135.24448051372738</span><span class="p">]</span>
-<span class="mi">7</span>  <span class="o">-</span><span class="mf">0.313204</span>   <span class="p">[</span><span class="mf">0.02201710533671064</span><span class="p">,</span> <span class="mf">56.446583269542394</span><span class="p">]</span>
-<span class="mi">8</span>  <span class="o">-</span><span class="mf">1.387003</span>  <span class="p">[</span><span class="mf">0.022868977920736434</span><span class="p">,</span> <span class="mf">108.40140778199653</span><span class="p">]</span>
-<span class="mi">9</span>  <span class="o">-</span><span class="mf">0.304403</span>   <span class="p">[</span><span class="mf">0.002145673177669012</span><span class="p">,</span> <span class="mf">55.14569829606201</span><span class="p">]</span>
-<span class="mi">10</span> <span class="o">-</span><span class="mf">0.480421</span>   <span class="p">[</span><span class="mf">0.026197353734745858</span><span class="p">,</span> <span class="mf">22.29566509028389</span><span class="p">]</span>
-<span class="mi">11</span> <span class="o">-</span><span class="mf">1.097157</span>  <span class="p">[</span><span class="mf">0.0055262530542335535</span><span class="p">,</span> <span class="mf">157.4879776902759</span><span class="p">]</span>
-<span class="mi">12</span> <span class="o">-</span><span class="mf">0.391706</span>                    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">17.86728037560901</span><span class="p">]</span>
-<span class="mi">13</span> <span class="o">-</span><span class="mf">1.307038</span>                    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">106.0724160092763</span><span class="p">]</span>
-<span class="mi">14</span> <span class="o">-</span><span class="mf">1.561142</span>                    <span class="p">[</span><span class="mf">0.03</span><span class="p">,</span> <span class="mf">42.1020413015999</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>The best performance in this short example of -0.280167 produces the
-parameter set of Kp = 0.0132… and Ki = 135.244…</p>
-</div>
-<div class="section" id="two-inverter-static-droop-control-py">
-<h2>two_inverter_static_droop_control.py<a class="headerlink" href="#two-inverter-static-droop-control-py" title="Permalink to this headline">¶</a></h2>
-<p>In this example, a FMU generated by OpenModelica as gym environment containing two inverters, each connected via a
-filter to supply in parallel a RC load is used which is shown in the figure below.
-This example uses the controllers as defined in the auxiliaries. One inverter is set up as voltage forming inverter with a
-direct droop controller which e.g. frequency drops due to the applied power. The other controller is used as current
-sourcing inverter with an inverse droop controller which reacts on the frequency and voltage change due to its droop
-control parameters by a power/reactive power change.
-In the default settings, plots of the abc signal as well as the dq0 signals of
-the master and slave are provided.</p>
-<p>By default, the following small network will be simulated:</p>
-<div class="figure align-default">
-<img alt="" src="../../_images/network.png" />
-</div>
-<p>A short introduction to experimental controller tuning with some hints
-can be found <a class="reference external" href="controller_tuning.html">here</a>.</p>
-<p>If the controller works fine, a three phase voltage similar to the
-following one should be one of the plots.</p>
-<div class="figure align-default">
-<img alt="" src="../../_images/abc.png" />
-</div>
-<p>Any other demanded signal which is provided by the FMU or saved during
-the simulating can be plotted by adding it to</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">viz_cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.m[dq0]&#39;</span><span class="p">,</span> <span class="s1">&#39;slave.freq&#39;</span><span class="p">,</span> <span class="s1">&#39;lcl1.*&#39;</span><span class="p">],</span>
-</pre></div>
-</div>
-<p>in the gym.make() command. Make sure that demanded signal from the fmu
-are listed as a model_output:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model_output</span><span class="o">=</span><span class="p">{</span>
-                   <span class="s1">&#39;lc1&#39;</span><span class="p">:</span> <span class="p">[</span>
-                       <span class="p">[</span><span class="s1">&#39;inductor1.i&#39;</span><span class="p">,</span> <span class="s1">&#39;inductor2.i&#39;</span><span class="p">,</span> <span class="s1">&#39;inductor3.i&#39;</span><span class="p">],</span>
-                       <span class="p">[</span><span class="s1">&#39;capacitor1.v&#39;</span><span class="p">,</span> <span class="s1">&#39;capacitor2.v&#39;</span><span class="p">,</span> <span class="s1">&#39;capacitor3.v&#39;</span><span class="p">]],</span>
-                   <span class="s1">&#39;rl1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;inductor</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">.i&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)],</span>
-                   <span class="s1">&#39;lcl1&#39;</span><span class="p">:</span>
-                       <span class="p">[[</span><span class="s1">&#39;inductor1.i&#39;</span><span class="p">,</span> <span class="s1">&#39;inductor2.i&#39;</span><span class="p">,</span> <span class="s1">&#39;inductor3.i&#39;</span><span class="p">],</span>
-                        <span class="p">[</span><span class="s1">&#39;capacitor1.v&#39;</span><span class="p">,</span> <span class="s1">&#39;capacitor2.v&#39;</span><span class="p">,</span> <span class="s1">&#39;capacitor3.v&#39;</span><span class="p">]]},</span>
-                   <span class="p">)</span>
-</pre></div>
-</div>
-<p>Hint: Every possible variable which is provided by the FMU can be seen
-the easiest in OpenModelica. Run the simulation without input signals,
-so every result for voltages and currents should be 0. On the bottom right side, you can select
-each component of the model in the tree structure. Clicking through the
-components until reaching the variable will show the whole variable name
-(for example lcl2.inductor2.i) on top of the plotting window.</p>
-<p>The parameters of the controller like the control frequency delta_t,
-the voltage, frequency or droop characteristics can be set directly in
-the main function.</p>
 </div>
 </div>
 
@@ -352,7 +178,7 @@ the main function.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="controller_tuning.html" class="btn btn-neutral float-right" title="Controller Tuning Hints" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="examples/single_inverter_current_control_safe_opt.html" class="btn btn-neutral float-right" title="single_inverter_current_control_safe_opt.py" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="Pythoncode.html" class="btn btn-neutral float-left" title="Installation and General Remarks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

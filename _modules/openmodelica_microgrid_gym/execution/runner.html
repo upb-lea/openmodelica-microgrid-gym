@@ -171,8 +171,9 @@
 <span class="sd">        :param agent: Agent that acts on the environment</span>
 <span class="sd">        :param env: Environment tha Agent acts on</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">agent</span> <span class="o">=</span> <span class="n">agent</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="n">env</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agent</span> <span class="o">=</span> <span class="n">agent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="n">env</span>
 
 <div class="viewcode-block" id="Runner.run"><a class="viewcode-back" href="../../../api/omg.execution.runner.html#openmodelica_microgrid_gym.Runner.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_episodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">visualise_env</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -184,22 +185,20 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_episodes</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;episodes&#39;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;epoch&#39;</span><span class="p">):</span>
-
             <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-
             <span class="n">done</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span>
-            <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">max_episode_steps</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;steps&#39;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="n">leave</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">done</span><span class="p">)</span>
                 <span class="n">act</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">act</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">update_measurements</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">measurement</span><span class="p">)</span>
                 <span class="n">obs</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">act</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">visualise_env</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
+                    <span class="k">break</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">done</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
-
-        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">df</span><span class="p">)</span></div></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">render</span><span class="p">()</span></div></div>
 </pre></div>
 
            </div>

@@ -156,11 +156,11 @@
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.env</span> <span class="kn">import</span> <span class="n">EmptyHistory</span>
+<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.env</span> <span class="kn">import</span> <span class="n">EmptyHistory</span><span class="p">,</span> <span class="n">ModelicaEnv</span>
 
 
 <div class="viewcode-block" id="Agent"><a class="viewcode-back" href="../../../api/omg.agents.agent.html#openmodelica_microgrid_gym.Agent">[docs]</a><span class="k">class</span> <span class="nc">Agent</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">history</span><span class="p">:</span> <span class="n">EmptyHistory</span> <span class="o">=</span> <span class="n">EmptyHistory</span><span class="p">()):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">history</span><span class="p">:</span> <span class="n">EmptyHistory</span> <span class="o">=</span> <span class="n">EmptyHistory</span><span class="p">(),</span> <span class="n">env</span><span class="p">:</span> <span class="n">ModelicaEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Abstract base class for all Agents. The agent can act on the environment and observe its result.</span>
 <span class="sd">        This class is aims to wrap the whole learning process into a class to simplify the implementation.</span>
@@ -168,7 +168,9 @@
 <span class="sd">        This class is strongly inspired by the tensorforce library.</span>
 
 <span class="sd">        :param history: used to store agent internal data for monitoring</span>
+<span class="sd">        :param env: reference to the environment (only needed when used in internal act function)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="n">env</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">history</span>
 
 <div class="viewcode-block" id="Agent.reset"><a class="viewcode-back" href="../../../api/omg.agents.agent.html#openmodelica_microgrid_gym.Agent.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

@@ -179,6 +179,9 @@ home-directory.</p>
 <span class="n">more_itertools</span><span class="o">&gt;=</span><span class="mi">7</span>
 
 <span class="n">PyFMI</span><span class="o">&gt;=</span><span class="mf">2.5</span>
+
+<span class="n">safeopt</span><span class="o">&gt;=</span><span class="mf">0.16</span>
+<span class="n">GPy</span><span class="o">&gt;=</span><span class="mf">1.9</span><span class="o">.</span><span class="mi">9</span>
 </pre></div>
 </div>
 <p><strong>Hint:</strong> If you are running a windows, PyFMI might throw some errors
@@ -220,6 +223,9 @@ Also usable for loadsteps as replacement for
 <span class="n">model_params</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;rl.resistor1.R&#39;</span><span class="p">:</span> <span class="n">f</span><span class="p">,</span> <span class="s1">&#39;rl.resistor.R&#39;</span><span class="p">:</span> <span class="n">f</span><span class="p">,</span> <span class="s1">&#39;rl.resistor.R&#39;</span><span class="p">:</span> <span class="n">f</span><span class="p">},</span>
 </pre></div>
 </div>
+<p>The function <code class="code docutils literal notranslate"><span class="pre">f</span></code> is passed as a callable (function reference).
+The environment will evaluate this function in every timestep passing this timestep as parameter to the function
+automatically.</p>
 </div>
 <div class="section" id="setting-of-v-dc">
 <h2>Setting of v_DC<a class="headerlink" href="#setting-of-v-dc" title="Permalink to this headline">¶</a></h2>

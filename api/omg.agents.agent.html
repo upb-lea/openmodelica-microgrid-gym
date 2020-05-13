@@ -177,14 +177,17 @@
 <span id="omg-agents-agent"></span><h1>omg.agents.agent<a class="headerlink" href="#module-openmodelica_microgrid_gym.agents.agent" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="openmodelica_microgrid_gym.agents.agent.Agent">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.agents.agent.</code><code class="sig-name descname">Agent</code><span class="sig-paren">(</span><em class="sig-param">history=&lt;openmodelica_microgrid_gym.env.recorder.EmptyHistory object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/agent.html#Agent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.agent.Agent" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.agents.agent.</code><code class="sig-name descname">Agent</code><span class="sig-paren">(</span><em class="sig-param">history=&lt;openmodelica_microgrid_gym.env.recorder.EmptyHistory object&gt;</em>, <em class="sig-param">env=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/agent.html#Agent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.agent.Agent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Abstract base class for all Agents. The agent can act on the environment and observe its result.
 This class is aims to wrap the whole learning process into a class to simplify the implementation.</p>
 <p>This class is strongly inspired by the tensorforce library.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>history</strong> (<a class="reference internal" href="omg.env.recorder.html#openmodelica_microgrid_gym.env.recorder.EmptyHistory" title="openmodelica_microgrid_gym.env.recorder.EmptyHistory"><code class="xref py py-class docutils literal notranslate"><span class="pre">EmptyHistory</span></code></a>) – used to store agent internal data for monitoring</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>history</strong> (<a class="reference internal" href="omg.env.recorder.html#openmodelica_microgrid_gym.env.recorder.EmptyHistory" title="openmodelica_microgrid_gym.env.recorder.EmptyHistory"><code class="xref py py-class docutils literal notranslate"><span class="pre">EmptyHistory</span></code></a>) – used to store agent internal data for monitoring</p></li>
+<li><p><strong>env</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="omg.env.modelica.html#openmodelica_microgrid_gym.env.modelica.ModelicaEnv" title="openmodelica_microgrid_gym.env.modelica.ModelicaEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelicaEnv</span></code></a>]) – reference to the environment (only needed when used in internal act function)</p></li>
+</ul>
 </dd>
 </dl>
 <dl class="method">

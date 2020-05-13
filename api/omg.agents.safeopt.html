@@ -177,7 +177,7 @@
 <span id="omg-agents-safeopt"></span><h1>omg.agents.safeopt<a class="headerlink" href="#module-openmodelica_microgrid_gym.agents.safeopt" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.agents.safeopt.</code><code class="sig-name descname">SafeOptAgent</code><span class="sig-paren">(</span><em class="sig-param">mutable_params</em>, <em class="sig-param">abort_reward</em>, <em class="sig-param">kernel</em>, <em class="sig-param">gp_params</em>, <em class="sig-param">ctrls</em>, <em class="sig-param">observation_action_mapping</em>, <em class="sig-param">history=&lt;openmodelica_microgrid_gym.env.recorder.EmptyHistory object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.agents.safeopt.</code><code class="sig-name descname">SafeOptAgent</code><span class="sig-paren">(</span><em class="sig-param">mutable_params</em>, <em class="sig-param">abort_reward</em>, <em class="sig-param">kernel</em>, <em class="sig-param">gp_params</em>, <em class="sig-param">ctrls</em>, <em class="sig-param">observation_action_mapping</em>, <em class="sig-param">history=&lt;openmodelica_microgrid_gym.env.recorder.EmptyHistory object&gt;</em>, <em class="sig-param">env=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent" title="openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent</span></code></a></p>
 <p>Agent to execute safeopt algorithm (<a class="reference external" href="https://arxiv.org/abs/1509.01066">https://arxiv.org/abs/1509.01066</a>) to control the environment by using
 auxiliary controllers and Gaussian process to adopt the controller parameters (mutable_params) to safely
@@ -196,7 +196,9 @@ passed to the controller</p></li>
 </ul>
 </dd>
 </dl>
-<p>:param history:Storage of internal data</p>
+<p>:param history:Storage of internal data
+:type env: <code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="omg.env.modelica.html#openmodelica_microgrid_gym.env.modelica.ModelicaEnv" title="openmodelica_microgrid_gym.env.modelica.ModelicaEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelicaEnv</span></code></a>]
+:param env: reference to the environment (only needed when used in internal act function)</p>
 <dl class="method">
 <dt id="openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.observe">
 <code class="sig-name descname">observe</code><span class="sig-paren">(</span><em class="sig-param">reward</em>, <em class="sig-param">terminated</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent.observe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.observe" title="Permalink to this definition">¶</a></dt>

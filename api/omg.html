@@ -225,14 +225,17 @@
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-openmodelica_microgrid_gym" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="openmodelica_microgrid_gym.Agent">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.</code><code class="sig-name descname">Agent</code><span class="sig-paren">(</span><em class="sig-param">history=&lt;openmodelica_microgrid_gym.env.recorder.EmptyHistory object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/agent.html#Agent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.Agent" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.</code><code class="sig-name descname">Agent</code><span class="sig-paren">(</span><em class="sig-param">history=&lt;openmodelica_microgrid_gym.env.recorder.EmptyHistory object&gt;</em>, <em class="sig-param">env=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/agent.html#Agent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.Agent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Abstract base class for all Agents. The agent can act on the environment and observe its result.
 This class is aims to wrap the whole learning process into a class to simplify the implementation.</p>
 <p>This class is strongly inspired by the tensorforce library.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>history</strong> (<a class="reference internal" href="omg.env.recorder.html#openmodelica_microgrid_gym.env.recorder.EmptyHistory" title="openmodelica_microgrid_gym.env.recorder.EmptyHistory"><code class="xref py py-class docutils literal notranslate"><span class="pre">EmptyHistory</span></code></a>) – used to store agent internal data for monitoring</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>history</strong> (<a class="reference internal" href="omg.env.recorder.html#openmodelica_microgrid_gym.env.recorder.EmptyHistory" title="openmodelica_microgrid_gym.env.recorder.EmptyHistory"><code class="xref py py-class docutils literal notranslate"><span class="pre">EmptyHistory</span></code></a>) – used to store agent internal data for monitoring</p></li>
+<li><p><strong>env</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="omg.env.modelica.html#openmodelica_microgrid_gym.env.modelica.ModelicaEnv" title="openmodelica_microgrid_gym.env.modelica.ModelicaEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelicaEnv</span></code></a>]) – reference to the environment (only needed when used in internal act function)</p></li>
+</ul>
 </dd>
 </dl>
 <dl class="method">
@@ -306,7 +309,7 @@ It might trigger the learning in some implementations.</p>
 
 <dl class="class">
 <dt id="openmodelica_microgrid_gym.ModelicaEnv">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.</code><code class="sig-name descname">ModelicaEnv</code><span class="sig-paren">(</span><em class="sig-param">time_step=0.0001</em>, <em class="sig-param">time_start=0</em>, <em class="sig-param">reward_fun=&lt;function ModelicaEnv.&lt;lambda&gt;&gt;</em>, <em class="sig-param">log_level=30</em>, <em class="sig-param">solver_method='LSODA'</em>, <em class="sig-param">max_episode_steps=None</em>, <em class="sig-param">model_params=None</em>, <em class="sig-param">model_input=None</em>, <em class="sig-param">model_output=None</em>, <em class="sig-param">model_path='../fmu/grid.network.fmu'</em>, <em class="sig-param">viz_mode='episode'</em>, <em class="sig-param">viz_cols=None</em>, <em class="sig-param">history=&lt;openmodelica_microgrid_gym.env.recorder.FullHistory object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/env/modelica.html#ModelicaEnv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.ModelicaEnv" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.</code><code class="sig-name descname">ModelicaEnv</code><span class="sig-paren">(</span><em class="sig-param">time_step=0.0001</em>, <em class="sig-param">time_start=0</em>, <em class="sig-param">reward_fun=&lt;function ModelicaEnv.&lt;lambda&gt;&gt;</em>, <em class="sig-param">log_level=30</em>, <em class="sig-param">solver_method='LSODA'</em>, <em class="sig-param">max_episode_steps=200</em>, <em class="sig-param">model_params=None</em>, <em class="sig-param">model_input=None</em>, <em class="sig-param">model_output=None</em>, <em class="sig-param">model_path='../fmu/grid.network.fmu'</em>, <em class="sig-param">viz_mode='episode'</em>, <em class="sig-param">viz_cols=None</em>, <em class="sig-param">history=&lt;openmodelica_microgrid_gym.env.recorder.FullHistory object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/env/modelica.html#ModelicaEnv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.ModelicaEnv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gym.core.Env</span></code></p>
 <p>OpenAI gym Environment encapsulating an FMU model.</p>
 <p>Initialize the Environment.
@@ -321,11 +324,12 @@ In case of a failure this function should return np.nan or -np.inf or None.
 Should have no side-effects</p></li>
 <li><p><strong>log_level</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – logging granularity. see logging in stdlib</p></li>
 <li><p><strong>solver_method</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – solver of the scipy.integrate.solve_ivp function</p></li>
-<li><p><strong>max_episode_steps</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – maximum number of episode steps.
+<li><p><strong>max_episode_steps</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – maximum number of episode steps.
 The end time of the episode is calculated by the time resolution and the number of steps.</p></li>
-<li><p><strong>model_params</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>]) – <p>parameters of the FMU.</p>
+<li><p><strong>model_params</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]]) – <p>parameters of the FMU.</p>
 <p>dictionary of variable names and scalars or callables.
-If a callable is provided it is called every time step with the current time.</p>
+If a callable is provided it is called every time step with the current time.
+This callable must return a float that is passed to the fmu.</p>
 </p></li>
 <li><p><strong>model_input</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]) – list of strings. Each string representing a FMU input variable.</p></li>
 <li><p><strong>model_output</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – <p>nested dictionaries containing nested lists of strings.
@@ -463,7 +467,7 @@ The nesting structure provides grouping that is used for visualization.</p>
 
 <dl class="attribute">
 <dt id="openmodelica_microgrid_gym.ModelicaEnv.viz_modes">
-<code class="sig-name descname">viz_modes</code><em class="property"> = {'episode', None, 'step'}</em><a class="headerlink" href="#openmodelica_microgrid_gym.ModelicaEnv.viz_modes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">viz_modes</code><em class="property"> = {'step', 'episode', None}</em><a class="headerlink" href="#openmodelica_microgrid_gym.ModelicaEnv.viz_modes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set of all valid visualisation modes</p>
 </dd></dl>
 
