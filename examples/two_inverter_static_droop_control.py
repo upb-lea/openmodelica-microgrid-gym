@@ -18,7 +18,7 @@ from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhas
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
-max_episode_steps = 3000  # number of simulation steps per episode
+max_episode_steps = 6000  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes
 # (here, only 1 episode makes sense since simulation conditions don't change in this example)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the fmu
@@ -32,6 +32,24 @@ QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 logging.basicConfig()
 
 
+def load_step_R(t):
+    """
+    Defines a load step after 0.3 s
+    Doubles the load parameters
+    :param t:
+    :return: Dictionary with load parameters
+    """
+    return 10 if t < .4 else 20
+
+def load_step_L(t):
+    """
+    Defines a load step after 0.3 s
+    Doubles the load parameters
+    :param t:
+    :return: Dictionary with load parameters
+    """
+    return 0.0001 if t < .4 else 0.0001
+
 def load_step(t):
     """
     Defines a load step after 0.3 s
@@ -39,7 +57,7 @@ def load_step(t):
     :param t:
     :return: Dictionary with load parameters
     """
-    return {'R': 10, 'L': 0.001} if t < .2 else {'R': 20, 'L': 0.002}
+    return 1 if t < .2 else 2
 
 
 if __name__ == '__main__':
@@ -84,11 +102,15 @@ if __name__ == '__main__':
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode='episode',
                    # viz_cols=['*.m[dq0]', 'slave.freq', 'lcl1.*'],
-                   viz_cols=['master.inst*', 'slave.inst*'],
+                   viz_cols=['master.inst*', 'slave.inst*', 'lcl1.*', 'lc1.*', 'slave.freq'],
                    log_level=logging.INFO,
                    max_episode_steps=max_episode_steps,
-                   model_params={'inverter1.v_DC': v_DC,
-                                 'rl.R1': load_step['R']},
+                   model_params={'rl1.resistor1.R': load_step_R,
+                                 'rl1.resistor2.R': load_step_R,
+                                 'rl1.resistor3.R': load_step_R,
+                                 'rl1.inductor1.L': load_step_L,
+                                 'rl1.inductor2.L': load_step_L,
+                                 'rl1.inductor3.L': load_step_L},
                    model_path='../fmu/grid.network.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
