@@ -2,7 +2,7 @@
 History
 =======
 
-next
+0.1.3 (2020-05-13)
 ------------------
 
 * proper action and observation space (`#14`_)
