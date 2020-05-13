@@ -115,8 +115,12 @@ A save Bayesian approach of a reinforcement learning agent is provided under exa
     :figwidth: 60%
     :align: center
 
-Citation
---------
+Citation & white paper
+----------------------
+
+Please find a white paper on the OMG toolbox including an exemplary usage scenario here:
+
+- https://arxiv.org/abs/2005.04869
 
 Please use the following BibTeX entry for citing us::
 
