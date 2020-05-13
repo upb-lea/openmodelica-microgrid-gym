@@ -7,6 +7,7 @@
 # frequency and voltage change due to its droop control parameters by a power/reactive power change.
 
 import logging
+from functools import partial
 
 import gym
 import numpy as np
@@ -32,14 +33,14 @@ QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 logging.basicConfig()
 
 
-def load_step_R(t):
+def load_step_R(t, gain):
     """
     Defines a load step after 0.3 s
     Doubles the load parameters
     :param t:
     :return: Dictionary with load parameters
     """
-    return 10 if t < .4 else 20
+    return 10*gain if t < .4 else 20
 
 def load_step_L(t):
     """
@@ -105,12 +106,13 @@ if __name__ == '__main__':
                    viz_cols=['master.inst*', 'slave.inst*', 'lcl1.*', 'lc1.*', 'slave.freq'],
                    log_level=logging.INFO,
                    max_episode_steps=max_episode_steps,
-                   model_params={'rl1.resistor1.R': load_step_R,
-                                 'rl1.resistor2.R': load_step_R,
+                   model_params={'rl1.resistor1.R': 20,
+                                 'rl1.resistor2.R': partial(load_step_R,gain=1),
                                  'rl1.resistor3.R': load_step_R,
                                  'rl1.inductor1.L': load_step_L,
                                  'rl1.inductor2.L': load_step_L,
-                                 'rl1.inductor3.L': load_step_L},
+                                 'rl1.inductor3.L': load_step_L
+                                 },
                    model_path='../fmu/grid.network.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
