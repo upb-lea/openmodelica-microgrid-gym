@@ -43,13 +43,9 @@ Install Python Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 Since it is not possible to install PyFMI_, a package which is necessary for the communication between the python interface and the environment, via pip, we recommend to install this package in advance in a conda environment.
 
-- If conda is NOT installed on your PC, install miniconda for python 3.7::
-
-    $ https://conda.io/en/latest/miniconda.html
-
-- Create a new conda environment (for example in pycharm)
-
-- Install PyFMI from condaforge in terminal::
+- If conda is NOT installed on your PC, install miniconda_ for python 3.8
+- Create a new conda environment (e.g. in PyCharm)
+- Install PyFMI from the conda-forge channel in the terminal::
 
     $ conda install -c conda-forge pyfmi
 
@@ -59,6 +55,7 @@ Since it is not possible to install PyFMI_, a package which is necessary for the
     $ pip install openmodelica_microgrid_gym
 
 
+.. _miniconda: https://conda.io/en/latest/miniconda.html
 .. _PyFMI: https://github.com/modelon-community/PyFMI
 
 Installation of OpenModelica
@@ -66,8 +63,7 @@ Installation of OpenModelica
 
 OMG was create by using OMEdit_ v1.16
 
-
-Installation of OMEdit might cause some problems with some Arch Linux distributions. In this case, try to download the pre-built `virtual machine`_.
+In case of installation issues you can resort to their pre-built `virtual machine`_.
 
 .. _OMEdit: https://openmodelica.org/download/download-windows
 .. _virtual machine: https://openmodelica.org/download/virtual-machine
@@ -125,7 +121,8 @@ Citation
 Please use the following BibTeX entry for citing us::
 
     @misc{OMG2020,
-        title={Towards a Scalable and Flexible Simulation and Testing Environment Toolbox for Intelligent Microgrid Control},
+        title={Towards a Scalable and Flexible Simulation and
+               Testing Environment Toolbox for Intelligent Microgrid Control},
         author={Henrik Bode and Stefan Heid and Daniel Weber and Eyke Hüllermeier and Oliver Wallscheid},
         year={2020},
         eprint={http://arxiv.org/abs/2005.04869},
