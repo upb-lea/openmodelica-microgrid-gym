@@ -122,7 +122,7 @@ A save Bayesian approach of a reinforcement learning agent is provided under exa
 Citation
 --------
 
-A whitepaper for this framework will be avaiable soon. Please use the following BibTeX entry for citing us::
+Please use the following BibTeX entry for citing us::
 
     @misc{OMG2020,
         title={Towards a Scalable and Flexible Simulation and Testing Environment Toolbox for Intelligent Microgrid Control},
