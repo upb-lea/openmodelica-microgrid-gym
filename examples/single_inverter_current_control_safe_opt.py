@@ -133,7 +133,7 @@ if __name__ == '__main__':
     if adjust == 'Kp':
         # mutable_params = parameter (Kp gain of the current controller of the inverter) to be optimized using
         # the SafeOpt algorithm
-        mutable_params = dict(currentP=MutableFloat(10e-3))
+        mutable_params = dict(currentP=MutableFloat(5e-3))
 
         # Define the PI parameters for the current controller of the inverter
         current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=115, limits=(-1, 1))
@@ -210,3 +210,17 @@ if __name__ == '__main__':
     runner = Runner(agent, env)
 
     runner.run(num_episodes, visualise=True)
+
+    print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df[:]))
+
+    print('\n Experiment finished with best set: \n')
+    print('\n  {} = {}' .format(adjust, agent.history.df.at[np.argmax(agent.history.df['J']),'Params']))
+    print('  Resulting in a performance of J = {}'.format(np.max(agent.history.df['J'])))
+    print('\n\nBest experiment results are plotted in the following:')
+
+    # initialize controler with best found parameterset and execute one episode again
+    # toDo: der params wird bei run ueberschrieben, da agent.reset(); Stromverläufe -> envplot; GP -> agentplot:
+    # im Prizip wäre der runner der richtige Platz?
+    agent.params[:] = agent.history.df.at[np.argmax(agent.history.df['J']),'Params']
+    runner.run(1, visualise_env=True)
+
