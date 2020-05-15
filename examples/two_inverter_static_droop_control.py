@@ -33,32 +33,15 @@ QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 logging.basicConfig()
 
 
-def load_step_R(t, gain):
+def load_step(t, gain):
     """
-    Defines a load step after 0.3 s
+    Defines a load step after 0.2 s
     Doubles the load parameters
     :param t:
+    :param gain: device parameter
     :return: Dictionary with load parameters
     """
-    return 10*gain if t < .4 else 20
-
-def load_step_L(t):
-    """
-    Defines a load step after 0.3 s
-    Doubles the load parameters
-    :param t:
-    :return: Dictionary with load parameters
-    """
-    return 0.0001 if t < .4 else 0.0001
-
-def load_step(t):
-    """
-    Defines a load step after 0.3 s
-    Doubles the load parameters
-    :param t:
-    :return: Dictionary with load parameters
-    """
-    return 1 if t < .2 else 2
+    return 1*gain if t < .3 else 2*gain
 
 
 if __name__ == '__main__':
@@ -103,15 +86,15 @@ if __name__ == '__main__':
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode='episode',
                    # viz_cols=['*.m[dq0]', 'slave.freq', 'lcl1.*'],
-                   viz_cols=['master.inst*', 'slave.inst*', 'lcl1.*', 'lc1.*', 'slave.freq'],
+                   #viz_cols=['master.inst*', 'slave.inst*', 'lcl1.*', 'lc1.*', 'slave.freq'],
                    log_level=logging.INFO,
                    max_episode_steps=max_episode_steps,
-                   model_params={'rl1.resistor1.R': 20,
-                                 'rl1.resistor2.R': partial(load_step_R,gain=1),
-                                 'rl1.resistor3.R': load_step_R,
-                                 'rl1.inductor1.L': load_step_L,
-                                 'rl1.inductor2.L': load_step_L,
-                                 'rl1.inductor3.L': load_step_L
+                   model_params={'rl1.resistor1.R': partial(load_step,gain=20),
+                                 'rl1.resistor2.R': partial(load_step,gain=20),
+                                 'rl1.resistor3.R': partial(load_step,gain=20),
+                                 'rl1.inductor1.L': 0.001,
+                                 'rl1.inductor2.L': 0.001,
+                                 'rl1.inductor3.L': 0.001
                                  },
                    model_path='../fmu/grid.network.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
