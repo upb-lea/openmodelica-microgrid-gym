@@ -9,7 +9,6 @@ from typing import List
 
 import GPy
 import gym
-from et_stopwatch import Stopwatch
 
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
@@ -209,5 +208,4 @@ if __name__ == '__main__':
     # Using a runner to execute 'num_episodes' different episodes (i.e. SafeOpt iterations)
     runner = Runner(agent, env)
 
-    with Stopwatch(ndigits=1):
-        runner.run(num_episodes, visualise=True)
+    runner.run(num_episodes, visualise=True)
