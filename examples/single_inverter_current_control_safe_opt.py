@@ -8,19 +8,15 @@ import logging
 from typing import List
 
 import GPy
-
 import gym
 from et_stopwatch import Stopwatch
 
-from openmodelica_microgrid_gym.env import FullHistory
+from openmodelica_microgrid_gym import Runner
+from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.auxiliaries import PI_params, DroopParams, MutableFloat, \
     MultiPhaseDQCurrentSourcingController, nested_map
-from openmodelica_microgrid_gym.agents import SafeOptAgent
-from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.common import *
-
-import numpy as np
-import pandas as pd
+from openmodelica_microgrid_gym.env import FullHistory
 
 # Choose which controller parameters should be adjusted by SafeOpt.
 # - Kp: 1D example: Only the proportional gain Kp of the PI controller is adjusted
@@ -35,7 +31,7 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
-max_episode_steps = 1200  # number of simulation steps per episode
+max_episode_steps = 300  # number of simulation steps per episode
 num_episodes = 5  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
@@ -62,7 +58,7 @@ class Reward:
         """
         Defines the reward function for the environment. Uses the observations and setpoints to evaluate the quality of the
         used parameters.
-        Takes current measurements and setpoints so calculate the mean-root-error control error and uses a logarithmic
+        Takes current measurement and setpoints so calculate the mean-root-error control error and uses a logarithmic
         barrier function in case of violating the current limit. Barrier function is adjustable using parameter mu.
 
         :param cols: list of variable names of the data
@@ -79,7 +75,7 @@ class Reward:
         ISPdq0_master = data[idx[2]]  # setting dq reference
         ISPabc_master = dq0_to_abc(ISPdq0_master, phase)  # convert dq set-points into three-phase abc coordinates
 
-        # control error = mean-root-error (MRE) of reference minus measurements
+        # control error = mean-root-error (MRE) of reference minus measurement
         # (due to normalization the control error is often around zero -> compared to MSE metric, the MRE provides
         #  better, i.e. more significant,  gradients)
         # plus barrier penalty for violating the current constraint
@@ -114,7 +110,7 @@ if __name__ == '__main__':
         lengthscale = [.01, 50.]
 
     # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
-    # the initial performance: safe_threshold = 1.2 means. Performance measurements for optimization are seen as
+    # the initial performance: safe_threshold = 1.2 means. Performance measurement for optimization are seen as
     # unsafe, if the new measured performance drops below 20 % of the initial performance of the initial safe (!)
     # parameter set
     safe_threshold = 2
@@ -214,4 +210,4 @@ if __name__ == '__main__':
     runner = Runner(agent, env)
 
     with Stopwatch(ndigits=1):
-        runner.run(num_episodes, visualise=False)
+        runner.run(num_episodes, visualise=True)

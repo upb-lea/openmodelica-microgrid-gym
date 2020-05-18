@@ -1,6 +1,6 @@
 import gym
-import pytest
 import numpy as np
+import pytest
 from pytest import approx
 
 
@@ -18,16 +18,16 @@ def env():
 
 
 def test_reset(env):
-    assert np.array_equal(np.zeros(12), env.reset().to_numpy())
+    assert np.array_equal(np.zeros(12), env.reset())
 
 
 def test_step(env):
     np.random.seed(1)
     env.reset()
     obs, r, done, _ = env.step(np.random.random(6))
-    assert obs.to_numpy() == approx([3.54844812e+01, 6.15702788e+01, -5.85093688e-02, 1.72978825e+02,
-                                     2.85563336e+02, 3.29671269e+00, 2.53610151e+01, 1.19274553e+01,
-                                     7.83990524e+00, 1.42650770e+02, 8.74848857e+01, 3.90866066e+01])
+    assert obs == approx([3.54844812e+01, 6.15702788e+01, -5.85093688e-02, 1.72978825e+02,
+                          2.85563336e+02, 3.29671269e+00, 2.53610151e+01, 1.19274553e+01,
+                          7.83990524e+00, 1.42650770e+02, 8.74848857e+01, 3.90866066e+01])
     assert r == 1
     assert not done
 
@@ -63,8 +63,8 @@ def test_params_simple():
                                           ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]})
     env.reset()
     obs, r, done, _ = env.step(np.random.random(3))
-    assert obs.to_numpy() == approx([-3.08472072e-01, 2.56346548e+02, 8.56263731e+01, 1.46876784e+01,
-                                     1.19315365e+03, 3.89265210e+02, 3.54071687e+01, 5.89398985e+01,
-                                     -7.29991175e-01, 1.76505718e+02, 4.10540511e+02, 3.52688013e+01])
+    assert obs == approx([-3.08472072e-01, 2.56346548e+02, 8.56263731e+01, 1.46876784e+01,
+                          1.19315365e+03, 3.89265210e+02, 3.54071687e+01, 5.89398985e+01,
+                          -7.29991175e-01, 1.76505718e+02, 4.10540511e+02, 3.52688013e+01])
     assert r == 1
     assert not done

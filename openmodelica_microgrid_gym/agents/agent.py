@@ -1,7 +1,6 @@
 import numpy as np
-import pandas as pd
 
-from openmodelica_microgrid_gym.env import EmptyHistory, ModelicaEnv, StructuredMapping
+from openmodelica_microgrid_gym.env import EmptyHistory, ModelicaEnv, List, Union
 
 
 class Agent:
@@ -17,6 +16,7 @@ class Agent:
         """
         self.env = env
         self.history = history
+        self.observation_varnames = None
 
     def reset(self):
         """
@@ -25,7 +25,7 @@ class Agent:
         self.history.reset()
         self.prepare_episode()
 
-    def act(self, obs: pd.Series) -> np.ndarray:
+    def act(self, obs: np.ndarray) -> np.ndarray:
         """
         Select an action with respect to the state this might update the internal state with respect to the history.
 
@@ -45,16 +45,25 @@ class Agent:
         pass
 
     @property
-    def measurement(self) -> StructuredMapping:
+    def measurement_cols(self) -> List[Union[List, str]]:
+        """
+        Structured columns of the measurement. Used in the Runner to setup the history columns of the Environment.
+
+        :return: structured columns of measurement
+        """
+        return []
+
+    @property
+    def measurement(self) -> np.ndarray:
         """
         Measurements the agent takes on the environment. This data is passed to the environment.
         The values returned by this property should be fully determined by the environment.
-        This is a workaround to provide data measurements like PLL controllers in the environment even though
+        This is a workaround to provide data measurement like PLL controllers in the environment even though
         they are functionally part of the Agent.
 
         :return: current measurement
         """
-        return StructuredMapping()
+        return np.empty(0)
 
     def render(self):
         """

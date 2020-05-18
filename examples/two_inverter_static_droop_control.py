@@ -7,17 +7,19 @@
 # frequency and voltage change due to its droop control parameters by a power/reactive power change.
 
 import logging
+
 import gym
 import numpy as np
+
+from openmodelica_microgrid_gym import Runner
+from openmodelica_microgrid_gym.agents import StaticControlAgent
 from openmodelica_microgrid_gym.auxiliaries import PI_params, DroopParams, MultiPhaseDQ0PIPIController, \
     MultiPhaseDQCurrentController, InverseDroopParams, PLLParams
-from openmodelica_microgrid_gym.agents import StaticControlAgent
-from openmodelica_microgrid_gym import Runner
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 3000  # number of simulation steps per episode
-num_episodes = 1    # number of simulation episodes
+num_episodes = 1  # number of simulation episodes
 # (here, only 1 episode makes sense since simulation conditions don't change in this example)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the fmu
 nomFreq = 50  # grid frequency / Hz
@@ -30,7 +32,7 @@ QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 logging.basicConfig()
 
 if __name__ == '__main__':
-    ctrl = dict()  # Empty dict which shall include all controllers
+    ctrl = []  # Empty dict which shall include all controllers
 
     #####################################
     # Define the voltage forming inverter as master
@@ -43,8 +45,8 @@ if __name__ == '__main__':
     # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
     qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
     # Add to dict
-    ctrl['master'] = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param,
-                                                 qdroop_param)
+    ctrl.append(MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param,
+                                            qdroop_param, name='master'))
 
     #####################################
     # Define the current sourcing inverter as slave
@@ -57,8 +59,8 @@ if __name__ == '__main__':
     # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
     qdroop_param = InverseDroopParams(50, delta_t, nomVoltPeak, tau_filt=0.01)
     # Add to dict
-    ctrl['slave'] = MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, iLimit,
-                                                  droop_param, qdroop_param)
+    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, iLimit,
+                                              droop_param, qdroop_param, name='slave'))
 
     # Define the agent as StaticControlAgent which performs the basic controller steps for every environment set
     agent = StaticControlAgent(ctrl, {'master': [np.array([f'lc1.inductor{i + 1}.i' for i in range(3)]),
@@ -88,4 +90,4 @@ if __name__ == '__main__':
 
     # User runner to execute num_episodes-times episodes of the env controlled by the agent
     runner = Runner(agent, env)
-    runner.run(num_episodes, visualise_env=True)
+    runner.run(num_episodes, visualise=True)

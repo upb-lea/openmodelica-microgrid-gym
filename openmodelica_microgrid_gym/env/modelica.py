@@ -1,23 +1,20 @@
-from datetime import datetime
-import re
 import logging
+import re
+from datetime import datetime
+from fnmatch import translate
 from functools import partial
-from itertools import chain
-from operator import itemgetter
 from os.path import basename
 from typing import Sequence, Callable, List, Union, Tuple, Optional, Mapping, Dict
 
 import gym
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy
 from pyfmi import load_fmu
 from pyfmi.fmi import FMUModelME2
 from scipy import integrate
-from fnmatch import translate
-import matplotlib.pyplot as plt
 
-from openmodelica_microgrid_gym.common.itertools_ import flatten
-from openmodelica_microgrid_gym.env.recorder import FullHistory, EmptyHistory, StructuredMapping
+from openmodelica_microgrid_gym.env.recorder import FullHistory, EmptyHistory
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +28,7 @@ class ModelicaEnv(gym.Env):
     """Set of all valid visualisation modes"""
 
     def __init__(self, time_step: float = 1e-4, time_start: float = 0,
-                 reward_fun: Callable[[List[str], np.ndarray], float] = lambda obs: 1,
+                 reward_fun: Callable[[List[str], np.ndarray], float] = lambda cols, obs: 1,
                  log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: int = 200,
                  model_params: Optional[Dict[str, Union[Callable[[float], float], float]]] = None,
                  model_input: Optional[Sequence[str]] = None,
@@ -83,7 +80,7 @@ class ModelicaEnv(gym.Env):
              - string: will be interpret as regex. all fully matched columns names will be enabled
              - list of strings: Each string might be a unix-shell style wildcard like "*.i"
                                 to match all data series ending with ".i".
-        :param history: history to store observations and measurements (from the agent) after each step
+        :param history: history to store observations and measurement (from the agent) after each step
         """
         if model_input is None:
             raise ValueError('Please specify model_input variables from your OM FMU.')
@@ -122,8 +119,8 @@ class ModelicaEnv(gym.Env):
                                  model_params.items()}
 
         self.sim_time_interval = None
-        self.__state = []
-        self.__measurements = []
+        self._state = []
+        self.measurement = []
         self.record_states = viz_mode == 'episode'
         self.history = history
         self.history.cols = model_output
@@ -169,8 +166,7 @@ class ModelicaEnv(gym.Env):
         self.model.enter_continuous_time_mode()
 
         # precalculating indices for more efficient lookup
-        self.model_output_idx = np.array(
-            [self.model.get_variable_valueref(k) for k in self.model_output_names])
+        self.model_output_idx = np.array([self.model.get_variable_valueref(k) for k in self.model_output_names])
 
     def _calc_jac(self, t, x) -> np.ndarray:  # noqa
         """
@@ -240,26 +236,6 @@ class ModelicaEnv(gym.Env):
         logger.debug(f't: {self.sim_time_interval[1]}, ')
         return abs(self.sim_time_interval[1]) > self.time_end
 
-    def update_measurements(self, measurements: StructuredMapping):
-        """
-        Store measurements into a internal field and update the columns of the history
-
-        :param measurements:
-         If provided as a list of tuples the first parameter of each tuple is a nested list of strings.
-         Each string is a column name of the pd.Series.
-         The nesting structure provides grouping that is used for visualization.
-        """
-        if not self.__measurements:
-            # first run
-            miss_col_count = len(set(measurements.cols) - set(self.history.cols))
-            if 0 < miss_col_count < len(measurements.cols):
-                raise ValueError('some of the columns are already added, this should not happen: '
-                                 f'cols:"{measurements.cols}"; self.history.cols:"{self.history.cols}"')
-            elif miss_col_count:
-                self.history.cols = self.history.structured_cols() + measurements.cols
-
-        self.__measurements = measurements.data
-
     def reset(self) -> np.ndarray:
         """
         OpenAI Gym API. Restarts environment and sets it ready for experiments.
@@ -278,12 +254,12 @@ class ModelicaEnv(gym.Env):
         self._setup_fmu()
         self.sim_time_interval = np.array([self.time_start, self.time_start + self.time_step_size])
         self.history.reset()
-        self.__state = self._simulate()
-        self.__measurements = ()
-        self.history.append(self.__state)
+        self._state = self._simulate()
+        self.measurement = []
+        self.history.append(self._state)
         self._failed = False
 
-        return StructuredMapping(self.model_output_names, self.__state.tolist())
+        return self._state
 
     def step(self, action: Sequence) -> Tuple[np.ndarray, float, bool, Mapping]:
         """
@@ -293,7 +269,7 @@ class ModelicaEnv(gym.Env):
         :param action: action to be executed.
         :return: state, reward, is done, info
 
-         The state also contains the measurements passed through by update_measurements
+         The state also contains the measurement passed through by update_measurements
         """
         logger.debug("Experiment next step was called.")
         if self.is_done:
@@ -301,7 +277,7 @@ class ModelicaEnv(gym.Env):
                 """You are calling 'step()' even though this environment has already returned done = True.
                 You should always call 'reset()' once you receive 'done = True' -- any further steps are
                 undefined behavior.""")
-            return self.__state, -np.inf, True, {}
+            return self._state, -np.inf, True, {}
 
         # check if action is a list. If not - create list of length 1
         try:
@@ -326,11 +302,11 @@ class ModelicaEnv(gym.Env):
             self.model.set(*zip(*values))
 
         # Simulate and observe result state
-        self.__state = self._simulate()
-        obs = np.hstack((self.__state, np.array(self.__measurements)))  # np.ndarray
+        self._state = self._simulate()
+        obs = np.hstack((self._state, self.measurement))
         self.history.append(obs)
 
-        logger.debug("model output: %s, values: %s", self.model_output_names, self.__state)
+        logger.debug("model output: %s, values: %s", self.model_output_names, self._state)
 
         # Check if experiment has finished
         # Move simulation time interval if experiment continues
@@ -343,8 +319,8 @@ class ModelicaEnv(gym.Env):
         reward = self.reward(self.history.cols, obs)
         self._failed = np.isnan(reward) or np.isinf(reward) and reward < 0 or reward is None
 
-        # only return the state, the agent does not need the measurements
-        return StructuredMapping(self.history.cols, obs.tolist()), reward, self.is_done, {}
+        # only return the state, the agent does not need the measurement
+        return obs, reward, self.is_done, {}
 
     def render(self, mode: str = 'human', close: bool = False):
         """

@@ -12,7 +12,7 @@ API
 
 Performance
 ```````````
-* 1.5× speedup
+* 6× speedup
 
 Dependencies
 ````````````

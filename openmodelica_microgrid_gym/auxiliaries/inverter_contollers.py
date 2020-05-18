@@ -1,13 +1,10 @@
-from openmodelica_microgrid_gym.common.itertools_ import nested_map
-
-from openmodelica_microgrid_gym.env.recorder import SingleHistory, EmptyHistory
-from .droop_controllers import DroopController, InverseDroopController
-from .base import DDS, PLL
-from .pi_controllers import MultiPhasePIController
-from .params import *
 from openmodelica_microgrid_gym.common import *
-
-import numpy as np
+from openmodelica_microgrid_gym.common.itertools_ import nested_map
+from openmodelica_microgrid_gym.env.recorder import SingleHistory, EmptyHistory
+from .base import DDS, PLL
+from .droop_controllers import DroopController, InverseDroopController
+from .params import *
+from .pi_controllers import MultiPhasePIController
 
 N_PHASE = 3
 
@@ -307,7 +304,7 @@ class MultiPhaseDQCurrentController(CurrentCtl):
         instQ = -inst_reactive(voltageCV, currentCV)
 
         Vinst = inst_rms(voltageCV)
-        # Get current phase information from the voltage measurements
+        # Get current phase information from the voltage measurement
         self._prev_cossine, self._prev_freq, self._prev_theta = self._pll.step(voltageCV)
 
         # Transform the current feedback to the DQ0 frame

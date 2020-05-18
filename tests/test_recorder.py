@@ -1,10 +1,12 @@
-from openmodelica_microgrid_gym.env import FullHistory
-import pandas as pd
 import numpy as np
+import pandas as pd
+
+from openmodelica_microgrid_gym.env import FullHistory
 
 
 def test__append():
     rec = FullHistory(['a b c'.split()])
+    rec.reset()
     rec.append(np.array([1, 2, 3]))
     rec.append([3, 3, 3])
 

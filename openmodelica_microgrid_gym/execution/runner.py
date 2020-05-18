@@ -28,6 +28,8 @@ class Runner:
         :param visualise: turns on visualization of the environment
         """
         self.agent.reset()
+        self.env.history.cols = self.env.history.structured_cols(None) + self.agent.measurement_cols
+        self.agent.observation_varnames = self.env.history.cols
 
         if not visualise:
             self.env.viz_mode = None
@@ -38,7 +40,7 @@ class Runner:
             for _ in tqdm(range(self.env.max_episode_steps), desc='steps', unit='step', leave=False):
                 self.agent.observe(r, done)
                 act = self.agent.act(obs)
-                self.env.update_measurements(self.agent.measurement)
+                self.env.measurement = self.agent.measurement
                 obs, r, done, info = self.env.step(act)
                 self.env.render()
                 if done:

@@ -1,13 +1,12 @@
-from typing import List, Mapping
+from itertools import chain
+from typing import List, Mapping, Union
 
-from openmodelica_microgrid_gym.agents import Agent
-from openmodelica_microgrid_gym.common.itertools_ import fill_params
-from openmodelica_microgrid_gym.auxiliaries import Controller
-
-import pandas as pd
 import numpy as np
 
-from openmodelica_microgrid_gym.env import EmptyHistory, StructuredMapping, ModelicaEnv
+from openmodelica_microgrid_gym.agents import Agent
+from openmodelica_microgrid_gym.auxiliaries import Controller
+from openmodelica_microgrid_gym.common.itertools_ import fill_params
+from openmodelica_microgrid_gym.env import EmptyHistory, ModelicaEnv
 
 
 class StaticControlAgent(Agent):
@@ -29,14 +28,14 @@ class StaticControlAgent(Agent):
 
         self.idx = None
 
-    def act(self, state):
+    def act(self, state: np.ndarray):
         """
         Executes the actions with the observations as parameters.
 
         :param state: the agent is stateless. the state is stored in the controllers.
         Therefore we simply pass the observation from the environment into the controllers.
         """
-        obs = fill_params(self.obs_template, state.df.iloc[0].to_dict())
+        obs = fill_params(self.obs_template, dict(zip(self.observation_varnames, state.tolist())))
         controls = list()
         for key, params in obs.items():
             controls.append(self.controllers[key].step(*params))
@@ -60,13 +59,25 @@ class StaticControlAgent(Agent):
         # on other steps we don't need to do anything
 
     @property
-    def measurement(self) -> StructuredMapping:
-        cols, vals = [], []
-        for ctrl in self.controllers.values():
-            cols.append(ctrl.history.structured_cols(None))
-            vals.extend(ctrl.history.last())
+    def measurement_cols(self) -> List[Union[List, str]]:
+        """
+        Structured columns of the measurement. Used in the Runner to setup the history columns of the Environment.
 
-        return StructuredMapping(cols, vals)
+        :return: structured columns of measurement
+        """
+        return [ctrl.history.structured_cols(None) for ctrl in self.controllers.values()]
+
+    @property
+    def measurement(self) -> np.ndarray:
+        """
+        Measurements the agent takes on the environment. This data is passed to the environment.
+        The values returned by this property should be fully determined by the environment.
+        This is a workaround to provide data measurement like PLL controllers in the environment even though
+        they are functionally part of the Agent.
+
+        :return: current measurement
+        """
+        return np.array(list(chain.from_iterable([ctrl.history.last() for ctrl in self.controllers.values()])))
 
     def prepare_episode(self):
         """
