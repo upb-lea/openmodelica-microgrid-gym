@@ -1,5 +1,5 @@
 import importlib
-from typing import Dict, Union, Any
+from typing import Dict, Union, Any, List
 
 import GPy
 from GPy.kern import Kern
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 class SafeOptAgent(StaticControlAgent):
     def __init__(self, mutable_params: Union[dict, list], abort_reward: int, kernel: Kern, gp_params: Dict[str, Any],
-                 ctrls: Dict[str, Controller],
+                 ctrls: List[Controller],
                  observation_action_mapping: dict, history=EmptyHistory(), env: ModelicaEnv = None):
         """
         Agent to execute safeopt algorithm (https://arxiv.org/abs/1509.01066) to control the environment by using
@@ -123,7 +123,6 @@ class SafeOptAgent(StaticControlAgent):
                                           threshold=self.explore_threshold * J)
 
         else:
-
             if np.isnan(self.episode_reward):
                 # set r to doubled (negative!) initial reward
                 self.episode_reward = self.abort_reward * self.inital_Performance

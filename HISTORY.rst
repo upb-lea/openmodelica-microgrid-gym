@@ -2,6 +2,24 @@
 History
 =======
 
+next
+---------------
+API
+```
+* ModelicaEnv: reward function parameter
+* EmptyHistory and decendents: update(), append()
+* Runner: plotting can be disabled
+
+Performance
+```````````
+* 1.5× speedup
+
+Dependencies
+````````````
+* Increased Language Level to Python 3.8
+
+
+
 0.1.3 (2020-05-13)
 ------------------
 

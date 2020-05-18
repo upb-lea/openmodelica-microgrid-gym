@@ -5,13 +5,16 @@
 
 
 import logging
+from typing import List
 
 import GPy
 
 import gym
+from et_stopwatch import Stopwatch
+
 from openmodelica_microgrid_gym.env import FullHistory
 from openmodelica_microgrid_gym.auxiliaries import PI_params, DroopParams, MutableFloat, \
-    MultiPhaseDQCurrentSourcingController
+    MultiPhaseDQCurrentSourcingController, nested_map
 from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.common import *
@@ -23,6 +26,7 @@ import pandas as pd
 # - Kp: 1D example: Only the proportional gain Kp of the PI controller is adjusted
 # - Ki: 1D example: Only the integral gain Ki of the PI controller is adjusted
 # - Kpi: 2D example: Kp and Ki are adjusted simultaneously
+
 adjust = 'Kp'
 
 # Check if really only one simulation scenario was selected
@@ -31,8 +35,8 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
-max_episode_steps = 300  # number of simulation steps per episode
-num_episodes = 10  # number of simulation episodes (i.e. SafeOpt iterations)
+max_episode_steps = 1200  # number of simulation steps per episode
+num_episodes = 5  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -44,34 +48,46 @@ QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
 
 
-def rew_fun(obs: pd.Series) -> float:
-    """
-    Defines the reward function for the environment. Uses the observations and setpoints to evaluate the quality of the
-    used parameters.
-    Takes current measurements and setpoints so calculate the mean-root-error control error and uses a logarithmic
-    barrier function in case of violating the current limit. Barrier function is adjustable using parameter mu.
+class Reward:
+    def __init__(self):
+        self._idx = None
 
-    :param obs: Observation from the environment (ControlVariables, e.g. currents and voltages)
-    :return: Error as negative reward
-    """
+    def set_idx(self, obs):
+        if self._idx is None:
+            self._idx = nested_map(
+                lambda n: obs.index(n),
+                [[f'lc1.inductor{k}.i' for k in '123'], 'master.phase', [f'master.SPI{k}' for k in 'dq0']])
 
-    # measurements: 3 currents through the inductors of the inverter -> control variables (CV)
-    Iabc_master = obs[[f'lc1.inductor{i + 1}.i' for i in range(3)]].to_numpy()  # 3 phase currents at LC inductors
-    phase = obs[['master.phase']].to_numpy()[0]  # phase from the master controller needed for transformation
+    def rew_fun(self, cols: List[str], data: np.ndarray) -> float:
+        """
+        Defines the reward function for the environment. Uses the observations and setpoints to evaluate the quality of the
+        used parameters.
+        Takes current measurements and setpoints so calculate the mean-root-error control error and uses a logarithmic
+        barrier function in case of violating the current limit. Barrier function is adjustable using parameter mu.
 
-    # setpoints
-    ISPdq0_master = obs[['master.'f'SPI{k}' for k in 'dq0']].to_numpy()  # setting dq reference
-    ISPabc_master = dq0_to_abc(ISPdq0_master, phase)  # convert dq set-points into three-phase abc coordinates
+        :param cols: list of variable names of the data
+        :param data: observation data from the environment (ControlVariables, e.g. currents and voltages)
+        :return: Error as negative reward
+        """
+        self.set_idx(cols)
+        idx = self._idx
 
-    # control error = mean-root-error (MRE) of reference minus measurements
-    # (due to normalization the control error is often around zero -> compared to MSE metric, the MRE provides
-    #  better, i.e. more significant,  gradients)
-    # plus barrier penalty for violating the current constraint
-    error = np.sum((np.abs((ISPabc_master - Iabc_master)) / iLimit) ** 0.5, axis=0) \
-            + -np.sum(mu * np.log(1 - np.maximum(np.abs(Iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0) \
-            * max_episode_steps
+        Iabc_master = data[idx[0]]  # 3 phase currents at LC inductors
+        phase = data[idx[1]]  # phase from the master controller needed for transformation
 
-    return -error.squeeze()
+        # setpoints
+        ISPdq0_master = data[idx[2]]  # setting dq reference
+        ISPabc_master = dq0_to_abc(ISPdq0_master, phase)  # convert dq set-points into three-phase abc coordinates
+
+        # control error = mean-root-error (MRE) of reference minus measurements
+        # (due to normalization the control error is often around zero -> compared to MSE metric, the MRE provides
+        #  better, i.e. more significant,  gradients)
+        # plus barrier penalty for violating the current constraint
+        error = np.sum((np.abs((ISPabc_master - Iabc_master)) / iLimit) ** 0.5, axis=0) \
+                + -np.sum(mu * np.log(1 - np.maximum(np.abs(Iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0) \
+                * max_episode_steps
+
+        return -error.squeeze()
 
 
 if __name__ == '__main__':
@@ -117,9 +133,6 @@ if __name__ == '__main__':
 
     #####################################
     # Definition of the controllers
-
-    ctrl = dict()  # empty dictionary for the controller(s)
-
     mutable_params = None
     current_dqp_iparams = None
     if adjust == 'Kp':
@@ -150,8 +163,8 @@ if __name__ == '__main__':
     qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
 
     # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
-    ctrl['master'] = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, droop_param, qdroop_param,
-                                                           undersampling=2)
+    ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, droop_param, qdroop_param,
+                                                 undersampling=2, name='master')
 
     #####################################
     # Definition of the optimization agent
@@ -162,12 +175,10 @@ if __name__ == '__main__':
                          abort_reward,
                          kernel,
                          dict(bounds=bounds, noise_var=noise_var, prior_mean=prior_mean,
-                              safe_threshold=safe_threshold, explore_threshold=explore_threshold
-                              ),
-                         ctrl,
+                              safe_threshold=safe_threshold, explore_threshold=explore_threshold),
+                         [ctrl],
                          dict(master=[np.array([f'lc1.inductor{i + 1}.i' for i in range(3)]),
-                                      np.array([f'lc1.capacitor{i + 1}.v' for i in range(3)]), i_ref],
-                              ),
+                                      np.array([f'lc1.capacitor{i + 1}.v' for i in range(3)]), i_ref]),
                          history=FullHistory()
                          )
 
@@ -182,7 +193,7 @@ if __name__ == '__main__':
     # - inputs to the models are the connection points to the inverters (see user guide for more details)
     # - model outputs are the the 3 currents through the inductors and the 3 voltages across the capacitors
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
-                   reward_fun=rew_fun,
+                   reward_fun=Reward().rew_fun,
                    time_step=delta_t,
                    # viz_cols=['master.freq', 'master.CVI*', 'lc1.ind*'],
                    viz_cols=['lc1.ind*'],
@@ -193,11 +204,14 @@ if __name__ == '__main__':
                    model_path='../fmu/grid.network_singleInverter.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3'],
                    model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']])
+                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]),
+                   history=FullHistory()
                    )
 
     #####################################
     # Execution of the experiment
     # Using a runner to execute 'num_episodes' different episodes (i.e. SafeOpt iterations)
     runner = Runner(agent, env)
-    runner.run(num_episodes, visualise_env=True)
+
+    with Stopwatch(ndigits=1):
+        runner.run(num_episodes, visualise=False)

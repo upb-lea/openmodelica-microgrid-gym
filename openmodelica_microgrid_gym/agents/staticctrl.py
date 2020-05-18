@@ -1,17 +1,17 @@
-from typing import Union, List, Mapping
+from typing import List, Mapping
 
 from openmodelica_microgrid_gym.agents import Agent
-from openmodelica_microgrid_gym.common.itertools_ import fill_params, nested_map
+from openmodelica_microgrid_gym.common.itertools_ import fill_params
 from openmodelica_microgrid_gym.auxiliaries import Controller
-
-from openmodelica_microgrid_gym.env import EmptyHistory, ModelicaEnv
 
 import pandas as pd
 import numpy as np
 
+from openmodelica_microgrid_gym.env import EmptyHistory, StructuredMapping, ModelicaEnv
+
 
 class StaticControlAgent(Agent):
-    def __init__(self, ctrls: Mapping[str, Controller], ctrl_to_obs: Mapping,
+    def __init__(self, ctrls: List[Controller], ctrl_to_obs: Mapping,
                  history: EmptyHistory = EmptyHistory(), env: ModelicaEnv = None):
         """
         Simple agent that controls the environment by using auxiliary controllers that are fully configured.
@@ -24,17 +24,19 @@ class StaticControlAgent(Agent):
         """
         super().__init__(history, env)
         self.episode_reward = 0
-        self.controllers = ctrls
+        self.controllers = {ctrl.name: ctrl for ctrl in ctrls}
         self.obs_template = ctrl_to_obs
 
-    def act(self, state: pd.Series):
+        self.idx = None
+
+    def act(self, state):
         """
         Executes the actions with the observations as parameters.
 
         :param state: the agent is stateless. the state is stored in the controllers.
         Therefore we simply pass the observation from the environment into the controllers.
         """
-        obs = fill_params(self.obs_template, state)
+        obs = fill_params(self.obs_template, state.df.iloc[0].to_dict())
         controls = list()
         for key, params in obs.items():
             controls.append(self.controllers[key].step(*params))
@@ -58,15 +60,13 @@ class StaticControlAgent(Agent):
         # on other steps we don't need to do anything
 
     @property
-    def measurement(self) -> Union[pd.Series, List]:
-        measurements = []
-        for name, ctrl in self.controllers.items():
-            def prepend(col): return '.'.join([name, col])
+    def measurement(self) -> StructuredMapping:
+        cols, vals = [], []
+        for ctrl in self.controllers.values():
+            cols.append(ctrl.history.structured_cols(None))
+            vals.extend(ctrl.history.last())
 
-            measurements.append((nested_map(prepend, ctrl.history.structured_cols(None)),
-                                 ctrl.history.df.tail(1).rename(columns=prepend).squeeze()))
-
-        return measurements
+        return StructuredMapping(cols, vals)
 
     def prepare_episode(self):
         """

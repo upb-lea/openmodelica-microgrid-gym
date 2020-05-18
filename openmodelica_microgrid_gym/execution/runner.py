@@ -20,14 +20,17 @@ class Runner:
         self.agent = agent
         self.agent.env = env
 
-    def run(self, n_episodes: int = 10, visualise_env: bool = False):
+    def run(self, n_episodes: int = 10, visualise: bool = False):
         """
         Trains/executes the agent on the environment for a number of epochs
 
         :param n_episodes: number of epochs to play
-        :param visualise_env: turns on visualization of the environment
+        :param visualise: turns on visualization of the environment
         """
         self.agent.reset()
+
+        if not visualise:
+            self.env.viz_mode = None
 
         for _ in tqdm(range(n_episodes), desc='episodes', unit='epoch'):
             obs = self.env.reset()
@@ -37,10 +40,10 @@ class Runner:
                 act = self.agent.act(obs)
                 self.env.update_measurements(self.agent.measurement)
                 obs, r, done, info = self.env.step(act)
-                if visualise_env:
-                    self.env.render()
+                self.env.render()
                 if done:
                     break
             self.agent.observe(r, done)
             self.env.close()
-            self.agent.render()
+            if visualise:
+                self.agent.render()

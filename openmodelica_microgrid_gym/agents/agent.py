@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from openmodelica_microgrid_gym.env import EmptyHistory, ModelicaEnv
+from openmodelica_microgrid_gym.env import EmptyHistory, ModelicaEnv, StructuredMapping
 
 
 class Agent:
@@ -45,16 +45,16 @@ class Agent:
         pass
 
     @property
-    def measurement(self) -> pd.Series:
+    def measurement(self) -> StructuredMapping:
         """
         Measurements the agent takes on the environment. This data is passed to the environment.
         The values returned by this property should be fully determined by the environment.
         This is a workaround to provide data measurements like PLL controllers in the environment even though
         they are functionally part of the Agent.
 
-        :return: pd.Series or list of Tuples of columns and pd.Series. The columns can be provided as nested list
+        :return: current measurement
         """
-        return pd.Series()
+        return StructuredMapping()
 
     def render(self):
         """

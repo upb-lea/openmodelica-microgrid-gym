@@ -23,7 +23,7 @@ def agent():
 
     mutable_params = dict(voltP=MutableFloat(25e-3), voltI=MutableFloat(60))
 
-    ctrl = dict()
+    ctrl = []
     # Voltage PI parameters for the current sourcing inverter
     voltage_dqp_iparams = PI_params(kP=mutable_params['voltP'], kI=mutable_params['voltI'], limits=(-iLimit, iLimit))
     # Current PI parameters for the voltage sourcing inverter
@@ -32,8 +32,8 @@ def agent():
     droop_param = DroopParams(DroopGain, 0.005, nomFreq)
     # Droop of the reactive power VAR/Volt Var.s/Volt
     qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
-    ctrl['master'] = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param,
-                                                 qdroop_param)
+    ctrl.append(MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param,
+                                            qdroop_param, name='master'))
 
     # Discrete controller implementation for a DQ based Current controller for the current sourcing inverter
     # Current PI parameters for the current sourcing inverter
@@ -44,8 +44,8 @@ def agent():
     droop_param = InverseDroopParams(DroopGain, 0, nomFreq, tau_filt=0.04)
     # Droop of the reactive power VAR/Volt Var.s/Volt
     qdroop_param = InverseDroopParams(100, 0, nomVoltPeak, tau_filt=0.01)
-    ctrl['slave'] = MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, iLimit,
-                                                  droop_param, qdroop_param)
+    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, iLimit,
+                                              droop_param, qdroop_param, name='slave'))
 
     # validate that parameters can be changed later on
     agent = StaticControlAgent(ctrl, {'master': [np.array([f'lc1.inductor{i + 1}.i' for i in range(3)]),
