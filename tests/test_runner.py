@@ -1,15 +1,14 @@
 import gym
+import numpy as np
+import pandas as pd
 import pytest
-from pytest import approx, skip
+from pytest import approx
 
 from openmodelica_microgrid_gym import Runner, Agent
 from openmodelica_microgrid_gym.agents import StaticControlAgent
-import pandas as pd
-import numpy as np
-
 from openmodelica_microgrid_gym.agents.util import MutableFloat
-from openmodelica_microgrid_gym.common.itertools_ import flatten
 from openmodelica_microgrid_gym.auxiliaries import *
+from openmodelica_microgrid_gym.common.itertools_ import flatten
 
 
 @pytest.fixture
@@ -48,10 +47,10 @@ def agent():
                                               droop_param, qdroop_param, name='slave'))
 
     # validate that parameters can be changed later on
-    agent = StaticControlAgent(ctrl, {'master': [np.array([f'lc1.inductor{i + 1}.i' for i in range(3)]),
-                                                 np.array([f'lc1.capacitor{i + 1}.v' for i in range(3)])],
-                                      'slave': [np.array([f'lcl1.inductor{i + 1}.i' for i in range(3)]),
-                                                np.array([f'lcl1.capacitor{i + 1}.v' for i in range(3)]),
+    agent = StaticControlAgent(ctrl, {'master': [[f'lc1.inductor{i + 1}.i' for i in range(3)],
+                                                 [f'lc1.capacitor{i + 1}.v' for i in range(3)]],
+                                      'slave': [[f'lcl1.inductor{i + 1}.i' for i in range(3)],
+                                                [f'lcl1.capacitor{i + 1}.v' for i in range(3)],
                                                 np.zeros(3)]})
     return mutable_params, agent
 
@@ -80,7 +79,7 @@ def test_main(agent, env):
     # env.history.df.to_hdf('tests/test_main.hd5', 'hist')
     df = env.history.df.head(100)
     df = df.reindex(sorted(df.columns), axis=1)
-    df2 = pd.read_hdf('tests/test_main.hd5', 'hist').head(100)
+    df2 = pd.read_hdf('tests/test_main.hd5', 'hist').head(100)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
     assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-2)
 
@@ -94,11 +93,11 @@ def test_main_paramchange(agent, env):
     # env.history.df.to_hdf('tests/test_main2.hd5', 'hist')
     df = env.history.df.head(50)
     df = df.reindex(sorted(df.columns), axis=1)
-    df2 = pd.read_hdf('tests/test_main.hd5', 'hist').head(50)
+    df2 = pd.read_hdf('tests/test_main.hd5', 'hist').head(50)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
     assert df[out_params].to_numpy() != approx(df2[out_params].to_numpy(), 5e-3)
 
-    df2 = pd.read_hdf('tests/test_main2.hd5', 'hist').head(50)
+    df2 = pd.read_hdf('tests/test_main2.hd5', 'hist').head(50)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
     assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-2)
 
@@ -118,6 +117,6 @@ def test_simpleagent(env):
     # env.history.df.to_hdf('tests/test_main3.hd5', 'hist')
     df = env.history.df.head(50)
     df = df.reindex(sorted(df.columns), axis=1)
-    df2 = pd.read_hdf('tests/test_main3.hd5', 'hist').head(50)
+    df2 = pd.read_hdf('tests/test_main3.hd5', 'hist').head(50)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
     assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-3)

@@ -7,12 +7,13 @@ next
 API
 ```
 * ModelicaEnv: reward function parameter
-* EmptyHistory and decendents: update(), append()
+* EmptyHistory and descendant: update(), append()
+* StaticControlAgent and descendant: small changes in constructor params, specifically obs_template
 * Runner: plotting can be disabled
 
 Performance
 ```````````
-* 6× speedup
+* 6.6× speedup
 
 Dependencies
 ````````````

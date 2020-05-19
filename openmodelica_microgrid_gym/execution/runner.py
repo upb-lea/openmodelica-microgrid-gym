@@ -29,7 +29,7 @@ class Runner:
         """
         self.agent.reset()
         self.env.history.cols = self.env.history.structured_cols(None) + self.agent.measurement_cols
-        self.agent.observation_varnames = self.env.history.cols
+        self.agent.obs_varnames = self.env.history.cols
 
         if not visualise:
             self.env.viz_mode = None

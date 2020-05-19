@@ -1,20 +1,16 @@
 import importlib
-from typing import Dict, Union, Any, List
+import logging
+from typing import Dict, Union, Any, List, Mapping
 
 import GPy
+import matplotlib.pyplot as plt
+import numpy as np
 from GPy.kern import Kern
 from safeopt import SafeOptSwarm
-
-import logging
 
 from openmodelica_microgrid_gym.agents.staticctrl import StaticControlAgent
 from openmodelica_microgrid_gym.agents.util import MutableParams
 from openmodelica_microgrid_gym.auxiliaries import Controller
-from openmodelica_microgrid_gym.env import EmptyHistory, ModelicaEnv
-
-import matplotlib.pyplot as plt
-
-import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +18,8 @@ logger = logging.getLogger(__name__)
 class SafeOptAgent(StaticControlAgent):
     def __init__(self, mutable_params: Union[dict, list], abort_reward: int, kernel: Kern, gp_params: Dict[str, Any],
                  ctrls: List[Controller],
-                 observation_action_mapping: dict, history=EmptyHistory(), env: ModelicaEnv = None):
+                 obs_template: Mapping[str, List[Union[List[str], np.ndarray]]], obs_varnames: List[str] = None,
+                 **kwargs):
         """
         Agent to execute safeopt algorithm (https://arxiv.org/abs/1509.01066) to control the environment by using
         auxiliary controllers and Gaussian process to adopt the controller parameters (mutable_params) to safely
@@ -34,10 +31,20 @@ class SafeOptAgent(StaticControlAgent):
         :param kernel: kernel for the Gaussian process unsing GPy
         :param gp_params: kernel parameters like bounds and lengthscale
         :param ctrls: Controllers that are feed with the observations and exert actions on the environment
-        :param observation_action_mapping: form controller keys to observation keys, whose observation values will be
-         passed to the controller
-        :param history:Storage of internal data
-        :param env: reference to the environment (only needed when used in internal act function)
+        :param obs_template:
+            Template describing how the observation array should be transformed and passed to the internal controllers.
+            The key must match the name field of an internal controller.
+            The values are a list of:
+                - list of strings
+                    - matching variable names of the state
+                    - must match self.obs_varnames
+                    - will be substituted by the values on runtime
+                    - will be passed as an np.array of floats to the controller
+                - np.ndarray of floats (to be passed statically to the controller)
+                - a mixture of static and dynamic values in one parameter is not supported for performance reasons.
+            The values will be passed as parameters to the controllers step function.
+        :param obs_varnames: list of variable names that match the values of the observations
+         passed in the act function. Will be automatically set by the Runner class
         """
         self.params = MutableParams(
             list(mutable_params.values()) if isinstance(mutable_params, dict) else mutable_params)
@@ -53,7 +60,7 @@ class SafeOptAgent(StaticControlAgent):
         self.optimizer = None
         self.inital_Performance = None
         self._iterations = 0
-        super().__init__(ctrls, observation_action_mapping, history, env)
+        super().__init__(ctrls, obs_template, obs_varnames, **kwargs)
         self.history.cols = ['J', 'Params']
 
     def reset(self):
@@ -116,7 +123,7 @@ class SafeOptAgent(StaticControlAgent):
             mf.update_gradients = lambda a, b: 0
             mf.gradients_X = lambda a, b: 0
 
-            gp = GPy.models.GPRegression(np.array([self.params[:]]),
+            gp = GPy.models.GPRegression(np.array([self.params[:]]),  # noqa
                                          np.array([[J]]), self.kernel,
                                          noise_var=self.noise_var, mean_function=mf)
             self.optimizer = SafeOptSwarm(gp, self.safe_threshold * J, bounds=self.bounds,
