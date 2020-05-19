@@ -19,6 +19,9 @@ class Runner:
         self.env = env
         self.agent = agent
         self.agent.env = env
+        self.best_episode = dict()
+
+        # toDo: Var: best_episode als dict: plots - best agent plot (ueber return von agend.render(->figure)); best env plot; best J_wert?
 
     def run(self, n_episodes: int = 10, visualise: bool = False):
         """
@@ -49,3 +52,9 @@ class Runner:
             self.env.close()
             if visualise:
                 self.agent.render()
+
+            if self.agent.has_improved:
+                self.best_episode['best_agent_plt'] = self.agent.figure
+                self.best_episode['best_episode_idx'] = self.agent.best_episode
+
+            # toDo: if self.agenthas_improved: save best_episde dict

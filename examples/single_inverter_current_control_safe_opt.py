@@ -22,7 +22,7 @@ from openmodelica_microgrid_gym.env import FullHistory
 # - Ki: 1D example: Only the integral gain Ki of the PI controller is adjusted
 # - Kpi: 2D example: Kp and Ki are adjusted simultaneously
 
-adjust = 'Kp'
+adjust = 'Kpi'
 
 # Check if really only one simulation scenario was selected
 if adjust not in {'Kp', 'Ki', 'Kpi'}:
@@ -221,6 +221,6 @@ if __name__ == '__main__':
     # initialize controler with best found parameterset and execute one episode again
     # toDo: der params wird bei run ueberschrieben, da agent.reset(); Stromverläufe -> envplot; GP -> agentplot:
     # im Prizip wäre der runner der richtige Platz?
-    agent.params[:] = agent.history.df.at[np.argmax(agent.history.df['J']),'Params']
-    runner.run(1, visualise_env=True)
+    #agent.params[:] = agent.history.df.at[np.argmax(agent.history.df['J']),'Params']
+    #runner.run(1, visualise_env=True)
 
