@@ -172,8 +172,9 @@ if __name__ == '__main__':
                          dict(bounds=bounds, noise_var=noise_var, prior_mean=prior_mean,
                               safe_threshold=safe_threshold, explore_threshold=explore_threshold),
                          [ctrl],
-                         dict(master=[np.array([f'lc1.inductor{i + 1}.i' for i in range(3)]),
-                                      np.array([f'lc1.capacitor{i + 1}.v' for i in range(3)]), i_ref]),
+                         dict(master=[[f'lc1.inductor{k}.i' for k in '123'],
+                                      [f'lc1.capacitor{k}.v' for k in '123'],
+                                      i_ref]),
                          history=FullHistory()
                          )
 

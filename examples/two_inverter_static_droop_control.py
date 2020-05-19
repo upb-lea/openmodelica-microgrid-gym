@@ -63,10 +63,10 @@ if __name__ == '__main__':
                                               droop_param, qdroop_param, name='slave'))
 
     # Define the agent as StaticControlAgent which performs the basic controller steps for every environment set
-    agent = StaticControlAgent(ctrl, {'master': [np.array([f'lc1.inductor{i + 1}.i' for i in range(3)]),
-                                                 np.array([f'lc1.capacitor{i + 1}.v' for i in range(3)])],
-                                      'slave': [np.array([f'lcl1.inductor{i + 1}.i' for i in range(3)]),
-                                                np.array([f'lcl1.capacitor{i + 1}.v' for i in range(3)]),
+    agent = StaticControlAgent(ctrl, {'master': [[f'lc1.inductor{k}.i' for k in '123'],
+                                                 [f'lc1.capacitor{k}.v' for k in '123']],
+                                      'slave': [[f'lcl1.inductor{k}.i' for k in '123'],
+                                                [f'lcl1.capacitor{k}.v' for k in '123'],
                                                 np.zeros(3)]})
 
     # Define the environment
@@ -78,14 +78,11 @@ if __name__ == '__main__':
                    model_params={'inverter1.v_DC': v_DC},
                    model_path='../fmu/grid.network.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
-                   model_output={
-                       'lc1': [
-                           ['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                           ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
-                       'rl1': [f'inductor{i}.i' for i in range(1, 4)],
-                       'lcl1':
-                           [['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                            ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]},
+                   model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
+                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
+                                     rl1=[f'inductor{i}.i' for i in range(1, 4)],
+                                     lcl1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
+                                           ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]),
                    )
 
     # User runner to execute num_episodes-times episodes of the env controlled by the agent
