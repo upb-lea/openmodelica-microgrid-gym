@@ -34,7 +34,12 @@ For the creation of additional grid constellations, Openmodelica (nightly build 
    :titlesonly:
    :caption: API:
 
-   api/omg
+   api/omg.agents
+   api/omg.auxiliaries
+   api/omg.common
+   api/omg.env
+   api/omg.execution
+
 
 .. GENERATE APIDOC
 .. - sphinx-apidoc -o docs/api openmodelica_microgrid_gym/ -e
