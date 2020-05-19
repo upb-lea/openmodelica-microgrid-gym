@@ -4,11 +4,15 @@ History
 
 next
 ---------------
+
+
 API
 ```
 * ModelicaEnv: reward function parameter
 * EmptyHistory and descendant: update(), append()
-* StaticControlAgent and descendant: small changes in constructor params, specifically obs_template
+* Agent: added properties
+* StaticControlAgent and descendant: small changes in constructor params, specifically obs_template, added properties
+* SafeOptAgent: added properties
 * Runner: plotting can be disabled
 
 Performance

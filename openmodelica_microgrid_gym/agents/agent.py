@@ -78,3 +78,12 @@ class Agent:
         Prepares the next episode; resets all controllers and filters (initial value of integrators...)
         """
         pass
+
+    @property
+    def has_improved(self) -> bool:
+        """
+        Defines if the performance increased or stays constant
+        Does not learn, can never improve
+
+        """
+        pass

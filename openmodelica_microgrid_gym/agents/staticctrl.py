@@ -145,3 +145,13 @@ class StaticControlAgent(Agent):
         for ctrl in self.controllers.values():
             ctrl.reset()
         self.episode_reward = 0
+
+    @property
+    def has_improved(self) -> bool:
+        """
+        Defines if the performance increased or stays constant
+        Does not learn, can never improve
+
+        :return: False
+        """
+        return False
