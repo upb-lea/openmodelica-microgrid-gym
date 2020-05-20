@@ -29,7 +29,7 @@ class ModelicaEnv(gym.Env):
 
     def __init__(self, time_step: float = 1e-4, time_start: float = 0,
                  reward_fun: Callable[[List[str], np.ndarray], float] = lambda cols, obs: 1,
-                 log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: int = 200,
+                 log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: Optional[int] = 200,
                  model_params: Optional[Dict[str, Union[Callable[[float], float], float]]] = None,
                  model_input: Optional[Sequence[str]] = None,
                  model_output: Optional[Union[dict, Sequence[str]]] = None, model_path: str = '../fmu/grid.network.fmu',
@@ -52,6 +52,9 @@ class ModelicaEnv(gym.Env):
         :param solver_method: solver of the scipy.integrate.solve_ivp function
         :param max_episode_steps: maximum number of episode steps.
             The end time of the episode is calculated by the time resolution and the number of steps.
+
+            If set to None, the environment will never finish because of step sizes, but it might still stop because of
+            system failiure (-inf reward)
 
         :param model_params: parameters of the FMU.
 
