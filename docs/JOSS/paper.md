@@ -11,15 +11,15 @@ tags:
   - Control
 authors:
   - name: Stefan Heid
-    affiliation: 2
+    affiliation: 1
   - name: Daniel Weber
-    affiliation: 1
-  - name: Henrik Bode
-    affiliation: 1
-  - name: Eyke Hüllermeier
     affiliation: 2
-  - name: Oliver Wallscheid
+  - name: Henrik Bode
+    affiliation: 2
+  - name: Eyke Hüllermeier
     affiliation: 1
+  - name: Oliver Wallscheid
+    affiliation: 2
 affiliations:
  - name: Chair of Intelligent Systems and Machine Learning, Paderborn University
    index: 1
