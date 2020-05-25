@@ -4,7 +4,7 @@ from datetime import datetime
 from fnmatch import translate
 from functools import partial
 from os.path import basename
-from typing import Sequence, Callable, List, Union, Tuple, Optional, Mapping, Dict
+from typing import Sequence, Callable, List, Union, Tuple, Optional, Mapping, Dict, Any
 
 import gym
 import matplotlib.pyplot as plt
@@ -358,13 +358,11 @@ class ModelicaEnv(gym.Env):
                     figure.append(fig)
                 return figure
 
-                    #return figure
-
         elif self.viz_mode == 'step':
             # TODO update plot
             pass
 
-    def close(self) -> bool:
+    def close(self) -> Tuple[bool, Any]:
         """
         OpenAI Gym API. Closes environment and all related resources.
         Closes rendering.

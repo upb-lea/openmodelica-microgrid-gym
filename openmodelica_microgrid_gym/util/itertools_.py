@@ -98,3 +98,27 @@ def fill_params(template: Union[list, tuple, Mapping, np.ndarray], data: Union[p
 
     # keep key if there is no substitute
     return nested_map(lambda k: data.get(k, k), template)
+
+
+def flatten_together(structure, values):
+    if not isinstance(structure, list):
+        if isinstance(values, list):
+            raise ValueError('There where to many nestings in the values')
+        return structure, values
+    if not isinstance(values, list):
+        values = [values]
+    if len(structure) < len(values):
+        return flatten_together(collapse(structure, base_type=tuple, levels=1), values)
+    elif len(structure) > len(values):
+        # if structure has more elements we need to repeat value elements
+        values = values * (len(structure) // len(values))
+        if len(structure) != len(values):
+            raise ValueError('stuff does not match up')
+    return list(collapse([flatten_together(s, v) for s, v in zip(structure, values)], base_type=tuple))
+
+
+if __name__ == '__main__':
+    assert flatten_together([1, 2, 3], [4, 5, 6]) == [(1, 4), (2, 5), (3, 6)]
+    assert flatten_together([1, 1], [0]) == [(1, 0), (1, 0)]
+    assert flatten_together([[1, 1]], [0]) == [(1, 0), (1, 0)]
+    assert flatten_together([[3, 2], [4]], [2, 3]) == [(3, 2), (2, 2), (4, 3)]
