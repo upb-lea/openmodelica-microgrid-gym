@@ -45,7 +45,7 @@ Due to the component-oriented modeling framework based on OpenModelica, dynamic 
 This is an essential difference to already available open-source solutions for the simulation of electrical energy networks, which, in contrast, generally depict large-scale transmission networks with abstracted models in the (quasi)-stationary state (e.g. PyPSA [@Brown2018] or Pandapower [@Thurner2018]). Besides the pure modeling and simulation of microgrids, basic building blocks for setting up a hierarchical control framework on inner and primary level are provided [@Guerrero2013][@Guerrero2013a]. 
 
 
-The API is designed to provide a user-friendly interface to connect a modeled microgrid (environment) with a wide range of control methods such as classical linear feedback control or model predictive control techniques. Moreover, the standardized OpenAI Gym interface [@OpenAI2016] is also available for training data-driven control approaches like RL. 
+The API is designed to provide a user-friendly interface to connect a modeled microgrid (environment) with a wide range of control methods such as classical linear feedback control or model predictive control techniques (cf. Fig. 1). Moreover, the standardized OpenAI Gym interface [@OpenAI2016] is also available for training data-driven control approaches like RL. 
 Many auxiliary functionalities for the essential operation of microgrids are shipped with OMG such as coordinate transformations for basic controller classes, monitoring wrappers or phase-looked loops for frequency and phase angle extraction. 
 Following this structure, nearly every control approach including data-driven RL can be implemented and tested with ``OMG`` in relatively short amount of time.  
 In addition, application examples using safe Bayesian optimization [@Berkenkamp2020] for automated controller design are provided in the toolbox to highlight the challenges of data-driven control approaches in safety critical environments. 
@@ -54,6 +54,8 @@ In addition, application examples using safe Bayesian optimization [@Berkenkamp2
 Therefore, ``OMG`` is designed to be used by academics in the field of control and energy engineering as well as data science. The primary objective of the toolbox is to facilitate the entry into the modelling, control and testing of microgrids and to provide a platform on the basis of which different control methods can be compared under defined conditions (benchmarks).
 
 
+![\label{fig:omg}](omg.png)
+_Fig. 1:  Overview  of  the  interconnections  between  the  different  parts  of  the  OMG  toolbox.  The  OpenModelica  and  OpenAIGym logos are the property of their respective owners._
 
 # Features
 
