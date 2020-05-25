@@ -21,9 +21,9 @@ authors:
   - name: Oliver Wallscheid
     affiliation: 1
 affiliations:
- - name: Chair of Power Electronics and Electrical Drives, Paderborn University
-   index: 1
  - name: Chair of Intelligent Systems and Machine Learning, Paderborn University
+   index: 1
+ - name: Chair of Power Electronics and Electrical Drives, Paderborn University
    index: 2
 date: 25 May 2020
 bibliography: paper.bib
