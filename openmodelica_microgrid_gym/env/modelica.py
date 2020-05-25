@@ -341,6 +341,8 @@ class ModelicaEnv(gym.Env):
                 # TODO close plot
                 pass
             else:
+
+                figure = []
                 for cols in self.history.structured_cols():
                     if not isinstance(cols, list):
                         cols = [cols]
@@ -349,8 +351,14 @@ class ModelicaEnv(gym.Env):
                         continue
                     df = self.history.df[cols].copy()
                     df.index = self.history.df.index * self.time_step_size
-                    df.plot(legend=True)
+
+                    fig, ax = plt.subplots()
+                    df.plot(legend=True, figure=fig, ax=ax)
                     plt.show()
+                    figure.append(fig)
+                return figure
+
+                    #return figure
 
         elif self.viz_mode == 'step':
             # TODO update plot
@@ -363,5 +371,5 @@ class ModelicaEnv(gym.Env):
 
         :return: True on success
         """
-        self.render(close=True)
-        return True
+        figure = self.render(close=True)
+        return True, figure

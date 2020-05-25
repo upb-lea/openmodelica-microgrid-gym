@@ -10,6 +10,8 @@ from typing import List
 import GPy
 import gym
 
+import matplotlib.pyplot as plt
+
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.auxiliaries import PI_params, DroopParams, MutableFloat, \
@@ -22,7 +24,7 @@ from openmodelica_microgrid_gym.env import FullHistory
 # - Ki: 1D example: Only the integral gain Ki of the PI controller is adjusted
 # - Kpi: 2D example: Kp and Ki are adjusted simultaneously
 
-adjust = 'Kp'
+adjust = 'Kpi'
 
 # Check if really only one simulation scenario was selected
 if adjust not in {'Kp', 'Ki', 'Kpi'}:
@@ -31,7 +33,7 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 300  # number of simulation steps per episode
-num_episodes = 5  # number of simulation episodes (i.e. SafeOpt iterations)
+num_episodes = 10  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -133,7 +135,7 @@ if __name__ == '__main__':
     if adjust == 'Kp':
         # mutable_params = parameter (Kp gain of the current controller of the inverter) to be optimized using
         # the SafeOpt algorithm
-        mutable_params = dict(currentP=MutableFloat(10e-3))
+        mutable_params = dict(currentP=MutableFloat(5e-3))
 
         # Define the PI parameters for the current controller of the inverter
         current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=115, limits=(-1, 1))
@@ -210,3 +212,44 @@ if __name__ == '__main__':
     runner = Runner(agent, env)
 
     runner.run(num_episodes, visualise=True)
+
+    print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df[:]))
+
+    print('\n Experiment finished with best set: \n')
+    print('\n  {} = {}' .format(adjust, agent.history.df.at[np.argmax(agent.history.df['J']),'Params']))
+    print('  Resulting in a performance of J = {}'.format(np.max(agent.history.df['J'])))
+    print('\n\nBest experiment results are plotted in the following:')
+
+
+    # Show best episode measurment (current) plot
+    best_env_plt = runner.best_episode['best_env_plt']
+    ax = best_env_plt[0].axes[0]
+    ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+    ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
+    ax.grid(which='both')
+    ax.set_title('Best Episode')
+    best_env_plt[0].show()
+    best_env_plt[0].savefig('best_env_plt.png')
+
+    # Show last performance plot
+    best_agent_plt = runner.agent.figure
+    ax = best_agent_plt.axes[0]
+    ax.grid(which='both')
+    ax.set_axisbelow(True)
+
+    if adjust == 'Ki':
+        ax.set_xlabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
+        ax.set_ylabel(r'$J$')
+    elif adjust == 'Kp':
+        ax.set_xlabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
+        ax.set_ylabel(r'$J$')
+    elif adjust == 'Kpi':
+        agent.params.reset()
+        ax.set_xlabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
+        ax.set_ylabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
+        ax.get_figure().axes[1].set_ylabel(r'$J$')
+        plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4,
+                 alpha=.5)
+    best_agent_plt.show()
+    best_agent_plt.savefig('best_agent_plt.png')
+

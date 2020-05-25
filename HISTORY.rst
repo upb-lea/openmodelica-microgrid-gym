@@ -4,11 +4,15 @@ History
 
 next
 ---------------
+
+
 API
 ```
 * ModelicaEnv: reward function parameter
 * EmptyHistory and descendant: update(), append()
-* StaticControlAgent and descendant: small changes in constructor params, specifically obs_template
+* Agent: added properties
+* StaticControlAgent and descendant: small changes in constructor params, specifically obs_template, added properties
+* SafeOptAgent: added properties
 * Runner: plotting can be disabled
 
 Performance
@@ -24,6 +28,7 @@ Dependencies
 0.1.3 (2020-05-13)
 ------------------
 
+* best parameter set output after termination of SafeOpt agent (`#7`_)
 * proper action and observation space (`#14`_)
 * resolved problem related to environment :code:`model_params` (`#21`_)
 
@@ -31,6 +36,7 @@ Dependencies
 
 * documentation improvements (more examples, installation)
 
+.. _`#7`: https://github.com/upb-lea/openmodelica-microgrid-gym/issues/7
 .. _`#14`: https://github.com/upb-lea/openmodelica-microgrid-gym/issues/14
 .. _`#21`: https://github.com/upb-lea/openmodelica-microgrid-gym/issues/21
 

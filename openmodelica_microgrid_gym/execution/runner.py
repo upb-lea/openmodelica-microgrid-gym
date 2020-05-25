@@ -19,6 +19,8 @@ class Runner:
         self.env = env
         self.agent = agent
         self.agent.env = env
+        self.best_episode = dict()
+
 
     def run(self, n_episodes: int = 10, visualise: bool = False):
         """
@@ -46,6 +48,14 @@ class Runner:
                 if done:
                     break
             self.agent.observe(r, done)
-            self.env.close()
+            _ , env_fig = self.env.close()
+
             if visualise:
                 self.agent.render()
+
+            if self.agent.has_improved:
+                #self.best_episode['best_agent_plt'] = self.agent.figure
+                self.best_episode['best_env_plt'] = env_fig
+                self.best_episode['best_episode_idx'] = self.agent.best_episode
+
+
