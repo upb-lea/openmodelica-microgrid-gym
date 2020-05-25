@@ -2,7 +2,7 @@ from typing import Sequence, List, Optional, Union
 
 import pandas as pd
 
-from openmodelica_microgrid_gym.common.itertools_ import flatten
+from openmodelica_microgrid_gym.util.itertools_ import flatten
 
 
 class StructuredMapping:

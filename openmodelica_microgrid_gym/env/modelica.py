@@ -14,7 +14,7 @@ from pyfmi import load_fmu
 from pyfmi.fmi import FMUModelME2
 from scipy import integrate
 
-from openmodelica_microgrid_gym.env.recorder import FullHistory, EmptyHistory
+from openmodelica_microgrid_gym.util import FullHistory, EmptyHistory
 
 logger = logging.getLogger(__name__)
 

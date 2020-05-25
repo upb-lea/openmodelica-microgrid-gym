@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from openmodelica_microgrid_gym.env import FullHistory
+from openmodelica_microgrid_gym.util import FullHistory
 
 
 def test__append():

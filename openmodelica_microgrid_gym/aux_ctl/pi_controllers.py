@@ -1,6 +1,8 @@
 import logging
-from openmodelica_microgrid_gym.auxiliaries import PI_params
+
 import numpy as np
+
+from openmodelica_microgrid_gym.aux_ctl import PI_params
 
 N_phase = 3
 

@@ -2,9 +2,9 @@ from typing import Tuple
 
 import numpy as np
 
-from openmodelica_microgrid_gym.common import abc_to_alpha_beta, cos_sin, normalise_abc
-from openmodelica_microgrid_gym.auxiliaries import PLLParams
-from openmodelica_microgrid_gym.auxiliaries.pi_controllers import PIController
+from openmodelica_microgrid_gym.aux_ctl import PLLParams
+from openmodelica_microgrid_gym.aux_ctl.pi_controllers import PIController
+from openmodelica_microgrid_gym.util import abc_to_alpha_beta, cos_sin, normalise_abc
 
 
 class DDS:

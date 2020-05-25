@@ -1,8 +1,8 @@
-from typing import Callable, Mapping, Union, List, Any, Tuple
+from typing import Callable, Mapping, Union, Any
 
+import numpy as np
 import pandas as pd
 from more_itertools import collapse
-import numpy as np
 
 
 def flatten(data: Union[dict, list], remaining_levels: int = 0) -> list:

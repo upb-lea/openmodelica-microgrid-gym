@@ -10,7 +10,7 @@ from safeopt import SafeOptSwarm
 
 from openmodelica_microgrid_gym.agents.staticctrl import StaticControlAgent
 from openmodelica_microgrid_gym.agents.util import MutableParams
-from openmodelica_microgrid_gym.auxiliaries import Controller
+from openmodelica_microgrid_gym.aux_ctl import Controller
 
 logger = logging.getLogger(__name__)
 

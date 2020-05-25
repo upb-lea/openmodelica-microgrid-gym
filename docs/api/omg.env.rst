@@ -7,7 +7,6 @@ Submodules
 .. toctree::
 
    omg.env.modelica
-   omg.env.recorder
 
 Module contents
 ---------------

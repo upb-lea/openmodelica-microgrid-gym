@@ -9,15 +9,15 @@ from typing import List
 
 import GPy
 import gym
+import numpy as np
 
 import matplotlib.pyplot as plt
 
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
-from openmodelica_microgrid_gym.auxiliaries import PI_params, DroopParams, MutableFloat, \
-    MultiPhaseDQCurrentSourcingController, nested_map
-from openmodelica_microgrid_gym.common import *
-from openmodelica_microgrid_gym.env import FullHistory
+from openmodelica_microgrid_gym.agents.util import MutableFloat
+from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQCurrentSourcingController
+from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 
 # Choose which controller parameters should be adjusted by SafeOpt.
 # - Kp: 1D example: Only the proportional gain Kp of the PI controller is adjusted
