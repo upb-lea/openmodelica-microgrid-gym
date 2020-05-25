@@ -54,9 +54,6 @@ In addition, application examples using safe Bayesian optimization [@Berkenkamp2
 Therefore, ``OMG`` is designed to be used by academics in the field of control and energy engineering as well as data science. The primary objective of the toolbox is to facilitate the entry into the modelling, control and testing of microgrids and to provide a platform on the basis of which different control methods can be compared under defined conditions (benchmarks).
 
 
-![](https://github.com/upb-lea/openmodelica-microgrid-gym/blob/develop/docs/pictures/omg_flow.png)
-_Figure 1.  Overview  of  the  interconnections  between  the  different  parts  of  the  OMG  toolbox.  The  OpenModelica  and  OpenAIGym logos are the property of their respective owners._
-
 
 # Features
 
