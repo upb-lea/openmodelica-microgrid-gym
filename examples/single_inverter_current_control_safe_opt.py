@@ -220,14 +220,38 @@ if __name__ == '__main__':
     print('  Resulting in a performance of J = {}'.format(np.max(agent.history.df['J'])))
     print('\n\nBest experiment results are plotted in the following:')
 
-    # initialize controler with best found parameterset and execute one episode again
-    # toDo: der params wird bei run ueberschrieben, da agent.reset(); Stromverläufe -> envplot; GP -> agentplot:
-    # im Prizip wäre der runner der richtige Platz?
-    #agent.params[:] = agent.history.df.at[np.argmax(agent.history.df['J']),'Params']
-    #runner.run(1, visualise_env=True)
 
-    fig_best = runner.best_episode['best_env_plt']
+
+    best_env_plt = runner.best_episode['best_env_plt']
     #for fig in len(fig_best):
-    fig_best[0].show()
-    #fig_best.savefig('test.png')
+    ax = best_env_plt[0].axes[0]
+    ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+    ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
+    ax.grid(which='both')
+    ax.set_title('Best Episode')
+    best_env_plt[0].show()
+    best_env_plt[0].savefig('best_env_plt.png')
+
+
+    best_agent_plt = runner.best_episode['best_agent_plt']
+    ax = best_agent_plt.axes[0]
+    ax.grid(which='both')
+    ax.set_axisbelow(True)
+
+    if adjust == 'Ki':
+        ax.set_xlabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
+        ax.set_ylabel(r'$J$')
+    elif adjust == 'Kp':
+        ax.set_xlabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
+        ax.set_ylabel(r'$J$')
+    elif adjust == 'Kpi':
+        agent.params.reset()
+        ax.set_xlabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
+        ax.set_ylabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
+        ax.get_figure().axes[1].set_ylabel(r'$J$')
+        plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4,
+                 alpha=.5)
+    #ax.set_title('Best Episode')
+    best_agent_plt.show()
+    best_agent_plt.savefig('best_agent_plt.png')
 
