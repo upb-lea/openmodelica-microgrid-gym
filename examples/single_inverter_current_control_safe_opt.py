@@ -10,6 +10,8 @@ from typing import List
 import GPy
 import gym
 
+import matplotlib.pyplot as plt
+
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.auxiliaries import PI_params, DroopParams, MutableFloat, \
@@ -31,7 +33,7 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 300  # number of simulation steps per episode
-num_episodes = 5  # number of simulation episodes (i.e. SafeOpt iterations)
+num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -223,4 +225,9 @@ if __name__ == '__main__':
     # im Prizip wäre der runner der richtige Platz?
     #agent.params[:] = agent.history.df.at[np.argmax(agent.history.df['J']),'Params']
     #runner.run(1, visualise_env=True)
+
+    fig_best = runner.best_episode['best_env_plt']
+    #for fig in len(fig_best):
+    fig_best[0].show()
+    #fig_best.savefig('test.png')
 
