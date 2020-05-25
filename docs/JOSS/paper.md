@@ -80,7 +80,7 @@ installed by `pip` Python package manager using
 `pip install openmodelica_microgrid_gym` command. The source code, guide and 
 datasets are available on the GitHub repository (https://github.com/upb-lea/openmodelica-microgrid-gym). 
 
-![](https://git.uni-paderborn.de/walli/omg_paper/-/blob/master/pictures/OMG_flowchart_2.pdf)
+![](https://github.com/upb-lea/openmodelica-microgrid-gym/blob/develop/docs/pictures/omg_flow.png)
 _Figure 1.  Overview  of  the  interconnections  between  the  different  parts  of  the  OMG  toolbox.  The  OpenModelica  and  OpenAIGym logos are the property of their respective owners._
 
 # Acknowledgements
