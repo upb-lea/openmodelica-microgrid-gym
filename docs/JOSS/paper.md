@@ -1,5 +1,5 @@
 ---
-title: 'OMG: A scalable and flexible simulation and testing environment toolbox for intelligent microgrid control'
+title: 'OMG: A Scalable and Flexible Simulation and Testing Environment Toolbox for Intelligent Microgrid Control'
 tags:
   - Python
   - OpenModelica
@@ -7,6 +7,8 @@ tags:
   - Reinforcement Learning
   - Energy Systems
   - Simulation
+  - Testing
+  - Control
 authors:
   - name: Stefan Heid
     affiliation: 2
@@ -14,10 +16,10 @@ authors:
     affiliation: 1
   - name: Henrik Bode
     affiliation: 1
-  - name: Oliver Wallscheid
-    affiliation: 1
   - name: Eyke Hüllermeier
     affiliation: 2
+  - name: Oliver Wallscheid
+    affiliation: 1
 affiliations:
  - name: Power Electronics and Electrical Drives, University of Paderborn
    index: 1
@@ -30,29 +32,20 @@ bibliography: paper.bib
 # Summary
 
 
-Micro-   and   smart   grids   (MSG)   play   an   important   role   both 
-for   integrating   renewable   energy   sources   in conventional  electricity 
-grids  and  for  providing  power  supply in  remote  areas.  Modern  MSGs 
-are largely  driven  by  power electronic  converters  due  to  their  high 
-efficiency and  flexibility. Nevertheless, controlling  MSGs  is  a  challenging  task  due 
-to highest  requirements on  energy  availability,  safety and voltage quality 
-within  a  wide range  of  different  MSG  topologies.
+Micro- and smart grids (MSG) play an important role both for integrating renewable energy sources in conventiona electricity grids and for providing power supply in remote areas. 
+Modern MSGs are largely driven by power electronic converters due to their high efficiency and flexibility. 
+Nevertheless, controlling MSGs is a challenging task due to highest requirements on energy availability, safety and voltage quality within a  wide range of different MSG topologies.
 
 
-``OMG`` is an python package for modelling and optimizing microgrids with methods of the reinforcement learning.
-An attached OpenModelica library enables the user to define its individual microgrid in a wide range in flexibility and 
-scalability or use predefined example grids and use-cases. The API was designed 
-to provide a user-friendly interface to connect the microgrid (environment) with an reinforcement learning agent (RL). 
-First RL applications based on the work of [@Berkenkamp:2020] are provided in the toolbox. 
-Following this structure, nearly every RL approach can be implemented and tested with ``OMG``. Besides, the simulation of classical, low-level 
-controller tuning for comparision is also supported. 
+``OMG`` is a Python-based package for modeling and simulation of microgrids based on power electronics energy conversion.
+An attached OpenModelica library enables the user to define its individual microgrid (i.e. local electricity grid containing arbitrary sources, storages and load) in a flexiable and scalable way or to use predefined example grids and use-cases. 
+The API is designed to provide a user-friendly interface to connect a modeled microgrid (environment) with a wide range of control methods such as classical linear feedback control or model predictive control techniques. Moreoever, the standardized OpenAI Gym interface [@OpenAI:2020] is also available for training data-driven control approaches such as from the domain of reinforcement learning (RL).  
+In addition, application examples using safe Bayesian optimization [@Berkenkamp:2020] for automated controller tuning are provided in the toolbox among other auxiliaries such as basic controller classes, monitoring wrappers phase-looked loops. 
+Following this structure, nearly every control approach including data-driven RL can be implemented and tested with ``OMG``. 
 
 
-``OMG`` was designed to be used by academics in the field in RL to test and compare their algorithms 
-in a realistic use-case, to help control engineers to inverters in real grids, and for 
-engineering students to get in touch with with machine learning. Since OMG is the onliest open source software which 
-provides a RL approach on inverter-tuning on the primary level (voltage and current control), 
-a direct comparision to other products is not possible.
+
+Therefore, ``OMG`` is designed to be used by academics in the field of control and energy engineering as well as reinforcement learning to allow an easy access to microgrid simulation and control investigations.
 
 
 # Features
