@@ -221,9 +221,8 @@ if __name__ == '__main__':
     print('\n\nBest experiment results are plotted in the following:')
 
 
-
+    # Show best episode measurment (current) plot
     best_env_plt = runner.best_episode['best_env_plt']
-    #for fig in len(fig_best):
     ax = best_env_plt[0].axes[0]
     ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
     ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
@@ -251,7 +250,6 @@ if __name__ == '__main__':
         ax.get_figure().axes[1].set_ylabel(r'$J$')
         plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4,
                  alpha=.5)
-    #ax.set_title('Best Episode')
     best_agent_plt.show()
     best_agent_plt.savefig('best_agent_plt.png')
 
