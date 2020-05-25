@@ -19,6 +19,7 @@ authors:
   - name: Eyke Hüllermeier
     affiliation: 1
   - name: Oliver Wallscheid
+    orcid: 0000-0001-9362-8777
     affiliation: 2
 affiliations:
  - name: Chair of Intelligent Systems and Machine Learning, Paderborn University
