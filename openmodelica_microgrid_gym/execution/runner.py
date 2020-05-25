@@ -54,7 +54,7 @@ class Runner:
                 self.agent.render()
 
             if self.agent.has_improved:
-                self.best_episode['best_agent_plt'] = self.agent.figure
+                #self.best_episode['best_agent_plt'] = self.agent.figure
                 self.best_episode['best_env_plt'] = env_fig
                 self.best_episode['best_episode_idx'] = self.agent.best_episode
 

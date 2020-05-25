@@ -33,7 +33,7 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 300  # number of simulation steps per episode
-num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
+num_episodes = 10  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -232,8 +232,8 @@ if __name__ == '__main__':
     best_env_plt[0].show()
     best_env_plt[0].savefig('best_env_plt.png')
 
-
-    best_agent_plt = runner.best_episode['best_agent_plt']
+    # Show last performance plot
+    best_agent_plt = runner.agent.figure
     ax = best_agent_plt.axes[0]
     ax.grid(which='both')
     ax.set_axisbelow(True)
