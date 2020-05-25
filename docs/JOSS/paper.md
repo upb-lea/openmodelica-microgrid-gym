@@ -39,8 +39,8 @@ Nevertheless, controlling MSGs is a challenging task due to highest requirements
 
 ``OMG`` is a Python-based package for modeling and simulation of microgrids based on power electronics energy conversion.
 An attached OpenModelica library enables the user to define its individual microgrid (i.e. local electricity grid containing arbitrary sources, storages and load) in a flexiable and scalable way or to use predefined example grids and use-cases. 
-The API is designed to provide a user-friendly interface to connect a modeled microgrid (environment) with a wide range of control methods such as classical linear feedback control or model predictive control techniques. Moreoever, the standardized OpenAI Gym interface [@OpenAI:2020] is also available for training data-driven control approaches such as from the domain of reinforcement learning (RL).  
-In addition, application examples using safe Bayesian optimization [@Berkenkamp:2020] for automated controller tuning are provided in the toolbox among other auxiliaries such as basic controller classes, monitoring wrappers phase-looked loops. 
+The API is designed to provide a user-friendly interface to connect a modeled microgrid (environment) with a wide range of control methods such as classical linear feedback control or model predictive control techniques. Moreoever, the standardized OpenAI Gym interface [@OpenAI2020] is also available for training data-driven control approaches such as from the domain of reinforcement learning (RL).  
+In addition, application examples using safe Bayesian optimization [@Berkenkamp2020] for automated controller tuning are provided in the toolbox among other auxiliaries such as basic controller classes, monitoring wrappers phase-looked loops. 
 Following this structure, nearly every control approach including data-driven RL can be implemented and tested with ``OMG``. 
 
 
