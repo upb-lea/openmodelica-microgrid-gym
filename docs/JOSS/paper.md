@@ -42,7 +42,7 @@ This applies in particular to data-driven control approaches such as reinforceme
 ``OMG`` is a Python-based package for modeling and simulation of microgrids based on power electronic energy conversion.
 An attached OpenModelica [@OSMC2020] library enables the user to define its individual microgrid (i.e. a local electricity grid containing arbitrary sources, storages and loads) in a flexible and scalable way or to use predefined example grids. 
 Due to the component-oriented modeling framework based on OpenModelica, dynamic processes on small time scales are focused which allow for accurate control and test investigations during transients and steady state.
-This is an essential difference to already available open-source solutions for the simulation of electrical energy networks, which, in contrast, generally depict large-scale transmission networks with abstracted models in the (quasi)-stationary state (e.g. PyPSA [@Brown2018] or Pandapower [@Thurner2018]). 
+This is an essential difference to already available open-source solutions for the simulation of electrical energy networks, which, in contrast, generally depict large-scale transmission networks with abstracted models in the (quasi)-stationary state (e.g. PyPSA [@Brown2018] or Pandapower [@Thurner2018]). Besides the pure modeling and simulation of microgrids, basic building blocks for setting up a hierarchical control framework on inner and primary level are provided [@Guerrero2013][@Guerrero2013a]. 
 
 
 The API is designed to provide a user-friendly interface to connect a modeled microgrid (environment) with a wide range of control methods such as classical linear feedback control or model predictive control techniques. Moreover, the standardized OpenAI Gym interface [@OpenAI2016] is also available for training data-driven control approaches like RL. 
@@ -68,7 +68,7 @@ The user can select between a wide range of different grid components and connec
 
 * Dynamic simulation of local electricity grids on component level including single and multi phase systems as well as AC and DC operation. 
 
-* Easy exchange of models between computing platforms and fast simulation of the model by using the FMI 2.0 standard with C++ code inside. Appropriate numeric solvers for the underlying system of ordinary differential equations can be easily chosen within the usual Python packages (e.g. SciPy) due to the usage of co-simulation. 
+* Easy exchange of models between computing platforms and fast simulation of the models by using the FMI 2.0 standard with C++ code inside. Appropriate numeric solvers for the underlying system of ordinary differential equations can be easily chosen within the usual Python packages (e.g. SciPy) due to the usage of co-simulation. 
 
 * Calculation, evaluation and monitoring of every single time step covering states, action and auxiliary quantities provides an interface for manual or automated inspection. The latter is particular useful for the automatic training of data-driven control approach such as reinforcement learning.
 
