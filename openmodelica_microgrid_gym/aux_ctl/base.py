@@ -2,7 +2,7 @@ from typing import Tuple
 
 import numpy as np
 
-from openmodelica_microgrid_gym.aux_ctl import PLLParams
+from openmodelica_microgrid_gym.aux_ctl.params import PLLParams
 from openmodelica_microgrid_gym.aux_ctl.pi_controllers import PIController
 from openmodelica_microgrid_gym.util import abc_to_alpha_beta, cos_sin, normalise_abc
 
