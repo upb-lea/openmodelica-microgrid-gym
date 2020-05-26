@@ -3,13 +3,28 @@ from typing import List, Union, Callable, Optional
 from matplotlib.figure import Figure
 from more_itertools import collapse
 
-from openmodelica_microgrid_gym.util.itertools_ import flatten_together
+from openmodelica_microgrid_gym.util import flatten_together
 
 
 class PlotTmpl:
-    def __init__(self, vars: List[Union[List, str]], callback: Optional[Callable[[Figure], None]] = None, **kwargs):
+    def __init__(self, variables: List[Union[List, str]], callback: Optional[Callable[[Figure], None]] = None,
+                 **kwargs):
+        """
+        Provides an iterable of variables and plot parameters like ('induction1', {'color':'green', 'style': '--'}).
+        It contains logic to automatically match up the variables and provided kwargs to allow for a simple syntax.
 
-        self.vars = list(collapse(vars))
+        e.g. when called with [['a','b'],['c','d']] and style = [['.', None],'--'] it will detect the grouping and apply
+        the dotted style to 'a' and the dashed style to 'c' and 'd'
+
+        :param vars: nested list of strings.
+         Each string represents a variable of the FMU or a measurement that should be plotted by the environment.
+        :param callback: if provided, it is executed after the plot is finished.
+         Will get the generated figure as parameter to allow further modifications.
+        :param kwargs: those arguments are merged (see omg.util.flatten_together) with the variables
+         and than provided to the pd.DataFrame.plot(·) function
+        """
+
+        self.vars = list(collapse(variables))
         self.callback = callback
 
         # set colors None if not provided
@@ -23,20 +38,20 @@ class PlotTmpl:
 
         args = dict()
         for k, v in dict(kwargs).items():
-            args[k] = flatten_together(vars, v)
+            args[k] = flatten_together(variables, v)
 
         # apply to a group only if all color values are none inside that group
         if colorkey:
             # if all elements in the variables are lists and they are all of equal length
-            if len(lengths := set([isinstance(l, list) and len(l) for l in vars])) == 1:
+            if len(lengths := set([isinstance(l, list) and len(l) for l in variables])) == 1:
                 # set contains either the length of all lists or false if all values where non-list values
                 if length := lengths.pop():
-                    for groups in range(len(vars)):
+                    for groups in range(len(variables)):
                         for i in range(length):
                             if args[colorkey][length * groups + i] is None:
                                 args[colorkey][length * groups + i] = 'C' + str(i + 1)
             else:
-                ## all elements are single values
+                # all elements are single values
                 for i, c in enumerate(args[colorkey]):
                     if c is None:
                         args[colorkey][i] = 'C' + str(i + 1)

@@ -8,7 +8,6 @@ Submodules
 
    omg.util.itertools_
    omg.util.transforms
-   omg.util.plot
    omg.util.recorder
 
 Module contents

@@ -1,4 +1,4 @@
-from typing import Callable, Mapping, Union, Any
+from typing import Callable, Mapping, Union, Any, List
 
 import numpy as np
 import pandas as pd
@@ -100,7 +100,17 @@ def fill_params(template: Union[list, tuple, Mapping, np.ndarray], data: Union[p
     return nested_map(lambda k: data.get(k, k), template)
 
 
-def flatten_together(structure, values):
+def flatten_together(structure: List[Union[List, Any]], values: List[Union[List, Any]]) -> List[Any]:
+    """
+    Flattens and fills a list of values relative to the groupings provided by the structure parameter.
+
+    e.g. when called with :code:`[[1, 2], [3, 4]]` and :code:`[[0, None], 4]` it will detect the grouping
+    and return :code:`[0, None, 4, 4]`
+
+    :param structure: nested list used as a template
+    :param values: values matched to the list
+    :return: flattened and filled list of values
+    """
     if not isinstance(structure, list):
         if isinstance(values, list):
             raise ValueError('There where to many nestings in the values')

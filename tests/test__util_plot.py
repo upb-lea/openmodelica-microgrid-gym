@@ -1,6 +1,6 @@
 import pytest
 
-from openmodelica_microgrid_gym.util import PlotTmpl
+from openmodelica_microgrid_gym.env import PlotTmpl
 
 v = [['a', 'b'], ['c', 'd']]
 tmpl = PlotTmpl(v, color=[None, ['C2', 'C1']], style=[None, '--'])

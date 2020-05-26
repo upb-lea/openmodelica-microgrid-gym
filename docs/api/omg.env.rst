@@ -7,6 +7,7 @@ Submodules
 .. toctree::
 
    omg.env.modelica
+   omg.env.plot
 
 Module contents
 ---------------
