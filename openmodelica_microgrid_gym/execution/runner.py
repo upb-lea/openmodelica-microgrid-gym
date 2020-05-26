@@ -35,8 +35,9 @@ class Runner:
 
         if not visualise:
             self.env.viz_mode = None
+        agent_fig = None
 
-        for _ in tqdm(range(n_episodes), desc='episodes', unit='epoch'):
+        for i in tqdm(range(n_episodes), desc='episodes', unit='epoch'):
             obs = self.env.reset()
             done, r = False, None
             for _ in tqdm(range(self.env.max_episode_steps), desc='steps', unit='step', leave=False):
@@ -51,11 +52,10 @@ class Runner:
             _ , env_fig = self.env.close()
 
             if visualise:
-                self.agent.render()
+                agent_fig = self.agent.render()
 
-            if self.agent.has_improved:
-                #self.best_episode['best_agent_plt'] = self.agent.figure
+            if i == 0 or self.agent.has_improved:
+                # self.best_episode['best_agent_plt'] = self.agent.figure
                 self.best_episode['best_env_plt'] = env_fig
-                self.best_episode['best_episode_idx'] = self.agent.best_episode
-
-
+                self.best_episode['best_episode_idx'] = agent_fig
+                self.best_episode['i'] = i

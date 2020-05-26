@@ -1,6 +1,7 @@
 from typing import List, Union
 
 import numpy as np
+from matplotlib.figure import Figure
 
 from openmodelica_microgrid_gym.env import ModelicaEnv
 from openmodelica_microgrid_gym.util import EmptyHistory
@@ -70,7 +71,7 @@ class Agent:
         """
         return np.empty(0)
 
-    def render(self):
+    def render(self) -> Figure:
         """
         Visualisation of the agent, e.g. its learning state or similar
         """

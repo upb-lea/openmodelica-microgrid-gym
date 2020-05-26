@@ -10,6 +10,7 @@ import gym
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy
+from matplotlib.figure import Figure
 from pyfmi import load_fmu
 from pyfmi.fmi import FMUModelME2
 from scipy import integrate
@@ -340,7 +341,7 @@ class ModelicaEnv(gym.Env):
         # only return the state, the agent does not need the measurement
         return obs, reward, self.is_done, {}
 
-    def render(self, mode: str = 'human', close: bool = False):
+    def render(self, mode: str = 'human', close: bool = False) -> List[Figure]:
         """
         OpenAI Gym API. Determines how current environment state should be rendered.
         Does nothing at the moment
@@ -350,7 +351,7 @@ class ModelicaEnv(gym.Env):
         Used, when environment is closed.
         """
         if self.viz_mode is None:
-            return True
+            return []
         elif close:
             if self.viz_mode == 'step':
                 # TODO close plot
@@ -395,5 +396,5 @@ class ModelicaEnv(gym.Env):
 
         :return: True on success
         """
-        figure = self.render(close=True)
-        return True, figure
+        figs = self.render(close=True)
+        return True, figs
