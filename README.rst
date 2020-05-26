@@ -1,12 +1,10 @@
 ==========================
 OpenModelica Microgrid Gym
 ==========================
-| |build| |cov| |*| |pypi| |download| |*| |license|
+| |build| |cov| ° |pypi| |download| ° |license|
+
 | |doc| |whitepaper|
 
-.. |*| raw:: html
-
-  &bull;
 
 .. |build| image:: https://travis-ci.org/upb-lea/openmodelica-microgrid-gym.svg?branch=master
     :target: https://travis-ci.org/github/upb-lea/openmodelica-microgrid-gym
