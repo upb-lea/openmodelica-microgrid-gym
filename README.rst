@@ -5,17 +5,26 @@ OpenModelica Microgrid Gym
 .. image:: https://travis-ci.org/upb-lea/openmodelica-microgrid-gym.svg?branch=master
     :target: https://travis-ci.org/github/upb-lea/openmodelica-microgrid-gym
 
-.. image:: https://img.shields.io/badge/doc-success-success
-    :target: https://upb-lea.github.io/openmodelica-microgrid-gym
-
 .. image:: https://codecov.io/gh/upb-lea/openmodelica-microgrid-gym/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/upb-lea/openmodelica-microgrid-gym
 
-.. image:: https://img.shields.io/pypi/v/openmodelica_microgrid_gym.svg
-    :target: https://pypi.python.org/pypi/openmodelica_microgrid_gym
-
 .. image:: https://img.shields.io/github/license/upb-lea/openmodelica-microgrid-gym
      :target: LICENSE
+
+.. image:: https://img.shields.io/pypi/v/openmodelica_microgrid_gym
+    :target: https://pypi.python.org/pypi/openmodelica_microgrid_gym
+
+.. image:: https://img.shields.io/pypi/dw/openmodelica-microgrid-gym
+    :target: https://pypistats.org/packages/openmodelica-microgrid-gym
+
+|
+
+.. image:: https://img.shields.io/badge/doc-success-success
+    :target: https://upb-lea.github.io/openmodelica-microgrid-gym
+
+.. image:: https://img.shields.io/badge/arXiv-whitepaper-informational
+    :target: https://arxiv.org/pdf/2005.04869.pdf
+
 
 .. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/raw/master/docs/pictures/microgrid.jpg
 
