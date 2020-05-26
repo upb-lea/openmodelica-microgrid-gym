@@ -1,21 +1,33 @@
 ==========================
 OpenModelica Microgrid Gym
 ==========================
+| |build| |cov| ° |python| |pypi| |download| ° |license|
+| |doc| |whitepaper|
 
-.. image:: https://travis-ci.org/upb-lea/openmodelica-microgrid-gym.svg?branch=master
+.. |build| image:: https://travis-ci.org/upb-lea/openmodelica-microgrid-gym.svg?branch=master
     :target: https://travis-ci.org/github/upb-lea/openmodelica-microgrid-gym
 
-.. image:: https://img.shields.io/badge/doc-success-success
-    :target: https://upb-lea.github.io/openmodelica-microgrid-gym
-
-.. image:: https://codecov.io/gh/upb-lea/openmodelica-microgrid-gym/branch/master/graph/badge.svg
+.. |cov| image:: https://codecov.io/gh/upb-lea/openmodelica-microgrid-gym/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/upb-lea/openmodelica-microgrid-gym
 
-.. image:: https://img.shields.io/pypi/v/openmodelica_microgrid_gym.svg
+.. |license| image:: https://img.shields.io/github/license/upb-lea/openmodelica-microgrid-gym
+    :target: LICENSE
+
+.. |python| image:: https://img.shields.io/pypi/pyversions/openmodelica-microgrid-gym
     :target: https://pypi.python.org/pypi/openmodelica_microgrid_gym
 
-.. image:: https://img.shields.io/github/license/upb-lea/openmodelica-microgrid-gym
-     :target: LICENSE
+.. |pypi| image:: https://img.shields.io/pypi/v/openmodelica_microgrid_gym
+    :target: https://pypi.python.org/pypi/openmodelica_microgrid_gym
+
+.. |download| image:: https://img.shields.io/pypi/dw/openmodelica-microgrid-gym
+    :target: https://pypistats.org/packages/openmodelica-microgrid-gym
+
+.. |doc| image:: https://img.shields.io/badge/doc-success-success
+    :target: https://upb-lea.github.io/openmodelica-microgrid-gym
+
+.. |whitepaper| image:: https://img.shields.io/badge/arXiv-whitepaper-informational
+    :target: https://arxiv.org/pdf/2005.04869.pdf
+
 
 .. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/raw/master/docs/pictures/microgrid.jpg
 
