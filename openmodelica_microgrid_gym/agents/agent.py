@@ -90,4 +90,4 @@ class Agent:
         Does not learn, can never improve
 
         """
-        pass
+        return False
