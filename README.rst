@@ -1,10 +1,8 @@
 ==========================
 OpenModelica Microgrid Gym
 ==========================
-| |build| |cov| ° |pypi| |download| ° |license|
-
+| |build| |cov| ° |python| |pypi| |download| ° |license|
 | |doc| |whitepaper|
-
 
 .. |build| image:: https://travis-ci.org/upb-lea/openmodelica-microgrid-gym.svg?branch=master
     :target: https://travis-ci.org/github/upb-lea/openmodelica-microgrid-gym
@@ -14,6 +12,9 @@ OpenModelica Microgrid Gym
 
 .. |license| image:: https://img.shields.io/github/license/upb-lea/openmodelica-microgrid-gym
     :target: LICENSE
+
+.. |python| image:: https://img.shields.io/pypi/pyversions/openmodelica-microgrid-gym
+    :target: https://pypi.python.org/pypi/openmodelica_microgrid_gym
 
 .. |pypi| image:: https://img.shields.io/pypi/v/openmodelica_microgrid_gym
     :target: https://pypi.python.org/pypi/openmodelica_microgrid_gym
