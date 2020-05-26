@@ -25,7 +25,7 @@ class PlotTmpl:
         """
 
         self.vars = list(collapse(variables))
-        self.callback = callback
+        self._callback = callback
 
         # set colors None if not provided
         if not (colorkey := ({'c', 'color'} & set(kwargs.keys()))):
@@ -65,6 +65,12 @@ class PlotTmpl:
                 if v is not None:
                     args_[k] = v
             self.kwargs.append(args_)
+
+    def callback(self, fig):
+        fig.gca().legend(self.vars)
+
+        if self._callback is not None:
+            self._callback(fig)
 
     def __iter__(self):
         self.i = -1

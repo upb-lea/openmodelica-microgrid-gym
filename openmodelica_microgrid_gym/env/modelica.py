@@ -14,6 +14,7 @@ from pyfmi import load_fmu
 from pyfmi.fmi import FMUModelME2
 from scipy import integrate
 
+from openmodelica_microgrid_gym.env.plot import PlotTmpl
 from openmodelica_microgrid_gym.util import FullHistory, EmptyHistory
 
 logger = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ class ModelicaEnv(gym.Env):
                  model_params: Optional[Dict[str, Union[Callable[[float], float], float]]] = None,
                  model_input: Optional[Sequence[str]] = None,
                  model_output: Optional[Union[dict, Sequence[str]]] = None, model_path: str = '../fmu/grid.network.fmu',
-                 viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[str]]] = None,
+                 viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[Union[str, PlotTmpl]]]] = None,
                  history: EmptyHistory = FullHistory()):
         """
         Initialize the Environment.
@@ -83,6 +84,7 @@ class ModelicaEnv(gym.Env):
              - string: will be interpret as regex. all fully matched columns names will be enabled
              - list of strings: Each string might be a unix-shell style wildcard like "*.i"
                                 to match all data series ending with ".i".
+             - list of PlotTmpl: Each template will result in a plot
         :param history: history to store observations and measurement (from the agent) after each step
         """
         if model_input is None:
@@ -130,18 +132,31 @@ class ModelicaEnv(gym.Env):
         self.model_input_names = model_input
         # variable names are flattened to a list if they have specified in the nested dict manner)
         self.model_output_names = self.history.cols
+
+        self.viz_col_tmpls = []
         if viz_cols is None:
             logger.info('Provide the option "viz_cols" if you wish to select only specific plots. '
                         'The default behaviour is to plot all data series')
             self.viz_col_regex = '.*'
         elif isinstance(viz_cols, list):
-            self.viz_col_regex = '|'.join([translate(glob) for glob in viz_cols])
+            # strings are glob patterns that can be used in the regex
+            patterns, tmpls = [], []
+            for elem in viz_cols:
+                if isinstance(elem, str):
+                    patterns.append(translate(elem))
+                elif isinstance(elem, PlotTmpl):
+                    tmpls.append(elem)
+                else:
+                    raise ValueError('"viz_cols" list must contain only strings or PlotTmpl objects not'
+                                     f' {type(viz_cols)}')
+
+            self.viz_col_regex = '|'.join(patterns)
+            self.viz_col_tmpls = tmpls
         elif isinstance(viz_cols, str):
             # is directly interpret as regex
             self.viz_col_regex = viz_cols
         else:
-            raise ValueError('"selected_vis_series" must be one of the following:'
-                             ' None, str(regex), list of strings (list of shell like globbing patterns) '
+            raise ValueError('"viz_cols" must be one type Optional[Union[str, List[Union[str, PlotTmpl]]]]'
                              f'and not {type(viz_cols)}')
 
         # OpenAI Gym requirements
@@ -341,8 +356,9 @@ class ModelicaEnv(gym.Env):
                 # TODO close plot
                 pass
             else:
+                figs = []
 
-                figure = []
+                # plot cols by theirs structure filtered by the vis_cols param
                 for cols in self.history.structured_cols():
                     if not isinstance(cols, list):
                         cols = [cols]
@@ -355,8 +371,18 @@ class ModelicaEnv(gym.Env):
                     fig, ax = plt.subplots()
                     df.plot(legend=True, figure=fig, ax=ax)
                     plt.show()
-                    figure.append(fig)
-                return figure
+                    figs.append(fig)
+
+                # plot all templates
+                for tmpl in self.viz_col_tmpls:
+                    fig, ax = plt.subplots()
+
+                    for series, kwargs in tmpl:
+                        self.history.df[series].plot(figure=fig, ax=ax, **kwargs)
+                    tmpl.callback(fig)
+                    figs.append(fig)
+
+                return figs
 
         elif self.viz_mode == 'step':
             # TODO update plot
