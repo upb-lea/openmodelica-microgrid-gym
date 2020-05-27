@@ -28,6 +28,7 @@ class Runner:
         Stores information about the best episode from the experiment.
         best_env_plt - environment best plots
         i - index of best episode
+        agent_plt - last agent plot
         
         """
 
@@ -61,7 +62,9 @@ class Runner:
             _, env_fig = self.env.close()
 
             if visualise:
-                self.agent.render()
+                agent_fig = self.agent.render()
+
+            self.best_episode['agent_plt'] = agent_fig
 
             if i == 0 or self.agent.has_improved:
                 self.best_episode['best_env_plt'] = env_fig
