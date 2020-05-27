@@ -2,18 +2,25 @@
 History
 =======
 
-next
+2.0.0
 ---------------
 
 
 API
 ```
-* ModelicaEnv: reward function parameter
+* ModelicaEnv:
+   - reward function parameter
+   - vis_cols now also supports Plotting templates
+
 * EmptyHistory and descendant: update(), append()
 * Agent: added properties
 * StaticControlAgent and descendant: small changes in constructor params, specifically obs_template, added properties
 * SafeOptAgent: added properties
 * Runner: plotting can be disabled
+
+Examples
+````````
+* added example for plotting
 
 Performance
 ```````````
