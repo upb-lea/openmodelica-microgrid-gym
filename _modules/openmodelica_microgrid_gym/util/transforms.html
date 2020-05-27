@@ -1,0 +1,387 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>openmodelica_microgrid_gym.util.transforms &mdash; OpenModelica Microgrid 2020 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> OpenModelica Microgrid
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/Pythoncode.html">Installation and General Remarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/examples.html">Basic Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/examples.html#advanced-examples">Advanced Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.agents.html">omg.agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.aux_ctl.html">omg.aux_ctl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.util.html">omg.util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.env.html">omg.env</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.execution.html">omg.execution</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OpenModelica Microgrid</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>openmodelica_microgrid_gym.util.transforms</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for openmodelica_microgrid_gym.util.transforms</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Fri Jan 24 16:19:01 2020</span>
+
+<span class="sd">@author: jarren</span>
+
+<span class="sd">Common static transforms used commonly in voltage/power inverter control systems</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="dq0_to_abc"><a class="viewcode-back" href="../../../api/omg.util.transforms.html#openmodelica_microgrid_gym.util.dq0_to_abc">[docs]</a><span class="k">def</span> <span class="nf">dq0_to_abc</span><span class="p">(</span><span class="n">dq0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transforms from DQ frame to the abc frame using the provided angle theta</span>
+
+<span class="sd">    :param dq0: The values in the dq0 reference frame</span>
+<span class="sd">    :param theta: The angle to transform [In Radians]</span>
+
+<span class="sd">    :return abc: The transformed space in the abc frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">dq0_to_abc_cos_sin</span><span class="p">(</span><span class="n">dq0</span><span class="p">,</span> <span class="o">*</span><span class="n">cos_sin</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="dq0_to_abc_cos_sin"><a class="viewcode-back" href="../../../api/omg.util.transforms.html#openmodelica_microgrid_gym.util.dq0_to_abc_cos_sin">[docs]</a><span class="k">def</span> <span class="nf">dq0_to_abc_cos_sin</span><span class="p">(</span><span class="n">dq0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">cos</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">sin</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transforms from DQ frame to the abc frame using the provided cos-sin</span>
+<span class="sd">    This implementation tries to improve on the dq0Toabc transform by</span>
+<span class="sd">    utilising the provided cos-sin to minimise calls to calculate the</span>
+<span class="sd">    cossine etc</span>
+
+<span class="sd">    :param dq0: The values in the dq0 reference frame</span>
+<span class="sd">    :param cos: cos(theta)</span>
+<span class="sd">    :param sin: sin(theta)</span>
+
+<span class="sd">    :return abc: The transformed space in the abc frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="n">cos</span> <span class="o">*</span> <span class="n">dq0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span>
+         <span class="n">sin</span> <span class="o">*</span> <span class="n">dq0</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+         <span class="n">dq0</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="c1"># implements the cos(a-2pi/3) using cos (A+B) expansion etc</span>
+    <span class="n">cos_shift</span> <span class="o">=</span> <span class="n">cos</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">-</span> <span class="n">sin</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.866</span><span class="p">)</span>
+    <span class="n">sin_shift</span> <span class="o">=</span> <span class="n">sin</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">+</span> <span class="n">cos</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.866</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="n">cos_shift</span> <span class="o">*</span> <span class="n">dq0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span>
+         <span class="n">sin_shift</span> <span class="o">*</span> <span class="n">dq0</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+         <span class="n">dq0</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+    <span class="n">cos_shift</span> <span class="o">=</span> <span class="n">cos</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">-</span> <span class="n">sin</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.866</span><span class="p">)</span>
+    <span class="n">sin_shift</span> <span class="o">=</span> <span class="n">sin</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">+</span> <span class="n">cos</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.866</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="p">(</span><span class="n">cos_shift</span> <span class="o">*</span> <span class="n">dq0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span>
+         <span class="n">sin_shift</span> <span class="o">*</span> <span class="n">dq0</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+         <span class="n">dq0</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="dq0_to_abc_cos_sin_power_inv"><a class="viewcode-back" href="../../../api/omg.util.transforms.html#openmodelica_microgrid_gym.util.dq0_to_abc_cos_sin_power_inv">[docs]</a><span class="k">def</span> <span class="nf">dq0_to_abc_cos_sin_power_inv</span><span class="p">(</span><span class="n">dq0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">cos</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">sin</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transforms from DQ frame to the abc frame using the provided cos-sin</span>
+<span class="sd">    This implementation tries to improve on the dq0Toabc transform by</span>
+<span class="sd">    utilising the provided cos-sin to minimise calls to calculate the</span>
+<span class="sd">    cossine etc.</span>
+
+<span class="sd">    Provides the Power Invariant transform (multiplied by</span>
+<span class="sd">    SQRT(3/2) = 1.224744871391589)</span>
+
+<span class="sd">    :param dq0: The values in the dq0 reference frame</span>
+<span class="sd">    :param cos: cos(theta)</span>
+<span class="sd">    :param sin: sin(theta)</span>
+
+<span class="sd">    :return abc: The transformed space in the abc frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">dq0_to_abc_cos_sin</span><span class="p">(</span><span class="n">dq0</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.224744871391589</span></div>
+
+
+<div class="viewcode-block" id="abc_to_dq0"><a class="viewcode-back" href="../../../api/omg.util.transforms.html#openmodelica_microgrid_gym.util.abc_to_dq0">[docs]</a><span class="k">def</span> <span class="nf">abc_to_dq0</span><span class="p">(</span><span class="n">abc</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transforms from abc frame to the dq0 frame using the provided angle theta</span>
+
+<span class="sd">    :param abc: The values in the abc reference frame</span>
+<span class="sd">    :param theta: The angle [radians]</span>
+
+<span class="sd">    :return dq0: The transformed space in the abc frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">abc_to_dq0_cos_sin</span><span class="p">(</span><span class="n">abc</span><span class="p">,</span> <span class="o">*</span><span class="n">cos_sin</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="abc_to_dq0_cos_sin"><a class="viewcode-back" href="../../../api/omg.util.transforms.html#openmodelica_microgrid_gym.util.abc_to_dq0_cos_sin">[docs]</a><span class="k">def</span> <span class="nf">abc_to_dq0_cos_sin</span><span class="p">(</span><span class="n">abc</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">cos</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">sin</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transforms from abc frame to the dq0 frame using the provided cos-sin</span>
+<span class="sd">    This implementation tries to improve by utilising the provided cos-sin</span>
+<span class="sd">    to minimise calls to calculate the cossine etc</span>
+
+<span class="sd">    :param abc: The values in the abc reference frame</span>
+<span class="sd">    :param cos: cos(theta)</span>
+<span class="sd">    :param sin: sin(theta)</span>
+
+<span class="sd">    :return dq0: The transformed space in the abc frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># implements the cos(a-2pi/3) using cos (A+B) expansion etc</span>
+    <span class="n">cos_shift_neg</span> <span class="o">=</span> <span class="n">cos</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">-</span> <span class="n">sin</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.866</span><span class="p">)</span>
+    <span class="n">sin_shift_neg</span> <span class="o">=</span> <span class="n">sin</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">+</span> <span class="n">cos</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.866</span><span class="p">)</span>
+    <span class="c1"># implements the cos(a+2pi/3) using cos (A+B) expansion etc</span>
+    <span class="n">cos_shift_pos</span> <span class="o">=</span> <span class="n">cos</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">-</span> <span class="n">sin</span> <span class="o">*</span> <span class="mf">0.866</span>
+    <span class="n">sin_shift_pos</span> <span class="o">=</span> <span class="n">sin</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">+</span> <span class="n">cos</span> <span class="o">*</span> <span class="mf">0.866</span>
+
+    <span class="c1"># Calculation for d-axis aligned with A axis</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">cos</span> <span class="o">*</span> <span class="n">abc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span>
+                   <span class="n">cos_shift_neg</span> <span class="o">*</span> <span class="n">abc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+                   <span class="n">cos_shift_pos</span> <span class="o">*</span> <span class="n">abc</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">sin</span> <span class="o">*</span> <span class="n">abc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span>
+                   <span class="n">sin_shift_neg</span> <span class="o">*</span> <span class="n">abc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span>
+                   <span class="n">sin_shift_pos</span> <span class="o">*</span> <span class="n">abc</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+    <span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">abc</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">z</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="abc_to_alpha_beta"><a class="viewcode-back" href="../../../api/omg.util.transforms.html#openmodelica_microgrid_gym.util.abc_to_alpha_beta">[docs]</a><span class="k">def</span> <span class="nf">abc_to_alpha_beta</span><span class="p">(</span><span class="n">abc</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transforms from abc frame to the alpha-beta frame</span>
+<span class="sd">    :param abc: The values in the abc reference frame</span>
+<span class="sd">    :return [alpha,beta]: The transformed alpha beta results</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">alpha</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">abc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">abc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">abc</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.866</span> <span class="o">*</span> <span class="n">abc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.866</span> <span class="o">*</span> <span class="n">abc</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="cos_sin"><a class="viewcode-back" href="../../../api/omg.util.transforms.html#openmodelica_microgrid_gym.util.cos_sin">[docs]</a><span class="k">def</span> <span class="nf">cos_sin</span><span class="p">(</span><span class="n">theta</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transforms from provided angle to the relavent cossine values</span>
+<span class="sd">    :param theta: The angle [In RADIANS]</span>
+<span class="sd">    :return: [alpha,beta] The resultant cossine</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)])</span></div>
+
+
+<div class="viewcode-block" id="inst_rms"><a class="viewcode-back" href="../../../api/omg.util.transforms.html#openmodelica_microgrid_gym.util.inst_rms">[docs]</a><span class="k">def</span> <span class="nf">inst_rms</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the instantaneous RMS (root mean sqare) value of the input arr</span>
+<span class="sd">    :param arr: Input</span>
+<span class="sd">    :return: RMS value of the arr</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1.732050807568877</span></div>
+
+
+<div class="viewcode-block" id="normalise_abc"><a class="viewcode-back" href="../../../api/omg.util.transforms.html#openmodelica_microgrid_gym.util.normalise_abc">[docs]</a><span class="k">def</span> <span class="nf">normalise_abc</span><span class="p">(</span><span class="n">abc</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Normalises the abc magnitudes to the RMS of the 3 magnitudes</span>
+<span class="sd">    Determines the instantaneous RMS value of the 3 waveforms</span>
+
+<span class="sd">    :param abc: Three phase magnitudes input</span>
+<span class="sd">    :return abc_norm: abc result normalised to [-1,1]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get the magnitude of the waveforms to normalise the PLL calcs</span>
+    <span class="n">mag</span> <span class="o">=</span> <span class="n">inst_rms</span><span class="p">(</span><span class="n">abc</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mag</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">abc</span> <span class="o">=</span> <span class="n">abc</span> <span class="o">/</span> <span class="n">mag</span>
+
+    <span class="k">return</span> <span class="n">abc</span></div>
+
+
+<div class="viewcode-block" id="inst_power"><a class="viewcode-back" href="../../../api/omg.util.transforms.html#openmodelica_microgrid_gym.util.inst_power">[docs]</a><span class="k">def</span> <span class="nf">inst_power</span><span class="p">(</span><span class="n">varr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">iarr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the instantaneous power</span>
+<span class="sd">    :param varr: voltage</span>
+<span class="sd">    :param iarr: current</span>
+<span class="sd">    :return: instantaneous power</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">varr</span> <span class="o">@</span> <span class="n">iarr</span></div>
+
+
+<div class="viewcode-block" id="inst_reactive"><a class="viewcode-back" href="../../../api/omg.util.transforms.html#openmodelica_microgrid_gym.util.inst_reactive">[docs]</a><span class="k">def</span> <span class="nf">inst_reactive</span><span class="p">(</span><span class="n">varr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">iarr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the instantaneous reactive power</span>
+<span class="sd">    :param varr: voltage</span>
+<span class="sd">    :param iarr: current</span>
+<span class="sd">    :return: instantaneous reactive power</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># vline = np.array([varr[1] - varr[2], varr[2] - varr[0], varr[0] - varr[1]]) # Linevoltages cal using np.roll</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mf">0.5773502691896258</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">varr</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">varr</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span> <span class="o">@</span> <span class="n">iarr</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,644 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>omg.util &mdash; OpenModelica Microgrid 2020 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="omg.util.itertools_" href="omg.util.itertools_.html" />
+    <link rel="prev" title="omg.aux_ctl.pi_controllers" href="omg.aux_ctl.pi_controllers.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> OpenModelica Microgrid
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/Pythoncode.html">Installation and General Remarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html">Basic Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html#advanced-examples">Advanced Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="omg.agents.html">omg.agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.aux_ctl.html">omg.aux_ctl</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">omg.util</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="omg.util.itertools_.html">omg.util.itertools_</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omg.util.transforms.html">omg.util.transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omg.util.recorder.html">omg.util.recorder</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="omg.env.html">omg.env</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.execution.html">omg.execution</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OpenModelica Microgrid</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>omg.util</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/omg.util.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="omg-util">
+<h1>omg.util<a class="headerlink" href="#omg-util" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="omg.util.itertools_.html">omg.util.itertools_</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.util.transforms.html">omg.util.transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.util.recorder.html">omg.util.recorder</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="module-openmodelica_microgrid_gym.util">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-openmodelica_microgrid_gym.util" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.util.abc_to_alpha_beta">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">abc_to_alpha_beta</code><span class="sig-paren">(</span><em class="sig-param">abc</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#abc_to_alpha_beta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.abc_to_alpha_beta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms from abc frame to the alpha-beta frame
+:type abc: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
+:param abc: The values in the abc reference frame
+:return [alpha,beta]: The transformed alpha beta results</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.util.normalise_abc">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">normalise_abc</code><span class="sig-paren">(</span><em class="sig-param">abc</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#normalise_abc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.normalise_abc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalises the abc magnitudes to the RMS of the 3 magnitudes
+Determines the instantaneous RMS value of the 3 waveforms</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>abc</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – Three phase magnitudes input</p>
+</dd>
+<dt class="field-even">Return abc_norm</dt>
+<dd class="field-even"><p>abc result normalised to [-1,1]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.util.abc_to_dq0_cos_sin">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">abc_to_dq0_cos_sin</code><span class="sig-paren">(</span><em class="sig-param">abc</em>, <em class="sig-param">cos</em>, <em class="sig-param">sin</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#abc_to_dq0_cos_sin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.abc_to_dq0_cos_sin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms from abc frame to the dq0 frame using the provided cos-sin
+This implementation tries to improve by utilising the provided cos-sin
+to minimise calls to calculate the cossine etc</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>abc</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – The values in the abc reference frame</p></li>
+<li><p><strong>cos</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – cos(theta)</p></li>
+<li><p><strong>sin</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – sin(theta)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return dq0</dt>
+<dd class="field-even"><p>The transformed space in the abc frame</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.util.dq0_to_abc_cos_sin">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">dq0_to_abc_cos_sin</code><span class="sig-paren">(</span><em class="sig-param">dq0</em>, <em class="sig-param">cos</em>, <em class="sig-param">sin</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#dq0_to_abc_cos_sin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.dq0_to_abc_cos_sin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms from DQ frame to the abc frame using the provided cos-sin
+This implementation tries to improve on the dq0Toabc transform by
+utilising the provided cos-sin to minimise calls to calculate the
+cossine etc</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dq0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – The values in the dq0 reference frame</p></li>
+<li><p><strong>cos</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – cos(theta)</p></li>
+<li><p><strong>sin</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – sin(theta)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return abc</dt>
+<dd class="field-even"><p>The transformed space in the abc frame</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.util.abc_to_dq0">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">abc_to_dq0</code><span class="sig-paren">(</span><em class="sig-param">abc</em>, <em class="sig-param">theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#abc_to_dq0"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.abc_to_dq0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms from abc frame to the dq0 frame using the provided angle theta</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>abc</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – The values in the abc reference frame</p></li>
+<li><p><strong>theta</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – The angle [radians]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return dq0</dt>
+<dd class="field-even"><p>The transformed space in the abc frame</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.util.cos_sin">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">cos_sin</code><span class="sig-paren">(</span><em class="sig-param">theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#cos_sin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.cos_sin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms from provided angle to the relavent cossine values
+:type theta: <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>
+:param theta: The angle [In RADIANS]
+:rtype: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
+:return: [alpha,beta] The resultant cossine</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.util.dq0_to_abc">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">dq0_to_abc</code><span class="sig-paren">(</span><em class="sig-param">dq0</em>, <em class="sig-param">theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#dq0_to_abc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.dq0_to_abc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms from DQ frame to the abc frame using the provided angle theta</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dq0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – The values in the dq0 reference frame</p></li>
+<li><p><strong>theta</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – The angle to transform [In Radians]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return abc</dt>
+<dd class="field-even"><p>The transformed space in the abc frame</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.util.inst_power">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">inst_power</code><span class="sig-paren">(</span><em class="sig-param">varr</em>, <em class="sig-param">iarr</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#inst_power"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.inst_power" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the instantaneous power
+:type varr: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
+:param varr: voltage
+:type iarr: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
+:param iarr: current
+:rtype: <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>
+:return: instantaneous power</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.util.inst_reactive">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">inst_reactive</code><span class="sig-paren">(</span><em class="sig-param">varr</em>, <em class="sig-param">iarr</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#inst_reactive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.inst_reactive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the instantaneous reactive power
+:type varr: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
+:param varr: voltage
+:type iarr: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
+:param iarr: current
+:return: instantaneous reactive power</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.util.inst_rms">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">inst_rms</code><span class="sig-paren">(</span><em class="sig-param">arr</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#inst_rms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.inst_rms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the instantaneous RMS (root mean sqare) value of the input arr
+:type arr: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
+:param arr: Input
+:rtype: <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>
+:return: RMS value of the arr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.util.dq0_to_abc_cos_sin_power_inv">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">dq0_to_abc_cos_sin_power_inv</code><span class="sig-paren">(</span><em class="sig-param">dq0</em>, <em class="sig-param">cos</em>, <em class="sig-param">sin</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#dq0_to_abc_cos_sin_power_inv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.dq0_to_abc_cos_sin_power_inv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms from DQ frame to the abc frame using the provided cos-sin
+This implementation tries to improve on the dq0Toabc transform by
+utilising the provided cos-sin to minimise calls to calculate the
+cossine etc.</p>
+<p>Provides the Power Invariant transform (multiplied by
+SQRT(3/2) = 1.224744871391589)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dq0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – The values in the dq0 reference frame</p></li>
+<li><p><strong>cos</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – cos(theta)</p></li>
+<li><p><strong>sin</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – sin(theta)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return abc</dt>
+<dd class="field-even"><p>The transformed space in the abc frame</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.util.nested_map">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">nested_map</code><span class="sig-paren">(</span><em class="sig-param">fun</em>, <em class="sig-param">structure</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/itertools_.html#nested_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.nested_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Traverses data structure and substitutes every element with the result of the callable</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fun</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>) – Callable to be applied to every value</p></li>
+<li><p><strong>structure</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]) – Nesting of dictionaries or lists. For mappings, the callable is applied to the values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.util.fill_params">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">fill_params</code><span class="sig-paren">(</span><em class="sig-param">template</em>, <em class="sig-param">data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/itertools_.html#fill_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.fill_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses a template, that can be traversed by nested_map.
+Each entry in the template, that is a key in the mapping is replaced by the value it is mapped to.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>template</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]) – template containing keys</p></li>
+<li><p><strong>data</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>]) – mapping of keys to values</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.util.nested_depth">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">nested_depth</code><span class="sig-paren">(</span><em class="sig-param">structure</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/itertools_.html#nested_depth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.nested_depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the maximum depth of a nested sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>structure</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>) – nested sequence. The containing data structures are currently restricted to lists and tuples,
+because allowing any sequence would also result in traversing strings for example.
+If a single value is passed, the return is 0</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>maximum depth</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.util.flatten">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">flatten</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">remaining_levels=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/itertools_.html#flatten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.flatten" title="Permalink to this definition">¶</a></dt>
+<dd><p>transform this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">[[</span><span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">],</span>
+<span class="gp">&gt;&gt;&gt; </span>             <span class="p">[</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">]]}}</span>
+</pre></div>
+</div>
+<p>results into</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="s1">&#39;a.b.i&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.v&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.k&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.h&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[[</span><span class="s1">&#39;a.b.i&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.v&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;a.b.k&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.h&#39;</span><span class="p">]]</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>]) – data to flatten. A nested dictionary containing nested lists as keys in the lowest level.</p></li>
+<li><p><strong>remaining_levels</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of levels to preserve in the nested list</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Flattened data as a nesteted list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="openmodelica_microgrid_gym.util.flatten_together">
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">flatten_together</code><span class="sig-paren">(</span><em class="sig-param">structure</em>, <em class="sig-param">values</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/itertools_.html#flatten_together"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.flatten_together" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flattens and fills a list of values relative to the groupings provided by the structure parameter.
+The explicit values in the structure parameter are ignored. Only the nesting structure is of importance.
+If a single value is provided it is simply repeated as often as the structure has values</p>
+<p>e.g. when called with <code class="code docutils literal notranslate"><span class="pre">[[0,</span> <span class="pre">0],</span> <span class="pre">[0,</span> <span class="pre">0]]</span></code> and <code class="code docutils literal notranslate"><span class="pre">[[0,</span> <span class="pre">None],</span> <span class="pre">4]</span></code> it will detect the grouping
+and return <code class="code docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">None,</span> <span class="pre">4,</span> <span class="pre">4]</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>structure</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]]) – nested list used as a template</p></li>
+<li><p><strong>values</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]]]) – values matched to the list</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>flattened and filled list of values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="openmodelica_microgrid_gym.util.EmptyHistory">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">EmptyHistory</code><span class="sig-paren">(</span><em class="sig-param">cols=None</em>, <em class="sig-param">data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#EmptyHistory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.EmptyHistory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="omg.util.recorder.html#openmodelica_microgrid_gym.util.recorder.StructuredMapping" title="openmodelica_microgrid_gym.util.recorder.StructuredMapping"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.util.recorder.StructuredMapping</span></code></a></p>
+<p>Dummy history for recording data in the environment
+This class will not actually store any data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cols</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]]) – nested lists of strings providing column names and hierarchical structure</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.util.EmptyHistory.append">
+<code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param">values</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#EmptyHistory.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.EmptyHistory.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add new data sample to the history. The History class will determine how the data is updated</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>values</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>) – sequence of data entries</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.util.EmptyHistory.last">
+<code class="sig-name descname">last</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#EmptyHistory.last"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.EmptyHistory.last" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.util.EmptyHistory.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#EmptyHistory.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.EmptyHistory.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all data, but keeps the columns.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="openmodelica_microgrid_gym.util.SingleHistory">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">SingleHistory</code><span class="sig-paren">(</span><em class="sig-param">cols=None</em>, <em class="sig-param">data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#SingleHistory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.SingleHistory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="omg.util.recorder.html#openmodelica_microgrid_gym.util.recorder.EmptyHistory" title="openmodelica_microgrid_gym.util.recorder.EmptyHistory"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.util.recorder.EmptyHistory</span></code></a></p>
+<p>Single history that stores only the last added value</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cols</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]]) – nested lists of strings providing column names and hierarchical structure</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.util.SingleHistory.append">
+<code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param">values</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#SingleHistory.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.SingleHistory.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add new data sample to the history. The History class will determine how the data is updated</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>values</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>) – sequence of data entries</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.util.SingleHistory.last">
+<code class="sig-name descname">last</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#SingleHistory.last"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.SingleHistory.last" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.util.SingleHistory.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#SingleHistory.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.SingleHistory.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all data, but keeps the columns.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="openmodelica_microgrid_gym.util.FullHistory">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">FullHistory</code><span class="sig-paren">(</span><em class="sig-param">cols=None</em>, <em class="sig-param">data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#FullHistory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.FullHistory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="omg.util.recorder.html#openmodelica_microgrid_gym.util.recorder.EmptyHistory" title="openmodelica_microgrid_gym.util.recorder.EmptyHistory"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.util.recorder.EmptyHistory</span></code></a></p>
+<p>Full history that stores all data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cols</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]]) – nested lists of strings providing column names and hierarchical structure</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.util.FullHistory.append">
+<code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param">values</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#FullHistory.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.FullHistory.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add new data sample to the history. The History class will determine how the data is updated</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>values</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>) – sequence of data entries</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.util.FullHistory.df">
+<em class="property">property </em><code class="sig-name descname">df</code><a class="headerlink" href="#openmodelica_microgrid_gym.util.FullHistory.df" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.util.FullHistory.last">
+<code class="sig-name descname">last</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#FullHistory.last"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.FullHistory.last" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.util.FullHistory.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#FullHistory.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.FullHistory.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all data, but keeps the columns.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="omg.util.itertools_.html" class="btn btn-neutral float-right" title="omg.util.itertools_" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="omg.aux_ctl.pi_controllers.html" class="btn btn-neutral float-left" title="omg.aux_ctl.pi_controllers" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

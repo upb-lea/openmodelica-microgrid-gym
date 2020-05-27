@@ -80,16 +80,21 @@
             
               <p class="caption"><span class="caption-text">User Guide:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/user_guide.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/Pythoncode.html">Installation and General Remarks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/examples.html">Basic Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/examples.html#advanced-examples">Advanced Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.html">omg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.agents.html">omg.agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.aux_ctl.html">omg.aux_ctl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.util.html">omg.util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.env.html">omg.env</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.execution.html">omg.execution</a></li>
 </ul>
 
             
@@ -153,50 +158,110 @@
            <div itemprop="articleBody">
             
   <h1>Source code for openmodelica_microgrid_gym.agents.staticctrl</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span>
+<span></span><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.agents</span> <span class="kn">import</span> <span class="n">Agent</span>
-<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.common.itertools_</span> <span class="kn">import</span> <span class="n">fill_params</span><span class="p">,</span> <span class="n">nested_map</span>
-<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.auxiliaries</span> <span class="kn">import</span> <span class="n">Controller</span>
+<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.aux_ctl</span> <span class="kn">import</span> <span class="n">Controller</span>
 
-<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.env</span> <span class="kn">import</span> <span class="n">EmptyHistory</span><span class="p">,</span> <span class="n">ModelicaEnv</span>
 
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="viewcode-block" id="ObsTempl"><a class="viewcode-back" href="../../../api/omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.ObsTempl">[docs]</a><span class="k">class</span> <span class="nc">ObsTempl</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varnames</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">simple_tmpl</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Internal dataclass to handle the conversion of dynamic observation templates for the StaticControlAgent</span>
+
+<span class="sd">        :param varnames: list of variable names</span>
+<span class="sd">        :param simple_tmpl: list of:</span>
+<span class="sd">                - list of strings</span>
+<span class="sd">                    - matching variable names of the state</span>
+<span class="sd">                    - must match self.obs_varnames</span>
+<span class="sd">                    - will be substituted by the values on runtime</span>
+<span class="sd">                    - will be passed as an np.array of floats to the controller</span>
+<span class="sd">                - np.array of floats (to be passed statically to the controller)</span>
+<span class="sd">                - a mixture of static and dynamic values in one parameter is not supported for performance reasons.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">varnames</span><span class="p">)}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_static_params</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">tmpl</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">simple_tmpl</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tmpl</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="c1"># all np.ndarrays are considered static parameters</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_static_params</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmpl</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># else we save the indices of the variables into an indexarray</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">idx</span><span class="p">[</span><span class="n">varname</span><span class="p">]</span> <span class="k">for</span> <span class="n">varname</span> <span class="ow">in</span> <span class="n">tmpl</span><span class="p">]))</span>
+
+<div class="viewcode-block" id="ObsTempl.fill"><a class="viewcode-back" href="../../../api/omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.ObsTempl.fill">[docs]</a>    <span class="k">def</span> <span class="nf">fill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        generates a list of parameters by filling the dynamic values and passing the static values</span>
+
+<span class="sd">        :param obs: np.ndarray of values</span>
+<span class="sd">        :return: list of parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">arr</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">):</span>
+            <span class="c1"># append static data or use dynamic data with indexing</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arr</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_static_params</span> <span class="k">else</span> <span class="n">obs</span><span class="p">[</span><span class="n">arr</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">params</span></div></div>
 
 
 <div class="viewcode-block" id="StaticControlAgent"><a class="viewcode-back" href="../../../api/omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.StaticControlAgent">[docs]</a><span class="k">class</span> <span class="nc">StaticControlAgent</span><span class="p">(</span><span class="n">Agent</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctrls</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Controller</span><span class="p">],</span> <span class="n">ctrl_to_obs</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span>
-                 <span class="n">history</span><span class="p">:</span> <span class="n">EmptyHistory</span> <span class="o">=</span> <span class="n">EmptyHistory</span><span class="p">(),</span> <span class="n">env</span><span class="p">:</span> <span class="n">ModelicaEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctrls</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Controller</span><span class="p">],</span> <span class="n">obs_template</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]],</span>
+                 <span class="n">obs_varnames</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simple agent that controls the environment by using auxiliary controllers that are fully configured.</span>
 <span class="sd">        The Agent does not learn anything.</span>
 
 <span class="sd">        :param ctrls: Controllers that are feed with the observations and exert actions on the environment</span>
-<span class="sd">        :param ctrl_to_obs: form controller keys to observation keys, whose observation values will be passed to the controller</span>
-<span class="sd">        :param history: Storage of internal data</span>
-<span class="sd">        :param env: reference to the environment (only needed when used in internal act function)</span>
+<span class="sd">        :param obs_template:</span>
+<span class="sd">            Template describing how the observation array should be transformed and passed to the internal controllers.</span>
+<span class="sd">            The key must match the name field of an internal controller.</span>
+<span class="sd">            The values are a list of:</span>
+<span class="sd">                - list of strings</span>
+<span class="sd">                    - matching variable names of the state</span>
+<span class="sd">                    - must match self.obs_varnames</span>
+<span class="sd">                    - will be substituted by the values on runtime</span>
+<span class="sd">                    - will be passed as an np.array of floats to the controller</span>
+<span class="sd">                - np.array of floats (to be passed statically to the controller)</span>
+<span class="sd">                - a mixture of static and dynamic values in one parameter is not supported for performance reasons.</span>
+<span class="sd">            The values will be passed as parameters to the controllers step function.</span>
+<span class="sd">        :param obs_varnames: list of variable names that match the values of the observations</span>
+<span class="sd">         passed in the act function. Will be automatically set by the Runner class</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">obs_varnames</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">episode_reward</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">controllers</span> <span class="o">=</span> <span class="n">ctrls</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">obs_template</span> <span class="o">=</span> <span class="n">ctrl_to_obs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">controllers</span> <span class="o">=</span> <span class="p">{</span><span class="n">ctrl</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">ctrl</span> <span class="k">for</span> <span class="n">ctrl</span> <span class="ow">in</span> <span class="n">ctrls</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_template_param</span> <span class="o">=</span> <span class="n">obs_template</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_obs_template</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="StaticControlAgent.act"><a class="viewcode-back" href="../../../api/omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.StaticControlAgent.act">[docs]</a>    <span class="k">def</span> <span class="nf">act</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">obs_template</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        lazy fill convert the observation template as the runner will set the</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obs_template</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_obs_template</span> <span class="o">=</span> <span class="p">{</span><span class="n">ctrl</span><span class="p">:</span> <span class="n">ObsTempl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_varnames</span><span class="p">,</span> <span class="n">tmpl</span><span class="p">)</span>
+                                  <span class="k">for</span> <span class="n">ctrl</span><span class="p">,</span> <span class="n">tmpl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_template_param</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obs_template</span>
+
+<div class="viewcode-block" id="StaticControlAgent.act"><a class="viewcode-back" href="../../../api/omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.StaticControlAgent.act">[docs]</a>    <span class="k">def</span> <span class="nf">act</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Executes the actions with the observations as parameters.</span>
 
-<span class="sd">        :param state: the agent is stateless. the state is stored in the controllers.</span>
+<span class="sd">        :param state: the agent itself is stateless. the state is stored in the controllers.</span>
 <span class="sd">        Therefore we simply pass the observation from the environment into the controllers.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">obs</span> <span class="o">=</span> <span class="n">fill_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_template</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
-        <span class="n">controls</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="n">obs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">controls</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">tmpl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_template</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">tmpl</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
             <span class="n">controls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">controllers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="o">*</span><span class="n">params</span><span class="p">))</span>
-
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">controls</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">controls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">*</span><span class="n">controls</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">controls</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="StaticControlAgent.observe"><a class="viewcode-back" href="../../../api/omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.StaticControlAgent.observe">[docs]</a>    <span class="k">def</span> <span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reward</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">terminated</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -213,15 +278,25 @@
         <span class="c1"># on other steps we don&#39;t need to do anything</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">measurement</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">List</span><span class="p">]:</span>
-        <span class="n">measurements</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">ctrl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">def</span> <span class="nf">prepend</span><span class="p">(</span><span class="n">col</span><span class="p">):</span> <span class="k">return</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">name</span><span class="p">,</span> <span class="n">col</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">measurement_cols</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Structured columns of the measurement. Used in the Runner to setup the history columns of the Environment.</span>
 
-            <span class="n">measurements</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">nested_map</span><span class="p">(</span><span class="n">prepend</span><span class="p">,</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">structured_cols</span><span class="p">(</span><span class="kc">None</span><span class="p">)),</span>
-                                 <span class="n">ctrl</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">prepend</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()))</span>
+<span class="sd">        :return: structured columns of measurement</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">ctrl</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">structured_cols</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">ctrl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
 
-        <span class="k">return</span> <span class="n">measurements</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">measurement</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Measurements the agent takes on the environment. This data is passed to the environment.</span>
+<span class="sd">        The values returned by this property should be fully determined by the environment.</span>
+<span class="sd">        This is a workaround to provide data measurement like PLL controllers in the environment even though</span>
+<span class="sd">        they are functionally part of the Agent.</span>
+
+<span class="sd">        :return: current measurement</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">([</span><span class="n">ctrl</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">last</span><span class="p">()</span> <span class="k">for</span> <span class="n">ctrl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">values</span><span class="p">()])))</span>
 
 <div class="viewcode-block" id="StaticControlAgent.prepare_episode"><a class="viewcode-back" href="../../../api/omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.StaticControlAgent.prepare_episode">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_episode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -229,7 +304,17 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">ctrl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="n">ctrl</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">episode_reward</span> <span class="o">=</span> <span class="mi">0</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">episode_reward</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">has_improved</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Defines if the performance increased or stays constant</span>
+<span class="sd">        Does not learn, can never improve</span>
+
+<span class="sd">        :return: False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 </pre></div>
 
            </div>

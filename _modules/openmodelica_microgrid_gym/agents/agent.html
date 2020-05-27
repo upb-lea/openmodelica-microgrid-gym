@@ -80,16 +80,21 @@
             
               <p class="caption"><span class="caption-text">User Guide:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/user_guide.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/Pythoncode.html">Installation and General Remarks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/examples.html">Basic Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/examples.html#advanced-examples">Advanced Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.html">omg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.agents.html">omg.agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.aux_ctl.html">omg.aux_ctl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.util.html">omg.util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.env.html">omg.env</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.execution.html">omg.execution</a></li>
 </ul>
 
             
@@ -153,34 +158,40 @@
            <div itemprop="articleBody">
             
   <h1>Source code for openmodelica_microgrid_gym.agents.agent</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.env</span> <span class="kn">import</span> <span class="n">EmptyHistory</span><span class="p">,</span> <span class="n">ModelicaEnv</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">matplotlib.figure</span> <span class="kn">import</span> <span class="n">Figure</span>
+
+<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.env</span> <span class="kn">import</span> <span class="n">ModelicaEnv</span>
+<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.util</span> <span class="kn">import</span> <span class="n">EmptyHistory</span>
 
 
-<div class="viewcode-block" id="Agent"><a class="viewcode-back" href="../../../api/omg.agents.agent.html#openmodelica_microgrid_gym.Agent">[docs]</a><span class="k">class</span> <span class="nc">Agent</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">history</span><span class="p">:</span> <span class="n">EmptyHistory</span> <span class="o">=</span> <span class="n">EmptyHistory</span><span class="p">(),</span> <span class="n">env</span><span class="p">:</span> <span class="n">ModelicaEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Agent"><a class="viewcode-back" href="../../../api/omg.agents.agent.html#openmodelica_microgrid_gym.agents.Agent">[docs]</a><span class="k">class</span> <span class="nc">Agent</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs_varnames</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">history</span><span class="p">:</span> <span class="n">EmptyHistory</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">ModelicaEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Abstract base class for all Agents. The agent can act on the environment and observe its result.</span>
 <span class="sd">        This class is aims to wrap the whole learning process into a class to simplify the implementation.</span>
 
 <span class="sd">        This class is strongly inspired by the tensorforce library.</span>
 
+<span class="sd">        :param obs_varnames: list of variable names that match the values of the observations</span>
+<span class="sd">         passed in the act function. Will be automatically set by the Runner class</span>
 <span class="sd">        :param history: used to store agent internal data for monitoring</span>
 <span class="sd">        :param env: reference to the environment (only needed when used in internal act function)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="n">env</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">history</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">history</span> <span class="ow">or</span> <span class="n">EmptyHistory</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_varnames</span> <span class="o">=</span> <span class="n">obs_varnames</span>
 
-<div class="viewcode-block" id="Agent.reset"><a class="viewcode-back" href="../../../api/omg.agents.agent.html#openmodelica_microgrid_gym.Agent.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Agent.reset"><a class="viewcode-back" href="../../../api/omg.agents.agent.html#openmodelica_microgrid_gym.agents.Agent.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Resets all agent buffers and discards unfinished episodes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prepare_episode</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Agent.act"><a class="viewcode-back" href="../../../api/omg.agents.agent.html#openmodelica_microgrid_gym.Agent.act">[docs]</a>    <span class="k">def</span> <span class="nf">act</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="viewcode-block" id="Agent.act"><a class="viewcode-back" href="../../../api/omg.agents.agent.html#openmodelica_microgrid_gym.agents.Agent.act">[docs]</a>    <span class="k">def</span> <span class="nf">act</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Select an action with respect to the state this might update the internal state with respect to the history.</span>
 
@@ -189,7 +200,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="Agent.observe"><a class="viewcode-back" href="../../../api/omg.agents.agent.html#openmodelica_microgrid_gym.Agent.observe">[docs]</a>    <span class="k">def</span> <span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reward</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">terminated</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+<div class="viewcode-block" id="Agent.observe"><a class="viewcode-back" href="../../../api/omg.agents.agent.html#openmodelica_microgrid_gym.agents.Agent.observe">[docs]</a>    <span class="k">def</span> <span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reward</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">terminated</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The observe function is might be called after the act function.</span>
 <span class="sd">        It might trigger the learning in some implementations.</span>
@@ -200,28 +211,46 @@
         <span class="k">pass</span></div>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">measurement</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">measurement_cols</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Structured columns of the measurement. Used in the Runner to setup the history columns of the Environment.</span>
+
+<span class="sd">        :return: structured columns of measurement</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">measurement</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Measurements the agent takes on the environment. This data is passed to the environment.</span>
 <span class="sd">        The values returned by this property should be fully determined by the environment.</span>
-<span class="sd">        This is a workaround to provide data measurements like PLL controllers in the environment even though</span>
+<span class="sd">        This is a workaround to provide data measurement like PLL controllers in the environment even though</span>
 <span class="sd">        they are functionally part of the Agent.</span>
 
-<span class="sd">        :return: pd.Series or list of Tuples of columns and pd.Series. The columns can be provided as nested list</span>
+<span class="sd">        :return: current measurement</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Agent.render"><a class="viewcode-back" href="../../../api/omg.agents.agent.html#openmodelica_microgrid_gym.Agent.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Agent.render"><a class="viewcode-back" href="../../../api/omg.agents.agent.html#openmodelica_microgrid_gym.agents.Agent.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Figure</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Visualisation of the agent, e.g. its learning state or similar</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="Agent.prepare_episode"><a class="viewcode-back" href="../../../api/omg.agents.agent.html#openmodelica_microgrid_gym.Agent.prepare_episode">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_episode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Agent.prepare_episode"><a class="viewcode-back" href="../../../api/omg.agents.agent.html#openmodelica_microgrid_gym.agents.Agent.prepare_episode">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_episode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Prepares the next episode; resets all controllers and filters (initial value of integrators...)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div></div>
+        <span class="k">pass</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">has_improved</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Defines if the performance increased or stays constant</span>
+<span class="sd">        Does not learn, can never improve</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 </pre></div>
 
            </div>

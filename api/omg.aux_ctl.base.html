@@ -1,0 +1,308 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>omg.aux_ctl.base &mdash; OpenModelica Microgrid 2020 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="omg.aux_ctl.inverter_controllers" href="omg.aux_ctl.inverter_controllers.html" />
+    <link rel="prev" title="omg.aux_ctl" href="omg.aux_ctl.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> OpenModelica Microgrid
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/Pythoncode.html">Installation and General Remarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html">Basic Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html#advanced-examples">Advanced Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="omg.agents.html">omg.agents</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="omg.aux_ctl.html">omg.aux_ctl</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">omg.aux_ctl.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omg.aux_ctl.inverter_controllers.html">omg.aux_ctl.inverter_controllers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omg.aux_ctl.filter.html">omg.aux_ctl.filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omg.aux_ctl.params.html">omg.aux_ctl.params</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omg.aux_ctl.pi_controllers.html">omg.aux_ctl.pi_controllers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="omg.util.html">omg.util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.env.html">omg.env</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.execution.html">omg.execution</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OpenModelica Microgrid</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="omg.aux_ctl.html">omg.aux_ctl</a> &raquo;</li>
+        
+      <li>omg.aux_ctl.base</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/omg.aux_ctl.base.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-openmodelica_microgrid_gym.aux_ctl.base">
+<span id="omg-aux-ctl-base"></span><h1>omg.aux_ctl.base<a class="headerlink" href="#module-openmodelica_microgrid_gym.aux_ctl.base" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="openmodelica_microgrid_gym.aux_ctl.base.DDS">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.aux_ctl.base.</code><code class="sig-name descname">DDS</code><span class="sig-paren">(</span><em class="sig-param">ts</em>, <em class="sig-param">dds_max=1</em>, <em class="sig-param">theta_0=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/base.html#DDS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.base.DDS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Implements a basic Direct Digital Synthesizer (DDS) controller.
+Basically is a resetting integrator to provide a theta reference at a given
+frequency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – Sample time</p></li>
+<li><p><strong>dds_max</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – The value at which the DDS resets the integrator</p></li>
+<li><p><strong>theta_0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – The initial value of the DDS upon initialisation (not reset)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.aux_ctl.base.DDS.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/base.html#DDS.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.base.DDS.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the DDS integrator to 0</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.aux_ctl.base.DDS.step">
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">freq</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/base.html#DDS.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.base.DDS.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Advances the Oscilator</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>freq</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – Absolute frequency to oscillate at for the next time step</p>
+</dd>
+<dt class="field-even">Return theta</dt>
+<dd class="field-even"><p>The angle in RADIANS [0:2pi]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="openmodelica_microgrid_gym.aux_ctl.base.PLL">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.aux_ctl.base.</code><code class="sig-name descname">PLL</code><span class="sig-paren">(</span><em class="sig-param">params</em>, <em class="sig-param">ts</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/base.html#PLL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.base.PLL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Implements a basic PI controller based PLL to track the angle of a three-phase
+ABC voltage</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>params</strong> (<a class="reference internal" href="omg.aux_ctl.params.html#openmodelica_microgrid_gym.aux_ctl.params.PLLParams" title="openmodelica_microgrid_gym.aux_ctl.params.PLLParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">PLLParams</span></code></a>) – PI Params for controller (kP, kI, limits, kB, f_nom, theta_0)</p></li>
+<li><p><strong>ts</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – absolute sampling time for the controller</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.aux_ctl.base.PLL.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/base.html#PLL.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.base.PLL.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.aux_ctl.base.PLL.step">
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">v_abc</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/base.html#PLL.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.base.PLL.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs a discrete set of calculations for the PLL</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>v_abc</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – Voltages in the abc frame to track</p>
+</dd>
+<dt class="field-even">Return _prev_cossin</dt>
+<dd class="field-even"><p>The internal cos-sin of the current phase angle</p>
+</dd>
+<dt class="field-odd">Return freq</dt>
+<dd class="field-odd"><p>The frequency of the internal oscillator</p>
+</dd>
+<dt class="field-even">Return theta</dt>
+<dd class="field-even"><p>The internal phase angle</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="omg.aux_ctl.inverter_controllers.html" class="btn btn-neutral float-right" title="omg.aux_ctl.inverter_controllers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="omg.aux_ctl.html" class="btn btn-neutral float-left" title="omg.aux_ctl" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

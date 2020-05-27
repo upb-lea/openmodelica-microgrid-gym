@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Getting Started" href="parts/user_guide/user_guide.html" /> 
+    <link rel="next" title="Getting Started" href="parts/user_guide/getting_started.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -81,16 +81,21 @@
             
               <p class="caption"><span class="caption-text">User Guide:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="parts/user_guide/user_guide.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parts/user_guide/getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="parts/user_guide/OpenModelica.html">OpenModelica</a></li>
 <li class="toctree-l1"><a class="reference internal" href="parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="parts/user_guide/Pythoncode.html">Installation and General Remarks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="parts/user_guide/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parts/user_guide/examples.html">Basic Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parts/user_guide/examples.html#advanced-examples">Advanced Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api/omg.html">omg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/omg.agents.html">omg.agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/omg.aux_ctl.html">omg.aux_ctl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/omg.util.html">omg.util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/omg.env.html">omg.env</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/omg.execution.html">omg.execution</a></li>
 </ul>
 
             
@@ -169,11 +174,17 @@ For the creation of additional grid constellations, Openmodelica (nightly build 
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">User Guide:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="parts/user_guide/user_guide.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parts/user_guide/getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="parts/user_guide/OpenModelica.html">OpenModelica</a></li>
 <li class="toctree-l1"><a class="reference internal" href="parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="parts/user_guide/Pythoncode.html">Installation and General Remarks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="parts/user_guide/examples.html">Examples</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="parts/user_guide/examples.html">Basic Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="parts/user_guide/examples/creating_env.html">Creating an environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parts/user_guide/examples/basic_agent.html">Creating an agent and a runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parts/user_guide/examples/plotting.html">Creating plots of environment variables</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="parts/user_guide/examples.html#advanced-examples">Advanced Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="parts/user_guide/examples/single_inverter_current_control_safe_opt.html">single_inverter_current_control_safe_opt.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="parts/user_guide/examples/two_inverter_static_droop_control.html">two_inverter_static_droop_control.py</a></li>
 </ul>
@@ -184,36 +195,34 @@ For the creation of additional grid constellations, Openmodelica (nightly build 
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">API:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api/omg.html">omg</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="api/omg.agents.html">omg.agents</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/omg.agents.agent.html">omg.agents.agent</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/omg.agents.safeopt.html">omg.agents.safeopt</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/omg.agents.staticctrl.html">omg.agents.staticctrl</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/omg.agents.util.html">omg.agents.util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/omg.agents.html">omg.agents</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/omg.agents.agent.html">omg.agents.agent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/omg.agents.safeopt.html">omg.agents.safeopt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/omg.agents.staticctrl.html">omg.agents.staticctrl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/omg.agents.util.html">omg.agents.util</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="api/omg.auxiliaries.html">omg.auxiliaries</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/omg.auxiliaries.base.html">omg.auxiliaries.base</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/omg.auxiliaries.inverter_controllers.html">omg.auxiliaries.inverter_controllers</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/omg.auxiliaries.filter.html">omg.auxiliaries.filter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/omg.auxiliaries.params.html">omg.auxiliaries.params</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/omg.auxiliaries.pi_controllers.html">omg.auxiliaries.pi_controllers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/omg.aux_ctl.html">omg.aux_ctl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/omg.aux_ctl.base.html">omg.aux_ctl.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/omg.aux_ctl.inverter_controllers.html">omg.aux_ctl.inverter_controllers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/omg.aux_ctl.filter.html">omg.aux_ctl.filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/omg.aux_ctl.params.html">omg.aux_ctl.params</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/omg.aux_ctl.pi_controllers.html">omg.aux_ctl.pi_controllers</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="api/omg.common.html">omg.common</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/omg.common.itertools_.html">omg.common.itertools_</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/omg.common.transforms.html">omg.common.transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/omg.util.html">omg.util</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/omg.util.itertools_.html">omg.util.itertools_</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/omg.util.transforms.html">omg.util.transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/omg.util.recorder.html">omg.util.recorder</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="api/omg.env.html">omg.env</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/omg.env.modelica.html">omg.env.modelica</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/omg.env.recorder.html">omg.env.recorder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/omg.env.html">omg.env</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/omg.env.modelica.html">omg.env.modelica</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/omg.env.plot.html">omg.env.plot</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="api/omg.execution.html">omg.execution</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/omg.execution.runner.html">omg.execution.runner</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="api/omg.execution.html">omg.execution</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/omg.execution.runner.html">omg.execution.runner</a></li>
 </ul>
 </li>
 </ul>
@@ -237,7 +246,7 @@ For the creation of additional grid constellations, Openmodelica (nightly build 
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="parts/user_guide/user_guide.html" class="btn btn-neutral float-right" title="Getting Started" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="parts/user_guide/getting_started.html" class="btn btn-neutral float-right" title="Getting Started" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>

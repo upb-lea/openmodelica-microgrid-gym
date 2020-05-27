@@ -36,7 +36,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="omg.execution.runner" href="omg.execution.runner.html" />
-    <link rel="prev" title="omg.env.recorder" href="omg.env.recorder.html" /> 
+    <link rel="prev" title="omg.env.plot" href="omg.env.plot.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -82,24 +82,22 @@
             
               <p class="caption"><span class="caption-text">User Guide:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/user_guide.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/Pythoncode.html">Installation and General Remarks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html">Basic Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html#advanced-examples">Advanced Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="omg.html">omg</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="omg.agents.html">omg.agents</a></li>
-<li class="toctree-l2"><a class="reference internal" href="omg.auxiliaries.html">omg.auxiliaries</a></li>
-<li class="toctree-l2"><a class="reference internal" href="omg.common.html">omg.common</a></li>
-<li class="toctree-l2"><a class="reference internal" href="omg.env.html">omg.env</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">omg.execution</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="omg.execution.runner.html">omg.execution.runner</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="omg.agents.html">omg.agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.aux_ctl.html">omg.aux_ctl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.util.html">omg.util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.env.html">omg.env</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">omg.execution</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="omg.execution.runner.html">omg.execution.runner</a></li>
 </ul>
 </li>
 </ul>
@@ -146,8 +144,6 @@
   <ul class="wy-breadcrumbs">
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
-        
-          <li><a href="omg.html">omg</a> &raquo;</li>
         
       <li>omg.execution</li>
     
@@ -196,16 +192,26 @@ It handles communication between agent and environment and handles the execution
 </dl>
 <dl class="method">
 <dt id="openmodelica_microgrid_gym.execution.Runner.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">n_episodes=10</em>, <em class="sig-param">visualise_env=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/execution/runner.html#Runner.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.execution.Runner.run" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">n_episodes=10</em>, <em class="sig-param">visualise=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/execution/runner.html#Runner.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.execution.Runner.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Trains/executes the agent on the environment for a number of epochs</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>n_episodes</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of epochs to play</p></li>
-<li><p><strong>visualise_env</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – turns on visualization of the environment</p></li>
+<li><p><strong>visualise</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – turns on visualization of the environment</p></li>
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="openmodelica_microgrid_gym.execution.Runner.run_data">
+<code class="sig-name descname">run_data</code><em class="property"> = None</em><a class="headerlink" href="#openmodelica_microgrid_gym.execution.Runner.run_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>type dict:</p>
+<p>Stores information about the experiment.
+best_env_plt - environment best plots
+best_episode_idx - index of best episode
+agent_plt - last agent plot</p>
 </dd></dl>
 
 </dd></dl>
@@ -224,7 +230,7 @@ It handles communication between agent and environment and handles the execution
         <a href="omg.execution.runner.html" class="btn btn-neutral float-right" title="omg.execution.runner" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="omg.env.recorder.html" class="btn btn-neutral float-left" title="omg.env.recorder" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="omg.env.plot.html" class="btn btn-neutral float-left" title="omg.env.plot" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -21,7 +21,7 @@ For the creation of additional grid constellations, Openmodelica (nightly build 
    :titlesonly:
    :caption: User Guide:
 
-   parts/user_guide/user_guide
+   parts/user_guide/getting_started
    parts/user_guide/OpenModelica
    parts/user_guide/fmu
    parts/user_guide/Pythoncode
@@ -34,7 +34,12 @@ For the creation of additional grid constellations, Openmodelica (nightly build 
    :titlesonly:
    :caption: API:
 
-   api/omg
+   api/omg.agents
+   api/omg.aux_ctl
+   api/omg.util
+   api/omg.env
+   api/omg.execution
+
 
 .. GENERATE APIDOC
 .. - sphinx-apidoc -o docs/api openmodelica_microgrid_gym/ -e

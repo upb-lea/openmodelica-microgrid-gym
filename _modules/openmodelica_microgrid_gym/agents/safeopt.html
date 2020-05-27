@@ -80,16 +80,21 @@
             
               <p class="caption"><span class="caption-text">User Guide:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/user_guide.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/Pythoncode.html">Installation and General Remarks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/examples.html">Basic Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/examples.html#advanced-examples">Advanced Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.html">omg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.agents.html">omg.agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.aux_ctl.html">omg.aux_ctl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.util.html">omg.util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.env.html">omg.env</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.execution.html">omg.execution</a></li>
 </ul>
 
             
@@ -154,30 +159,28 @@
             
   <h1>Source code for openmodelica_microgrid_gym.agents.safeopt</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">importlib</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span>
 
 <span class="kn">import</span> <span class="nn">GPy</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">GPy.kern</span> <span class="kn">import</span> <span class="n">Kern</span>
+<span class="kn">from</span> <span class="nn">matplotlib.figure</span> <span class="kn">import</span> <span class="n">Figure</span>
 <span class="kn">from</span> <span class="nn">safeopt</span> <span class="kn">import</span> <span class="n">SafeOptSwarm</span>
-
-<span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.agents.staticctrl</span> <span class="kn">import</span> <span class="n">StaticControlAgent</span>
 <span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.agents.util</span> <span class="kn">import</span> <span class="n">MutableParams</span>
-<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.auxiliaries</span> <span class="kn">import</span> <span class="n">Controller</span>
-<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.env</span> <span class="kn">import</span> <span class="n">EmptyHistory</span><span class="p">,</span> <span class="n">ModelicaEnv</span>
-
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.aux_ctl</span> <span class="kn">import</span> <span class="n">Controller</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="SafeOptAgent"><a class="viewcode-back" href="../../../api/omg.agents.safeopt.html#openmodelica_microgrid_gym.agents.SafeOptAgent">[docs]</a><span class="k">class</span> <span class="nc">SafeOptAgent</span><span class="p">(</span><span class="n">StaticControlAgent</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mutable_params</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">list</span><span class="p">],</span> <span class="n">abort_reward</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">kernel</span><span class="p">:</span> <span class="n">Kern</span><span class="p">,</span> <span class="n">gp_params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-                 <span class="n">ctrls</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Controller</span><span class="p">],</span>
-                 <span class="n">observation_action_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">history</span><span class="o">=</span><span class="n">EmptyHistory</span><span class="p">(),</span> <span class="n">env</span><span class="p">:</span> <span class="n">ModelicaEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+                 <span class="n">ctrls</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Controller</span><span class="p">],</span>
+                 <span class="n">obs_template</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]],</span> <span class="n">obs_varnames</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Agent to execute safeopt algorithm (https://arxiv.org/abs/1509.01066) to control the environment by using</span>
 <span class="sd">        auxiliary controllers and Gaussian process to adopt the controller parameters (mutable_params) to safely</span>
@@ -189,10 +192,20 @@
 <span class="sd">        :param kernel: kernel for the Gaussian process unsing GPy</span>
 <span class="sd">        :param gp_params: kernel parameters like bounds and lengthscale</span>
 <span class="sd">        :param ctrls: Controllers that are feed with the observations and exert actions on the environment</span>
-<span class="sd">        :param observation_action_mapping: form controller keys to observation keys, whose observation values will be</span>
-<span class="sd">         passed to the controller</span>
-<span class="sd">        :param history:Storage of internal data</span>
-<span class="sd">        :param env: reference to the environment (only needed when used in internal act function)</span>
+<span class="sd">        :param obs_template:</span>
+<span class="sd">            Template describing how the observation array should be transformed and passed to the internal controllers.</span>
+<span class="sd">            The key must match the name field of an internal controller.</span>
+<span class="sd">            The values are a list of:</span>
+<span class="sd">                - list of strings</span>
+<span class="sd">                    - matching variable names of the state</span>
+<span class="sd">                    - must match self.obs_varnames</span>
+<span class="sd">                    - will be substituted by the values on runtime</span>
+<span class="sd">                    - will be passed as an np.array of floats to the controller</span>
+<span class="sd">                - np.ndarray of floats (to be passed statically to the controller)</span>
+<span class="sd">                - a mixture of static and dynamic values in one parameter is not supported for performance reasons.</span>
+<span class="sd">            The values will be passed as parameters to the controllers step function.</span>
+<span class="sd">        :param obs_varnames: list of variable names that match the values of the observations</span>
+<span class="sd">         passed in the act function. Will be automatically set by the Runner class</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">MutableParams</span><span class="p">(</span>
             <span class="nb">list</span><span class="p">(</span><span class="n">mutable_params</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mutable_params</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="n">mutable_params</span><span class="p">)</span>
@@ -206,9 +219,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">abort_reward</span> <span class="o">=</span> <span class="n">abort_reward</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">episode_reward</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inital_Performance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inital_performance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_best_performance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">performance</span> <span class="o">=</span> <span class="kc">None</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_iterations</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ctrls</span><span class="p">,</span> <span class="n">observation_action_mapping</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ctrls</span><span class="p">,</span> <span class="n">obs_template</span><span class="p">,</span> <span class="n">obs_varnames</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;J&#39;</span><span class="p">,</span> <span class="s1">&#39;Params&#39;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="SafeOptAgent.reset"><a class="viewcode-back" href="../../../api/omg.agents.safeopt.html#openmodelica_microgrid_gym.agents.SafeOptAgent.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -227,8 +244,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">episode_reward</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inital_Performance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inital_performance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_best_performance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">performance</span> <span class="o">=</span> <span class="kc">None</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_iterations</span> <span class="o">=</span> <span class="mi">0</span>
+
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="SafeOptAgent.observe"><a class="viewcode-back" href="../../../api/omg.agents.safeopt.html#openmodelica_microgrid_gym.agents.SafeOptAgent.observe">[docs]</a>    <span class="k">def</span> <span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">):</span>
@@ -244,7 +265,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">episode_reward</span> <span class="o">+=</span> <span class="n">reward</span> <span class="ow">or</span> <span class="mi">0</span>
         <span class="k">if</span> <span class="n">terminated</span><span class="p">:</span>
             <span class="c1"># calculate MSE, divide Summed error by length of measurement</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">episode_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">episode_reward</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iterations</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">performance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">episode_reward</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iterations</span>
             <span class="c1"># safeopt update step</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update_params</span><span class="p">()</span>
             <span class="c1"># reset for new episode</span>
@@ -258,56 +279,81 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># First Iteration</span>
             <span class="c1"># self.inital_Performance = 1 / self.episode_reward</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">inital_Performance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">episode_reward</span>
+
             <span class="c1"># Norm for Safe-point</span>
             <span class="c1"># J = 1 / self.episode_reward / self.inital_Performance</span>
 
-            <span class="n">J</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inital_Performance</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_best_performance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">performance</span>
 
             <span class="c1"># Define Mean &quot;Offset&quot;: Like BK: Assume Mean = Threshold (BK = 0, now = 20% below first (safe) J: means: if</span>
             <span class="c1"># new Performance is 20 % lower than the inital we assume as unsafe)</span>
             <span class="n">mf</span> <span class="o">=</span> <span class="n">GPy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Mapping</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">mf</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior_mean</span> <span class="o">*</span> <span class="n">J</span>
+            <span class="n">mf</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior_mean</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">performance</span>
             <span class="n">mf</span><span class="o">.</span><span class="n">update_gradients</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="mi">0</span>
             <span class="n">mf</span><span class="o">.</span><span class="n">gradients_X</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="mi">0</span>
 
-            <span class="n">gp</span> <span class="o">=</span> <span class="n">GPy</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">GPRegression</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[:]]),</span>
-                                         <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">J</span><span class="p">]]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span>
+            <span class="n">gp</span> <span class="o">=</span> <span class="n">GPy</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">GPRegression</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[:]]),</span>  <span class="c1"># noqa</span>
+                                         <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="bp">self</span><span class="o">.</span><span class="n">performance</span><span class="p">]]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span>
                                          <span class="n">noise_var</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_var</span><span class="p">,</span> <span class="n">mean_function</span><span class="o">=</span><span class="n">mf</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">SafeOptSwarm</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">safe_threshold</span> <span class="o">*</span> <span class="n">J</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
-                                          <span class="n">threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">explore_threshold</span> <span class="o">*</span> <span class="n">J</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">SafeOptSwarm</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">safe_threshold</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">performance</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
+                                          <span class="n">threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">explore_threshold</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">performance</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">episode_reward</span><span class="p">):</span>
                 <span class="c1"># set r to doubled (negative!) initial reward</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">episode_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">abort_reward</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">inital_Performance</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">episode_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">abort_reward</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">inital_performance</span>
                 <span class="c1"># toDo: set reward to -inf and stop agent?</span>
                 <span class="c1"># warning mit logger</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;UNSAFE! Limit exceeded, epsiode abort, give a reward of </span><span class="si">{}</span><span class="s1"> times the&#39;</span>
                                <span class="s1">&#39;initial reward&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">abort_reward</span><span class="p">))</span>
 
-            <span class="n">J</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">episode_reward</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">add_new_data_point</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">performance</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">add_new_data_point</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[:],</span> <span class="n">J</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">performance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[:]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">J</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[:]])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_improved</span><span class="p">:</span>
+            <span class="c1"># if performance has improved store the current last index of the df</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">best_episode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
 
-<div class="viewcode-block" id="SafeOptAgent.render"><a class="viewcode-back" href="../../../api/omg.agents.safeopt.html#openmodelica_microgrid_gym.agents.SafeOptAgent.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_best_performance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">performance</span></div>
+
+<div class="viewcode-block" id="SafeOptAgent.render"><a class="viewcode-back" href="../../../api/omg.agents.safeopt.html#openmodelica_microgrid_gym.agents.SafeOptAgent.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Figure</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Renders the results for the performance</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+        <span class="n">figure</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="n">figure</span><span class="o">=</span><span class="n">figure</span><span class="p">)</span>
+
+        <span class="c1"># mark best performance in green</span>
+        <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best_episode</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;J&#39;</span><span class="p">,</span> <span class="s1">&#39;Params&#39;</span><span class="p">]]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="p">[</span><span class="n">y</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">20</span> <span class="o">*</span> <span class="mi">10</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;og&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Choose appropriate numer of control parameters&#39;</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">figure</span></div>
 
 <div class="viewcode-block" id="SafeOptAgent.prepare_episode"><a class="viewcode-back" href="../../../api/omg.agents.safeopt.html#openmodelica_microgrid_gym.agents.SafeOptAgent.prepare_episode">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_episode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Prepares the next episode; reset iteration counting variable and call superclass to reset controllers</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_iterations</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">prepare_episode</span><span class="p">()</span></div></div>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">prepare_episode</span><span class="p">()</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">has_improved</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Defines if the performance increased or stays constant</span>
+
+<span class="sd">        :return: True, if performance was increased or equal, else False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">performance</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_best_performance</span></div>
 </pre></div>
 
            </div>

@@ -36,7 +36,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="omg.agents.agent" href="omg.agents.agent.html" />
-    <link rel="prev" title="omg" href="omg.html" /> 
+    <link rel="prev" title="Controller Tuning Hints" href="../parts/user_guide/controller_tuning.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -82,29 +82,27 @@
             
               <p class="caption"><span class="caption-text">User Guide:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/user_guide.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/Pythoncode.html">Installation and General Remarks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html">Basic Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html#advanced-examples">Advanced Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="omg.html">omg</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">omg.agents</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="omg.agents.agent.html">omg.agents.agent</a></li>
-<li class="toctree-l3"><a class="reference internal" href="omg.agents.safeopt.html">omg.agents.safeopt</a></li>
-<li class="toctree-l3"><a class="reference internal" href="omg.agents.staticctrl.html">omg.agents.staticctrl</a></li>
-<li class="toctree-l3"><a class="reference internal" href="omg.agents.util.html">omg.agents.util</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">omg.agents</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="omg.agents.agent.html">omg.agents.agent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omg.agents.safeopt.html">omg.agents.safeopt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omg.agents.staticctrl.html">omg.agents.staticctrl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omg.agents.util.html">omg.agents.util</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="omg.auxiliaries.html">omg.auxiliaries</a></li>
-<li class="toctree-l2"><a class="reference internal" href="omg.common.html">omg.common</a></li>
-<li class="toctree-l2"><a class="reference internal" href="omg.env.html">omg.env</a></li>
-<li class="toctree-l2"><a class="reference internal" href="omg.execution.html">omg.execution</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="omg.aux_ctl.html">omg.aux_ctl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.util.html">omg.util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.env.html">omg.env</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.execution.html">omg.execution</a></li>
 </ul>
 
             
@@ -150,8 +148,6 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-          <li><a href="omg.html">omg</a> &raquo;</li>
-        
       <li>omg.agents</li>
     
     
@@ -188,7 +184,7 @@
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-openmodelica_microgrid_gym.agents" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="openmodelica_microgrid_gym.agents.Agent">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.agents.</code><code class="sig-name descname">Agent</code><span class="sig-paren">(</span><em class="sig-param">history=&lt;openmodelica_microgrid_gym.env.recorder.EmptyHistory object&gt;</em>, <em class="sig-param">env=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/agent.html#Agent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.Agent" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.agents.</code><code class="sig-name descname">Agent</code><span class="sig-paren">(</span><em class="sig-param">obs_varnames=None</em>, <em class="sig-param">history=None</em>, <em class="sig-param">env=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/agent.html#Agent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.Agent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Abstract base class for all Agents. The agent can act on the environment and observe its result.
 This class is aims to wrap the whole learning process into a class to simplify the implementation.</p>
@@ -196,7 +192,9 @@ This class is aims to wrap the whole learning process into a class to simplify t
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>history</strong> (<a class="reference internal" href="omg.env.recorder.html#openmodelica_microgrid_gym.env.recorder.EmptyHistory" title="openmodelica_microgrid_gym.env.recorder.EmptyHistory"><code class="xref py py-class docutils literal notranslate"><span class="pre">EmptyHistory</span></code></a>) – used to store agent internal data for monitoring</p></li>
+<li><p><strong>obs_varnames</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]) – list of variable names that match the values of the observations
+passed in the act function. Will be automatically set by the Runner class</p></li>
+<li><p><strong>history</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="omg.util.recorder.html#openmodelica_microgrid_gym.util.recorder.EmptyHistory" title="openmodelica_microgrid_gym.util.recorder.EmptyHistory"><code class="xref py py-class docutils literal notranslate"><span class="pre">EmptyHistory</span></code></a>]) – used to store agent internal data for monitoring</p></li>
 <li><p><strong>env</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="omg.env.modelica.html#openmodelica_microgrid_gym.env.modelica.ModelicaEnv" title="openmodelica_microgrid_gym.env.modelica.ModelicaEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelicaEnv</span></code></a>]) – reference to the environment (only needed when used in internal act function)</p></li>
 </ul>
 </dd>
@@ -207,7 +205,7 @@ This class is aims to wrap the whole learning process into a class to simplify t
 <dd><p>Select an action with respect to the state this might update the internal state with respect to the history.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>obs</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code>) – Observation</p>
+<dd class="field-odd"><p><strong>obs</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – Observation</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
@@ -219,18 +217,44 @@ This class is aims to wrap the whole learning process into a class to simplify t
 </dd></dl>
 
 <dl class="method">
+<dt id="openmodelica_microgrid_gym.agents.Agent.has_improved">
+<em class="property">property </em><code class="sig-name descname">has_improved</code><a class="headerlink" href="#openmodelica_microgrid_gym.agents.Agent.has_improved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines if the performance increased or stays constant
+Does not learn, can never improve</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="openmodelica_microgrid_gym.agents.Agent.measurement">
 <em class="property">property </em><code class="sig-name descname">measurement</code><a class="headerlink" href="#openmodelica_microgrid_gym.agents.Agent.measurement" title="Permalink to this definition">¶</a></dt>
 <dd><p>Measurements the agent takes on the environment. This data is passed to the environment.
 The values returned by this property should be fully determined by the environment.
-This is a workaround to provide data measurements like PLL controllers in the environment even though
+This is a workaround to provide data measurement like PLL controllers in the environment even though
 they are functionally part of the Agent.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>pd.Series or list of Tuples of columns and pd.Series. The columns can be provided as nested list</p>
+<dd class="field-even"><p>current measurement</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.agents.Agent.measurement_cols">
+<em class="property">property </em><code class="sig-name descname">measurement_cols</code><a class="headerlink" href="#openmodelica_microgrid_gym.agents.Agent.measurement_cols" title="Permalink to this definition">¶</a></dt>
+<dd><p>Structured columns of the measurement. Used in the Runner to setup the history columns of the Environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>structured columns of measurement</p>
 </dd>
 </dl>
 </dd></dl>
@@ -260,6 +284,11 @@ It might trigger the learning in some implementations.</p>
 <dt id="openmodelica_microgrid_gym.agents.Agent.render">
 <code class="sig-name descname">render</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/agent.html#Agent.render"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.Agent.render" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visualisation of the agent, e.g. its learning state or similar</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Figure</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -272,7 +301,7 @@ It might trigger the learning in some implementations.</p>
 
 <dl class="class">
 <dt id="openmodelica_microgrid_gym.agents.SafeOptAgent">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.agents.</code><code class="sig-name descname">SafeOptAgent</code><span class="sig-paren">(</span><em class="sig-param">mutable_params</em>, <em class="sig-param">abort_reward</em>, <em class="sig-param">kernel</em>, <em class="sig-param">gp_params</em>, <em class="sig-param">ctrls</em>, <em class="sig-param">observation_action_mapping</em>, <em class="sig-param">history=&lt;openmodelica_microgrid_gym.env.recorder.EmptyHistory object&gt;</em>, <em class="sig-param">env=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.SafeOptAgent" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.agents.</code><code class="sig-name descname">SafeOptAgent</code><span class="sig-paren">(</span><em class="sig-param">mutable_params</em>, <em class="sig-param">abort_reward</em>, <em class="sig-param">kernel</em>, <em class="sig-param">gp_params</em>, <em class="sig-param">ctrls</em>, <em class="sig-param">obs_template</em>, <em class="sig-param">obs_varnames=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.SafeOptAgent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent" title="openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent</span></code></a></p>
 <p>Agent to execute safeopt algorithm (<a class="reference external" href="https://arxiv.org/abs/1509.01066">https://arxiv.org/abs/1509.01066</a>) to control the environment by using
 auxiliary controllers and Gaussian process to adopt the controller parameters (mutable_params) to safely
@@ -285,15 +314,47 @@ increase the performance.</p>
 negative reward in case of limit exceeded</p></li>
 <li><p><strong>kernel</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Kern</span></code>) – kernel for the Gaussian process unsing GPy</p></li>
 <li><p><strong>gp_params</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]) – kernel parameters like bounds and lengthscale</p></li>
-<li><p><strong>ctrls</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <a class="reference internal" href="omg.auxiliaries.inverter_controllers.html#openmodelica_microgrid_gym.auxiliaries.inverter_contollers.Controller" title="openmodelica_microgrid_gym.auxiliaries.inverter_contollers.Controller"><code class="xref py py-class docutils literal notranslate"><span class="pre">Controller</span></code></a>]) – Controllers that are feed with the observations and exert actions on the environment</p></li>
-<li><p><strong>observation_action_mapping</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>) – form controller keys to observation keys, whose observation values will be
-passed to the controller</p></li>
+<li><p><strong>ctrls</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller" title="openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller"><code class="xref py py-class docutils literal notranslate"><span class="pre">Controller</span></code></a>]) – Controllers that are feed with the observations and exert actions on the environment</p></li>
+<li><p><strong>obs_template</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]]]) – <p>Template describing how the observation array should be transformed and passed to the internal controllers.
+The key must match the name field of an internal controller.
+The values are a list of:</p>
+<blockquote>
+<div><ul>
+<li><dl class="simple">
+<dt>list of strings</dt><dd><ul>
+<li><p>matching variable names of the state</p></li>
+<li><p>must match self.obs_varnames</p></li>
+<li><p>will be substituted by the values on runtime</p></li>
+<li><p>will be passed as an np.array of floats to the controller</p></li>
 </ul>
 </dd>
 </dl>
-<p>:param history:Storage of internal data
-:type env: <code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="omg.env.modelica.html#openmodelica_microgrid_gym.env.modelica.ModelicaEnv" title="openmodelica_microgrid_gym.env.modelica.ModelicaEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelicaEnv</span></code></a>]
-:param env: reference to the environment (only needed when used in internal act function)</p>
+</li>
+<li><p>np.ndarray of floats (to be passed statically to the controller)</p></li>
+<li><p>a mixture of static and dynamic values in one parameter is not supported for performance reasons.</p></li>
+</ul>
+</div></blockquote>
+<p>The values will be passed as parameters to the controllers step function.</p>
+</p></li>
+<li><p><strong>obs_varnames</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]) – list of variable names that match the values of the observations
+passed in the act function. Will be automatically set by the Runner class</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.agents.SafeOptAgent.has_improved">
+<em class="property">property </em><code class="sig-name descname">has_improved</code><a class="headerlink" href="#openmodelica_microgrid_gym.agents.SafeOptAgent.has_improved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines if the performance increased or stays constant</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True, if performance was increased or equal, else False</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="method">
 <dt id="openmodelica_microgrid_gym.agents.SafeOptAgent.observe">
 <code class="sig-name descname">observe</code><span class="sig-paren">(</span><em class="sig-param">reward</em>, <em class="sig-param">terminated</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent.observe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.SafeOptAgent.observe" title="Permalink to this definition">¶</a></dt>
@@ -322,6 +383,11 @@ If terminated, then caclulates the performance and the next values for the param
 <dt id="openmodelica_microgrid_gym.agents.SafeOptAgent.render">
 <code class="sig-name descname">render</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent.render"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.SafeOptAgent.render" title="Permalink to this definition">¶</a></dt>
 <dd><p>Renders the results for the performance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Figure</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -340,17 +406,37 @@ If terminated, then caclulates the performance and the next values for the param
 
 <dl class="class">
 <dt id="openmodelica_microgrid_gym.agents.StaticControlAgent">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.agents.</code><code class="sig-name descname">StaticControlAgent</code><span class="sig-paren">(</span><em class="sig-param">ctrls</em>, <em class="sig-param">ctrl_to_obs</em>, <em class="sig-param">history=&lt;openmodelica_microgrid_gym.env.recorder.EmptyHistory object&gt;</em>, <em class="sig-param">env=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/staticctrl.html#StaticControlAgent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.StaticControlAgent" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.agents.</code><code class="sig-name descname">StaticControlAgent</code><span class="sig-paren">(</span><em class="sig-param">ctrls</em>, <em class="sig-param">obs_template</em>, <em class="sig-param">obs_varnames=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/staticctrl.html#StaticControlAgent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.StaticControlAgent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="omg.agents.agent.html#openmodelica_microgrid_gym.agents.agent.Agent" title="openmodelica_microgrid_gym.agents.agent.Agent"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.agents.agent.Agent</span></code></a></p>
 <p>Simple agent that controls the environment by using auxiliary controllers that are fully configured.
 The Agent does not learn anything.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ctrls</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <a class="reference internal" href="omg.auxiliaries.inverter_controllers.html#openmodelica_microgrid_gym.auxiliaries.inverter_contollers.Controller" title="openmodelica_microgrid_gym.auxiliaries.inverter_contollers.Controller"><code class="xref py py-class docutils literal notranslate"><span class="pre">Controller</span></code></a>]) – Controllers that are feed with the observations and exert actions on the environment</p></li>
-<li><p><strong>ctrl_to_obs</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>) – form controller keys to observation keys, whose observation values will be passed to the controller</p></li>
-<li><p><strong>history</strong> (<a class="reference internal" href="omg.env.recorder.html#openmodelica_microgrid_gym.env.recorder.EmptyHistory" title="openmodelica_microgrid_gym.env.recorder.EmptyHistory"><code class="xref py py-class docutils literal notranslate"><span class="pre">EmptyHistory</span></code></a>) – Storage of internal data</p></li>
-<li><p><strong>env</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="omg.env.modelica.html#openmodelica_microgrid_gym.env.modelica.ModelicaEnv" title="openmodelica_microgrid_gym.env.modelica.ModelicaEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelicaEnv</span></code></a>]) – reference to the environment (only needed when used in internal act function)</p></li>
+<li><p><strong>ctrls</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller" title="openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller"><code class="xref py py-class docutils literal notranslate"><span class="pre">Controller</span></code></a>]) – Controllers that are feed with the observations and exert actions on the environment</p></li>
+<li><p><strong>obs_template</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]]]) – <p>Template describing how the observation array should be transformed and passed to the internal controllers.
+The key must match the name field of an internal controller.
+The values are a list of:</p>
+<blockquote>
+<div><ul>
+<li><dl class="simple">
+<dt>list of strings</dt><dd><ul>
+<li><p>matching variable names of the state</p></li>
+<li><p>must match self.obs_varnames</p></li>
+<li><p>will be substituted by the values on runtime</p></li>
+<li><p>will be passed as an np.array of floats to the controller</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>np.array of floats (to be passed statically to the controller)</p></li>
+<li><p>a mixture of static and dynamic values in one parameter is not supported for performance reasons.</p></li>
+</ul>
+</div></blockquote>
+<p>The values will be passed as parameters to the controllers step function.</p>
+</p></li>
+<li><p><strong>obs_varnames</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]) – list of variable names that match the values of the observations
+passed in the act function. Will be automatically set by the Runner class</p></li>
 </ul>
 </dd>
 </dl>
@@ -360,10 +446,25 @@ The Agent does not learn anything.</p>
 <dd><p>Executes the actions with the observations as parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>state</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code>) – the agent is stateless. the state is stored in the controllers.</p>
+<dd class="field-odd"><p><strong>state</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – the agent itself is stateless. the state is stored in the controllers.</p>
 </dd>
 </dl>
 <p>Therefore we simply pass the observation from the environment into the controllers.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.agents.StaticControlAgent.has_improved">
+<em class="property">property </em><code class="sig-name descname">has_improved</code><a class="headerlink" href="#openmodelica_microgrid_gym.agents.StaticControlAgent.has_improved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines if the performance increased or stays constant
+Does not learn, can never improve</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>False</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -371,14 +472,39 @@ The Agent does not learn anything.</p>
 <em class="property">property </em><code class="sig-name descname">measurement</code><a class="headerlink" href="#openmodelica_microgrid_gym.agents.StaticControlAgent.measurement" title="Permalink to this definition">¶</a></dt>
 <dd><p>Measurements the agent takes on the environment. This data is passed to the environment.
 The values returned by this property should be fully determined by the environment.
-This is a workaround to provide data measurements like PLL controllers in the environment even though
+This is a workaround to provide data measurement like PLL controllers in the environment even though
 they are functionally part of the Agent.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>]</p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>pd.Series or list of Tuples of columns and pd.Series. The columns can be provided as nested list</p>
+<dd class="field-even"><p>current measurement</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.agents.StaticControlAgent.measurement_cols">
+<em class="property">property </em><code class="sig-name descname">measurement_cols</code><a class="headerlink" href="#openmodelica_microgrid_gym.agents.StaticControlAgent.measurement_cols" title="Permalink to this definition">¶</a></dt>
+<dd><p>Structured columns of the measurement. Used in the Runner to setup the history columns of the Environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>structured columns of measurement</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="openmodelica_microgrid_gym.agents.StaticControlAgent.obs_template">
+<em class="property">property </em><code class="sig-name descname">obs_template</code><a class="headerlink" href="#openmodelica_microgrid_gym.agents.StaticControlAgent.obs_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>lazy fill convert the observation template as the runner will set the</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
 </dd>
 </dl>
 </dd></dl>
@@ -420,7 +546,7 @@ It might trigger the learning in some implementations.</p>
         <a href="omg.agents.agent.html" class="btn btn-neutral float-right" title="omg.agents.agent" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="omg.html" class="btn btn-neutral float-left" title="omg" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="../parts/user_guide/controller_tuning.html" class="btn btn-neutral float-left" title="Controller Tuning Hints" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
