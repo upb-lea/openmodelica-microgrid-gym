@@ -1,22 +1,28 @@
-import numpy as np
-import pandas as pd
+from typing import List, Union
 
-from openmodelica_microgrid_gym.env import EmptyHistory, ModelicaEnv
+import numpy as np
+from matplotlib.figure import Figure
+
+from openmodelica_microgrid_gym.env import ModelicaEnv
+from openmodelica_microgrid_gym.util import EmptyHistory
 
 
 class Agent:
-    def __init__(self, history: EmptyHistory = EmptyHistory(), env: ModelicaEnv = None):
+    def __init__(self, obs_varnames: List[str] = None, history: EmptyHistory = None, env: ModelicaEnv = None):
         """
         Abstract base class for all Agents. The agent can act on the environment and observe its result.
         This class is aims to wrap the whole learning process into a class to simplify the implementation.
 
         This class is strongly inspired by the tensorforce library.
 
+        :param obs_varnames: list of variable names that match the values of the observations
+         passed in the act function. Will be automatically set by the Runner class
         :param history: used to store agent internal data for monitoring
         :param env: reference to the environment (only needed when used in internal act function)
         """
         self.env = env
-        self.history = history
+        self.history = history or EmptyHistory()
+        self.obs_varnames = obs_varnames
 
     def reset(self):
         """
@@ -25,7 +31,7 @@ class Agent:
         self.history.reset()
         self.prepare_episode()
 
-    def act(self, obs: pd.Series) -> np.ndarray:
+    def act(self, obs: np.ndarray) -> np.ndarray:
         """
         Select an action with respect to the state this might update the internal state with respect to the history.
 
@@ -45,18 +51,27 @@ class Agent:
         pass
 
     @property
-    def measurement(self) -> pd.Series:
+    def measurement_cols(self) -> List[Union[List, str]]:
+        """
+        Structured columns of the measurement. Used in the Runner to setup the history columns of the Environment.
+
+        :return: structured columns of measurement
+        """
+        return []
+
+    @property
+    def measurement(self) -> np.ndarray:
         """
         Measurements the agent takes on the environment. This data is passed to the environment.
         The values returned by this property should be fully determined by the environment.
-        This is a workaround to provide data measurements like PLL controllers in the environment even though
+        This is a workaround to provide data measurement like PLL controllers in the environment even though
         they are functionally part of the Agent.
 
-        :return: pd.Series or list of Tuples of columns and pd.Series. The columns can be provided as nested list
+        :return: current measurement
         """
-        return pd.Series()
+        return np.empty(0)
 
-    def render(self):
+    def render(self) -> Figure:
         """
         Visualisation of the agent, e.g. its learning state or similar
         """
@@ -67,3 +82,12 @@ class Agent:
         Prepares the next episode; resets all controllers and filters (initial value of integrators...)
         """
         pass
+
+    @property
+    def has_improved(self) -> bool:
+        """
+        Defines if the performance increased or stays constant
+        Does not learn, can never improve
+
+        """
+        return False

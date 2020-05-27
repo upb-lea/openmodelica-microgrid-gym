@@ -1,15 +1,14 @@
 import gym
+import numpy as np
+import pandas as pd
 import pytest
-from pytest import approx, skip
+from pytest import approx
 
 from openmodelica_microgrid_gym import Runner, Agent
 from openmodelica_microgrid_gym.agents import StaticControlAgent
-import pandas as pd
-import numpy as np
-
 from openmodelica_microgrid_gym.agents.util import MutableFloat
-from openmodelica_microgrid_gym.common.itertools_ import flatten
-from openmodelica_microgrid_gym.auxiliaries import *
+from openmodelica_microgrid_gym.aux_ctl import *
+from openmodelica_microgrid_gym.util import flatten
 
 
 @pytest.fixture
@@ -23,7 +22,7 @@ def agent():
 
     mutable_params = dict(voltP=MutableFloat(25e-3), voltI=MutableFloat(60))
 
-    ctrl = dict()
+    ctrl = []
     # Voltage PI parameters for the current sourcing inverter
     voltage_dqp_iparams = PI_params(kP=mutable_params['voltP'], kI=mutable_params['voltI'], limits=(-iLimit, iLimit))
     # Current PI parameters for the voltage sourcing inverter
@@ -32,8 +31,8 @@ def agent():
     droop_param = DroopParams(DroopGain, 0.005, nomFreq)
     # Droop of the reactive power VAR/Volt Var.s/Volt
     qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
-    ctrl['master'] = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param,
-                                                 qdroop_param)
+    ctrl.append(MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param,
+                                            qdroop_param, name='master'))
 
     # Discrete controller implementation for a DQ based Current controller for the current sourcing inverter
     # Current PI parameters for the current sourcing inverter
@@ -44,14 +43,14 @@ def agent():
     droop_param = InverseDroopParams(DroopGain, 0, nomFreq, tau_filt=0.04)
     # Droop of the reactive power VAR/Volt Var.s/Volt
     qdroop_param = InverseDroopParams(100, 0, nomVoltPeak, tau_filt=0.01)
-    ctrl['slave'] = MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, iLimit,
-                                                  droop_param, qdroop_param)
+    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, iLimit,
+                                              droop_param, qdroop_param, name='slave'))
 
     # validate that parameters can be changed later on
-    agent = StaticControlAgent(ctrl, {'master': [np.array([f'lc1.inductor{i + 1}.i' for i in range(3)]),
-                                                 np.array([f'lc1.capacitor{i + 1}.v' for i in range(3)])],
-                                      'slave': [np.array([f'lcl1.inductor{i + 1}.i' for i in range(3)]),
-                                                np.array([f'lcl1.capacitor{i + 1}.v' for i in range(3)]),
+    agent = StaticControlAgent(ctrl, {'master': [[f'lc1.inductor{i + 1}.i' for i in range(3)],
+                                                 [f'lc1.capacitor{i + 1}.v' for i in range(3)]],
+                                      'slave': [[f'lcl1.inductor{i + 1}.i' for i in range(3)],
+                                                [f'lcl1.capacitor{i + 1}.v' for i in range(3)],
                                                 np.zeros(3)]})
     return mutable_params, agent
 
@@ -80,7 +79,7 @@ def test_main(agent, env):
     # env.history.df.to_hdf('tests/test_main.hd5', 'hist')
     df = env.history.df.head(100)
     df = df.reindex(sorted(df.columns), axis=1)
-    df2 = pd.read_hdf('tests/test_main.hd5', 'hist').head(100)
+    df2 = pd.read_hdf('tests/test_main.hd5', 'hist').head(100)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
     assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-2)
 
@@ -94,11 +93,11 @@ def test_main_paramchange(agent, env):
     # env.history.df.to_hdf('tests/test_main2.hd5', 'hist')
     df = env.history.df.head(50)
     df = df.reindex(sorted(df.columns), axis=1)
-    df2 = pd.read_hdf('tests/test_main.hd5', 'hist').head(50)
+    df2 = pd.read_hdf('tests/test_main.hd5', 'hist').head(50)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
     assert df[out_params].to_numpy() != approx(df2[out_params].to_numpy(), 5e-3)
 
-    df2 = pd.read_hdf('tests/test_main2.hd5', 'hist').head(50)
+    df2 = pd.read_hdf('tests/test_main2.hd5', 'hist').head(50)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
     assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-2)
 
@@ -118,6 +117,6 @@ def test_simpleagent(env):
     # env.history.df.to_hdf('tests/test_main3.hd5', 'hist')
     df = env.history.df.head(50)
     df = df.reindex(sorted(df.columns), axis=1)
-    df2 = pd.read_hdf('tests/test_main3.hd5', 'hist').head(50)
+    df2 = pd.read_hdf('tests/test_main3.hd5', 'hist').head(50)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
     assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-3)

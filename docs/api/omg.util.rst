@@ -1,4 +1,4 @@
-omg.common
+omg.util
 =============================
 
 Submodules
@@ -6,13 +6,14 @@ Submodules
 
 .. toctree::
 
-   omg.common.itertools_
-   omg.common.transforms
+   omg.util.itertools_
+   omg.util.transforms
+   omg.util.recorder
 
 Module contents
 ---------------
 
-.. automodule:: openmodelica_microgrid_gym.common
+.. automodule:: openmodelica_microgrid_gym.util
    :members:
    :undoc-members:
    :show-inheritance:

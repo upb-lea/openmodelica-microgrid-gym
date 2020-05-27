@@ -1,4 +1,4 @@
-from openmodelica_microgrid_gym.auxiliaries import InverseDroopParams
+from openmodelica_microgrid_gym.aux_ctl.params import DroopParams
 
 
 class Filter:
@@ -15,11 +15,9 @@ class PT1Filter(Filter):
     A PT1 Filter implementation
     """
 
-    def __init__(self, filtParams, ts):
+    def __init__(self, filtParams: DroopParams, ts: float):
         """
-        :type filtParams: DroopParams or InverseDroopParams
         :param filtParams: The filter params
-        :type ts: float
         :param ts: Sample time
         """
         self._params = filtParams
@@ -53,5 +51,3 @@ class PT1Filter(Filter):
             output = 0
 
         return output
-
-

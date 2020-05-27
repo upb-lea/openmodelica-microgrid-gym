@@ -1,5 +1,5 @@
-from openmodelica_microgrid_gym.auxiliaries import InverseDroopParams
-from openmodelica_microgrid_gym.auxiliaries.filter import PT1Filter
+from openmodelica_microgrid_gym.aux_ctl.filter import PT1Filter
+from openmodelica_microgrid_gym.aux_ctl.params import InverseDroopParams
 
 
 class DroopController(PT1Filter):

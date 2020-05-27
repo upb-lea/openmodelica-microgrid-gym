@@ -1,22 +1,22 @@
-from datetime import datetime
-import re
 import logging
+import re
+from datetime import datetime
+from fnmatch import translate
 from functools import partial
 from os.path import basename
-from typing import Sequence, Callable, List, Union, Tuple, Optional, Mapping, Dict
+from typing import Sequence, Callable, List, Union, Tuple, Optional, Mapping, Dict, Any
 
 import gym
+import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import scipy
+from matplotlib.figure import Figure
 from pyfmi import load_fmu
 from pyfmi.fmi import FMUModelME2
 from scipy import integrate
-from fnmatch import translate
-import matplotlib.pyplot as plt
 
-from openmodelica_microgrid_gym.common.itertools_ import flatten
-from openmodelica_microgrid_gym.env.recorder import FullHistory, EmptyHistory
+from openmodelica_microgrid_gym.env.plot import PlotTmpl
+from openmodelica_microgrid_gym.util import FullHistory, EmptyHistory
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +30,12 @@ class ModelicaEnv(gym.Env):
     """Set of all valid visualisation modes"""
 
     def __init__(self, time_step: float = 1e-4, time_start: float = 0,
-                 reward_fun: Callable[[pd.Series], float] = lambda obs: 1,
-                 log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: int = 200,
+                 reward_fun: Callable[[List[str], np.ndarray], float] = lambda cols, obs: 1,
+                 log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: Optional[int] = 200,
                  model_params: Optional[Dict[str, Union[Callable[[float], float], float]]] = None,
                  model_input: Optional[Sequence[str]] = None,
                  model_output: Optional[Union[dict, Sequence[str]]] = None, model_path: str = '../fmu/grid.network.fmu',
-                 viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[str]]] = None,
+                 viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[Union[str, PlotTmpl]]]] = None,
                  history: EmptyHistory = FullHistory()):
         """
         Initialize the Environment.
@@ -45,13 +45,18 @@ class ModelicaEnv(gym.Env):
         :param time_start: offset of the time in seconds
 
         :param reward_fun:
-            The function receives the observation as a pd.Series and must return the reward of this timestep as float.
-            In case of a failure this function should return np.nan or -np.inf or None.
-            Should have no side-effects
+            The function receives as a list of variable names and a np.ndarray of the values of the current observation.
+            The separation is mainly for performance reasons, such that the resolution of data indices can be cached.
+            It must return the reward of this timestep as float.
+            It should return np.nan or -np.inf or None in case of a failiure.
+            It should have no side-effects
         :param log_level: logging granularity. see logging in stdlib
         :param solver_method: solver of the scipy.integrate.solve_ivp function
         :param max_episode_steps: maximum number of episode steps.
             The end time of the episode is calculated by the time resolution and the number of steps.
+
+            If set to None, the environment will never finish because of step sizes, but it might still stop because of
+            system failiure (-inf reward)
 
         :param model_params: parameters of the FMU.
 
@@ -80,7 +85,8 @@ class ModelicaEnv(gym.Env):
              - string: will be interpret as regex. all fully matched columns names will be enabled
              - list of strings: Each string might be a unix-shell style wildcard like "*.i"
                                 to match all data series ending with ".i".
-        :param history: history to store observations and measurements (from the agent) after each step
+             - list of PlotTmpl: Each template will result in a plot
+        :param history: history to store observations and measurement (from the agent) after each step
         """
         if model_input is None:
             raise ValueError('Please specify model_input variables from your OM FMU.')
@@ -119,26 +125,39 @@ class ModelicaEnv(gym.Env):
                                  model_params.items()}
 
         self.sim_time_interval = None
-        self.__state = pd.Series()
-        self.__measurements = pd.Series()
+        self._state = []
+        self.measurement = []
         self.record_states = viz_mode == 'episode'
         self.history = history
         self.history.cols = model_output
         self.model_input_names = model_input
         # variable names are flattened to a list if they have specified in the nested dict manner)
         self.model_output_names = self.history.cols
+
+        self.viz_col_tmpls = []
         if viz_cols is None:
             logger.info('Provide the option "viz_cols" if you wish to select only specific plots. '
                         'The default behaviour is to plot all data series')
             self.viz_col_regex = '.*'
         elif isinstance(viz_cols, list):
-            self.viz_col_regex = '|'.join([translate(glob) for glob in viz_cols])
+            # strings are glob patterns that can be used in the regex
+            patterns, tmpls = [], []
+            for elem in viz_cols:
+                if isinstance(elem, str):
+                    patterns.append(translate(elem))
+                elif isinstance(elem, PlotTmpl):
+                    tmpls.append(elem)
+                else:
+                    raise ValueError('"viz_cols" list must contain only strings or PlotTmpl objects not'
+                                     f' {type(viz_cols)}')
+
+            self.viz_col_regex = '|'.join(patterns)
+            self.viz_col_tmpls = tmpls
         elif isinstance(viz_cols, str):
             # is directly interpret as regex
             self.viz_col_regex = viz_cols
         else:
-            raise ValueError('"selected_vis_series" must be one of the following:'
-                             ' None, str(regex), list of strings (list of shell like globbing patterns) '
+            raise ValueError('"viz_cols" must be one type Optional[Union[str, List[Union[str, PlotTmpl]]]]'
                              f'and not {type(viz_cols)}')
 
         # OpenAI Gym requirements
@@ -166,8 +185,7 @@ class ModelicaEnv(gym.Env):
         self.model.enter_continuous_time_mode()
 
         # precalculating indices for more efficient lookup
-        self.model_output_idx = np.array(
-            [self.model.get_variable_valueref(k) for k in self.model_output_names])
+        self.model_output_idx = np.array([self.model.get_variable_valueref(k) for k in self.model_output_names])
 
     def _calc_jac(self, t, x) -> np.ndarray:  # noqa
         """
@@ -202,7 +220,7 @@ class ModelicaEnv(gym.Env):
         dx = self.model.get_derivatives()
         return dx
 
-    def _simulate(self) -> pd.Series:
+    def _simulate(self) -> np.ndarray:
         """
         Executes simulation by FMU in the time interval [start_time; stop_time]
         currently saved in the environment.
@@ -221,7 +239,7 @@ class ModelicaEnv(gym.Env):
         self.model.continuous_states = sol_out.y[:, -1]  # noqa
 
         obs = self.model.get_real(self.model_output_idx)
-        return pd.Series(obs, index=self.model_output_names)
+        return obs
 
     @property
     def is_done(self) -> bool:
@@ -237,28 +255,7 @@ class ModelicaEnv(gym.Env):
         logger.debug(f't: {self.sim_time_interval[1]}, ')
         return abs(self.sim_time_interval[1]) > self.time_end
 
-    def update_measurements(self, measurements: Union[pd.Series, List[Tuple[List, pd.Series]]]):
-        """
-        Store measurements into a internal field and update the columns of the history
-
-        :param measurements:
-         If provided as a list of tuples the first parameter of each tuple is a nested list of strings.
-         Each string is a column name of the pd.Series.
-         The nesting structure provides grouping that is used for visualization.
-        """
-        if isinstance(measurements, pd.Series):
-            measurements = [(measurements.index.to_list(), measurements)]
-        for cols, _ in measurements:
-            miss_col_count = len(set(flatten(cols)) - set(self.history.cols))
-            if 0 < miss_col_count < len(flatten(cols)):
-                raise ValueError('some of the columns are already added, this should not happen: '
-                                 f'cols:"{cols}"; self.history.cols:"{self.history.cols}"')
-            elif miss_col_count:
-                self.history.cols = self.history.structured_cols() + cols
-
-        self.__measurements = pd.concat(list(map(lambda ser: ser[1], measurements)))  # type: pd.Series
-
-    def reset(self) -> pd.Series:
+    def reset(self) -> np.ndarray:
         """
         OpenAI Gym API. Restarts environment and sets it ready for experiments.
         In particular, does the following:
@@ -276,22 +273,22 @@ class ModelicaEnv(gym.Env):
         self._setup_fmu()
         self.sim_time_interval = np.array([self.time_start, self.time_start + self.time_step_size])
         self.history.reset()
-        self.__state = self._simulate()
-        self.__measurements = pd.Series()
-        self.history.append(self.__state)
+        self._state = self._simulate()
+        self.measurement = []
+        self.history.append(self._state)
         self._failed = False
 
-        return self.__state
+        return self._state
 
-    def step(self, action: Sequence) -> Tuple[pd.Series, float, bool, Mapping]:
+    def step(self, action: Sequence) -> Tuple[np.ndarray, float, bool, Mapping]:
         """
         OpenAI Gym API. Determines how one simulation step is performed for the environment.
         Simulation step is execution of the given action in a current state of the environment.
 
+        The state also contains the measurement.
+
         :param action: action to be executed.
         :return: state, reward, is done, info
-
-         The state also contains the measurements passed through by update_measurements
         """
         logger.debug("Experiment next step was called.")
         if self.is_done:
@@ -299,7 +296,7 @@ class ModelicaEnv(gym.Env):
                 """You are calling 'step()' even though this environment has already returned done = True.
                 You should always call 'reset()' once you receive 'done = True' -- any further steps are
                 undefined behavior.""")
-            return self.__state, -np.inf, True, {}
+            return self._state, -np.inf, True, {}
 
         # check if action is a list. If not - create list of length 1
         try:
@@ -316,7 +313,7 @@ class ModelicaEnv(gym.Env):
             raise ValueError(message)
 
         # Set input values of the model
-        logger.debug("model input: {}, values: {}".format(self.model_input_names, action))
+        logger.debug('model input: %s, values: %s', self.model_input_names, action)
         self.model.set(list(self.model_input_names), list(action))
         if self.model_parameters:
             values = [(var, f(self.sim_time_interval[0])) for var, f in self.model_parameters.items()]
@@ -324,11 +321,11 @@ class ModelicaEnv(gym.Env):
             self.model.set(*zip(*values))
 
         # Simulate and observe result state
-        self.__state = self._simulate()
-        obs = self.__state.append(self.__measurements)
+        self._state = self._simulate()
+        obs = np.hstack((self._state, self.measurement))
         self.history.append(obs)
 
-        logger.debug("model output: {}, values: {}".format(self.model_output_names, self.__state))
+        logger.debug("model output: %s, values: %s", self.model_output_names, self._state)
 
         # Check if experiment has finished
         # Move simulation time interval if experiment continues
@@ -338,13 +335,13 @@ class ModelicaEnv(gym.Env):
         else:
             logger.debug("Experiment step done, experiment done.")
 
-        reward = self.reward(obs)
+        reward = self.reward(self.history.cols, obs)
         self._failed = np.isnan(reward) or np.isinf(reward) and reward < 0 or reward is None
 
-        # only return the state, the agent does not need the measurements
-        return self.__state, reward, self.is_done, dict(self.__measurements)
+        # only return the state, the agent does not need the measurement
+        return obs, reward, self.is_done, {}
 
-    def render(self, mode: str = 'human', close: bool = False):
+    def render(self, mode: str = 'human', close: bool = False) -> List[Figure]:
         """
         OpenAI Gym API. Determines how current environment state should be rendered.
         Does nothing at the moment
@@ -354,12 +351,15 @@ class ModelicaEnv(gym.Env):
         Used, when environment is closed.
         """
         if self.viz_mode is None:
-            return True
+            return []
         elif close:
             if self.viz_mode == 'step':
                 # TODO close plot
                 pass
             else:
+                figs = []
+
+                # plot cols by theirs structure filtered by the vis_cols param
                 for cols in self.history.structured_cols():
                     if not isinstance(cols, list):
                         cols = [cols]
@@ -368,19 +368,33 @@ class ModelicaEnv(gym.Env):
                         continue
                     df = self.history.df[cols].copy()
                     df.index = self.history.df.index * self.time_step_size
-                    df.plot(legend=True)
+
+                    fig, ax = plt.subplots()
+                    df.plot(legend=True, figure=fig, ax=ax)
                     plt.show()
+                    figs.append(fig)
+
+                # plot all templates
+                for tmpl in self.viz_col_tmpls:
+                    fig, ax = plt.subplots()
+
+                    for series, kwargs in tmpl:
+                        self.history.df[series].plot(figure=fig, ax=ax, **kwargs)
+                    tmpl.callback(fig)
+                    figs.append(fig)
+
+                return figs
 
         elif self.viz_mode == 'step':
             # TODO update plot
             pass
 
-    def close(self) -> bool:
+    def close(self) -> Tuple[bool, Any]:
         """
         OpenAI Gym API. Closes environment and all related resources.
         Closes rendering.
 
         :return: True on success
         """
-        self.render(close=True)
-        return True
+        figs = self.render(close=True)
+        return True, figs

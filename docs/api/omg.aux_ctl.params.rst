@@ -1,7 +1,7 @@
-omg.auxiliaries.filter
+omg.aux_ctl.params
 ========================================
 
-.. automodule:: openmodelica_microgrid_gym.auxiliaries.filter
+.. automodule:: openmodelica_microgrid_gym.aux_ctl.params
    :members:
    :undoc-members:
    :show-inheritance:

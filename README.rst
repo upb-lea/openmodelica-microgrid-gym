@@ -2,22 +2,37 @@
 OpenModelica Microgrid Gym
 ==========================
 
-.. image:: https://travis-ci.org/upb-lea/openmodelica-microgrid-gym.svg?branch=master
+| |build| |cov| |nbsp| |nbsp| |python| |pypi| |download| |nbsp| |nbsp| |license|
+| |doc| |whitepaper|
+
+.. |nbsp|   unicode:: U+00A0 .. NO-BREAK SPACE
+
+.. |build| image:: https://travis-ci.org/upb-lea/openmodelica-microgrid-gym.svg?branch=master
     :target: https://travis-ci.org/github/upb-lea/openmodelica-microgrid-gym
 
-.. image:: https://img.shields.io/badge/doc-success-success
-    :target: https://upb-lea.github.io/openmodelica-microgrid-gym
-
-.. image:: https://codecov.io/gh/upb-lea/openmodelica-microgrid-gym/branch/master/graph/badge.svg
+.. |cov| image:: https://codecov.io/gh/upb-lea/openmodelica-microgrid-gym/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/upb-lea/openmodelica-microgrid-gym
 
-.. image:: https://img.shields.io/pypi/v/openmodelica_microgrid_gym.svg
+.. |license| image:: https://img.shields.io/github/license/upb-lea/openmodelica-microgrid-gym
+    :target: LICENSE
+
+.. |python| image:: https://img.shields.io/pypi/pyversions/openmodelica-microgrid-gym
     :target: https://pypi.python.org/pypi/openmodelica_microgrid_gym
 
-.. image:: https://img.shields.io/github/license/upb-lea/openmodelica-microgrid-gym
-     :target: LICENSE
+.. |pypi| image:: https://img.shields.io/pypi/v/openmodelica_microgrid_gym
+    :target: https://pypi.python.org/pypi/openmodelica_microgrid_gym
 
-.. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/raw/master/docs/pictures/microgrid.jpg
+.. |download| image:: https://img.shields.io/pypi/dw/openmodelica-microgrid-gym
+    :target: https://pypistats.org/packages/openmodelica-microgrid-gym
+
+.. |doc| image:: https://img.shields.io/badge/doc-success-success
+    :target: https://upb-lea.github.io/openmodelica-microgrid-gym
+
+.. |whitepaper| image:: https://img.shields.io/badge/arXiv-whitepaper-informational
+    :target: https://arxiv.org/pdf/2005.04869.pdf
+
+
+.. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/raw/develop/docs/pictures/omg_flow.png
 
 **The OpenModelica Microgrid Gym (OMG) package is a software toolbox for the
 simulation and control optimization of microgrids based on energy conversion by power electronic converters.**
@@ -43,13 +58,9 @@ Install Python Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 Since it is not possible to install PyFMI_, a package which is necessary for the communication between the python interface and the environment, via pip, we recommend to install this package in advance in a conda environment.
 
-- If conda is NOT installed on your PC, install miniconda for python 3.7::
-
-    $ https://conda.io/en/latest/miniconda.html
-
-- Create a new conda environment (for example in pycharm)
-
-- Install PyFMI from condaforge in terminal::
+- If conda is NOT installed on your PC, install miniconda_ for python 3.8
+- Create a new conda environment (e.g. in PyCharm)
+- Install PyFMI from the conda-forge channel in the terminal::
 
     $ conda install -c conda-forge pyfmi
 
@@ -59,6 +70,7 @@ Since it is not possible to install PyFMI_, a package which is necessary for the
     $ pip install openmodelica_microgrid_gym
 
 
+.. _miniconda: https://conda.io/en/latest/miniconda.html
 .. _PyFMI: https://github.com/modelon-community/PyFMI
 
 Installation of OpenModelica
@@ -66,8 +78,7 @@ Installation of OpenModelica
 
 OMG was create by using OMEdit_ v1.16
 
-
-Installation of OMEdit might cause some problems with some Arch Linux distributions. In this case, try to download the pre-built `virtual machine`_.
+In case of installation issues you can resort to their pre-built `virtual machine`_.
 
 .. _OMEdit: https://openmodelica.org/download/download-windows
 .. _virtual machine: https://openmodelica.org/download/virtual-machine
@@ -119,13 +130,18 @@ A save Bayesian approach of a reinforcement learning agent is provided under exa
     :figwidth: 60%
     :align: center
 
-Citation
---------
+Citation & white paper
+----------------------
+
+Please find a white paper on the OMG toolbox including an exemplary usage scenario here:
+
+- https://arxiv.org/abs/2005.04869
 
 Please use the following BibTeX entry for citing us::
 
     @misc{OMG2020,
-        title={Towards a Scalable and Flexible Simulation and Testing Environment Toolbox for Intelligent Microgrid Control},
+        title={Towards a Scalable and Flexible Simulation and
+               Testing Environment Toolbox for Intelligent Microgrid Control},
         author={Henrik Bode and Stefan Heid and Daniel Weber and Eyke Hüllermeier and Oliver Wallscheid},
         year={2020},
         eprint={http://arxiv.org/abs/2005.04869},
