@@ -9,15 +9,16 @@ from typing import List
 
 import GPy
 import gym
+import numpy as np
 
 import matplotlib.pyplot as plt
 
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
-from openmodelica_microgrid_gym.auxiliaries import PI_params, DroopParams, MutableFloat, \
-    MultiPhaseDQCurrentSourcingController, nested_map
-from openmodelica_microgrid_gym.common import *
-from openmodelica_microgrid_gym.env import FullHistory
+from openmodelica_microgrid_gym.agents.util import MutableFloat
+from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQCurrentSourcingController
+from openmodelica_microgrid_gym.env import PlotTmpl
+from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 
 # Choose which controller parameters should be adjusted by SafeOpt.
 # - Kp: 1D example: Only the proportional gain Kp of the PI controller is adjusted
@@ -33,7 +34,7 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 300  # number of simulation steps per episode
-num_episodes = 10  # number of simulation episodes (i.e. SafeOpt iterations)
+num_episodes = 5  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -186,15 +187,26 @@ if __name__ == '__main__':
     # Using an inverter supplying a load
     # - using the reward function described above as callable in the env
     # - viz_cols used to choose which measurement values should be displayed (here, only the 3 currents across the
-    #   inductors of the inverters are plotted. Alternatively, the grid frequency and the currents transformed by
-    #   the agent to the dq0 system can be plotted if requested.)
+    #   inductors of the inverters are plotted. Labels and grid is adjusted using the PlotTmpl (For more information,
+    #   see UserGuide)
     # - inputs to the models are the connection points to the inverters (see user guide for more details)
     # - model outputs are the the 3 currents through the inductors and the 3 voltages across the capacitors
+
+    def xylables(fig):
+        ax = fig.gca()
+        ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+        ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
+        ax.grid(which='both')
+        #fig.savefig('Inductor_currents.pdf')
+
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=Reward().rew_fun,
                    time_step=delta_t,
-                   # viz_cols=['master.freq', 'master.CVI*', 'lc1.ind*'],
-                   viz_cols=['lc1.ind*'],
+                   viz_cols=[
+                       PlotTmpl([f'lc1.inductor{i}.i' for i in '123'],
+                                callback=xylables
+                                )
+                   ],
                    log_level=logging.INFO,
                    viz_mode='episode',
                    max_episode_steps=max_episode_steps,
@@ -222,17 +234,14 @@ if __name__ == '__main__':
 
 
     # Show best episode measurment (current) plot
-    best_env_plt = runner.best_episode['best_env_plt']
+    best_env_plt = runner.run_data['best_env_plt']
     ax = best_env_plt[0].axes[0]
-    ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
-    ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
-    ax.grid(which='both')
     ax.set_title('Best Episode')
     best_env_plt[0].show()
     best_env_plt[0].savefig('best_env_plt.png')
 
     # Show last performance plot
-    best_agent_plt = runner.agent.figure
+    best_agent_plt = runner.run_data['last_agent_plt']
     ax = best_agent_plt.axes[0]
     ax.grid(which='both')
     ax.set_axisbelow(True)
@@ -251,5 +260,5 @@ if __name__ == '__main__':
         plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4,
                  alpha=.5)
     best_agent_plt.show()
-    best_agent_plt.savefig('best_agent_plt.png')
+    best_agent_plt.savefig('agent_plt.png')
 

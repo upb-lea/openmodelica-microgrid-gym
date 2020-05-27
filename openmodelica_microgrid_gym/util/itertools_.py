@@ -1,8 +1,8 @@
-from typing import Callable, Mapping, Union, List, Any, Tuple
+from typing import Callable, Mapping, Union, Any, List
 
+import numpy as np
 import pandas as pd
 from more_itertools import collapse
-import numpy as np
 
 
 def flatten(data: Union[dict, list], remaining_levels: int = 0) -> list:
@@ -98,3 +98,33 @@ def fill_params(template: Union[list, tuple, Mapping, np.ndarray], data: Union[p
 
     # keep key if there is no substitute
     return nested_map(lambda k: data.get(k, k), template)
+
+
+def flatten_together(structure: List[Union[List, Any]], values: Union[Any, List[Union[List, Any]]]):
+    """
+    Flattens and fills a list of values relative to the groupings provided by the structure parameter.
+    The explicit values in the structure parameter are ignored. Only the nesting structure is of importance.
+    If a single value is provided it is simply repeated as often as the structure has values
+
+    e.g. when called with :code:`[[0, 0], [0, 0]]` and :code:`[[0, None], 4]` it will detect the grouping
+    and return :code:`[0, None, 4, 4]`
+
+
+    :param structure: nested list used as a template
+    :param values: values matched to the list
+    :return: flattened and filled list of values
+    """
+    if not isinstance(structure, list):
+        if isinstance(values, list):
+            raise ValueError('There where to many nestings in the values')
+        return values
+    if not isinstance(values, list):
+        values = [values]
+    if len(structure) < len(values):
+        return flatten_together(collapse(structure, base_type=tuple, levels=1), values)
+    elif len(structure) > len(values):
+        # if structure has more elements we need to repeat value elements
+        values = values * (len(structure) // len(values))
+        if len(structure) != len(values):
+            raise ValueError('stuff does not match up')
+    return list(collapse([flatten_together(s, v) for s, v in zip(structure, values)], base_type=tuple))

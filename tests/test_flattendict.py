@@ -1,8 +1,8 @@
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
 
-from openmodelica_microgrid_gym.common.itertools_ import fill_params, flatten, nested_map, nested_depth
+from openmodelica_microgrid_gym.util import fill_params, flatten, nested_map, nested_depth
 
 conf = {
     'lc1': [

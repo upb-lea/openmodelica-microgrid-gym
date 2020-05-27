@@ -7,8 +7,8 @@ from pytest import approx
 from openmodelica_microgrid_gym import Runner, Agent
 from openmodelica_microgrid_gym.agents import StaticControlAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat
-from openmodelica_microgrid_gym.auxiliaries import *
-from openmodelica_microgrid_gym.common.itertools_ import flatten
+from openmodelica_microgrid_gym.aux_ctl import *
+from openmodelica_microgrid_gym.util import flatten
 
 
 @pytest.fixture

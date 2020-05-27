@@ -13,7 +13,7 @@ import numpy as np
 
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import StaticControlAgent
-from openmodelica_microgrid_gym.auxiliaries import PI_params, DroopParams, MultiPhaseDQ0PIPIController, \
+from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQ0PIPIController, \
     MultiPhaseDQCurrentController, InverseDroopParams, PLLParams
 
 # Simulation definitions

@@ -21,7 +21,7 @@ For the creation of additional grid constellations, Openmodelica (nightly build 
    :titlesonly:
    :caption: User Guide:
 
-   parts/user_guide/user_guide
+   parts/user_guide/getting_started
    parts/user_guide/OpenModelica
    parts/user_guide/fmu
    parts/user_guide/Pythoncode
@@ -35,8 +35,8 @@ For the creation of additional grid constellations, Openmodelica (nightly build 
    :caption: API:
 
    api/omg.agents
-   api/omg.auxiliaries
-   api/omg.common
+   api/omg.aux_ctl
+   api/omg.util
    api/omg.env
    api/omg.execution
 

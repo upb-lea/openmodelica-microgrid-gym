@@ -6,11 +6,12 @@ import GPy
 import matplotlib.pyplot as plt
 import numpy as np
 from GPy.kern import Kern
+from matplotlib.figure import Figure
 from safeopt import SafeOptSwarm
 
 from openmodelica_microgrid_gym.agents.staticctrl import StaticControlAgent
 from openmodelica_microgrid_gym.agents.util import MutableParams
-from openmodelica_microgrid_gym.auxiliaries import Controller
+from openmodelica_microgrid_gym.aux_ctl import Controller
 
 logger = logging.getLogger(__name__)
 
@@ -62,12 +63,10 @@ class SafeOptAgent(StaticControlAgent):
         self.last_best_performance = None
         self.performance = None
 
-        self.best_episode = 0
         self._iterations = 0
 
         super().__init__(ctrls, obs_template, obs_varnames, **kwargs)
         self.history.cols = ['J', 'Params']
-        self.figure = None
 
     def reset(self):
         """
@@ -89,7 +88,6 @@ class SafeOptAgent(StaticControlAgent):
         self.last_best_performance = None
         self.performance = None
 
-        self.best_episode = 0
         self._iterations = 0
 
         return super().reset()
@@ -125,7 +123,6 @@ class SafeOptAgent(StaticControlAgent):
             # Norm for Safe-point
             # J = 1 / self.episode_reward / self.inital_Performance
 
-
             self.last_best_performance = self.performance
 
             # Define Mean "Offset": Like BK: Assume Mean = Threshold (BK = 0, now = 20% below first (safe) J: means: if
@@ -135,7 +132,7 @@ class SafeOptAgent(StaticControlAgent):
             mf.update_gradients = lambda a, b: 0
             mf.gradients_X = lambda a, b: 0
 
-            gp = GPy.models.GPRegression(np.array([self.params[:]]), # noqa
+            gp = GPy.models.GPRegression(np.array([self.params[:]]),  # noqa
                                          np.array([[self.performance]]), self.kernel,
                                          noise_var=self.noise_var, mean_function=mf)
             self.optimizer = SafeOptSwarm(gp, self.safe_threshold * self.performance, bounds=self.bounds,
@@ -150,8 +147,6 @@ class SafeOptAgent(StaticControlAgent):
                 logger.warning('UNSAFE! Limit exceeded, epsiode abort, give a reward of {} times the'
                                'initial reward'.format(self.abort_reward))
 
-
-
             self.optimizer.add_new_data_point(self.params[:], self.performance)
 
         self.history.append([self.performance, self.params[:]])
@@ -159,21 +154,19 @@ class SafeOptAgent(StaticControlAgent):
 
         if self.has_improved:
             # if performance has improved store the current last index of the df
-            self.best_episode = self.history.df.shape[0]-1
+            self.best_episode = self.history.df.shape[0] - 1
 
             self.last_best_performance = self.performance
 
-
-    def render(self):
+    def render(self) -> Figure:
         """
         Renders the results for the performance
         """
-        self.figure = plt.figure()
-        self.optimizer.plot(1000, figure = self.figure)
+        figure, ax = plt.subplots()
+        self.optimizer.plot(1000, figure=figure)
 
         # mark best performance in green
-        y,x = self.history.df.loc[self.best_episode, ['J', 'Params']]
-        ax = self.figure.gca()
+        y, x = self.history.df.loc[self.best_episode, ['J', 'Params']]
 
         if len(x) == 1:
             ax.scatter([x], [y], s=20 * 10, marker='x', linewidths=3, color='g')
@@ -183,6 +176,7 @@ class SafeOptAgent(StaticControlAgent):
             logger.warning('Choose appropriate numer of control parameters')
 
         plt.show()
+        return figure
 
     def prepare_episode(self):
         """
@@ -200,5 +194,3 @@ class SafeOptAgent(StaticControlAgent):
         :return: True, if performance was increased or equal, else False
         """
         return self.performance >= self.last_best_performance
-
-

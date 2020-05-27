@@ -1,10 +1,14 @@
-import numpy as np
+from typing import List, Union
 
-from openmodelica_microgrid_gym.env import EmptyHistory, ModelicaEnv, List, Union
+import numpy as np
+from matplotlib.figure import Figure
+
+from openmodelica_microgrid_gym.env import ModelicaEnv
+from openmodelica_microgrid_gym.util import EmptyHistory
 
 
 class Agent:
-    def __init__(self, obs_varnames: List[str] = None, history: EmptyHistory = EmptyHistory(), env: ModelicaEnv = None):
+    def __init__(self, obs_varnames: List[str] = None, history: EmptyHistory = None, env: ModelicaEnv = None):
         """
         Abstract base class for all Agents. The agent can act on the environment and observe its result.
         This class is aims to wrap the whole learning process into a class to simplify the implementation.
@@ -17,7 +21,7 @@ class Agent:
         :param env: reference to the environment (only needed when used in internal act function)
         """
         self.env = env
-        self.history = history
+        self.history = history or EmptyHistory()
         self.obs_varnames = obs_varnames
 
     def reset(self):
@@ -67,7 +71,7 @@ class Agent:
         """
         return np.empty(0)
 
-    def render(self):
+    def render(self) -> Figure:
         """
         Visualisation of the agent, e.g. its learning state or similar
         """
@@ -86,4 +90,4 @@ class Agent:
         Does not learn, can never improve
 
         """
-        pass
+        return False

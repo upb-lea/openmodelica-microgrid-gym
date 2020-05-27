@@ -4,7 +4,7 @@ from typing import List, Mapping, Union
 import numpy as np
 
 from openmodelica_microgrid_gym.agents import Agent
-from openmodelica_microgrid_gym.auxiliaries import Controller
+from openmodelica_microgrid_gym.aux_ctl import Controller
 
 
 class ObsTempl:
