@@ -25,7 +25,10 @@ class Runner:
         """
         :type dict:
         
-        blabla
+        Stores information about the best episode from the experiment.
+        best_env_plt - environment best plots
+        i - index of best episode
+        
         """
 
     def run(self, n_episodes: int = 10, visualise: bool = False):
@@ -58,10 +61,8 @@ class Runner:
             _, env_fig = self.env.close()
 
             if visualise:
-                agent_fig = self.agent.render()
+                self.agent.render()
 
             if i == 0 or self.agent.has_improved:
-                # self.best_episode['best_agent_plt'] = self.agent.figure
                 self.best_episode['best_env_plt'] = env_fig
-                self.best_episode['best_episode_idx'] = agent_fig
                 self.best_episode['i'] = i
