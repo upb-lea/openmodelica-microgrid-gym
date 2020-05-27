@@ -5,7 +5,8 @@ from openmodelica_microgrid_gym.env import PlotTmpl
 if __name__ == '__main__':
     def second_plot(fig):
         ax = fig.gca()
-        ax.legend(['line'])
+        ax.set_ylabel('y label!')
+        ax.set_xlabel('$t\,/\,\mathrm{ms}$')
         fig.savefig('plot2.pdf')
 
 
@@ -16,10 +17,13 @@ if __name__ == '__main__':
                                 callback=lambda fig: fig.savefig('plot.pdf'),
                                 linewidth=4,
                                 style=[None, '--', '*'],
+                                linestyle=['None', None, None],
                                 marker=[r'$\heartsuit$', None, None],
                                 c=['pink', None, None],
-                                linestyle=['None', None, None]),
-                       PlotTmpl(['lc1.inductor1.i'], callback=second_plot)
+                                title='test'),
+                       PlotTmpl(['lc1.inductor1.i', 'lc1.inductor2.i'], callback=second_plot,
+                                legend=[False, True],
+                                label=[None, 'something'])
                    ],
                    model_input=['i1p1', 'i1p2', 'i1p3'],
                    max_episode_steps=None,

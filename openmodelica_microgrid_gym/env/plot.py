@@ -67,8 +67,6 @@ class PlotTmpl:
             self.kwargs.append(args_)
 
     def callback(self, fig):
-        fig.gca().legend(self.vars)
-
         if self._callback is not None:
             self._callback(fig)
 

@@ -1,3 +1,5 @@
+from typing import Dict, Any
+
 from tqdm import tqdm
 
 from openmodelica_microgrid_gym.agents import Agent
@@ -19,8 +21,12 @@ class Runner:
         self.env = env
         self.agent = agent
         self.agent.env = env
-        self.best_episode = dict()
-
+        self.best_episode = dict()  # type: Dict[str,Any]
+        """
+        :type dict:
+        
+        blabla
+        """
 
     def run(self, n_episodes: int = 10, visualise: bool = False):
         """
@@ -49,7 +55,7 @@ class Runner:
                 if done:
                     break
             self.agent.observe(r, done)
-            _ , env_fig = self.env.close()
+            _, env_fig = self.env.close()
 
             if visualise:
                 agent_fig = self.agent.render()
