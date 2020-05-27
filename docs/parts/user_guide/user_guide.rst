@@ -1,7 +1,7 @@
 Getting Started
 ===============
 
-.. figure:: ../../pictures/microgrid.jpg
+.. figure:: ../../pictures/omg_flow.png
    :alt: 
 
 This user guide covers all of OpenModelica Microgrids Gym (OMG) toolbox features by

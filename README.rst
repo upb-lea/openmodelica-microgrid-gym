@@ -29,7 +29,7 @@ OpenModelica Microgrid Gym
     :target: https://arxiv.org/pdf/2005.04869.pdf
 
 
-.. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/raw/master/docs/pictures/microgrid.jpg
+.. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/raw/develop/docs/pictures/omg_flow.png
 
 **The OpenModelica Microgrid Gym (OMG) package is a software toolbox for the
 simulation and control optimization of microgrids based on energy conversion by power electronic converters.**
