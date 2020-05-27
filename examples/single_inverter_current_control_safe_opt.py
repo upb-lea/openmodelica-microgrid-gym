@@ -234,14 +234,14 @@ if __name__ == '__main__':
 
 
     # Show best episode measurment (current) plot
-    best_env_plt = runner.best_episode['best_env_plt']
+    best_env_plt = runner.run_data['best_env_plt']
     ax = best_env_plt[0].axes[0]
     ax.set_title('Best Episode')
     best_env_plt[0].show()
     best_env_plt[0].savefig('best_env_plt.png')
 
     # Show last performance plot
-    best_agent_plt = runner.best_episode['agent_plt']
+    best_agent_plt = runner.run_data['last_agent_plt']
     ax = best_agent_plt.axes[0]
     ax.grid(which='both')
     ax.set_axisbelow(True)

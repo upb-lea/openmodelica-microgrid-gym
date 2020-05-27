@@ -21,13 +21,13 @@ class Runner:
         self.env = env
         self.agent = agent
         self.agent.env = env
-        self.best_episode = dict()  # type: Dict[str,Any]
+        self.run_data = dict()  # type: Dict[str,Any]
         """
         :type dict:
         
-        Stores information about the best episode from the experiment.
+        Stores information about the experiment.
         best_env_plt - environment best plots
-        i - index of best episode
+        best_episode_idx - index of best episode
         agent_plt - last agent plot
         
         """
@@ -64,8 +64,8 @@ class Runner:
             if visualise:
                 agent_fig = self.agent.render()
 
-            self.best_episode['agent_plt'] = agent_fig
+            self.run_data['last_agent_plt'] = agent_fig
 
             if i == 0 or self.agent.has_improved:
-                self.best_episode['best_env_plt'] = env_fig
-                self.best_episode['i'] = i
+                self.run_data['best_env_plt'] = env_fig
+                self.run_data['best_episode_idx'] = i
