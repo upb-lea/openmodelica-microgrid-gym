@@ -2,7 +2,7 @@
 OpenModelica Microgrid Gym
 ==========================
 
-| |build| |cov| |nbsp| |python| |pypi| |download| |nbsp| |license|
+| |build| |cov| |nbsp| |nbsp| |python| |pypi| |download| |nbsp| |nbsp| |license|
 | |doc| |whitepaper|
 
 .. |nbsp|   unicode:: U+00A0 .. NO-BREAK SPACE
