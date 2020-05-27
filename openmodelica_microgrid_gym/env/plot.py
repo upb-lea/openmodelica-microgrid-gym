@@ -1,6 +1,7 @@
 from typing import List, Union, Callable, Optional
 
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
 from more_itertools import collapse
 
 from openmodelica_microgrid_gym.util import flatten_together
@@ -69,6 +70,7 @@ class PlotTmpl:
     def callback(self, fig):
         if self._callback is not None:
             self._callback(fig)
+        plt.show()
 
     def __iter__(self):
         self.i = -1
