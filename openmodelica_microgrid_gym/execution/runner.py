@@ -23,13 +23,11 @@ class Runner:
         self.agent.env = env
         self.run_data = dict()  # type: Dict[str,Any]
         """
-        :type dict:
+        Dictionary storing information about the experiment.
         
-        Stores information about the experiment.
-        best_env_plt - environment best plots
-        best_episode_idx - index of best episode
-        agent_plt - last agent plot
-        
+        - "best_env_plt": environment best plots
+        - "best_episode_idx": index of best episode
+        - "agent_plt": last agent plot
         """
 
     def run(self, n_episodes: int = 10, visualise: bool = False):

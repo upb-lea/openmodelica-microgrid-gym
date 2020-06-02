@@ -67,7 +67,16 @@ class PlotTmpl:
                     args_[k] = v
             self.kwargs.append(args_)
 
-    def callback(self, fig):
+    def callback(self, fig: Figure):
+        """
+        Will be called in the ModelicaEnv.render() once all plotting is finished.
+        This function enables the user to specify more modifications to apply to the figure.
+        The function will call the callable passed in the constructor.
+        Additionally the figure is plotted by this function.
+
+        :param fig: Finished figure that is one might want to modify.
+        :return:
+        """
         if self._callback is not None:
             self._callback(fig)
         plt.show()
