@@ -31,7 +31,7 @@ class Controller:
         self._ts = tau * undersampling
         self._undersample = undersampling
 
-        self._currentPI = MultiPhasePIController(IPIParams, self._ts)
+        self._internalPI = MultiPhasePIController(IPIParams, self._ts)
 
         # defining memory variables
         self._undersampling_count = None
@@ -50,7 +50,7 @@ class Controller:
         self._undersampling_count = self._undersample
         self._stored_control = np.zeros(N_PHASE)
 
-        self._currentPI.reset()
+        self._internalPI.reset()
 
     def step(self, currentCV: np.ndarray, voltageCV: np.ndarray, *args, **kwargs):
         """
@@ -175,7 +175,7 @@ class MultiPhaseABCPIPIController(VoltageCtl):
         SPI = self._voltagePI.step(SPV, voltageCV)
 
         # Average voltages from modulation indices created by current controller
-        return self._currentPI.step(SPI, currentCV)
+        return self._internalPI.step(SPI, currentCV)
 
 
 class MultiPhaseDQ0PIPIController(VoltageCtl):
@@ -237,7 +237,7 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
         SPIdq0 = self._voltagePI.step(SPVdq0, CVVdq0)
 
         # Current controller calculations
-        MVdq0 = self._currentPI.step(SPIdq0, CVIdq0)
+        MVdq0 = self._internalPI.step(SPIdq0, CVIdq0)
 
         # Add intern measurment
         self.history.append([phase, *SPVdq0, *SPIdq0, *CVVdq0, *CVIdq0, *MVdq0, instPow, instQ, freq])
@@ -328,7 +328,7 @@ class MultiPhaseDQCurrentController(CurrentCtl):
         # Calculate the control applied to the DQ0 currents
         # action space is limited to [-1,1]
 
-        MVdq0 = self._currentPI.step(idq0SP, self._lastIDQ)
+        MVdq0 = self._internalPI.step(idq0SP, self._lastIDQ)
         # Transform the outputs from the controllers (dq0) to abc
         # also divide by SQRT(2) to ensure the transform is limited to [-1,1]
 
@@ -393,7 +393,7 @@ class MultiPhaseDQCurrentSourcingController(VoltageCtl):
         SPIdq0 = idq0SP
 
         # Current controller calculations
-        MVdq0 = self._currentPI.step(SPIdq0, CVIdq0)
+        MVdq0 = self._internalPI.step(SPIdq0, CVIdq0)
 
         # Add intern measurment
         self.history.append([phase, *CVVdq0, *CVIdq0, *SPIdq0, *MVdq0, instPow, instQ, freq])

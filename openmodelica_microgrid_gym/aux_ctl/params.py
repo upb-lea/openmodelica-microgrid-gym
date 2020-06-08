@@ -124,7 +124,7 @@ class PLLParams(PI_params):
 
     def __init__(self, kP: Union[MutableFloat, float], kI: Union[MutableFloat, float],
                  limits: Union[Tuple[MutableFloat, MutableFloat], Tuple[float, float]],
-                 kB: Union[MutableFloat, float] = 1, f_nom: float = 0, theta_0: float = 0):
+                 kB: Union[MutableFloat, float] = 1, f_nom: float = 50, theta_0: float = 0):
         """
         :param kP: Proportional gain
         :param kI: Intergral gain
