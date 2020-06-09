@@ -5,6 +5,7 @@
 
 
 import logging
+from time import strftime, gmtime
 from typing import List
 
 import GPy
@@ -16,7 +17,8 @@ import matplotlib.pyplot as plt
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat
-from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQCurrentSourcingController
+from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQCurrentSourcingController, \
+    MultiPhaseDQ0PIPIController
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 
@@ -34,7 +36,7 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 300  # number of simulation steps per episode
-num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
+num_episodes = 30  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -54,7 +56,8 @@ class Reward:
         if self._idx is None:
             self._idx = nested_map(
                 lambda n: obs.index(n),
-                [[f'lc1.inductor{k}.i' for k in '123'], 'master.phase', [f'master.SPI{k}' for k in 'dq0']])
+                [[f'lc1.inductor{k}.i' for k in '123'], 'master.phase', [f'master.SPI{k}' for k in 'dq0'],
+                 [f'lc1.capacitor{k}.v' for k in '123'], [f'master.SPV{k}' for k in 'dq0']])
 
     def rew_fun(self, cols: List[str], data: np.ndarray) -> float:
         """
@@ -72,10 +75,14 @@ class Reward:
 
         Iabc_master = data[idx[0]]  # 3 phase currents at LC inductors
         phase = data[idx[1]]  # phase from the master controller needed for transformation
+        Vabc_master = data[idx[3]]  # 3 phase currents at LC inductors
 
         # setpoints
         ISPdq0_master = data[idx[2]]  # setting dq reference
         ISPabc_master = dq0_to_abc(ISPdq0_master, phase)  # convert dq set-points into three-phase abc coordinates
+        VSPdq0_master = data[idx[4]]  # setting dq reference
+        VSPabc_master = dq0_to_abc(VSPdq0_master, phase)  # convert dq set-points into three-phase abc coordinates
+
 
         # control error = mean-root-error (MRE) of reference minus measurement
         # (due to normalization the control error is often around zero -> compared to MSE metric, the MRE provides
@@ -83,8 +90,11 @@ class Reward:
         # plus barrier penalty for violating the current constraint
         error = np.sum((np.abs((ISPabc_master - Iabc_master)) / iLimit) ** 0.5, axis=0) \
                 + -np.sum(mu * np.log(1 - np.maximum(np.abs(Iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0) \
-                * max_episode_steps
+                * max_episode_steps \
+                + np.sum((np.abs((VSPabc_master - Vabc_master)) / nomVoltPeak) ** 0.5, axis=0)
 
+        if np.isnan(error):
+            asd=1
         return -error.squeeze()
 
 
@@ -108,8 +118,8 @@ if __name__ == '__main__':
 
     # For 2D example, choose Kp and Ki as mutable parameters (below) and define bounds and lengthscale for both of them
     if adjust == 'Kpi':
-        bounds = [(0.0, 0.03), (0, 300)]
-        lengthscale = [.01, 50.]
+        bounds = [(0.0, 0.03), (0, 300),(0.0, 0.03), (0, 300)]
+        lengthscale = [.005, 10.,.005, 10.]
 
     # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
     # the initial performance: safe_threshold = 1.2 means. Performance measurement for optimization are seen as
@@ -148,7 +158,12 @@ if __name__ == '__main__':
 
     # For 2D example, choose Kp and Ki as mutable parameters
     elif adjust == 'Kpi':
-        mutable_params = dict(currentP=MutableFloat(10e-3), currentI=MutableFloat(10))
+        mutable_params = dict(currentP=MutableFloat(10e-3), currentI=MutableFloat(10), voltageP=MutableFloat(25e-3),
+                              voltageI=MutableFloat(60))
+        #mutable_params = dict(currentP=MutableFloat(0e-3), currentI=MutableFloat(0), voltageP=MutableFloat(0e-3),
+         #                     voltageI=MutableFloat(0))
+
+        voltage_dqp_iparams = PI_params(kP=mutable_params['voltageP'], kI=mutable_params['voltageI'], limits=(-iLimit, iLimit))
         current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
 
     # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
@@ -161,7 +176,7 @@ if __name__ == '__main__':
     qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
 
     # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
-    ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, droop_param, qdroop_param,
+    ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param, qdroop_param,
                                                  undersampling=2, name='master')
 
     #####################################
@@ -177,7 +192,7 @@ if __name__ == '__main__':
                          [ctrl],
                          dict(master=[[f'lc1.inductor{k}.i' for k in '123'],
                                       [f'lc1.capacitor{k}.v' for k in '123'],
-                                      i_ref]),
+                                      ]),
                          history=FullHistory()
                          )
 
@@ -192,19 +207,44 @@ if __name__ == '__main__':
     # - inputs to the models are the connection points to the inverters (see user guide for more details)
     # - model outputs are the the 3 currents through the inductors and the 3 voltages across the capacitors
 
-    def xylables(fig):
+    def xylables_i(fig):
         ax = fig.gca()
         ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
         ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
-        #fig.savefig('Inductor_currents.pdf')
+        #timestamps = df.index.strftime("%Y-%m-%d %H:%M:%S")
+        time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        fig.savefig('plts/Inductor_currents'+time+'.pdf')
+
+    def xylables_v_abc(fig):
+        ax = fig.gca()
+        ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+        ax.set_ylabel('$v_{\mathrm{abc}}\,/\,\mathrm{V}$')
+        ax.grid(which='both')
+        time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        fig.savefig('plts/abc_voltage' + time + '.pdf')
+
+
+    def xylables_v_dq0(fig):
+        ax = fig.gca()
+        ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+        ax.set_ylabel('$v_{\mathrm{dq0}}\,/\,\mathrm{V}$')
+        ax.grid(which='both')
+        time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        fig.savefig('plts/dq0_voltage' + time + '.pdf')
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=Reward().rew_fun,
                    time_step=delta_t,
                    viz_cols=[
                        PlotTmpl([f'lc1.inductor{i}.i' for i in '123'],
-                                callback=xylables
+                                callback=xylables_i
+                                ),
+                       PlotTmpl([f'lc1.capacitor{i}.v' for i in '123'],
+                                callback=xylables_v_abc
+                                ),
+                       PlotTmpl([f'master.CVV{i}' for i in 'dq0'],
+                                callback=xylables_v_dq0
                                 )
                    ],
                    log_level=logging.INFO,
@@ -225,7 +265,9 @@ if __name__ == '__main__':
 
     runner.run(num_episodes, visualise=True)
 
-    print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df[:]))
+    agent.history.df.to_csv('plts/result.csv')
+
+    print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df.round({'J': 4, 'Params': 4})))
 
     print('\n Experiment finished with best set: \n')
     print('\n  {} = {}' .format(adjust, agent.history.df.at[np.argmax(agent.history.df['J']),'Params']))
@@ -235,11 +277,14 @@ if __name__ == '__main__':
 
     # Show best episode measurment (current) plot
     best_env_plt = runner.run_data['best_env_plt']
-    ax = best_env_plt[0].axes[0]
-    ax.set_title('Best Episode')
-    best_env_plt[0].show()
-    best_env_plt[0].savefig('best_env_plt.png')
+    for ii in range(len(best_env_plt)):
+        ax = best_env_plt[ii].axes[0]
+        ax.set_title('Best Episode')
+        best_env_plt[ii].show()
+        #best_env_plt[0].savefig('best_env_plt.png')
 
+    asd = 1
+    """
     # Show last performance plot
     best_agent_plt = runner.run_data['last_agent_plt']
     ax = best_agent_plt.axes[0]
@@ -262,3 +307,4 @@ if __name__ == '__main__':
     best_agent_plt.show()
     best_agent_plt.savefig('agent_plt.png')
 
+    """

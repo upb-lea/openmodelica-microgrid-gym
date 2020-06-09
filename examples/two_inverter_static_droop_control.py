@@ -86,7 +86,7 @@ if __name__ == '__main__':
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode='episode',
                    # viz_cols=['*.m[dq0]', 'slave.freq', 'lcl1.*'],
-                   #viz_cols=['master.inst*', 'slave.inst*', 'lcl1.*', 'lc1.*', 'slave.freq'],
+                   viz_cols=['master.inst*', 'slave.inst*', 'lcl1.*', 'lc1.*', 'slave.freq'],
                    log_level=logging.INFO,
                    max_episode_steps=max_episode_steps,
                    model_params={'rl1.resistor1.R': partial(load_step,gain=20),
