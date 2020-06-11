@@ -29,7 +29,8 @@ class PlotTmpl:
         self._callback = callback
 
         # set colors None if not provided
-        if not (colorkey := ({'c', 'color'} & set(kwargs.keys()))):
+        colorkey = ({'c', 'color'} & set(kwargs.keys()))
+        if not colorkey:
             kwargs['c'] = None
             colorkey = 'c'
         elif len(colorkey) > 1:
@@ -44,9 +45,11 @@ class PlotTmpl:
         # apply to a group only if all color values are none inside that group
         if colorkey:
             # if all elements in the variables are lists and they are all of equal length
-            if len(lengths := set([isinstance(l, list) and len(l) for l in variables])) == 1:
+            lengths = set([isinstance(l, list) and len(l) for l in variables])
+            if len(lengths) == 1:
                 # set contains either the length of all lists or false if all values where non-list values
-                if length := lengths.pop():
+                length = lengths.pop()
+                if length:
                     for groups in range(len(variables)):
                         for i in range(length):
                             if args[colorkey][length * groups + i] is None:
