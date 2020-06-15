@@ -12,9 +12,11 @@ import gym
 import numpy as np
 
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
+from openmodelica_microgrid_gym.agents.safeopt_remote import remote_SafeOptAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat
 from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQCurrentSourcingController
 from openmodelica_microgrid_gym.env import PlotTmpl
@@ -25,6 +27,7 @@ from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 # - Ki: 1D example: Only the integral gain Ki of the PI controller is adjusted
 # - Kpi: 2D example: Kp and Ki are adjusted simultaneously
 
+
 adjust = 'Kpi'
 
 # Check if really only one simulation scenario was selected
@@ -34,8 +37,8 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 300  # number of simulation steps per episode
-num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
-v_DC = 65  # DC-link voltage / V; will be set as model parameter in the FMU
+num_episodes = 5  # number of simulation episodes (i.e. SafeOpt iterations)
+v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
 iLimit = 30  # inverter current limit / A
@@ -87,7 +90,6 @@ class Reward:
 
         return -error.squeeze()
 
-
 if __name__ == '__main__':
     #####################################
     # Definitions for the GP
@@ -134,42 +136,26 @@ if __name__ == '__main__':
     mutable_params = None
     current_dqp_iparams = None
     if adjust == 'Kp':
-        # mutable_params = parameter (Kp gain of the current controller of the inverter) to be optimized using
-        # the SafeOpt algorithm
-        mutable_params = dict(currentP=MutableFloat(5e-3))
-
-        # Define the PI parameters for the current controller of the inverter
-        current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=115, limits=(-1, 1))
+        # set inital values for
+        Kp = 5e-3
 
     # For 1D example, if Ki should be adjusted
     elif adjust == 'Ki':
-        mutable_params = dict(currentI=MutableFloat(10))
-        current_dqp_iparams = PI_params(kP=10e-3, kI=mutable_params['currentI'], limits=(-1, 1))
+        Ki = 10
 
     # For 2D example, choose Kp and Ki as mutable parameters
     elif adjust == 'Kpi':
-        mutable_params = dict(currentP=MutableFloat(10e-3), currentI=MutableFloat(10))
-        current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
+        Kp = 5e-3
+        Ki = 10
 
-    # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
-    # filter and the nominal frequency
-    # Droop controller used to calculate the virtual frequency drop due to load changes
-    droop_param = DroopParams(DroopGain, 0.005, nomFreq)
 
-    # Define the Q-droop parameters for the inverter of the reactive power VAR/Volt, delta_t (0.002) used for the
-    # filter and the nominal voltage
-    qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
-
-    # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
-    ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, droop_param, qdroop_param,
-                                                 undersampling=2, name='master')
 
     #####################################
     # Definition of the optimization agent
     # The agent is using the SafeOpt algorithm by F. Berkenkamp (https://arxiv.org/abs/1509.01066) in this example
     # Arguments described above
     # History is used to store results
-    agent = SafeOptAgent(mutable_params,
+    agent = remote_SafeOptAgent(mutable_params,
                          abort_reward,
                          kernel,
                          dict(bounds=bounds, noise_var=noise_var, prior_mean=prior_mean,
@@ -181,94 +167,19 @@ if __name__ == '__main__':
                          history=FullHistory()
                          )
 
-    #####################################
-    # Definition of the environment using a FMU created by OpenModelica
-    # (https://www.openmodelica.org/)
-    # Using an inverter supplying a load
-    # - using the reward function described above as callable in the env
-    # - viz_cols used to choose which measurement values should be displayed (here, only the 3 currents across the
-    #   inductors of the inverters are plotted. Labels and grid is adjusted using the PlotTmpl (For more information,
-    #   see UserGuide)
-    # - inputs to the models are the connection points to the inverters (see user guide for more details)
-    # - model outputs are the the 3 currents through the inductors and the 3 voltages across the capacitors
+    for i in tqdm(range(num_episodes), desc='episodes', unit='epoch'):
 
-    def xylables(fig):
-        ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
-        ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
-        ax.grid(which='both')
-        #fig.savefig('Inductor_currents.pdf')
+        ### get measurement from Jarren
+        meas = 12
 
-    def xylables_dq0(fig):
-        ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
-        ax.set_ylabel('$i_{\mathrm{dq0}}\,/\,\mathrm{A}$')
-        ax.grid(which='both')
-        #fig.savefig('Inductor_currents.pdf')
+        r = Reward.rew_fun(meas)
 
-    env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
-                   reward_fun=Reward().rew_fun,
-                   time_step=delta_t,
-                   viz_cols=[
-                       PlotTmpl([f'lc1.inductor{i}.i' for i in '123'],
-                                callback=xylables
-                                ),
-                       PlotTmpl([f'master.CVI{i}' for i in 'dq0'],
-                                callback=xylables_dq0
-                                )
-                   ],
-                   log_level=logging.INFO,
-                   viz_mode='episode',
-                   max_episode_steps=max_episode_steps,
-                   model_params={'inverter1.v_DC': v_DC},
-                   model_path='../fmu/grid.testbench_SC.fmu',
-                   model_input=['i1p1', 'i1p2', 'i1p3'],
-                   model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]),
-                   history=FullHistory()
-                   )
+        ### run optimization using measurement
+        agent.observe(r, True)
 
-    #####################################
-    # Execution of the experiment
-    # Using a runner to execute 'num_episodes' different episodes (i.e. SafeOpt iterations)
-    runner = Runner(agent, env)
-
-    runner.run(num_episodes, visualise=True)
-
-    print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df[:]))
-
-    print('\n Experiment finished with best set: \n')
-    print('\n  {} = {}' .format(adjust, agent.history.df.at[np.argmax(agent.history.df['J']),'Params']))
-    print('  Resulting in a performance of J = {}'.format(np.max(agent.history.df['J'])))
-    print('\n\nBest experiment results are plotted in the following:')
+        #### sent  agent.kp&ki
 
 
-    # Show best episode measurment (current) plot
-    best_env_plt = runner.run_data['best_env_plt']
-    ax = best_env_plt[0].axes[0]
-    ax.set_title('Best Episode')
-    best_env_plt[0].show()
-    best_env_plt[0].savefig('best_env_plt.png')
-
-    # Show last performance plot
-    best_agent_plt = runner.run_data['last_agent_plt']
-    ax = best_agent_plt.axes[0]
-    ax.grid(which='both')
-    ax.set_axisbelow(True)
-
-    if adjust == 'Ki':
-        ax.set_xlabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
-        ax.set_ylabel(r'$J$')
-    elif adjust == 'Kp':
-        ax.set_xlabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
-        ax.set_ylabel(r'$J$')
-    elif adjust == 'Kpi':
-        agent.params.reset()
-        ax.set_xlabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
-        ax.set_ylabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
-        ax.get_figure().axes[1].set_ylabel(r'$J$')
-        plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4,
-                 alpha=.5)
-    best_agent_plt.show()
-    best_agent_plt.savefig('agent_plt.png')
+        #if visualise:
+        #    agent_fig = self.agent.render()
 
