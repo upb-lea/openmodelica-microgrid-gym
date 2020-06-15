@@ -1,0 +1,28 @@
+v_nom: 169.7
+freq_nom: 60
+ts: 1e-4
+
+components:
+  inv1:
+    id: inverter1
+    #i_nom: 20
+    #i_lim: 30
+    v_DC: 600
+    cls: MasterInverterCurrentSourcing
+    in:
+      u: [i1p1, i1p2, i1p3]    # names of the inputs
+    out:
+      v: [lc.capacitor1.v, lc.capacitor2.v, lc.capacitor3.v]
+      i: [lc.inductor1.i, lc.inductor2.i, lc.inductor3.i, lc.capacitor1.i,
+          lc.capacitor2.i, lc.capacitor3.i,
+         inverter1.gain1.y]
+
+    # iref: [0,0,0]
+    # vref: [1,0,0]
+
+  load:
+    id: r_load
+    cls: Load
+    #resistor1.R: 10
+    out:
+      i: [ .resistor1.R, .resistor2.R, .resistor3.R, .resistor1.i, .resistor2.i, .resistor3.i ]

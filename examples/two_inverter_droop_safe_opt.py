@@ -25,7 +25,7 @@ from openmodelica_microgrid_gym.util import nested_map, FullHistory
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 6000  # number of simulation steps per episode
-num_episodes = 10  # number of simulation episodes (i.e. SafeOpt iterations)
+num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -105,16 +105,16 @@ if __name__ == '__main__':
     # the initial performance: safe_threshold = 1.2 means. Performance measurement for optimization are seen as
     # unsafe, if the new measured performance drops below 20 % of the initial performance of the initial safe (!)
     # parameter set
-    safe_threshold = 2
+    safe_threshold = 0.5
 
     # The algorithm will not try to expand any points that are below this threshold. This makes the algorithm stop
     # expanding points eventually.
     # The following variable is multiplied with the first performance of the initial set by the factor below:
-    explore_threshold = 2
+    explore_threshold = 0
 
     # Factor to multiply with the initial reward to give back an abort_reward-times higher negative reward in case of
     # limit exceeded
-    abort_reward = 10
+    abort_reward = -10
 
     # Definition of the kernel
     kernel = GPy.kern.Matern32(input_dim=len(bounds), variance=prior_var, lengthscale=lengthscale, ARD=True)
@@ -123,7 +123,7 @@ if __name__ == '__main__':
     # Definition of the controllers
 
     # Choose all droop parameter as mutable parameters
-    mutable_params = dict(pDroop_master=MutableFloat(30000.0), pDroop_slave=MutableFloat(30000.0), \
+    mutable_params = dict(pDroop_master=MutableFloat(30000.0), pDroop_slave=MutableFloat(30000.0),
                           qDroop_master=MutableFloat(QDroopGain), qDroop_slave=MutableFloat(10))
 
     # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for
