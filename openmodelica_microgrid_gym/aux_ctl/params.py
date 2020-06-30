@@ -4,7 +4,7 @@ The fields are wrapped into properties in order to allow transparent usage of th
 
 """
 
-from typing import Tuple, Union
+from typing import Tuple, Union, Optional
 
 from openmodelica_microgrid_gym.agents.util import MutableFloat
 
@@ -123,7 +123,7 @@ class PLLParams(PI_params):
     """
 
     def __init__(self, kP: Union[MutableFloat, float], kI: Union[MutableFloat, float],
-                 limits: Union[Tuple[MutableFloat, MutableFloat], Tuple[float, float]],
+                 limits: Optional[Union[Tuple[MutableFloat, MutableFloat], Tuple[float, float]]] = None,
                  kB: Union[MutableFloat, float] = 1, f_nom: float = 50, theta_0: float = 0):
         """
         :param kP: Proportional gain
