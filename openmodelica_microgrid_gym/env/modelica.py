@@ -16,6 +16,7 @@ from pyfmi.fmi import FMUModelME2
 from scipy import integrate
 
 from openmodelica_microgrid_gym.env.plot import PlotTmpl
+from openmodelica_microgrid_gym.net.net import Network
 from openmodelica_microgrid_gym.util import FullHistory, EmptyHistory
 
 logger = logging.getLogger(__name__)
@@ -398,3 +399,22 @@ class ModelicaEnv(gym.Env):
         """
         figs = self.render(close=True)
         return True, figs
+
+
+class NormalizedEnv(ModelicaEnv):
+    def __init__(self, netfile, **kwds):
+        self.net = Network.load(netfile)
+        super().__init__(time_step=self.net.ts, **kwds)
+        self.net.statekeys(self.model_output_names)
+
+    def reset(self) -> np.ndarray:
+        obs =super().reset()
+        outputs = self.net.normalizedoutput(obs)
+        return outputs
+
+    def step(self, action: Sequence) -> Tuple[np.ndarray, float, bool, Mapping]:
+        params, actions = self.net.input(action)
+        self.model.set(**params)
+        obs,rew,done, info = super().step(actions)
+        outputs = self.net.normalizedoutput(obs)
+        return outputs,rew,done,info
