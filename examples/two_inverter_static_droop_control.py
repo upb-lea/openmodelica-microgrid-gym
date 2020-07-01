@@ -1,6 +1,6 @@
 #####################################
 # Example using a FMU by OpenModelica as gym environment containing two inverters, each connected via an LC-filter to
-# supply in parallel a RC load.
+# supply in parallel a RL load.
 # This example uses the available standard controllers as defined in the 'auxiliaries' folder.
 # One inverter is set up as voltage forming inverter with a direct droop controller.
 # The other controller is used as current sourcing inverter with an inverse droop controller which reacts on the
