@@ -404,9 +404,8 @@ class ModelicaEnv(gym.Env):
 class NormalizedEnv(ModelicaEnv):
     def __init__(self, net, **kwds):
         self.net = Network.load(net)
-        super().__init__(time_step=self.net.ts, model_input=self.net.in_keys(True), model_output=self.net.out_keys(True),
+        super().__init__(time_step=self.net.ts, model_input=self.net.in_vars(), model_output=self.net.out_vars(False),
                          **kwds)
-        self.net.statekeys(self.model_output_names)
 
     def reset(self) -> np.ndarray:
         obs = super().reset()
@@ -414,9 +413,9 @@ class NormalizedEnv(ModelicaEnv):
         return outputs
 
     def step(self, action: Sequence) -> Tuple[np.ndarray, float, bool, Mapping]:
-        params, actions = self.net.input(action)
+        params = self.net.params(action)
         if params:
-            self.model.set(**params)
-        obs, rew, done, info = super().step(actions)
+            self.model.set(*zip(params.items()))
+        obs, rew, done, info = super().step(action)
         outputs = self.net.augment(obs)
         return outputs, rew, done, info

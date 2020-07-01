@@ -7,17 +7,15 @@ components:
     #i_nom: 20
     #i_lim: 30
     #v_DC: 1000
-    id: lc1
     cls: MasterInverter
     in:
       u: [i1p1, i1p2, i1p3]    # names of the inputs
     out:
-      v: [capacitor1.v,capacitor2.v, capacitor3.v]
-      i: [inductor1.i, inductor2.i, inductor3.i]
+      v: [lc1.capacitor1.v,lc1.capacitor2.v, lc1.capacitor3.v]
+      i: [lc1.inductor1.i, lc1.inductor2.i, lc1.inductor3.i]
     # iref: [0,0,0]
     # vref: [1,0,0]
   inv2:
-    id: lcl1
     cls: SlaveInverter
     #pll:
     #  p: 10
@@ -25,24 +23,11 @@ components:
     in:
       u: [i2p1, i2p2, i2p3]
     out:
-      v: [capacitor1.v,capacitor2.v, capacitor3.v]
-      i: [inductor1.i, inductor2.i, inductor3.i]
+      v: [lcl1.capacitor1.v,lcl1.capacitor2.v, lcl1.capacitor3.v]
+      i: [lcl1.inductor1.i, lcl1.inductor2.i, lcl1.inductor3.i]
     iref: [15,0,0]
   load:
     id: rl1
     cls: Load
     out:
       i: [inductor1.i, inductor2.i, inductor3.i]
-
-
-
-
-# model_params={'inverter1.v_DC': v_DC},
-# model_path='../fmu/grid.network.fmu',
-# model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
-# model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
-#                        ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
-#                   lcl1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
-#                         ['capacitor1.v', 'capacitor2.v', 'capacitor3.v'],
-#                   rl1=[f'inductor{i}.i' for i in range(1, 4)]])
-# slave sepoint: np.zeros(3)]})
