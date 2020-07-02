@@ -1,6 +1,6 @@
 #####################################
-# Example using a FMU by OpenModelica and SafeOpt algorithm to find optimal controller parameters
-# Simulation setup: Two inverters supplying a RL-load via a LC filter
+# Example using an FMU by OpenModelica and SafeOpt algorithm to find optimal controller parameters
+# Simulation setup: Two inverters supplying an RL-load via an LC-filter
 # Controller: droop controller gains are optimized by SafeOpt
 
 
@@ -26,7 +26,7 @@ from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 6000  # number of simulation steps per episode
-num_episodes = 30  # number of simulation episodes (i.e. SafeOpt iterations)
+num_episodes = 10  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -39,9 +39,9 @@ QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 
 def load_step(t, gain):
     """
-    Defines a load step after 0.2 s
-    Doubles the load parameters
-    :param t:
+    Defines a load step after 0.15 s
+    Increases the load parameters by a factor of 5
+    :param t: time
     :param gain: device parameter
     :return: Dictionary with load parameters
     """
@@ -61,10 +61,9 @@ class Reward:
 
     def rew_fun(self, cols: List[str], data: np.ndarray) -> float:
         """
-        Defines the reward function for the environment. Uses the observations and setpoints to evaluate the quality of the
-        used parameters.
-        Takes current measurement and setpoints so calculate the mean-root-error control error and uses a logarithmic
-        barrier function in case of violating the current limit. Barrier function is adjustable using parameter mu.
+        Defines the reward function for the environment. Uses the observations and setpoints to evaluate the quality of
+        the used parameters.
+        Takes current measurement and setpoints so calculate the mean-root-error control error
 
         :param cols: list of variable names of the data
         :param data: observation data from the environment (ControlVariables, e.g. currents and voltages)
@@ -95,8 +94,8 @@ if __name__ == '__main__':
     prior_var = 0.2  # prior variance of the GP
 
     # Choose all droop params as mutable parameters (below) and define bounds and lengthscale for both of them
-    bounds = [(0, 100000), (0, 100000), (0, 3000), (0, 100)]  # bounds on the input variable Ki
-    lengthscale = [10000, 10000, 300., 10.]  # length scale for the parameter variation [Ki] for the GP
+    bounds = [(0, 100000), (0, 100000), (0, 3000), (0, 100)]  # bounds on the input variable
+    lengthscale = [10000, 10000, 300., 10.]  # length scale for the parameter variation for the GP
 
     # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
     # the initial performance: safe_threshold = 1.2 means. Performance measurement for optimization are seen as
@@ -185,23 +184,23 @@ if __name__ == '__main__':
     # - using the reward function described above as callable in the env
     # - viz_cols used to choose which measurement values should be displayed
     #   Labels and grid is adjusted using the PlotTmpl (For more information, see UserGuide)
+    #   figures are stored to folder
     # - inputs to the models are the connection points to the inverters (see user guide for more details)
     # - model outputs are the the 3 currents through the inductors and the 3 voltages across the capacitors for each
     #   inverter and the 3 currents through the load
 
     def xylables_i(fig):
         ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
-        # timestamps = df.index.strftime("%Y-%m-%d %H:%M:%S")
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         fig.savefig('saves_droop/Inductor_currents' + time + '.pdf')
 
 
     def xylables_v_abc(fig):
         ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$v_{\mathrm{abc}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
@@ -210,7 +209,7 @@ if __name__ == '__main__':
 
     def xylables_v_dq0(fig):
         ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$v_{\mathrm{dq0}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
@@ -219,7 +218,7 @@ if __name__ == '__main__':
 
     def xylables_P_master(fig):
         ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$P_{\mathrm{master}}\,/\,\mathrm{W}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
@@ -228,7 +227,7 @@ if __name__ == '__main__':
 
     def xylables_P_slave(fig):
         ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$P_{\mathrm{slave}}\,/\,\mathrm{W}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
@@ -237,7 +236,7 @@ if __name__ == '__main__':
 
     def xylables_freq(fig):
         ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$f_{\mathrm{slave}}\,/\,\mathrm{Hz}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())

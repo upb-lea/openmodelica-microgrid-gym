@@ -194,7 +194,7 @@ if __name__ == '__main__':
 
     def xylables(fig):
         ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
         #fig.savefig('Inductor_currents.pdf')

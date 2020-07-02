@@ -1,6 +1,6 @@
 #####################################
-# Example using a FMU by OpenModelica and SafeOpt algorithm to find optimal controller parameters
-# Simulation setup: Single voltage forming inverter supplying an RL-load via an LC filter
+# Example using an FMU by OpenModelica and SafeOpt algorithm to find optimal controller parameters
+# Simulation setup: Single voltage forming inverter supplying an RL-load via an LC-filter
 # Controller: Cascaded PI-PI voltage and current controller gain parameters are optimized by SafeOpt
 
 
@@ -63,24 +63,23 @@ class Reward:
         self.set_idx(cols)
         idx = self._idx
 
-        Iabc_master = data[idx[0]]  # 3 phase currents at LC inductors
+        iabc_master = data[idx[0]]  # 3 phase currents at LC inductors
         phase = data[idx[1]]  # phase from the master controller needed for transformation
-        Vabc_master = data[idx[3]]  # 3 phase currents at LC inductors
+        vabc_master = data[idx[3]]  # 3 phase currents at LC inductors
 
-        # setpoints
-        ISPdq0_master = data[idx[2]]  # setting dq current reference
-        ISPabc_master = dq0_to_abc(ISPdq0_master, phase)  # convert dq set-points into three-phase abc coordinates
-        VSPdq0_master = data[idx[4]]  # setting dq voltage reference
-        VSPabc_master = dq0_to_abc(VSPdq0_master, phase)  # convert dq set-points into three-phase abc coordinates
-
+        # set points (sp)
+        isp_dq0_master = data[idx[2]]  # setting dq current reference
+        isp_abc_master = dq0_to_abc(isp_dq0_master, phase)  # convert dq set-points into three-phase abc coordinates
+        vsp_dq0_master = data[idx[4]]  # setting dq voltage reference
+        vsp_abc_master = dq0_to_abc(vsp_dq0_master, phase)  # convert dq set-points into three-phase abc coordinates
 
         # control error = mean-root-error (MRE) of reference minus measurement
         # (due to normalization the control error is often around zero -> compared to MSE metric, the MRE provides
         #  better, i.e. more significant,  gradients)
         # plus barrier penalty for violating the current constraint
-        error = np.sum((np.abs((ISPabc_master - Iabc_master)) / iLimit) ** 0.5, axis=0) \
-                + -np.sum(mu * np.log(1 - np.maximum(np.abs(Iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0) \
-                + np.sum((np.abs((VSPabc_master - Vabc_master)) / nomVoltPeak) ** 0.5, axis=0)
+        error = np.sum((np.abs((isp_abc_master - iabc_master)) / iLimit) ** 0.5, axis=0) \
+                + -np.sum(mu * np.log(1 - np.maximum(np.abs(iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0)\
+                + np.sum((np.abs((vsp_abc_master - vabc_master)) / nomVoltPeak) ** 0.5, axis=0)
 
         return -error.squeeze()
 
@@ -92,14 +91,13 @@ if __name__ == '__main__':
     noise_var = 0.001 ** 2  # measurement noise sigma_omega
     prior_var = 2  # prior variance of the GP
 
-
     # Choose Kp and Ki (current and voltage controller) as mutable parameters (below) and define bounds and lengthscale
     # for both of them
     bounds = [(0.0, 0.03), (0, 300),(0.0, 0.03), (0, 300)] # bounds on the input variable current-Ki&Kp and voltage-Ki&Kp
     lengthscale = [.005, 50.,.005, 50.]   # length scale for the parameter variation [current-Ki&Kp and voltage-Ki&Kp] for the GP
 
     # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
-    # the initial performance: safe_threshold = 1.2 means. Performance measurement for optimization are seen as
+    # the initial performance: safe_threshold = 1.2 means: performance measurement for optimization are seen as
     # unsafe, if the new measured performance drops below 20 % of the initial performance of the initial safe (!)
     # parameter set
     safe_threshold = 2
@@ -118,9 +116,6 @@ if __name__ == '__main__':
 
     #####################################
     # Definition of the controllers
-    mutable_params = None
-    current_dqp_iparams = None
-
     # Choose Kp and Ki for the current and voltage controller as mutable parameters
     mutable_params = dict(currentP=MutableFloat(10e-3), currentI=MutableFloat(10), voltageP=MutableFloat(25e-3),
                             voltageI=MutableFloat(60))
@@ -137,7 +132,7 @@ if __name__ == '__main__':
     # filter and the nominal voltage
     qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
 
-    # Define a voltage forming inverter as master inverter using the pi pi and droop parameters from above
+    # Define a voltage forming inverter using the pi pi and droop parameters from above
     ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param, qdroop_param,
                                                  undersampling=2, name='master')
 
@@ -165,21 +160,21 @@ if __name__ == '__main__':
     # - using the reward function described above as callable in the env
     # - viz_cols used to choose which measurement values should be displayed.
     #   Labels and grid is adjusted using the PlotTmpl (For more information, see UserGuide)
+    #   generated figures are stored to file
     # - inputs to the models are the connection points to the inverters (see user guide for more details)
-    # - model outputs are the the 3 currents through the inductors and the 3 voltages across the capacitors
+    # - model outputs are the 3 currents through the inductors and the 3 voltages across the capacitors
 
     def xylables_i(fig):
         ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
-        #timestamps = df.index.strftime("%Y-%m-%d %H:%M:%S")
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         fig.savefig('pipi_signleInv/Inductor_currents'+time+'.pdf')
 
     def xylables_v_abc(fig):
         ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$v_{\mathrm{abc}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
@@ -188,7 +183,7 @@ if __name__ == '__main__':
 
     def xylables_v_dq0(fig):
         ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$v_{\mathrm{dq0}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
@@ -231,7 +226,6 @@ if __name__ == '__main__':
     agent.history.df.to_csv('pipi_signleInv/result.csv')
 
     print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df.round({'J': 4, 'Params': 4})))
-
     print('\n Experiment finished with best set: \n')
     print('\n  Current-Ki&Kp and voltage-Ki&Kp = {}' .format(agent.history.df.at[np.argmax(agent.history.df['J']),'Params']))
     print('  Resulting in a performance of J = {}'.format(np.max(agent.history.df['J'])))
