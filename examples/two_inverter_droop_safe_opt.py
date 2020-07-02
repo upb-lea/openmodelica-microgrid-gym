@@ -1,6 +1,6 @@
 #####################################
 # Example using an FMU by OpenModelica and SafeOpt algorithm to find optimal controller parameters
-# Simulation setup: Two inverters supplying an RL-load via an LC-filter
+# Simulation setup: Two inverters (one voltage forming, one current sourcing) supplying an RL-load via an LC-filter
 # Controller: droop controller gains are optimized by SafeOpt
 
 
@@ -34,7 +34,7 @@ iLimit = 30  # inverter current limit / A
 iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
-QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
+QDroopGain = 1000.0  # virtual droop gain for reactive power / VA/V
 
 
 def load_step(t, gain):
