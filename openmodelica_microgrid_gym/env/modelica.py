@@ -367,7 +367,7 @@ class ModelicaEnv(gym.Env):
                     if not cols:
                         continue
                     df = self.history.df[cols].copy()
-                    df.index = self.history.df.index * self.time_step_size
+                    df.index = self.history.df.index * self.time_step_size + self.time_start
 
                     fig, ax = plt.subplots()
                     df.plot(legend=True, figure=fig, ax=ax)
@@ -379,7 +379,9 @@ class ModelicaEnv(gym.Env):
                     fig, ax = plt.subplots()
 
                     for series, kwargs in tmpl:
-                        self.history.df[series].plot(figure=fig, ax=ax, **kwargs)
+                        ser = self.history.df[series].copy()
+                        ser.index = self.history.df.index * self.time_step_size + self.time_start
+                        ser.plot(figure=fig, ax=ax, **kwargs)
                     tmpl.callback(fig)
                     figs.append(fig)
 
