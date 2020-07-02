@@ -11,7 +11,7 @@ components:
     in:
       u: [i1p1, i1p2, i1p3]    # names of the inputs
     out:
-      v: [lc1.capacitor1.v,lc1.capacitor2.v, lc1.capacitor3.v]
+      v: [lc1.capacitor1.v, lc1.capacitor2.v, lc1.capacitor3.v]
       i: [lc1.inductor1.i, lc1.inductor2.i, lc1.inductor3.i]
     # iref: [0,0,0]
     # vref: [1,0,0]
@@ -23,9 +23,9 @@ components:
     in:
       u: [i2p1, i2p2, i2p3]
     out:
-      v: [lcl1.capacitor1.v,lcl1.capacitor2.v, lcl1.capacitor3.v]
+      v: [lcl1.capacitor1.v, lcl1.capacitor2.v, lcl1.capacitor3.v]
       i: [lcl1.inductor1.i, lcl1.inductor2.i, lcl1.inductor3.i]
-    iref: [15,0,0]
+    i_ref: [15,0,0]
   load:
     id: rl1
     cls: Load

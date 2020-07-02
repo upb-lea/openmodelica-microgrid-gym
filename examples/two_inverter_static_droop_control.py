@@ -53,7 +53,7 @@ if __name__ == '__main__':
     # Current control PI gain parameters for the current sourcing inverter
     current_dqp_iparams = PI_params(kP=0.005, kI=200, limits=(-1, 1))
     # PI gain parameters for the PLL in the current forming inverter
-    pll_params = PLLParams(kP=10, kI=200, limits=(-10000, 10000), f_nom=nomFreq)
+    pll_params = PLLParams(kP=10, kI=200, limits=None, f_nom=nomFreq)
     # Droop characteristic for the active power Watts/Hz, W.s/Hz
     droop_param = InverseDroopParams(DroopGain, delta_t, nomFreq, tau_filt=0.04)
     # Droop characteristic for the reactive power VAR/Volt Var.s/Volt

@@ -41,8 +41,7 @@ class PIController:
 
         self.integralSum = self.integralSum + (self._params.kI * error + self.windup_compensation) * self._ts
         output = self._params.kP * error + self.integralSum
-        if self._params.limits is not None:
-            clipped = np.clip(output, *self._params.limits)
+        clipped = np.clip(output, *self._params.limits)
         self.windup_compensation = (output - clipped) * self._params.kB
         return clipped.squeeze()
 

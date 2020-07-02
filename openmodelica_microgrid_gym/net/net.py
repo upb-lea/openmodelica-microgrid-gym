@@ -7,7 +7,8 @@ import yaml
 from more_itertools import flatten, collapse
 import numexpr as ne
 
-from openmodelica_microgrid_gym.aux_ctl import PLL, PLLParams
+from openmodelica_microgrid_gym.aux_ctl import PLL, PLLParams, dq0_to_abc, inst_power, inst_reactive, DDS, DroopParams, \
+    DroopController, InverseDroopController, InverseDroopParams
 
 
 class Network:
@@ -50,6 +51,10 @@ class Network:
         self.components = components_obj
 
         return self
+
+    def reset(self):
+        for comp in self.components:
+            comp.reset()
 
     def params(self, actions):
         """
@@ -116,6 +121,9 @@ class Component:
         self.out_vars = out_vars
         self.out_idx = None  # type: Optional[dict]
 
+    def reset(self):
+        pass
+
     def params(self, actions):
         """
         Calculate additional environment parameters
@@ -178,12 +186,16 @@ class Component:
         all([len(v) == self.out_calc[k] for k,v in return.items()])
         :return:
         """
-        return {}
+        return dict(iref=[.1, 22, 4], vref=[])
+
+    def normalize(self, calc_data):
+        pass
 
     def augment(self, state):
         self.fill_tmpl(state)
         calc_data = self.calculate()
-        # TODO normalize outputs1
+
+        self.normalize(calc_data)
         attr = ''
         try:
             new_vals = []
@@ -199,46 +211,85 @@ class Component:
 
 
 class Inverter(Component):
-    def __init__(self, u=None, i=None, v=None, i_nom=20, i_lim=30, v_DC=1000, iref=(0, 0, 0), **kwargs):
+    def __init__(self, u=None, i=None, v=None, i_nom=20, i_lim=30, v_lim=600, v_DC=1000, i_ref=(0, 0, 0), **kwargs):
         self.u = u
         self.v = v
         self.i = i
         self.i_nom = i_nom
         self.i_lim = i_lim
+        self.v_lim = v_lim
         self.v_DC = v_DC
-        self.i_ref = iref
-        super().__init__(**{'out_calc': dict(iref=3), **kwargs})
+        self.i_ref = i_ref
+        super().__init__(**{'out_calc': dict(i_ref=3), **kwargs})
 
-    def calculate(self):
-        # TODO: calculate ABC conversion and add references to outputs
-        #        self.eval = ne.evaluate('self.u/self.i')
-        return dict(iref=[1, 2, 4])
+    def normalize(self, calc_data):
+        self.i /= self.i_lim
+        self.v /= self.v_lim
+        calc_data['i_ref'] /= self.i_lim
 
 
 class SlaveInverter(Inverter):
-    def __init__(self, pll=None, **kwargs):
+    def __init__(self, pll=None, pdroop=None, qdroop=None, **kwargs):
         super().__init__(**kwargs)
-        if pll is None:
-            pll = {}
-        else:
-            # additional shorthand to be able to use p and i instead of kP and kI
-            if 'p' in pll:
-                pll['kP'] = pll.pop('p')
-            if 'i' in pll:
-                pll['kI'] = pll.pop('i')
+
+        pdroop = {**dict(gain=40000.0), **(pdroop or {})}
+        qdroop = {**dict(gain=50.0), **(qdroop or {})}
+        pll = {**dict(kP=10, kI=200), **(pll or {})}
+
+        # additional shorthand to be able to use p and i instead of kP and kI
+        if 'p' in pll:
+            pll['kP'] = pll.pop('p')
+        if 'i' in pll:
+            pll['kI'] = pll.pop('i')
+
+        self.pdroop_ctl = InverseDroopController(
+            InverseDroopParams(tau=self.net.ts, nom_value=self.net.freq_nom, **pdroop), self.net.ts)
+        self.qdroop_ctl = InverseDroopController(
+            InverseDroopParams(tau=self.net.ts, nom_value=self.net.v_nom, **qdroop), self.net.ts)
         # default pll params and new ones
-        self.pll = PLL(PLLParams(**{**dict(kP=10, kI=200, f_nom=self.net.freq_nom), **pll}), self.net.ts)
+        self.pll = PLL(PLLParams(f_nom=self.net.freq_nom, **pll), self.net.ts)
+
+    def reset(self):
+        self.pdroop_ctl.reset()
+        self.qdroop_ctl.reset()
+        self.pll.reset()
+
+    def calculate(self):
+        _, _, phase = self.pll.step(self.v)
+        return dict(i_ref=dq0_to_abc(self.i_ref, phase))
 
 
 class MasterInverter(Inverter):
-    def __init__(self, vref=(1, 0, 0), **kwargs):
-        self.vref = vref
-        super().__init__(out_calc=dict(iref=3, vref=3), **kwargs)
+    def __init__(self, v_ref=(1, 0, 0), pdroop=None, qdroop=None, **kwargs):
+        self.v_ref = v_ref
+        super().__init__(out_calc=dict(i_ref=3, v_ref=3), **kwargs)
+        pdroop = {**(pdroop or {}), **dict(gain=40000.0, tau=.005)}
+        qdroop = {**(qdroop or {}), **dict(gain=1000.0, tau=.002)}
+
+        self.pdroop_ctl = DroopController(DroopParams(nom_value=self.net.freq_nom, **pdroop), self.net.ts)
+        self.qdroop_ctl = DroopController(DroopParams(nom_value=self.net.v_nom, **qdroop), self.net.ts)
+        self.dds = DDS(self.net.ts)
+
+    def reset(self):
+        self.pdroop_ctl.reset()
+        self.qdroop_ctl.reset()
+        self.dds.reset()
 
     def calculate(self):
-        # TODO: calculate ABC conversion and add references to outputs
+        instPow = -inst_power(self.v, self.i)
+        freq = self.pdroop_ctl.step(instPow)
+        # Get the next phase rotation angle to implement
+        phase = self.dds.step(freq)
 
-        return {**super().calculate(), **dict(vref=[4, 3, 3])}
+        instQ = -inst_reactive(self.v, self.i)
+        v_refd = self.qdroop_ctl.step(instQ)
+        v_refdq0 = np.array([v_refd, 0, 0]) * self.v_ref
+
+        return dict(i_ref=dq0_to_abc(self.i_ref, phase), v_ref=dq0_to_abc(v_refdq0, phase))
+
+    def normalize(self, calc_data):
+        super().normalize(calc_data),
+        calc_data['v_ref'] /= self.v_lim
 
 
 class Load(Component):
@@ -258,7 +309,4 @@ if __name__ == '__main__':
 
     net = Network.load('net.yaml')
     # net.keys(env.model_output_names)
-    net.statekeys([f'lc1.capacitor{k}.v' for k in '123'] + [f'lcl1.capacitor{k}.v' for k in '123']
-                  + [f'lc1.inductor{k}.i' for k in '123'] + [f'lcl1.inductor{k}.i' for k in '123']
-                  + [f'rl1.inductor{k}.i' for k in '123'])
     print(net.augment(np.array([2, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4])))

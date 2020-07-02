@@ -408,6 +408,7 @@ class NormalizedEnv(ModelicaEnv):
                          **kwds)
 
     def reset(self) -> np.ndarray:
+        self.net.reset()
         obs = super().reset()
         outputs = self.net.augment(obs)
         return outputs

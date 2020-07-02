@@ -62,7 +62,7 @@ class InverseDroopParams(DroopParams):
     Defines droop parameters needed for the droop-controller for a current sourcing inverter
     """
 
-    def __init__(self, droop: Union[MutableFloat, float], tau: Union[MutableFloat, float], nom_value: float = 0,
+    def __init__(self, gain: Union[MutableFloat, float], tau: Union[MutableFloat, float], nom_value: float = 0,
                  tau_filt: Union[MutableFloat, float] = 0):
         """
         e.g. for a f-P droop controller (for current sourcing inverter)
@@ -70,14 +70,14 @@ class InverseDroopParams(DroopParams):
             Droop = gain = 1000 [W/Hz]
             tau = 1
             nomValue = 50 [Hz]
-        :param droop: The droop gain [W/Hz or VA/V] - Defines the power output due to the frequency/voltage change from
+        :param gain: The droop gain [W/Hz or VA/V] - Defines the power output due to the frequency/voltage change from
                       nom_val
         :param tau: The first order time constant [s]
         :param nom_value: An offset to add to the output of the droop (e.g. f = 50 Hz)
         :param tau_filt: timeresolution for filter
         """
 
-        super().__init__(droop, tau, nom_value)
+        super().__init__(gain, tau, nom_value)
         self.derivativeFiltParams = FilterParams(1, tau_filt)
 
 
@@ -110,6 +110,8 @@ class PI_params:
 
     @property
     def limits(self):
+        if self._limits is None:
+            return [-float('inf'),float('inf')]
         return [float(limit) for limit in self._limits]
 
     @property
