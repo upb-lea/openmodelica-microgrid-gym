@@ -69,14 +69,14 @@ class Network:
             d.update(params)
         return d
 
-    def augment(self, state: np.ndarray) -> np.ndarray:
+    def augment(self, state: np.ndarray, normalize = True) -> np.ndarray:
         """
         Allows the network to provide additional output variables in order to provide measurements and reference
         information the RL agent needs to understand its rewards
         :param state:
         :return:
         """
-        return np.hstack([comp.augment(state) for comp in self.components])
+        return np.hstack([comp.augment(state, normalize) for comp in self.components])
 
     def in_vars(self):
         return list(collapse([comp.get_in_vars() for comp in self.components]))
@@ -142,9 +142,10 @@ class Component:
 
     def get_out_vars(self, with_aug=False):
         r = []
+        if self.out_vars:
+            r = [[self._prefix_var(val) for val in vals] for attr, vals in self.out_vars.items()]
+
         if not with_aug:
-            if self.out_vars:
-                r = [[self._prefix_var(val) for val in vals] for attr, vals in self.out_vars.items()]
             return r
         else:
             return r + [[self._prefix_var([attr, str(i)]) for i in range(n)] for attr, n in self.out_calc.items()]
@@ -191,11 +192,12 @@ class Component:
     def normalize(self, calc_data):
         pass
 
-    def augment(self, state):
+    def augment(self, state, normalize = True):
         self.fill_tmpl(state)
         calc_data = self.calculate()
 
-        self.normalize(calc_data)
+        if normalize:
+            self.normalize(calc_data)
         attr = ''
         try:
             new_vals = []
