@@ -1,0 +1,34 @@
+# Simulation definitions
+ts : 0.5e-4
+
+freq_nom: 50  # grid frequency / Hz
+v_nom: 325.22 # nominal grid voltage / V
+
+
+components:
+  inv1:
+    cls: MasterInverter
+    i_lim: 30  # current limit / A
+    i_nom: 20  # nominal current / A
+    in:
+      u: [i1p1,i1p2,i1p3]
+    out:
+      v: [lc1.capacitor1.v, lc1.capacitor2.v, lc1.capacitor3.v]
+      i: [lc1.inductor1.i, lc1.inductor2.i, lc1.inductor3.i]
+
+
+  inv2:
+    cls: SlaveInverter
+    i_lim: 30  # current limit / A
+    i_nom: 20  # nominal current / A
+    in:
+      u: [i1p1,i1p2,i1p3]
+    out:
+      v: [lcl1.capacitor1.v, lcl1.capacitor2.v, lcl1.capacitor3.v]
+      i: [lcl1.inductor1.i, lcl1.inductor2.i, lcl1.inductor3.i]
+
+  load:
+    id: rl1
+    cls: Load
+    out:
+      i: [inductor1.i, inductor2.i, inductor3.i]
