@@ -61,9 +61,9 @@ class Reward:
 
     def rew_fun(self, cols: List[str], data: np.ndarray) -> float:
         """
-        Defines the reward function for the environment. Uses the observations and setpoints to evaluate the quality of
+        Defines the reward function for the environment. Uses the observations and set-points to evaluate the quality of
         the used parameters.
-        Takes current measurement and setpoints so calculate the mean-root-error control error
+        Takes current measurement and set-points so calculate the mean-root control error
 
         :param cols: list of variable names of the data
         :param data: observation data from the environment (ControlVariables, e.g. currents and voltages)

@@ -50,9 +50,9 @@ class Reward:
 
     def rew_fun(self, cols: List[str], data: np.ndarray) -> float:
         """
-        Defines the reward function for the environment. Uses the observations and setpoints to evaluate the quality of
+        Defines the reward function for the environment. Uses the observations and set-points to evaluate the quality of
         the used parameters.
-        Takes current and voltage measurement and setpoints to calculate the mean-root-error control error and uses a
+        Takes current and voltage measurements and set-points to calculate the mean-root control error and uses a
         logarithmic barrier function in case of violating the current limit. Barrier function is adjustable using
         parameter mu.
 
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     # filter and the nominal voltage
     qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
 
-    # Define a voltage forming inverter using the pi pi and droop parameters from above
+    # Define a voltage forming inverter using the PIPI and droop parameters from above
     ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param, qdroop_param,
                                                  undersampling=2, name='master')
 
@@ -222,7 +222,7 @@ if __name__ == '__main__':
     runner.run(num_episodes, visualise=True)
 
     #####################################
-    # Performance results and Parameters as well as plots are stored in folder pipi_signleInv
+    # Performance results and parameters as well as plots are stored in folder pipi_signleInv
     agent.history.df.to_csv('pipi_signleInv/result.csv')
 
     print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df.round({'J': 4, 'Params': 4})))
