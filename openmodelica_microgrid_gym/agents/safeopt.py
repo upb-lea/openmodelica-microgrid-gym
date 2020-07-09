@@ -118,7 +118,7 @@ class SafeOptAgent(StaticControlAgent):
         """
         if self.optimizer is None:
             # First Iteration
-            # self.inital_Performance = 1 / self.episode_reward
+            self.inital_performance = self.performance
 
             # Norm for Safe-point
             # J = 1 / self.episode_reward / self.inital_Performance
@@ -141,7 +141,7 @@ class SafeOptAgent(StaticControlAgent):
         else:
             if np.isnan(self.episode_reward):
                 # set r to doubled (negative!) initial reward
-                self.episode_reward = self.abort_reward * self.inital_performance
+                self.performance = self.abort_reward * self.inital_performance
                 # toDo: set reward to -inf and stop agent?
                 # warning mit logger
                 logger.warning('UNSAFE! Limit exceeded, epsiode abort, give a reward of {} times the'
