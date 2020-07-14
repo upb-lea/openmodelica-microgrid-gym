@@ -12,7 +12,7 @@ __version__ = '0.2.0'
 register(
     id='ModelicaEnv_test-v1',
     entry_point='openmodelica_microgrid_gym.env:ModelicaEnv',
-    kwargs=dict(log_level=logging.DEBUG, max_episode_steps=500, viz_mode='step')
+    kwargs=dict(log_level=logging.DEBUG, max_episode_steps=500, viz_mode='episode')
 )
 
 register(id='ModelicaEnv-v1', entry_point='openmodelica_microgrid_gym.env:ModelicaEnv')
@@ -20,5 +20,5 @@ register(id='ModelicaEnv-v1', entry_point='openmodelica_microgrid_gym.env:Modeli
 register(
     id='NormalizedEnv_test-v1',
     entry_point='openmodelica_microgrid_gym.env:NormalizedEnv',
-    kwargs=dict(log_level=logging.DEBUG, max_episode_steps=500, viz_mode='step')
+    kwargs=dict(log_level=logging.DEBUG, max_episode_steps=500, viz_mode='episode')
 )
