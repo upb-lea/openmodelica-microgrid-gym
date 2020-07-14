@@ -87,3 +87,6 @@ if __name__ == '__main__':
     # User runner to execute num_episodes-times episodes of the env controlled by the agent
     runner = Runner(agent, env)
     runner.run(num_episodes, visualise=True)
+
+    df2 = pd.read_hdf('twoInvStaticDroopControl.hd5', 'hist')
+    asd = 1
