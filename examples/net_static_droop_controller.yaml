@@ -8,6 +8,7 @@ v_nom: 325.22 # nominal grid voltage / V
 components:
   inv1:
     cls: MasterInverter
+    id: inverter1
     i_lim: 30  # current limit / A
     i_nom: 20  # nominal current / A
     in:
@@ -19,6 +20,7 @@ components:
 
   inv2:
     cls: SlaveInverter
+    id: inverter2
     i_lim: 30  # current limit / A
     i_nom: 20  # nominal current / A
     in:
@@ -31,4 +33,4 @@ components:
     id: rl1
     cls: Load
     out:
-      i: [inductor1.i, inductor2.i, inductor3.i]
+      i: [.inductor1.i, .inductor2.i, .inductor3.i]

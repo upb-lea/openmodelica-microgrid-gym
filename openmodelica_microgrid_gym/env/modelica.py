@@ -421,7 +421,7 @@ class NormalizedEnv(ModelicaEnv):
     def step(self, action: Sequence) -> Tuple[np.ndarray, float, bool, Mapping]:
         params = self.net.params(action)
         if params:
-            self.model.set(*zip(params.items()))
+            self.model.set(*zip(*params.items()))
         obs, rew, done, info = super().step(action)
         outputs = self.net.augment(obs, self.is_normalized)
         outputs = np.hstack((outputs, obs[len(self.net.out_vars(False)):]))

@@ -69,7 +69,7 @@ class Network:
             d.update(params)
         return d
 
-    def augment(self, state: np.ndarray, normalize = True) -> np.ndarray:
+    def augment(self, state: np.ndarray, normalize=True) -> np.ndarray:
         """
         Allows the network to provide additional output variables in order to provide measurements and reference
         information the RL agent needs to understand its rewards
@@ -174,8 +174,10 @@ class Component:
     def _prefix_var(self, strs):
         if isinstance(strs, str):
             strs = [strs]
-        if self.id is not None:
-            strs = [self.id] + strs
+        if self.id is not None and strs[0].startswith('.'):
+            # this is a complete identifier like 'lc1.inductor1.i' that should not be modified:
+            # first string minus its prefix '.' and the remaining strs
+            strs = [self.id] + [strs[0][1:]] + strs[1:]
         return '.'.join(strs)
 
     def calculate(self):
@@ -192,7 +194,7 @@ class Component:
     def normalize(self, calc_data):
         pass
 
-    def augment(self, state, normalize = True):
+    def augment(self, state, normalize=True):
         self.fill_tmpl(state)
         calc_data = self.calculate()
 
@@ -228,6 +230,9 @@ class Inverter(Component):
         self.i /= self.i_lim
         self.v /= self.v_lim
         calc_data['i_ref'] /= self.i_lim
+
+    def params(self, actions):
+        return {**super().params(actions), **{self._prefix_var(['.v_DC']): self.v_DC}}
 
 
 class SlaveInverter(Inverter):
@@ -302,13 +307,3 @@ class Load(Component):
     def params(self, actions):
         # TODO: perhaps provide modelparams that set resistance value
         return super().params(actions)
-
-
-if __name__ == '__main__':
-    import numpy as np
-
-    # env = ModelicaEnv()
-
-    net = Network.load('net.yaml')
-    # net.keys(env.model_output_names)
-    print(net.augment(np.array([2, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4])))

@@ -60,7 +60,6 @@ if __name__ == '__main__':
 
     env = gym.make('openmodelica_microgrid_gym:NormalizedEnv_test-v1',
                    net='net_static_droop_controller.yaml',
-                   model_params={'inverter1.v_DC': v_DC},
                    model_path='../fmu/grid.network.fmu',
                    max_episode_steps=max_episode_steps,
                    is_normalized=False)
