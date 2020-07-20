@@ -22,7 +22,7 @@ components:
     i_lim: 30  # current limit / A
     i_nom: 20  # nominal current / A
     in:
-      u: [i1p1,i1p2,i1p3]
+      u: [i2p1,i2p2,i2p3]
     out:
       v: [lcl1.capacitor1.v, lcl1.capacitor2.v, lcl1.capacitor3.v]
       i: [lcl1.inductor1.i, lcl1.inductor2.i, lcl1.inductor3.i]

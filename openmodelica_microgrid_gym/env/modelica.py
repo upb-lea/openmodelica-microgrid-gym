@@ -163,7 +163,7 @@ class ModelicaEnv(gym.Env):
 
         # OpenAI Gym requirements
         d_i, d_o = len(self.model_input_names), len(self.model_output_names)
-        self.action_space = gym.spaces.Box(low=np.full(d_i, -np.inf), high=np.full(d_i, np.inf))
+        self.action_space = gym.spaces.Box(low=np.full(d_i, -1), high=np.full(d_i, 1))
         self.observation_space = gym.spaces.Box(low=np.full(d_o, -np.inf), high=np.full(d_o, np.inf))
 
     def _setup_fmu(self):
@@ -405,13 +405,17 @@ class NormalizedEnv(ModelicaEnv):
     def __init__(self, net, is_normalized=True, **kwds):
         self.is_normalized = is_normalized
         self.net = Network.load(net)
-        super().__init__(time_step=self.net.ts, model_input=self.net.in_vars(), model_output=self.net.out_vars(False),
+        super().__init__(time_step=self.net.ts, model_input=self.net.in_vars(),
+                         model_output=self.net.out_vars(False, False),
                          **kwds)
+        # also add the augmented values to the history
+        self.history.cols = self.net.out_vars(True)
 
     def reset(self) -> np.ndarray:
         self.net.reset()
         obs = super().reset()
-        outputs = self.net.augment(obs,self.is_normalized)
+        outputs = self.net.augment(obs, self.is_normalized)
+        outputs = np.hstack((outputs, obs[len(self.net.out_vars(False)):]))
         return outputs
 
     def step(self, action: Sequence) -> Tuple[np.ndarray, float, bool, Mapping]:
@@ -419,5 +423,9 @@ class NormalizedEnv(ModelicaEnv):
         if params:
             self.model.set(*zip(params.items()))
         obs, rew, done, info = super().step(action)
-        outputs = self.net.augment(obs,self.is_normalized)
+        outputs = self.net.augment(obs, self.is_normalized)
+        outputs = np.hstack((outputs, obs[len(self.net.out_vars(False)):]))
+        self.history._data.pop()
+        self.history.append(outputs)
+
         return outputs, rew, done, info

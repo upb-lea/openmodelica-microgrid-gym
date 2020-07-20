@@ -1,7 +1,7 @@
 import gym
 import numpy as np
 import pandas as pd
-from openmodelica_microgrid_gym import Agent, Runner
+from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import StaticControlAgent
 from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQ0PIPIController, \
     MultiPhaseDQCurrentController, InverseDroopParams, PLLParams
@@ -18,10 +18,6 @@ iLimit = 30  # current limit / A
 iNominal = 20  # nominal current / A
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
-
-class RndAgent(Agent):
-    def act(self, obs: pd.Series) -> np.ndarray:
-        return self.env.action_space.sample()
 
 if __name__ == '__main__':
     ctrl = []  # Empty dict which shall include all controllers
@@ -64,6 +60,7 @@ if __name__ == '__main__':
 
     env = gym.make('openmodelica_microgrid_gym:NormalizedEnv_test-v1',
                    net='net_static_droop_controller.yaml',
+                   model_params={'inverter1.v_DC': v_DC},
                    model_path='../fmu/grid.network.fmu',
                    max_episode_steps=max_episode_steps,
                    is_normalized=False)
@@ -73,20 +70,17 @@ if __name__ == '__main__':
 
     #runner.run(1)
 
-    env.reset()
+    #env.reset()
     #action = np.array([0.1, -0.3, 0.7])
-    action = env.action_space.sample()
-    out = env.step(action)
+    #action = env.action_space.sample()
+    #out = env.step(action)
 
     #print(out)
     #print(env.net.out_vars(True))
 
-    print(dict(zip(env.net.out_vars(True),out[0])))
+    #print(dict(zip(env.net.out_vars(True),out[0])))
 
 
     # User runner to execute num_episodes-times episodes of the env controlled by the agent
     runner = Runner(agent, env)
     runner.run(num_episodes, visualise=True)
-
-    df2 = pd.read_hdf('twoInvStaticDroopControl.hd5', 'hist')
-    asd = 1

@@ -74,6 +74,7 @@ if __name__ == '__main__':
                    viz_mode='episode',
                    # viz_cols=['*.m[dq0]', 'slave.freq', 'lcl1.*'],
                    log_level=logging.INFO,
+                   time_step=delta_t,
                    max_episode_steps=max_episode_steps,
                    model_params={'inverter1.v_DC': v_DC},
                    model_path='../fmu/grid.network.fmu',
