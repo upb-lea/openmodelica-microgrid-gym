@@ -66,10 +66,10 @@ if __name__ == '__main__':
                    model_input=['i1p1', 'i1p2', 'i1p3'],
                    model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
                                           ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
-                                     activ_z=[f'signalCurrent{i}.i' for i in range(1, 4)],
+                                     activ_z=[[f'signalCurrent{i}.i' for i in range(1, 4)],
+                                          ['pll_ueff.gain.y']])
 
                    )
-
     # User runner to execute num_episodes-times episodes of the env controlled by the agent
     runner = Runner(agent, env)
     runner.run(num_episodes, visualise=True)
