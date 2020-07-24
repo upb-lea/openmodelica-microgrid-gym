@@ -1,3 +1,8 @@
+"""
+The Tests in this file are high level integration tests.
+We will recreate the usage of the example files and verify that the trajectories don't change
+"""
+
 import gym
 import numpy as np
 import pandas as pd
