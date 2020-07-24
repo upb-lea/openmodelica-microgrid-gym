@@ -30,6 +30,8 @@ setup(
         'Topic :: Scientific/Engineering',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.8',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: POSIX :: Linux'        
     ],
     description="OpenModelica Microgrid Gym",
     install_requires=requirements,

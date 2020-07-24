@@ -1,3 +1,9 @@
+"""
+The Tests in this file are high level integration tests.
+Based on a pre-packed and fixed application example it is verified that the simulated state and action trajectories match expected values. 
+If the simulated system behavior changes against baseline a problem within the software toolchain is likely. 
+"""
+
 import gym
 import numpy as np
 import pandas as pd

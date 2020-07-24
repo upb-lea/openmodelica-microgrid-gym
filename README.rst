@@ -57,6 +57,7 @@ Installation
 Install Python Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 Since it is not possible to install PyFMI_, a package which is necessary for the communication between the python interface and the environment, via pip, we recommend to install this package in advance in a conda environment.
+As of now, only Windows and Linux are supported officially.
 
 - If conda is NOT installed on your PC, install miniconda_ for python 3.8
 - Create a new conda environment (e.g. in PyCharm)
