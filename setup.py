@@ -20,7 +20,7 @@ test_requirements = ['pytest>=3', 'tables>=3.4.1', 'safeopt>=0.16', 'GPy>=1.9.9'
 setup(
     author="LEA - Uni Paderborn",
     author_email='upblea@mail.upb.de',
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
@@ -29,7 +29,6 @@ setup(
         'Framework :: Sphinx',
         'Topic :: Scientific/Engineering',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],

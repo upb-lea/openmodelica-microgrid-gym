@@ -1,17 +1,5 @@
-#####################################
-# Example using a FMU by OpenModelica as gym environment containing two inverters, each connected via an LC-filter to
-# supply in parallel a RL load.
-# This example uses the available standard controllers as defined in the 'auxiliaries' folder.
-# One inverter is set up as voltage forming inverter with a direct droop controller.
-# The other controller is used as current sourcing inverter with an inverse droop controller which reacts on the
-# frequency and voltage change due to its droop control parameters by a power/reactive power change.
-
-import logging
-from functools import partial
-
 import gym
 import numpy as np
-
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import StaticControlAgent
 from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQ0PIPIController, \
@@ -19,7 +7,7 @@ from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhas
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
-max_episode_steps = 6000  # number of simulation steps per episode
+max_episode_steps = 3000  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes
 # (here, only 1 episode makes sense since simulation conditions don't change in this example)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the fmu
@@ -29,20 +17,6 @@ iLimit = 30  # current limit / A
 iNominal = 20  # nominal current / A
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
-
-logging.basicConfig()
-
-
-def load_step(t, gain):
-    """
-    Defines a load step after 0.2 s
-    Doubles the load parameters
-    :param t:
-    :param gain: device parameter
-    :return: Dictionary with load parameters
-    """
-    return 1*gain if t < .3 else 2*gain
-
 
 if __name__ == '__main__':
     ctrl = []  # Empty dict which shall include all controllers
@@ -82,29 +56,11 @@ if __name__ == '__main__':
                                                 [f'lcl1.capacitor{k}.v' for k in '123'],
                                                 np.zeros(3)]})
 
-    # Define the environment
-    env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
-                   viz_mode='episode',
-                   # viz_cols=['*.m[dq0]', 'slave.freq', 'lcl1.*'],
-                   viz_cols=['master.inst*', 'slave.inst*', 'lcl1.*', 'lc1.*', 'slave.freq'],
-                   log_level=logging.INFO,
-                   time_step=delta_t,
-                   max_episode_steps=max_episode_steps,
-                   model_params={'rl1.resistor1.R': partial(load_step,gain=20),
-                                 'rl1.resistor2.R': partial(load_step,gain=20),
-                                 'rl1.resistor3.R': partial(load_step,gain=20),
-                                 'rl1.inductor1.L': 0.001,
-                                 'rl1.inductor2.L': 0.001,
-                                 'rl1.inductor3.L': 0.001
-                                 },
+    env = gym.make('openmodelica_microgrid_gym:NormalizedEnv_test-v1',
+                   net='net_static_droop_controller.yaml',
                    model_path='../fmu/grid.network.fmu',
-                   model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
-                   model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
-                                     rl1=[f'inductor{i}.i' for i in range(1, 4)],
-                                     lcl1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                           ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]),
-                   )
+                   max_episode_steps=max_episode_steps,
+                   is_normalized=False)
 
     # User runner to execute num_episodes-times episodes of the env controlled by the agent
     runner = Runner(agent, env)
