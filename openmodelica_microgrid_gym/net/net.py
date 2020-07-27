@@ -243,12 +243,6 @@ class SlaveInverter(Inverter):
         qdroop = {**dict(gain=50.0), **(qdroop or {})}
         pll = {**dict(kP=10, kI=200), **(pll or {})}
 
-        # additional shorthand to be able to use p and i instead of kP and kI
-        if 'p' in pll:
-            pll['kP'] = pll.pop('p')
-        if 'i' in pll:
-            pll['kI'] = pll.pop('i')
-
         self.pdroop_ctl = InverseDroopController(
             InverseDroopParams(tau=self.net.ts, nom_value=self.net.freq_nom, **pdroop), self.net.ts)
         self.qdroop_ctl = InverseDroopController(

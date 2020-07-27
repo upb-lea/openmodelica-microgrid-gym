@@ -1,6 +1,5 @@
 import gym
 import numpy as np
-import pandas as pd
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import StaticControlAgent
 from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQ0PIPIController, \
@@ -50,7 +49,6 @@ if __name__ == '__main__':
     ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, iLimit,
                                               droop_param, qdroop_param, name='slave'))
 
-
     # Define the agent as StaticControlAgent which performs the basic controller steps for every environment set
     agent = StaticControlAgent(ctrl, {'master': [[f'lc1.inductor{k}.i' for k in '123'],
                                                  [f'lc1.capacitor{k}.v' for k in '123']],
@@ -63,22 +61,6 @@ if __name__ == '__main__':
                    model_path='../fmu/grid.network.fmu',
                    max_episode_steps=max_episode_steps,
                    is_normalized=False)
-
-    #agent = RndAgent()
-    #runner = Runner(agent, env)
-
-    #runner.run(1)
-
-    #env.reset()
-    #action = np.array([0.1, -0.3, 0.7])
-    #action = env.action_space.sample()
-    #out = env.step(action)
-
-    #print(out)
-    #print(env.net.out_vars(True))
-
-    #print(dict(zip(env.net.out_vars(True),out[0])))
-
 
     # User runner to execute num_episodes-times episodes of the env controlled by the agent
     runner = Runner(agent, env)

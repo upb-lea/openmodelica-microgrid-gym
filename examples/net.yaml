@@ -18,8 +18,8 @@ components:
   inv2:
     cls: SlaveInverter
     #pll:
-    #  p: 10
-    #  i: 200
+    #  kP: 10
+    #  kI: 200
     in:
       u: [i2p1, i2p2, i2p3]
     out:
@@ -30,4 +30,4 @@ components:
     id: rl1
     cls: Load
     out:
-      i: [inductor1.i, inductor2.i, inductor3.i]
+      i: [.inductor1.i, .inductor2.i, .inductor3.i]
