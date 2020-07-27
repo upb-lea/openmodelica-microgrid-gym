@@ -33,9 +33,9 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
-max_episode_steps = 300  # number of simulation steps per episode
+max_episode_steps = 1000  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
-v_DC = 65  # DC-link voltage / V; will be set as model parameter in the FMU
+v_DC = 60  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
 iLimit = 30  # inverter current limit / A
@@ -43,7 +43,7 @@ iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
-i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
+i_ref = np.array([10, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
 
 
 class Reward:
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     # For 2D example, choose Kp and Ki as mutable parameters (below) and define bounds and lengthscale for both of them
     if adjust == 'Kpi':
         bounds = [(0.0, 0.03), (0, 300)]
-        lengthscale = [.01, 50.]
+        lengthscale = [.01, 5.]
 
     # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
     # the initial performance: safe_threshold = 1.2 means. Performance measurement for optimization are seen as
