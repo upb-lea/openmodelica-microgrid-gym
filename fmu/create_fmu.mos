@@ -4,4 +4,4 @@ setCommandLineOptions("-d=initialization"); getErrorString();
 setCommandLineOptions("--simCodeTarget=Cpp"); getErrorString();
 setCommandLineOptions("-d=-disableDirectionalDerivatives"); getErrorString();
 OpenModelica.Scripting.translateModelFMU(grid.testbench_SC, version="2.0", fmuType = "me"); getErrorString();
-//OpenModelica.Scripting.buildModelFMU(grid.network, platforms={"x86_64-linux-gnu"}); getErrorString();
+//OpenModelica.Scripting.buildModelFMU(grid.testbench_SC, platforms={"x86_64-linux-gnu"}); getErrorString();
