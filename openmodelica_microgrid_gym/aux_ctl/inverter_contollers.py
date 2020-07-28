@@ -363,7 +363,7 @@ class MultiPhaseDQCurrentSourcingController(VoltageCtl):
         self._set_hist_cols(['phase',
                              [f'CVV{s}' for s in 'dq0'], [f'CVI{s}' for s in 'dq0'],
                              [f'SPI{s}' for s in 'dq0'],
-                             [f'm{s}' for s in 'dq0'], 'instPow', 'instQ',
+                             [f'm{s}' for s in 'dq0'],[f'm{s}' for s in 'abc'], 'instPow', 'instQ',
                              'freq'])
 
         self._prev_CV = np.zeros(N_PHASE)
@@ -395,8 +395,9 @@ class MultiPhaseDQCurrentSourcingController(VoltageCtl):
         # Current controller calculations
         MVdq0 = self._currentPI.step(SPIdq0, CVIdq0)
 
+        MVabc = dq0_to_abc(MVdq0, phase)
         # Add intern measurment
-        self.history.append([phase, *CVVdq0, *CVIdq0, *SPIdq0, *MVdq0, instPow, instQ, freq])
+        self.history.append([phase, *CVVdq0, *CVIdq0, *SPIdq0, *MVdq0, *MVabc, instPow, instQ, freq])
 
         # Transform the MVs back to the abc frame
-        return dq0_to_abc(MVdq0, phase)
+        return MVabc
