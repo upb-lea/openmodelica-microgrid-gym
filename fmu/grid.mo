@@ -837,11 +837,11 @@ package grid
         Placement(visible = true, transformation(origin = {0, -18}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
       Modelica.Electrical.Analog.Basic.Inductor inductor3(L = L3) annotation(
         Placement(visible = true, transformation(origin = {60, 8}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
-      grid.components.resistor resistor1(R=R1) annotation(
+      grid.components.resistor resistor1(R = R1) annotation(
         Placement(visible = true, transformation(origin = {-40, -20}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
-      grid.components.resistor resistor2(R=R2) annotation(
+      grid.components.resistor resistor2(R = R2) annotation(
         Placement(visible = true, transformation(origin = {0, 12}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
-      grid.components.resistor resistor3(R=R3) annotation(
+      grid.components.resistor resistor3(R = R3) annotation(
         Placement(visible = true, transformation(origin = {60, 34}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
     equation
       connect(resistor1.n, inductor1.p) annotation(
@@ -870,7 +870,6 @@ package grid
       //  input Real regler1;
       //  input Real regler2;
       //  input Real regler3;
-      parameter Real v_DC = 1000;
       Modelica.Electrical.Analog.Basic.Ground ground1 annotation(
         Placement(visible = true, transformation(origin = {-74, -82}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Electrical.Analog.Sources.SignalVoltage signalVoltage1 annotation(
@@ -884,20 +883,25 @@ package grid
       Modelica.Blocks.Interfaces.RealInput u3 annotation(
         Placement(visible = true, transformation(origin = {-104, 60}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 60}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
       Modelica.Blocks.Interfaces.RealInput u2 annotation(
-        Placement(visible = true, transformation(origin = {-104, 4.44089e-16}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 4.44089e-16}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
+        Placement(visible = true, transformation(origin = {-102, 4.44089e-16}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 4.44089e-16}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
       Modelica.Electrical.Analog.Interfaces.Pin pin3 annotation(
         Placement(visible = true, transformation(origin = {100, 60}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, 60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Electrical.Analog.Interfaces.Pin pin2 annotation(
         Placement(visible = true, transformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Electrical.Analog.Interfaces.Pin pin1 annotation(
         Placement(visible = true, transformation(origin = {100, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      Modelica.Blocks.Math.Gain gain3(k = v_DC) annotation(
-        Placement(visible = true, transformation(origin = {-26, 60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      Modelica.Blocks.Math.Gain gain1(k = v_DC) annotation(
-        Placement(visible = true, transformation(origin = {-26, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      Modelica.Blocks.Math.Gain gain2(k = v_DC) annotation(
-        Placement(visible = true, transformation(origin = {-26, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Modelica.Blocks.Sources.RealExpression v_DC(y = 1000) annotation(
+        Placement(visible = true, transformation(origin = {-100, -24}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Modelica.Blocks.Math.Product product annotation(
+        Placement(visible = true, transformation(origin = {-30, -58}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Modelica.Blocks.Math.Product product1 annotation(
+        Placement(visible = true, transformation(origin = {-36, -6}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Modelica.Blocks.Math.Product product2 annotation(
+        Placement(visible = true, transformation(origin = {-24, 54}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Modelica.Blocks.Math.Gain gain(k = 1 / 2) annotation(
+        Placement(visible = true, transformation(origin = {-67, -23}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
     equation
+      gain.u = v_DC;
       connect(signalVoltage2.p, pin2) annotation(
         Line(points = {{-74, 28}, {80, 28}, {80, 0}, {100, 0}}, color = {0, 0, 255}));
       connect(signalVoltage3.p, pin3) annotation(
@@ -917,18 +921,26 @@ package grid
       connect(signalVoltage3.v, regler3) annotation(
         Line);
     */
-      connect(u1, gain1.u) annotation(
-        Line(points = {{-104, -60}, {-38, -60}, {-38, -60}, {-38, -60}}, color = {0, 0, 127}));
-      connect(gain1.y, signalVoltage1.v) annotation(
-        Line(points = {{-14, -60}, {-6, -60}, {-6, -42}, {-60, -42}, {-60, -42}, {-62, -42}}, color = {0, 0, 127}));
-      connect(u2, gain2.u) annotation(
-        Line(points = {{-104, 0}, {-38, 0}, {-38, 0}, {-38, 0}}, color = {0, 0, 127}));
-      connect(gain2.y, signalVoltage2.v) annotation(
-        Line(points = {{-14, 0}, {-6, 0}, {-6, 18}, {-62, 18}, {-62, 18}}, color = {0, 0, 127}));
-      connect(u3, gain3.u) annotation(
-        Line(points = {{-104, 60}, {-38, 60}, {-38, 60}, {-38, 60}}, color = {0, 0, 127}));
-      connect(gain3.y, signalVoltage3.v) annotation(
-        Line(points = {{-14, 60}, {-6, 60}, {-6, 78}, {-62, 78}, {-62, 78}}, color = {0, 0, 127}));
+      connect(u3, product2.u1) annotation(
+        Line(points = {{-104, 60}, {-36, 60}}, color = {0, 0, 127}));
+      connect(u1, product.u2) annotation(
+        Line(points = {{-104, -60}, {-42, -60}, {-42, -64}, {-42, -64}}, color = {0, 0, 127}));
+      connect(u2, product1.u1) annotation(
+        Line(points = {{-102, 0}, {-48, 0}}, color = {0, 0, 127}));
+      connect(product2.y, signalVoltage3.v) annotation(
+        Line(points = {{-12, 54}, {6, 54}, {6, 78}, {-62, 78}, {-62, 78}}, color = {0, 0, 127}));
+      connect(product1.y, signalVoltage2.v) annotation(
+        Line(points = {{-24, -6}, {0, -6}, {0, 18}, {-62, 18}, {-62, 18}}, color = {0, 0, 127}));
+      connect(product.y, signalVoltage1.v) annotation(
+        Line(points = {{-18, -58}, {0, -58}, {0, -42}, {-62, -42}, {-62, -42}}, color = {0, 0, 127}));
+      connect(v_DC.y, gain.u) annotation(
+        Line(points = {{-88, -24}, {-82, -24}, {-82, -23}, {-75, -23}}, color = {0, 0, 127}));
+      connect(gain.y, product1.u2) annotation(
+        Line(points = {{-60, -22}, {-58, -22}, {-58, -12}, {-48, -12}, {-48, -12}}, color = {0, 0, 127}));
+      connect(product2.u2, gain.y) annotation(
+        Line(points = {{-36, 48}, {-54, 48}, {-54, -22}, {-60, -22}, {-60, -22}}, color = {0, 0, 127}));
+      connect(product.u1, gain.y) annotation(
+        Line(points = {{-42, -52}, {-48, -52}, {-48, -22}, {-60, -22}, {-60, -22}}, color = {0, 0, 127}));
       annotation(
         uses(Modelica(version = "3.2.3")));
     end inverter;
@@ -1482,7 +1494,7 @@ package grid
       Placement(visible = true, transformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
     ideal_filter.lcl lcl1 annotation(
       Placement(visible = true, transformation(origin = {-32, -30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  grid.loads.rl rl1 annotation(
+    grid.loads.rl rl1 annotation(
       Placement(visible = true, transformation(origin = {70, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   equation
     connect(lc1.pin6, lc2.pin3) annotation(
@@ -1521,11 +1533,11 @@ package grid
       Line(points = {{-22, -30}, {0, -30}, {0, 30}, {20, 30}, {20, 30}}, color = {0, 0, 255}));
     connect(lcl1.pin4, lc2.pin1) annotation(
       Line(points = {{-22, -36}, {6, -36}, {6, 24}, {20, 24}, {20, 24}}, color = {0, 0, 255}));
-  connect(lc2.pin6, rl1.pin3) annotation(
+    connect(lc2.pin6, rl1.pin3) annotation(
       Line(points = {{40, 36}, {60, 36}, {60, 36}, {60, 36}}, color = {0, 0, 255}));
-  connect(lc2.pin5, rl1.pin2) annotation(
+    connect(lc2.pin5, rl1.pin2) annotation(
       Line(points = {{40, 30}, {60, 30}, {60, 30}, {60, 30}}, color = {0, 0, 255}));
-  connect(lc2.pin4, rl1.pin1) annotation(
+    connect(lc2.pin4, rl1.pin1) annotation(
       Line(points = {{40, 24}, {60, 24}, {60, 24}, {60, 24}}, color = {0, 0, 255}));
     annotation(
       Diagram);
@@ -1718,7 +1730,6 @@ package grid
   end pll_Test;
 
   model sine_Test
-  
     Modelica.Blocks.Sources.Sine sine(amplitude = 230, freqHz = 50) annotation(
       Placement(visible = true, transformation(origin = {-76, -82}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     Modelica.Blocks.Sources.Sine sine1(amplitude = 230, freqHz = 50, phase = 2.0944) annotation(
@@ -1731,27 +1742,27 @@ package grid
       Placement(visible = true, transformation(origin = {-76, 48}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     Modelica.Blocks.Sources.Sine sine5(amplitude = 230, freqHz = 50, phase = 4.18879) annotation(
       Placement(visible = true, transformation(origin = {-76, 80}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  grid.network network1 annotation(
+    grid.network network1 annotation(
       Placement(visible = true, transformation(origin = {38, 2}, extent = {{-46, -46}, {46, 46}}, rotation = 0)));
   equation
     connect(sine5.y, network1.i1p3) annotation(
       Line(points = {{-64, 80}, {-34, 80}, {-34, 22}, {-10, 22}, {-10, 22}}, color = {0, 0, 127}));
-  connect(sine4.y, network1.i1p2) annotation(
+    connect(sine4.y, network1.i1p2) annotation(
       Line(points = {{-64, 48}, {-40, 48}, {-40, 16}, {-10, 16}, {-10, 16}}, color = {0, 0, 127}));
-  connect(sine3.y, network1.i1p1) annotation(
+    connect(sine3.y, network1.i1p1) annotation(
       Line(points = {{-64, 14}, {-34, 14}, {-34, 10}, {-10, 10}, {-10, 10}}, color = {0, 0, 127}));
-  connect(sine2.y, network1.i2p3) annotation(
+    connect(sine2.y, network1.i2p3) annotation(
       Line(points = {{-64, -16}, {-64, -16}, {-64, -6}, {-10, -6}, {-10, -6}}, color = {0, 0, 127}));
-  connect(sine1.y, network1.i2p2) annotation(
+    connect(sine1.y, network1.i2p2) annotation(
       Line(points = {{-64, -48}, {-50, -48}, {-50, -12}, {-10, -12}, {-10, -12}, {-10, -12}}, color = {0, 0, 127}));
-  connect(sine.y, network1.i2p1) annotation(
+    connect(sine.y, network1.i2p1) annotation(
       Line(points = {{-64, -82}, {-32, -82}, {-32, -18}, {-10, -18}, {-10, -18}}, color = {0, 0, 127}));
   end sine_Test;
-  
+
   model network_singleInverter
     grid.inverters.inverter inverter1 annotation(
       Placement(visible = true, transformation(origin = {-70, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    grid.ideal_filter.lc lc1(C1 = 0.00002, C2 = 0.00002, C3 = 0.00002, L1 = 0.002, L2 = 0.002, L3 = 0.002)  annotation(
+    grid.ideal_filter.lc lc1(C1 = 0.00002, C2 = 0.00002, C3 = 0.00002, L1 = 0.002, L2 = 0.002, L3 = 0.002) annotation(
       Placement(visible = true, transformation(origin = {-30, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     Modelica.Blocks.Interfaces.RealInput i1p1 annotation(
       Placement(visible = true, transformation(origin = {-104, 18}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 18}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
@@ -1759,42 +1770,8 @@ package grid
       Placement(visible = true, transformation(origin = {-104, 30}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 30}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
     Modelica.Blocks.Interfaces.RealInput i1p3 annotation(
       Placement(visible = true, transformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
-  grid.loads.rl rl1 annotation(
+    grid.loads.rl rl1 annotation(
       Placement(visible = true, transformation(origin = {24, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  equation
-  connect(inverter1.pin3, lc1.pin3) annotation(
-      Line(points = {{-60, 36}, {-40, 36}}, color = {0, 0, 255}));
-  connect(inverter1.pin2, lc1.pin2) annotation(
-      Line(points = {{-60, 30}, {-40, 30}}, color = {0, 0, 255}));
-  connect(inverter1.pin1, lc1.pin1) annotation(
-      Line(points = {{-60, 24}, {-40, 24}}, color = {0, 0, 255}));
-    connect(i1p1, inverter1.u1) annotation(
-      Line(points = {{-104, 18}, {-86, 18}, {-86, 24}, {-80, 24}, {-80, 24}}, color = {0, 0, 127}));
-    connect(i1p2, inverter1.u2) annotation(
-      Line(points = {{-104, 30}, {-80, 30}, {-80, 30}, {-80, 30}}, color = {0, 0, 127}));
-    connect(i1p3, inverter1.u3) annotation(
-      Line(points = {{-104, 42}, {-86, 42}, {-86, 36}, {-80, 36}}, color = {0, 0, 127}));
-  connect(lc1.pin6, rl1.pin3) annotation(
-      Line(points = {{-20, 36}, {14, 36}}, color = {0, 0, 255}));
-  connect(lc1.pin5, rl1.pin2) annotation(
-      Line(points = {{-20, 30}, {14, 30}}, color = {0, 0, 255}));
-  connect(lc1.pin4, rl1.pin1) annotation(
-      Line(points = {{-20, 24}, {14, 24}}, color = {0, 0, 255}));
-    annotation(
-      Diagram);
-  end network_singleInverter;
-  
-  model testbench_SC
-    grid.inverters.inverter inverter1 annotation(
-      Placement(visible = true, transformation(origin = {-70, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    grid.ideal_filter.lc lc1(C1 = 0.00001, C2 = 0.00001, C3 = 0.00001, L1 = 0.0022, L2 = 0.0022, L3 = 0.0022)  annotation(
-      Placement(visible = true, transformation(origin = {-30, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-    Modelica.Blocks.Interfaces.RealInput i1p1 annotation(
-      Placement(visible = true, transformation(origin = {-104, 18}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 18}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
-    Modelica.Blocks.Interfaces.RealInput i1p2 annotation(
-      Placement(visible = true, transformation(origin = {-104, 30}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 30}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
-    Modelica.Blocks.Interfaces.RealInput i1p3 annotation(
-      Placement(visible = true, transformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
   equation
     connect(inverter1.pin3, lc1.pin3) annotation(
       Line(points = {{-60, 36}, {-40, 36}}, color = {0, 0, 255}));
@@ -1808,12 +1785,40 @@ package grid
       Line(points = {{-104, 30}, {-80, 30}, {-80, 30}, {-80, 30}}, color = {0, 0, 127}));
     connect(i1p3, inverter1.u3) annotation(
       Line(points = {{-104, 42}, {-86, 42}, {-86, 36}, {-80, 36}}, color = {0, 0, 127}));
-  connect(lc1.pin6, lc1.pin5) annotation(
-      Line(points = {{-20, 36}, {-20, 36}, {-20, 30}, {-20, 30}}, color = {0, 0, 255}));
-  connect(lc1.pin6, lc1.pin5) annotation(
-      Line(points = {{-20, 36}, {-10, 36}, {-10, 30}, {-20, 30}, {-20, 30}}, color = {0, 0, 255}));
-  connect(lc1.pin4, lc1.pin5) annotation(
-      Line(points = {{-20, 24}, {-10, 24}, {-10, 30}, {-20, 30}, {-20, 30}}, color = {0, 0, 255}));
+    connect(lc1.pin6, rl1.pin3) annotation(
+      Line(points = {{-20, 36}, {14, 36}}, color = {0, 0, 255}));
+    connect(lc1.pin5, rl1.pin2) annotation(
+      Line(points = {{-20, 30}, {14, 30}}, color = {0, 0, 255}));
+    connect(lc1.pin4, rl1.pin1) annotation(
+      Line(points = {{-20, 24}, {14, 24}}, color = {0, 0, 255}));
+    annotation(
+      Diagram);
+  end network_singleInverter;
+
+  model testbench_SC
+    grid.inverters.inverter inverter1 annotation(
+      Placement(visible = true, transformation(origin = {-70, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    Modelica.Blocks.Interfaces.RealInput i1p1 annotation(
+      Placement(visible = true, transformation(origin = {-104, 18}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 18}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
+    Modelica.Blocks.Interfaces.RealInput i1p2 annotation(
+      Placement(visible = true, transformation(origin = {-104, 30}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 30}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
+    Modelica.Blocks.Interfaces.RealInput i1p3 annotation(
+      Placement(visible = true, transformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
+    grid.loads.rl rl(L1 = 0.0022, L2 = 0.0022, L3 = 0.0022, R1 = 0.5, R2 = 0.5, R3 = 0.5) annotation(
+      Placement(visible = true, transformation(origin = {-32, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  equation
+    connect(i1p1, inverter1.u1) annotation(
+      Line(points = {{-104, 18}, {-86, 18}, {-86, 24}, {-80, 24}, {-80, 24}}, color = {0, 0, 127}));
+    connect(i1p2, inverter1.u2) annotation(
+      Line(points = {{-104, 30}, {-80, 30}, {-80, 30}, {-80, 30}}, color = {0, 0, 127}));
+    connect(i1p3, inverter1.u3) annotation(
+      Line(points = {{-104, 42}, {-86, 42}, {-86, 36}, {-80, 36}}, color = {0, 0, 127}));
+    connect(inverter1.pin3, rl.pin3) annotation(
+      Line(points = {{-60, 36}, {-42, 36}, {-42, 36}, {-42, 36}}, color = {0, 0, 255}));
+    connect(inverter1.pin2, rl.pin2) annotation(
+      Line(points = {{-60, 30}, {-42, 30}, {-42, 30}, {-42, 30}}, color = {0, 0, 255}));
+    connect(inverter1.pin1, rl.pin1) annotation(
+      Line(points = {{-60, 24}, {-42, 24}, {-42, 24}, {-42, 24}}, color = {0, 0, 255}));
     annotation(
       Diagram);
   end testbench_SC;

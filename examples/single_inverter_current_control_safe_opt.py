@@ -33,17 +33,17 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
-max_episode_steps = 2000  # number of simulation steps per episode
+max_episode_steps = 1000  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
-v_DC = 60  # DC-link voltage / V; will be set as model parameter in the FMU
-nomFreq = 50  # nominal grid frequency / Hz
+v_DC = 400  # DC-link voltage / V; will be set as model parameter in the FMU
+nomFreq = 0  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
 iLimit = 30  # inverter current limit / A
 iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
-i_ref = np.array([10, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
+i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
 
 
 class Reward:
@@ -54,7 +54,7 @@ class Reward:
         if self._idx is None:
             self._idx = nested_map(
                 lambda n: obs.index(n),
-                [[f'lc1.inductor{k}.i' for k in '123'], 'master.phase', [f'master.SPI{k}' for k in 'dq0']])
+                [[f'rl.inductor{k}.i' for k in '123'], 'master.phase', [f'master.SPI{k}' for k in 'dq0']])
 
     def rew_fun(self, cols: List[str], data: np.ndarray) -> float:
         """
@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     # For 2D example, choose Kp and Ki as mutable parameters (below) and define bounds and lengthscale for both of them
     if adjust == 'Kpi':
-        bounds = [(0.0, 0.03), (0, 300)]
+        bounds = [(0.0, 0.03), (0, 20)]
         lengthscale = [.01, 5.]
 
     # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
@@ -148,7 +148,7 @@ if __name__ == '__main__':
 
     # For 2D example, choose Kp and Ki as mutable parameters
     elif adjust == 'Kpi':
-        mutable_params = dict(currentP=MutableFloat(10e-3), currentI=MutableFloat(10))
+        mutable_params = dict(currentP=MutableFloat(0.01), currentI=MutableFloat(0))
         current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
 
     # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
@@ -175,8 +175,8 @@ if __name__ == '__main__':
                          dict(bounds=bounds, noise_var=noise_var, prior_mean=prior_mean,
                               safe_threshold=safe_threshold, explore_threshold=explore_threshold),
                          [ctrl],
-                         dict(master=[[f'lc1.inductor{k}.i' for k in '123'],
-                                      [f'lc1.capacitor{k}.v' for k in '123'],
+                         dict(master=[[f'rl.inductor{k}.i' for k in '123'],
+                                      [f'rl.inductor{k}.i' for k in '123'],
                                       i_ref]),
                          history=FullHistory()
                          )
@@ -204,27 +204,42 @@ if __name__ == '__main__':
         ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
         ax.set_ylabel('$i_{\mathrm{dq0}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
+        plt.ylim(0,36)
         #fig.savefig('Inductor_currents.pdf')
+
+    def xylables_mdq0(fig):
+        ax = fig.gca()
+        ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+        ax.set_ylabel('$m_{\mathrm{dq0}}\,/\,\mathrm{}$')
+        ax.grid(which='both')
+        #plt.ylim(0,36)
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=Reward().rew_fun,
                    time_step=delta_t,
-                   viz_cols=[
-                       PlotTmpl([f'lc1.inductor{i}.i' for i in '123'],
-                                callback=xylables
-                                ),
-                       PlotTmpl([f'master.CVI{i}' for i in 'dq0'],
-                                callback=xylables_dq0
-                                )
-                   ],
+                   #viz_cols=[
+                   #    PlotTmpl([f'rl.inductor{i}.i' for i in '123'],
+                   #             callback=xylables
+                   #             ),
+                   #    PlotTmpl([f'master.CVI{i}' for i in 'dq0'],
+                   #             callback=xylables_dq0
+                   #             ),
+                   #    PlotTmpl([f'master.m{i}' for i in 'dq0'],
+                   #             callback=xylables_mdq0
+                   #             ),
+                   #    PlotTmpl([f'master.m{i}' for i in 'abc'],
+                   #             #callback=xylables_dq0
+                   #             )
+                   #],
                    log_level=logging.INFO,
                    viz_mode='episode',
                    max_episode_steps=max_episode_steps,
-                   model_params={'inverter1.v_DC': v_DC},
+                   model_params={'inverter1.gain.u': v_DC},
                    model_path='../fmu/grid.testbench_SC.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3'],
-                   model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]),
+                   model_output=dict(rl=[['inductor1.i', 'inductor2.i', 'inductor3.i']],
+                                     inverter1=['product.u1', 'product.u2', 'v_DC.y']
+                                     ),
                    history=FullHistory()
                    )
 
