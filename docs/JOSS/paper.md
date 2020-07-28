@@ -69,7 +69,7 @@ The user can select between a wide range of different grid components and connec
 
 * Dynamic simulation of local electricity grids on component level including single and multi-phase systems as well as AC and DC operation. 
 
-* Easy exchange of models between computing platforms and simulation of the models by using the FMI 2.0 standard [@FMI2020] with C++ code inside and PyFMI [@FMI2020] for the access in Python. Appropriate numeric solvers for the underlying system of ordinary differential equations can be easily chosen within the usual Python packages (e.g. SciPy) due to the usage of co-simulation. 
+* Easy exchange of models between computing platforms and simulation of the models by using the FMI 2.0 standard [@FMI2020] with C++ code inside and PyFMI [@PyFMI2020] for the access in Python. Appropriate numeric solvers for the underlying system of ordinary differential equations can be easily chosen within the usual Python packages (e.g. SciPy) due to the usage of co-simulation. 
 
 * Calculation, evaluation and monitoring of every single time step covering states, action and auxiliary quantities provides an interface for manual or automated inspection. The latter is particularly useful for the automatic training of data-driven control approaches such as reinforcement learning.
 
