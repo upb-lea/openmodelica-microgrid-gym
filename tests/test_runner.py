@@ -1,6 +1,7 @@
 """
 The Tests in this file are high level integration tests.
-We will recreate the usage of the example files and verify that the trajectories don't change
+Based on a pre-packed and fixed application example it is verified that the simulated state and action trajectories match expected values. 
+If the simulated system behavior changes against baseline a problem within the software toolchain is likely. 
 """
 
 import gym
