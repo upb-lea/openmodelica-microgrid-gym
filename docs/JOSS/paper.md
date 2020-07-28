@@ -35,7 +35,7 @@ bibliography: paper.bib
 
 Micro- and smart grids (MSG) play an important role both for integrating renewable energy sources in conventional electricity grids and for providing power supply in remote areas [@Lund2017]. 
 Due to their high efficiency and flexibility, power electronic converters are largely used to drive modern MSG.
-Power electronics is the application of solid-state electronics to the control and conversion of electric power which is largely performed with semiconductor switching devices such as diodes or power transistors.  
+Power electronics is the application of solid-state electronics to the control and conversion of electric power which is largely performed with semiconductor switching devices such as diodes or power transistors.
 This includes energy conversion in terms of voltage and current amplitude, frequency and phase angle as well as the number of phases between two or more electrical energy systems to be connected.
 
 
