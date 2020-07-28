@@ -35,6 +35,10 @@ bibliography: paper.bib
 
 Micro- and smart grids (MSG) play an important role both for integrating renewable energy sources in conventional electricity grids and for providing power supply in remote areas [@Lund2017]. 
 Due to their high efficiency and flexibility, power electronic converters are largely used to drive modern MSG.
+Power electronics is the application of solid-state electronics to the control and conversion of electric power which is largely performed with semiconductor switching devices such as diodes or power transistors.  
+This includes energy conversion in terms of voltage and current amplitude, frequency and phase angle as well as the number of phases between two or more electrical energy systems to be connected.
+
+
 Controlling MSGs is a challenging task due to the high requirements on energy availability, safety and voltage quality. 
 This is particularly demanding due to the wide range of different MSG topologies depending on their field of application like industrial campuses, residential areas or remote off-grid electrification [@Kroposki2008].
 This results in high demand for comprehensive testing of new control concepts during their development phase and comparisons with the state of the art to ensure their feasibility.
