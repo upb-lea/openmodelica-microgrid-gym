@@ -890,7 +890,7 @@ package grid
         Placement(visible = true, transformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Electrical.Analog.Interfaces.Pin pin1 annotation(
         Placement(visible = true, transformation(origin = {100, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      Modelica.Blocks.Sources.RealExpression v_DC(y = 1000) annotation(
+      Modelica.Blocks.Sources.RealExpression v_DC(y = 60) annotation(
         Placement(visible = true, transformation(origin = {-100, -24}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Blocks.Math.Product product annotation(
         Placement(visible = true, transformation(origin = {-30, -58}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -901,7 +901,7 @@ package grid
       Modelica.Blocks.Math.Gain gain(k = 1 / 2) annotation(
         Placement(visible = true, transformation(origin = {-67, -23}, extent = {{-7, -7}, {7, 7}}, rotation = 0)));
     equation
-      gain.u = v_DC;
+     // gain.u = v_DC;
       connect(signalVoltage2.p, pin2) annotation(
         Line(points = {{-74, 28}, {80, 28}, {80, 0}, {100, 0}}, color = {0, 0, 255}));
       connect(signalVoltage3.p, pin3) annotation(
@@ -1804,7 +1804,7 @@ package grid
       Placement(visible = true, transformation(origin = {-104, 30}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 30}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
     Modelica.Blocks.Interfaces.RealInput i1p3 annotation(
       Placement(visible = true, transformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
-    grid.loads.rl rl(L1 = 0.0022, L2 = 0.0022, L3 = 0.0022, R1 = 0.5, R2 = 0.5, R3 = 0.5) annotation(
+    grid.loads.rl rl(L1 = 0.0022, L2 = 0.0022, L3 = 0.0022, R1 = 0.585, R2 = 0.585, R3 = 0.585) annotation(
       Placement(visible = true, transformation(origin = {-32, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   equation
     connect(i1p1, inverter1.u1) annotation(
