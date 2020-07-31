@@ -15,30 +15,21 @@ ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh.connect('lea-jde10', username='root', password='')
 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('./my_first_hps 2000  0.01 5.0 10.0 50.0')
 
-DT = 1/10000
- 
+DT = 1/20000
+
+
+
 result = list()
-KI = list()
-lastm = 0
-laste = 0 
-count = 0 
 for line in ssh_stdout.read().splitlines():
     
     temp = line.decode("utf-8").split(",")
     
     if len(temp) == 11  :
         temp.pop(-1)    #Drop the last item
-        m_a = float(temp[0])
-        I_d = float(temp[6])
-        if count>10:
-            KI.append(abs((m_a-lastm)/(DT*(laste))))
-        
-        lastm = m_a
-        laste = 15-I_d
+
         floats = [float(i) for i in temp]
         #print(floats)
         result.append(floats)
-        count=count+1
     elif len (temp)!=1:
         print(temp)
 
