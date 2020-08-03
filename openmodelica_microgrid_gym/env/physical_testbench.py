@@ -2,6 +2,7 @@ import gym
 import paramiko
 import numpy as np
 import matplotlib.pyplot as plt
+from time import strftime, gmtime
 
 from openmodelica_microgrid_gym.util import dq0_to_abc
 
@@ -81,7 +82,7 @@ class TestbenchEnv(gym.Env):
                 + -np.sum(mu * np.log(1 - np.maximum(np.abs(Iabc_meas) - self.i_nominal, 0) / \
                 (self.i_limit - self.i_nominal)), axis=0) * self.max_episode_steps
 
-        return -error.squeeze()
+        return error.squeeze()
 
     def reset(self, kP, kI):
         # toDo: ssh connection not open every episode!
@@ -124,7 +125,7 @@ class TestbenchEnv(gym.Env):
 
         return temp_data, reward, self.done, info
 
-    def render(self):
+    def render(self, J):
 
         N = (len(self.data))
         t = np.linspace(0, N * self.DT, N)
@@ -140,14 +141,27 @@ class TestbenchEnv(gym.Env):
         I_0 = self.data[:, 8]
 
 
-        plt.plot(t, V_A, t, V_B, t, V_C)
-        plt.ylabel('Voltages (V)')
-        plt.show()
+        #plt.plot(t, V_A, t, V_B, t, V_C)
+        #plt.ylabel('Voltages (V)')
+        #plt.show()
 
+        fig = plt.figure()
         plt.plot(t, I_A, t, I_B, t, I_C)
-        plt.ylabel('Currents (A)')
+        plt.xlabel(r'$t\,/\,\mathrm{s}$')
+        plt.ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
+        plt.title('{}'.format(J))
+        plt.grid()
         plt.show()
+        time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        fig.savefig('hardwareTest_plt/abcInductor_currents' + time + '.pdf')
 
+
+        fig = plt.figure()
         plt.plot(t, I_D, t, I_Q, t, I_0)
-        plt.ylabel('Currents DQ0(A)')
+        plt.xlabel(r'$t\,/\,\mathrm{s}$')
+        plt.ylabel('$i_{\mathrm{dq0}}\,/\,\mathrm{A}$')
+        plt.title('{}'.format(J))
+        plt.grid()
         plt.show()
+        time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        fig.savefig('hardwareTest_plt/dq0Inductor_currents' + time + '.pdf')
