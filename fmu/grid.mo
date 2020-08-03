@@ -3066,7 +3066,7 @@ package grid
         Placement(visible = true, transformation(origin = {-7, 69}, extent = {{-3, -3}, {3, 3}}, rotation = 0)));
       Modelica.Blocks.Math.Add add(k1 = -1, k2 = +1) annotation(
         Placement(visible = true, transformation(origin = {14, 78}, extent = {{-4, -4}, {4, 4}}, rotation = 0)));
-      Modelica.Blocks.Continuous.PI pi(T = 0.2, k = 150) annotation(
+      Modelica.Blocks.Continuous.PI pi(T = 0.00005, k = 25) annotation(
         Placement(visible = true, transformation(origin = {28, 78}, extent = {{-6, -6}, {6, 6}}, rotation = 0)));
       Modelica.Blocks.Math.Add add_freq_nom_delta_f(k1 = +1, k2 = +1) annotation(
         Placement(visible = true, transformation(origin = {50, 76}, extent = {{-4, -4}, {4, 4}}, rotation = 0)));
@@ -5457,6 +5457,16 @@ package grid
     annotation(
       Diagram);
   end network_ctrl_lim;
+
+  model testpi
+  Modelica.Blocks.Continuous.PI pi(T = 0.001, k = 1)  annotation(
+      Placement(visible = true, transformation(origin = {36, 36}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  Modelica.Blocks.Sources.RealExpression realExpression(y = 3)  annotation(
+      Placement(visible = true, transformation(origin = {-34, 44}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  equation
+    connect(realExpression.y, pi.u) annotation(
+      Line(points = {{-22, 44}, {8, 44}, {8, 36}, {24, 36}, {24, 36}}, color = {0, 0, 127}));
+  end testpi;
   annotation(
     uses(Modelica(version = "3.2.3")));
 end grid;
