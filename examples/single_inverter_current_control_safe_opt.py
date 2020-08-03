@@ -27,7 +27,7 @@ from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 # - Ki: 1D example: Only the integral gain Ki of the PI controller is adjusted
 # - Kpi: 2D example: Kp and Ki are adjusted simultaneously
 
-adjust = 'Kpi'
+adjust = 'Kp'
 
 # Check if really only one simulation scenario was selected
 if adjust not in {'Kp', 'Ki', 'Kpi'}:
@@ -35,8 +35,8 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
-max_episode_steps = 10000  # number of simulation steps per episode
-num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
+max_episode_steps = 300  # number of simulation steps per episode
+num_episodes = 50  # number of simulation episodes (i.e. SafeOpt iterations)
 #v_DC = 40  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -93,15 +93,15 @@ class Reward:
 if __name__ == '__main__':
     #####################################
     # Definitions for the GP
-    prior_mean = 2  # mean factor of the GP prior mean which is multiplied with the first performance of the initial set
-    noise_var = 0.001 ** 2  # measurement noise sigma_omega
-    prior_var = 0.1  # prior variance of the GP
+    prior_mean = 0#2  # mean factor of the GP prior mean which is multiplied with the first performance of the initial set
+    noise_var = 0.001#0.001 ** 2  # measurement noise sigma_omega
+    prior_var = 2#0.1  # prior variance of the GP
 
     bounds = None
     lengthscale = None
     if adjust == 'Kp':
-        bounds = [(0.00, 0.03)]  # bounds on the input variable Kp
-        lengthscale = [.01]  # length scale for the parameter variation [Kp] for the GP
+        bounds = [(0, 10)]  # bounds on the input variable Kp
+        lengthscale = [.75]  # length scale for the parameter variation [Kp] for the GP
 
     # For 1D example, if Ki should be adjusted
     if adjust == 'Ki':
@@ -110,14 +110,14 @@ if __name__ == '__main__':
 
     # For 2D example, choose Kp and Ki as mutable parameters (below) and define bounds and lengthscale for both of them
     if adjust == 'Kpi':
-        bounds = [(0.005, 0.04), (2, 50)]
-        lengthscale = [.001, 1.]
+        bounds = [(0.0, 10), (0, 100)]
+        lengthscale = [.5, 5.]
 
     # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
     # the initial performance: safe_threshold = 1.2 means. Performance measurement for optimization are seen as
     # unsafe, if the new measured performance drops below 20 % of the initial performance of the initial safe (!)
     # parameter set
-    safe_threshold = 2
+    safe_threshold = 0
 
     # The algorithm will not try to expand any points that are below this threshold. This makes the algorithm stop
     # expanding points eventually.
@@ -138,7 +138,7 @@ if __name__ == '__main__':
     if adjust == 'Kp':
         # mutable_params = parameter (Kp gain of the current controller of the inverter) to be optimized using
         # the SafeOpt algorithm
-        mutable_params = dict(currentP=MutableFloat(5e-3))
+        mutable_params = dict(currentP=MutableFloat(0.25))#5e-3))
 
         # Define the PI parameters for the current controller of the inverter
         current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=115, limits=(-1, 1))
@@ -250,7 +250,7 @@ if __name__ == '__main__':
     # Execution of the experiment
     # Using a runner to execute 'num_episodes' different episodes (i.e. SafeOpt iterations)
 
-    env = TestbenchEnv(num_steps= max_episode_steps)
+    env = TestbenchEnv(num_steps= max_episode_steps, DT = 1/10000, i_ref = i_ref[0])
     runner = RunnerHardware(agent, env)
 
     runner.run(num_episodes, visualise=True)
@@ -263,12 +263,15 @@ if __name__ == '__main__':
     print('\n\nBest experiment results are plotted in the following:')
 
 
+
     # # Show best episode measurment (current) plot
     # best_env_plt = runner.run_data['best_env_plt']
     # ax = best_env_plt[0].axes[0]
     # ax.set_title('Best Episode')
     # best_env_plt[0].show()
     # best_env_plt[0].savefig('best_env_plt.png')
+
+    agent.history.df.to_csv('hardwareTest_plt/result.csv')
 
     # Show last performance plot
     best_agent_plt = runner.run_data['last_agent_plt']
