@@ -105,7 +105,7 @@ class SafeOptAgent(StaticControlAgent):
         self.episode_reward += reward or 0
         if terminated:
             # calculate MSE, divide Summed error by length of measurement
-            self.performance = self.episode_reward / self._iterations
+            self.performance = 1/ (self.episode_reward / self._iterations)
             # safeopt update step
             self.update_params()
             # reset for new episode
@@ -119,6 +119,7 @@ class SafeOptAgent(StaticControlAgent):
         if self.optimizer is None:
             # First Iteration
             self.inital_performance = self.performance
+            self.performance = self.performance / self.inital_performance
 
             # Norm for Safe-point
             # J = 1 / self.episode_reward / self.inital_Performance
@@ -134,14 +135,15 @@ class SafeOptAgent(StaticControlAgent):
 
             gp = GPy.models.GPRegression(np.array([self.params[:]]),  # noqa
                                          np.array([[self.performance]]), self.kernel,
-                                         noise_var=self.noise_var, mean_function=mf)
+                                         noise_var=self.noise_var)#, mean_function=mf)
             self.optimizer = SafeOptSwarm(gp, self.safe_threshold * self.performance, bounds=self.bounds,
                                           threshold=self.explore_threshold * self.performance)
 
         else:
+            self.performance = self.performance / self.inital_performance
             if np.isnan(self.episode_reward):
                 # set r to doubled (negative!) initial reward
-                self.performance = self.abort_reward * self.inital_performance
+                self.performance = self.abort_reward #* self.inital_performance
                 # toDo: set reward to -inf and stop agent?
                 # warning mit logger
                 logger.warning('UNSAFE! Limit exceeded, epsiode abort, give a reward of {} times the'
