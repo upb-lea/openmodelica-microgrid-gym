@@ -372,7 +372,7 @@ class MultiPhaseDQCurrentController(CurrentCtl):
         droop = np.zeros(2)
         if Vinst > self.lower_droop_voltage_threshold:
             # Determine the droop power setpoints
-            droopPI = (self._PdroopController.step(self._prev_freq) / inst_rms(voltageCV))
+            droopPI = self._PdroopController.step(self._prev_freq) / Vinst
 
             # Determine the droop reactive power set points
             droopQI = (self._QdroopController.step(Vinst) / Vinst)

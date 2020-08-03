@@ -1,0 +1,129 @@
+#####################################
+# Example using a FMU by OpenModelica as gym environment containing two inverters, each connected via an LC-filter to
+# supply in parallel a RL load.
+# This example uses the available standard controllers as defined in the 'auxiliaries' folder.
+# One inverter is set up as voltage forming inverter with a direct droop controller.
+# The other controller is used as current sourcing inverter with an inverse droop controller which reacts on the
+# frequency and voltage change due to its droop control parameters by a power/reactive power change.
+
+import logging
+from functools import partial
+
+import matplotlib.pyplot as plt
+
+import gym
+import numpy as np
+
+from openmodelica_microgrid_gym import Runner
+from openmodelica_microgrid_gym.agents import StaticControlAgent
+from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQ0PIPIController, \
+    MultiPhaseDQCurrentController, InverseDroopParams, PLLParams
+
+# Simulation definitions
+delta_t = 0.5e-4  # simulation time step size / s
+max_episode_steps = 8000  # number of simulation steps per episode
+num_episodes = 1  # number of simulation episodes
+# (here, only 1 episode makes sense since simulation conditions don't change in this example)
+v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the fmu
+nomFreq = 50  # grid frequency / Hz
+nomVoltPeak = 230 *1.4241 # nominal grid voltage / V
+iLimit = 30  # current limit / A
+iNominal = 20  # nominal current / A
+DroopGain = 4000.0  # virtual droop gain for active power / W/Hz
+QDroopGain = 50  # virtual droop gain for reactive power / VAR/V
+
+logging.basicConfig()
+
+
+def load_step(t, gain):
+    """
+    Defines a load step after 0.2 s
+    Doubles the load parameters
+    :param t:
+    :param gain: device parameter
+    :return: Dictionary with load parameters
+    """
+    return 1*gain if t < .52 else 2*gain
+
+
+if __name__ == '__main__':
+    ctrl = []  # Empty dict which shall include all controllers
+
+    #####################################
+    # Define the voltage forming inverter as master
+    # Voltage control PI gain parameters for the voltage sourcing inverter
+   # voltage_dqp_iparams = PI_params(kP=0.025, kI=60, limits=(-iLimit, iLimit))
+    # Current control PI gain parameters for the voltage sourcing inverter
+    #current_dqp_iparams = PI_params(kP=0.012, kI=90, limits=(-1, 1))
+    #pll_params = PLLParams(kP=20, kI=400, limits=None, f_nom=nomFreq)
+
+    current_dqp_iparams = PI_params(kP=0.005, kI=200, limits=(-1, 1))
+    # PI gain parameters for the PLL in the current forming inverter
+    pll_params = PLLParams(kP=10, kI=200, limits=None, f_nom=nomFreq)
+    # Droop characteristic for the active power Watt/Hz, delta_t
+    droop_param = InverseDroopParams(DroopGain, delta_t, nomFreq, tau_filt=0.04)
+    # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
+    qdroop_param = InverseDroopParams(QDroopGain, delta_t, nomVoltPeak, tau_filt=0.01)
+    # Add to dict
+    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, iLimit,
+                                              droop_param, qdroop_param, name='slave1'))
+
+    #####################################
+    # Define the current sourcing inverter as slave
+    # Current control PI gain parameters for the current sourcing inverter
+    current_dqp_iparams = PI_params(kP=0.005, kI=200, limits=(-1, 1))
+    # PI gain parameters for the PLL in the current forming inverter
+    pll_params = PLLParams(kP=10, kI=200, limits=None, f_nom=nomFreq)
+    # Droop characteristic for the active power Watts/Hz, W.s/Hz
+    droop_param = InverseDroopParams(DroopGain, delta_t, nomFreq, tau_filt=0.04)
+    # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
+    qdroop_param = InverseDroopParams(50, delta_t, nomVoltPeak/1.411, tau_filt=0.01)
+    # Add to dict
+    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, iLimit,
+                                              droop_param, qdroop_param, name='slave'))
+
+    # Define the agent as StaticControlAgent which performs the basic controller steps for every environment set
+    agent = StaticControlAgent(ctrl, {'slave1': [[f'lc1.inductor{k}.i' for k in '123'],
+                                                 [f'lc1.capacitor{k}.v' for k in '123']],
+                                      'slave': [[f'lcl1.inductor{k}.i' for k in '123'],
+                                                [f'lcl1.capacitor{k}.v' for k in '123'],
+                                                np.zeros(3)]})
+
+    # Define the environment
+    env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
+                   viz_mode='episode',
+                   #viz_cols=['*.m[dq0]', 'slave.freq', 'lcl1.*'],
+                   #viz_cols=['slave1.m[abc]', 'slave1.inst*', 'slave.inst*', 'lcl1.*', 'lc1.*', 'slave.freq','l12.*', 'r.resistor*'],
+                   log_level=logging.INFO,
+                   time_step=delta_t,
+                   max_episode_steps=max_episode_steps,
+                   model_params={'rl.resistor1.R': partial(load_step,gain=20/1.4),
+                                 'rl.resistor2.R': partial(load_step,gain=20/1.4),
+                                 'rl.resistor3.R': partial(load_step,gain=20/1.4),
+                                 'rl.inductor1.L': partial(load_step,gain=0.031/1.4),
+                                 'rl.inductor2.L': partial(load_step,gain=0.031/1.4),
+                                 'rl.inductor3.L': partial(load_step,gain=0.031/1.4)
+                                 },
+                   model_path='../fmu/grid.microgrid4.fmu',
+                   model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
+                   model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
+                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
+                                     rl=[f'resistor{i}.v' for i in range(1, 4)],
+                                     l12=[f'inductor{i}.i' for i in range(1, 4)],
+                                     lcl1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
+                                           ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]),
+                   )
+
+    # User runner to execute num_episodes-times episodes of the env controlled by the agent
+    runner = Runner(agent, env)
+    runner.run(num_episodes, visualise=True)
+plt.plot(env.history['slave1.instPow']-env.history['slave.instPow'])
+#plt.label('pow')
+#plt.ylim(-0.02, 0)
+plt.show()
+ #   plt.plot(histslave=[['phase']])-dict(slave=[['phase']]))
+plt.plot(env.history['slave1.instQ']-env.history['slave.instQ'])
+plt.show()
+
+#a = env.history['slave1.freq']
+#np.savetxt("SPM_P4000Q500.csv", a, delimiter=",")
