@@ -48,8 +48,9 @@ class RunnerHardware:
         agent_fig = None
 
         for i in tqdm(range(n_episodes), desc='episodes', unit='epoch'):
-            #self.env.reset(self.agent.params[0], self.agent.params[1])
-            self.env.reset(self.agent.params[0], 5)
+            self.env.reset(self.agent.params[0], self.agent.params[1])
+            #self.env.reset(self.agent.params[0], 5)
+            #self.env.reset(0.01, self.agent.params[0])
             #self.env.render(0)
             done, r = False, None
             for _ in tqdm(range(self.env.max_episode_steps), desc='steps', unit='step', leave=False):
