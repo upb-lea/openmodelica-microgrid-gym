@@ -27,7 +27,7 @@ from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 # - Ki: 1D example: Only the integral gain Ki of the PI controller is adjusted
 # - Kpi: 2D example: Kp and Ki are adjusted simultaneously
 
-adjust = 'Kp'
+adjust = 'Kpi'
 
 # Check if really only one simulation scenario was selected
 if adjust not in {'Kp', 'Ki', 'Kpi'}:
@@ -35,7 +35,7 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
-max_episode_steps = 300  # number of simulation steps per episode
+max_episode_steps = 1000  # number of simulation steps per episode
 num_episodes = 50  # number of simulation episodes (i.e. SafeOpt iterations)
 #v_DC = 40  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
@@ -105,19 +105,19 @@ if __name__ == '__main__':
 
     # For 1D example, if Ki should be adjusted
     if adjust == 'Ki':
-        bounds = [(0, 300)]  # bounds on the input variable Ki
-        lengthscale = [50.]  # length scale for the parameter variation [Ki] for the GP
+        bounds = [(0, 30)]  # bounds on the input variable Ki
+        lengthscale = [5.]  # length scale for the parameter variation [Ki] for the GP
 
     # For 2D example, choose Kp and Ki as mutable parameters (below) and define bounds and lengthscale for both of them
     if adjust == 'Kpi':
-        bounds = [(0.0, 10), (0, 100)]
-        lengthscale = [.5, 5.]
+        bounds = [(0.0, 8), (0, 100)]
+        lengthscale = [2., 20.]
 
     # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
     # the initial performance: safe_threshold = 1.2 means. Performance measurement for optimization are seen as
     # unsafe, if the new measured performance drops below 20 % of the initial performance of the initial safe (!)
     # parameter set
-    safe_threshold = 0
+    safe_threshold = 0.5
 
     # The algorithm will not try to expand any points that are below this threshold. This makes the algorithm stop
     # expanding points eventually.
@@ -138,19 +138,19 @@ if __name__ == '__main__':
     if adjust == 'Kp':
         # mutable_params = parameter (Kp gain of the current controller of the inverter) to be optimized using
         # the SafeOpt algorithm
-        mutable_params = dict(currentP=MutableFloat(0.25))#5e-3))
+        mutable_params = dict(currentP=MutableFloat(0.01))#5e-3))
 
         # Define the PI parameters for the current controller of the inverter
         current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=115, limits=(-1, 1))
 
     # For 1D example, if Ki should be adjusted
     elif adjust == 'Ki':
-        mutable_params = dict(currentI=MutableFloat(10))
-        current_dqp_iparams = PI_params(kP=10e-3, kI=mutable_params['currentI'], limits=(-1, 1))
+        mutable_params = dict(currentI=MutableFloat(20))
+        current_dqp_iparams = PI_params(kP=0.01, kI=mutable_params['currentI'], limits=(-1, 1))
 
     # For 2D example, choose Kp and Ki as mutable parameters
     elif adjust == 'Kpi':
-        mutable_params = dict(currentP=MutableFloat(0.01), currentI=MutableFloat(10))
+        mutable_params = dict(currentP=MutableFloat(4), currentI=MutableFloat(20))
         current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
 
     # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
