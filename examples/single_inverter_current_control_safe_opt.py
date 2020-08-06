@@ -33,10 +33,14 @@ adjust = 'Kpi'
 if adjust not in {'Kp', 'Ki', 'Kpi'}:
     raise ValueError("Please set 'adjust' to one of the following values: 'Kp', 'Ki', 'Kpi'")
 
+
+include_simulate = True
+
+
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 1000  # number of simulation steps per episode
-num_episodes = 50  # number of simulation episodes (i.e. SafeOpt iterations)
+num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 #v_DC = 40  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -194,57 +198,69 @@ if __name__ == '__main__':
     # - inputs to the models are the connection points to the inverters (see user guide for more details)
     # - model outputs are the the 3 currents through the inductors and the 3 voltages across the capacitors
 
-    # def xylables(fig):
-    #     ax = fig.gca()
-    #     ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
-    #     ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
-    #     ax.grid(which='both')
-    #     #fig.savefig('Inductor_currents.pdf')
-    #
-    # def xylables_dq0(fig):
-    #     ax = fig.gca()
-    #     ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
-    #     ax.set_ylabel('$i_{\mathrm{dq0}}\,/\,\mathrm{A}$')
-    #     ax.grid(which='both')
-    #     plt.ylim(0,36)
-    #     #fig.savefig('Inductor_currents.pdf')
-    #
-    # def xylables_mdq0(fig):
-    #     ax = fig.gca()
-    #     ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
-    #     ax.set_ylabel('$m_{\mathrm{dq0}}\,/\,\mathrm{}$')
-    #     ax.grid(which='both')
-    #     #plt.ylim(0,36)
+    if include_simulate:
 
-    # env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
-    #                reward_fun=Reward().rew_fun,
-    #                time_step=delta_t,
-    #                viz_cols=[
-    #                    PlotTmpl([f'rl.inductor{i}.i' for i in '123'],
-    #                             callback=xylables
-    #                             ),
-    #                    PlotTmpl([f'master.CVI{i}' for i in 'dq0'],
-    #                             callback=xylables_dq0
-    #                             ),
-    #                    PlotTmpl([f'master.m{i}' for i in 'dq0'],
-    #                             callback=xylables_mdq0
-    #                             ),
-    #                    PlotTmpl([f'master.m{i}' for i in 'abc'],
-    #                             #callback=xylables_dq0
-    #                             )
-    #                ],
-    #                #viz_cols = ['inverter1.*', 'rl.inductor1.i'],
-    #                log_level=logging.INFO,
-    #                viz_mode='episode',
-    #                max_episode_steps=max_episode_steps,
-    #                #model_params={'inverter1.gain.u': v_DC},
-    #                model_path='../fmu/grid.testbench_SC.fmu',
-    #                model_input=['i1p1', 'i1p2', 'i1p3'],
-    #                model_output=dict(rl=[['inductor1.i', 'inductor2.i', 'inductor3.i']],
-    #                                  inverter1=['product.u1', 'product.u2', 'v_DC.y']
-    #                                  ),
-    #                history=FullHistory()
-    #                )
+        def xylables(fig):
+            ax = fig.gca()
+            ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+            ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
+            plt.title('Simulation')
+            ax.grid(which='both')
+            #fig.savefig('Inductor_currents.pdf')
+
+        def xylables_dq0(fig):
+            ax = fig.gca()
+            ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+            ax.set_ylabel('$i_{\mathrm{dq0}}\,/\,\mathrm{A}$')
+            ax.grid(which='both')
+            plt.title('Simulation')
+            plt.ylim(0,36)
+            #fig.savefig('Inductor_currents.pdf')
+
+        def xylables_mdq0(fig):
+            ax = fig.gca()
+            ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
+            ax.set_ylabel('$m_{\mathrm{dq0}}\,/\,\mathrm{}$')
+            plt.title('Simulation')
+            ax.grid(which='both')
+            #plt.ylim(0,36)
+
+        env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
+                       reward_fun=Reward().rew_fun,
+                       time_step=delta_t,
+                       viz_cols=[
+                           PlotTmpl([f'rl.inductor{i}.i' for i in '123'],
+                                    callback=xylables
+                                    ),
+                           PlotTmpl([f'master.CVI{i}' for i in 'dq0'],
+                                    callback=xylables_dq0
+                                    )
+                           #PlotTmpl([f'master.m{i}' for i in 'dq0'],
+                           #         callback=xylables_mdq0
+                           #         ),
+                           #PlotTmpl([f'master.m{i}' for i in 'abc'],
+                           #         #callback=xylables_dq0
+                           #         )
+                       ],
+                       #viz_cols = ['inverter1.*', 'rl.inductor1.i'],
+                       log_level=logging.INFO,
+                       viz_mode='episode',
+                       max_episode_steps=max_episode_steps,
+                       #model_params={'inverter1.gain.u': v_DC},
+                       model_path='../fmu/grid.testbench_SC.fmu',
+                       model_input=['i1p1', 'i1p2', 'i1p3'],
+                       model_output=dict(rl=[['inductor1.i', 'inductor2.i', 'inductor3.i']],
+                                         inverter1=['inductor1.i', 'inductor2.i', 'inductor3.i']
+                                         ),
+                       history=FullHistory()
+                       )
+
+        runner = Runner(agent, env)
+
+        runner.run(num_episodes, visualise=True)
+
+        env.history.df.to_pickle('Simulation')
+
 
     #####################################
     # Execution of the experiment
