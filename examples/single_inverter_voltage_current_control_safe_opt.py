@@ -7,6 +7,7 @@
 import logging
 from time import strftime, gmtime
 from typing import List
+import os
 
 import GPy
 import gym
@@ -36,6 +37,10 @@ mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 
+# Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
+current_directory = os.getcwd()
+save_folder = os.path.join(current_directory, r'saves_VI_control_safeopt')
+os.makedirs(save_folder, exist_ok=True)
 
 class Reward:
     def __init__(self):
@@ -170,7 +175,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('pipi_signleInv/Inductor_currents'+time+'.pdf')
+        fig.savefig('savesVI_control_safeopt/Inductor_currents'+time+'.pdf')
 
     def xylables_v_abc(fig):
         ax = fig.gca()
@@ -178,7 +183,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$v_{\mathrm{abc}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('pipi_signleInv/abc_voltage' + time + '.pdf')
+        fig.savefig('savesVI_control_safeopt/abc_voltage' + time + '.pdf')
 
 
     def xylables_v_dq0(fig):
@@ -187,7 +192,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$v_{\mathrm{dq0}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('pipi_signleInv/dq0_voltage' + time + '.pdf')
+        fig.savefig('savesVI_control_safeopt/dq0_voltage' + time + '.pdf')
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=Reward().rew_fun,
@@ -222,8 +227,8 @@ if __name__ == '__main__':
     runner.run(num_episodes, visualise=True)
 
     #####################################
-    # Performance results and parameters as well as plots are stored in folder pipi_signleInv
-    agent.history.df.to_csv('pipi_signleInv/result.csv')
+    # Performance results and parameters as well as plots are stored in folder pipi_signleInvALT
+    agent.history.df.to_csv('savesVI_control_safeopt/result.csv')
 
     print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df.round({'J': 4, 'Params': 4})))
     print('\n Experiment finished with best set: \n')
