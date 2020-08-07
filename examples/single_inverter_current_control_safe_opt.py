@@ -38,7 +38,7 @@ include_simulate = True
 
 
 # Simulation definitions
-delta_t = 0.5e-4  # simulation time step size / s
+delta_t = 1e-4  # simulation time step size / s
 max_episode_steps = 1000  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 #v_DC = 40  # DC-link voltage / V; will be set as model parameter in the FMU
@@ -168,7 +168,7 @@ if __name__ == '__main__':
 
     # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
     ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, droop_param, qdroop_param,
-                                                 undersampling=2, name='master')
+                                                 undersampling=1, name='master')
 
     #####################################
     # Definition of the optimization agent
@@ -250,7 +250,7 @@ if __name__ == '__main__':
                        model_path='../fmu/grid.testbench_SC.fmu',
                        model_input=['i1p1', 'i1p2', 'i1p3'],
                        model_output=dict(rl=[['inductor1.i', 'inductor2.i', 'inductor3.i']],
-                                         inverter1=['inductor1.i', 'inductor2.i', 'inductor3.i']
+                                         #inverter1=['inductor1.i', 'inductor2.i', 'inductor3.i']
                                          ),
                        history=FullHistory()
                        )
@@ -266,7 +266,7 @@ if __name__ == '__main__':
     # Execution of the experiment
     # Using a runner to execute 'num_episodes' different episodes (i.e. SafeOpt iterations)
 
-    env = TestbenchEnv(num_steps= max_episode_steps, DT = 1/10000, i_ref = i_ref[0])
+    env = TestbenchEnv(num_steps= max_episode_steps, DT = 1/20000, i_ref = i_ref[0])
     runner = RunnerHardware(agent, env)
 
     runner.run(num_episodes, visualise=True)
