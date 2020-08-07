@@ -3,6 +3,7 @@ from socket import socket
 import gym
 import paramiko
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from time import strftime, gmtime, sleep
 
@@ -106,9 +107,9 @@ class TestbenchEnv(gym.Env):
                 self.ssh.connect(self.host, username=self.username, password=self.password)
                 connected =  True
                 #return True
-            except (BadHostKeyException, AuthenticationException,
-                    SSHException, socket.gaierror) as e:
-                print(e)
+            except:# (BadHostKeyException, AuthenticationException,
+                    #SSHException, socket.gaierror) as e:
+                #print(e)
                 print('Argh')
                 sleep(1)
 
@@ -176,6 +177,29 @@ class TestbenchEnv(gym.Env):
         m_Q = self.data[:, 17]
         m_0 = self.data[:, 18]
 
+        # store measurment to dataframe
+        df = pd.DataFrame({'V_A': self.data[:, 0],
+                           'V_B': self.data[:, 1],
+                           'V_C': self.data[:, 2],
+                           'I_A': self.data[:, 3],
+                           'I_B': self.data[:, 4],
+                           'I_C': self.data[:, 5],
+                           'I_D': self.data[:, 6],
+                           'I_Q': self.data[:, 7],
+                           'I_0': self.data[:, 8],
+                           'Ph': self.data[:, 9],
+                           'SP_A': self.data[:, 10],
+                           'SP_B': self.data[:, 11],
+                           'SP_C': self.data[:, 12],
+                           'm_A': self.data[:, 13],
+                           'm_B': self.data[:, 14],
+                           'm_C': self.data[:, 15],
+                           'm_D': self.data[:, 16],
+                           'm_Q': self.data[:, 17],
+                           'm_0': self.data[:, 18]})
+
+        df.to_pickle('Measurement')
+
         #plt.plot(t, V_A, t, V_B, t, V_C)
         #plt.ylabel('Voltages (V)')
         #plt.show()
@@ -202,7 +226,7 @@ class TestbenchEnv(gym.Env):
         plt.xlabel(r'$t\,/\,\mathrm{s}$')
         plt.ylabel('$i_{\mathrm{dq0}}\,/\,\mathrm{A}$')
         plt.title('{}'.format(J))
-        plt.ylim([-3, 16])
+        #plt.ylim([-3, 16])
         plt.grid()
         plt.show()
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
