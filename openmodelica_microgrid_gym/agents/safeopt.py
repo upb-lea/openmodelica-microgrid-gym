@@ -61,7 +61,9 @@ class SafeOptAgent(StaticControlAgent):
         self.optimizer = None
         self.inital_performance = None
         self.last_best_performance = None
+        self.last_worst_performance = None
         self.performance = None
+        self.unsafe = False
 
         self._iterations = 0
 
@@ -86,7 +88,9 @@ class SafeOptAgent(StaticControlAgent):
         self.episode_reward = 0
         self.inital_performance = None
         self.last_best_performance = None
+        self.last_worst_performance = None
         self.performance = None
+        self.unsafe = False
 
         self._iterations = 0
 
@@ -125,6 +129,7 @@ class SafeOptAgent(StaticControlAgent):
             # J = 1 / self.episode_reward / self.inital_Performance
 
             self.last_best_performance = self.performance
+            self.last_worst_performance = self.performance
 
             # Define Mean "Offset": Like BK: Assume Mean = Threshold (BK = 0, now = 20% below first (safe) J: means: if
             # new Performance is 20 % lower than the inital we assume as unsafe)
@@ -151,6 +156,8 @@ class SafeOptAgent(StaticControlAgent):
 
             self.optimizer.add_new_data_point(self.params[:], self.performance)
 
+        if self.performance < self.safe_threshold:  # Due to nromalization tp 1 safe_threshold directly enough
+            self.unsafe = True
         self.history.append([self.performance, self.params[:]])
         self.params[:] = self.optimizer.optimize()
 
@@ -159,6 +166,12 @@ class SafeOptAgent(StaticControlAgent):
             self.best_episode = self.history.df.shape[0] - 1
 
             self.last_best_performance = self.performance
+
+        if self.has_worsen:
+            # if performance has improved store the current last index of the df
+            self.worst_episode = self.history.df.shape[0] - 1
+
+            self.last_worst_performance = self.performance
 
     def render(self) -> Figure:
         """
@@ -196,3 +209,13 @@ class SafeOptAgent(StaticControlAgent):
         :return: True, if performance was increased or equal, else False
         """
         return self.performance >= self.last_best_performance
+
+    @property
+    def has_worsen(self) -> bool:
+        """
+        Defines if the performance increased or stays constant
+
+        :return: True, if performance was increased or equal, else False
+        """
+        return self.performance <= self.last_worst_performance
+
