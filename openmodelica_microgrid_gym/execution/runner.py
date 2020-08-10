@@ -67,3 +67,9 @@ class Runner:
             if i == 0 or self.agent.has_improved:
                 self.run_data['best_env_plt'] = env_fig
                 self.run_data['best_episode_idx'] = i
+
+            if i == 0 or self.agent.has_worsen:
+                self.run_data['worst_env_plt'] = env_fig
+                self.run_data['worst_episode_idx'] = i
+
+            print(self.agent.unsafe)
