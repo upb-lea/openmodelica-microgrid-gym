@@ -35,16 +35,16 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
     raise ValueError("Please set 'adjust' to one of the following values: 'Kp', 'Ki', 'Kpi'")
 
 
-include_simulate = True
-do_measurement = False
+include_simulate = False
+do_measurement = True
 
-lengthscale_vec = np.linspace(0.05,2,20)
+lengthscale_vec = np.linspace(0.5,0.5,1)
 unsafe_vec = np.zeros(20)
 
 # Simulation definitions
 delta_t = 1e-4  # simulation time step size / s
-max_episode_steps = 1000  # number of simulation steps per episode
-num_episodes = 100  # number of simulation episodes (i.e. SafeOpt iterations)
+max_episode_steps = 10000  # number of simulation steps per episode
+num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 60  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -53,7 +53,8 @@ iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
-i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
+i_ref = np.array([0, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
+i_noise = 0.1 # Current measurement noise detected from testbench
 
 # Controller layout due to magniitude optimum:
 L = 2.2e-3  # / H
@@ -135,7 +136,7 @@ if __name__ == '__main__':
         # For 2D example, choose Kp and Ki as mutable parameters (below) and define bounds and lengthscale for both of them
         if adjust == 'Kpi':
             bounds = [(0.0, 8), (0, 100)]
-            lengthscale = [.5, 20.]
+            lengthscale = [.6, 20.]
 
         # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
         # the initial performance: safe_threshold = 1.2 means. Performance measurement for optimization are seen as
@@ -227,7 +228,7 @@ if __name__ == '__main__':
                 plt.title('Simulation')
                 ax.grid(which='both')
                 time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-                fig.savefig('len_search/abc_current' + time + '.pdf')
+                #fig.savefig('len_search/abc_current' + time + '.pdf')
 
             def xylables_dq0(fig):
                 ax = fig.gca()
@@ -237,7 +238,7 @@ if __name__ == '__main__':
                 plt.title('Simulation')
                 plt.ylim(0,36)
                 time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-                fig.savefig('len_search/dq0_current' + time + '.pdf')
+                #fig.savefig('len_search/dq0_current' + time + '.pdf')
 
             def xylables_mdq0(fig):
                 ax = fig.gca()
@@ -289,7 +290,7 @@ if __name__ == '__main__':
                 unsafe_vec[ll] = 0
             #####################################
             # Performance results and parameters as well as plots are stored in folder pipi_signleInv
-            agent.history.df.to_csv('len_search/result.csv')
+            #agent.history.df.to_csv('len_search/result.csv')
 
             env.history.df.to_pickle('Simulation')
 
