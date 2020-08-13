@@ -64,6 +64,8 @@ class RunnerHardware:
             self.agent.observe(r, done)
             self.env.render(self.agent.history.df.J.iloc[-1])
 
+            print(self.agent.unsafe)
+
             if visualise:
                 agent_fig = self.agent.render()
 
