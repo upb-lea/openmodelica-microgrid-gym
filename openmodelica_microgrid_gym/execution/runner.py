@@ -56,8 +56,9 @@ class Runner:
                 self.env.render()
                 if done:
                     break
-            self.agent.observe(r, done)
+
             _, env_fig = self.env.close()
+            self.agent.observe(r, done)
 
             if visualise:
                 agent_fig = self.agent.render()
