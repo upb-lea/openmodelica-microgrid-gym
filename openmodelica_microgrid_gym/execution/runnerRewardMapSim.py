@@ -1,12 +1,13 @@
 from typing import Dict, Any
 
 from tqdm import tqdm
+import numpy as np
 
 from openmodelica_microgrid_gym.agents import Agent
 from openmodelica_microgrid_gym.env import ModelicaEnv
 
 
-class Runner:
+class RunnerRewardMapSim:
     """
     This class will execute an agent on the environment.
     It handles communication between agent and environment and handles the execution of multiple epochs
@@ -22,9 +23,13 @@ class Runner:
         self.agent = agent
         self.agent.env = env
         self.run_data = dict()  # type: Dict[str,Any]
+
+        self.rewardMatrix = np.zeros([len(self.agent.kMatrix[0]), len(self.agent.kMatrix[0])])
+
+
         """
         Dictionary storing information about the experiment.
-        
+
         - "best_env_plt": environment best plots
         - "best_episode_idx": index of best episode
         - "agent_plt": last agent plot
@@ -43,34 +48,26 @@ class Runner:
 
         if not visualise:
             self.env.viz_mode = None
-        agent_fig = None
+        #agent_fig = None
 
-        for i in tqdm(range(n_episodes), desc='episodes', unit='epoch'):
-            obs = self.env.reset()
-            done, r = False, None
-            for _ in tqdm(range(self.env.max_episode_steps), desc='steps', unit='step', leave=False):
-                self.agent.observe(r, done)
-                act = self.agent.act(obs)
-                self.env.measurement = self.agent.measurement
-                obs, r, done, info = self.env.step(act)
-                self.env.render()
-                if done:
-                    break
+        for i in tqdm(range(len(self.agent.kMatrix[0])), desc='episodes', unit='epoch'):
+            for j in tqdm(range(len(self.agent.kMatrix[0])), desc='episodes', unit='epoch'):
+                obs = self.env.reset()
+                done, r = False, None
+                for _ in tqdm(range(self.env.max_episode_steps), desc='steps', unit='step', leave=False):
+                    self.agent.observe(r, done, i+3, j+3)
+                    act = self.agent.act(obs)
+                    self.env.measurement = self.agent.measurement
+                    obs, r, done, info = self.env.step(act)
+                    self.env.render()
+                    if done:
+                        break
+                self.agent.observe(r, done, i+18, j+18)
 
-            _, env_fig = self.env.close()
-            self.agent.observe(r, done)
+                _, env_fig = self.env.close()
 
-            if visualise:
-                agent_fig = self.agent.render()
+                self.rewardMatrix[i,j] = self.agent.episode_reward
 
-            self.run_data['last_agent_plt'] = agent_fig
+                self.agent.prepare_episode()  # not in observe due to sets episode reward to 0
 
-            if i == 0 or self.agent.has_improved:
-                self.run_data['best_env_plt'] = env_fig
-                self.run_data['best_episode_idx'] = i
 
-            if i == 0 or self.agent.has_worsen:
-                self.run_data['worst_env_plt'] = env_fig
-                self.run_data['worst_episode_idx'] = i
-
-            print(self.agent.unsafe)

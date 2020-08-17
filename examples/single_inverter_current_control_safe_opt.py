@@ -38,13 +38,15 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 include_simulate = True
 do_measurement = False
 
-lengthscale_vec = np.linspace(0.05,2,20)
+safe_results = False
+
+lengthscale_vec = np.linspace(0.5,0.5,1)
 unsafe_vec = np.zeros(20)
 
 # Simulation definitions
 delta_t = 1e-4  # simulation time step size / s
 max_episode_steps = 1000  # number of simulation steps per episode
-num_episodes = 100  # number of simulation episodes (i.e. SafeOpt iterations)
+num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 60  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -54,8 +56,9 @@ mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
+i_noise = 0.11 # Current measurement noise detected from testbench
 
-# Controller layout due to magniitude optimum:
+# Controller layout due to magnitude optimum:
 L = 2.2e-3  # / H
 R = 585e-3  # / Ohm
 tau_plant = L/R
@@ -135,7 +138,7 @@ if __name__ == '__main__':
         # For 2D example, choose Kp and Ki as mutable parameters (below) and define bounds and lengthscale for both of them
         if adjust == 'Kpi':
             bounds = [(0.0, 8), (0, 100)]
-            lengthscale = [.5, 20.]
+            lengthscale = [.6, 20.]
 
         # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
         # the initial performance: safe_threshold = 1.2 means. Performance measurement for optimization are seen as
@@ -227,7 +230,7 @@ if __name__ == '__main__':
                 plt.title('Simulation')
                 ax.grid(which='both')
                 time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-                fig.savefig('len_search/abc_current' + time + '.pdf')
+                #fig.savefig('len_search/abc_current' + time + '.pdf')
 
             def xylables_dq0(fig):
                 ax = fig.gca()
@@ -237,7 +240,7 @@ if __name__ == '__main__':
                 plt.title('Simulation')
                 plt.ylim(0,36)
                 time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-                fig.savefig('len_search/dq0_current' + time + '.pdf')
+                #fig.savefig('len_search/dq0_current' + time + '.pdf')
 
             def xylables_mdq0(fig):
                 ax = fig.gca()
@@ -274,7 +277,8 @@ if __name__ == '__main__':
                            model_output=dict(rl=[['inductor1.i', 'inductor2.i', 'inductor3.i']],
                                              #inverter1=['inductor1.i', 'inductor2.i', 'inductor3.i']
                                              ),
-                           history=FullHistory()
+                           history=FullHistory(),
+                           measurement_noise = i_noise
                            )
 
             runner = Runner(agent, env)
@@ -289,9 +293,9 @@ if __name__ == '__main__':
                 unsafe_vec[ll] = 0
             #####################################
             # Performance results and parameters as well as plots are stored in folder pipi_signleInv
-            agent.history.df.to_csv('len_search/result.csv')
-
-            env.history.df.to_pickle('Simulation')
+            #agent.history.df.to_csv('len_search/result.csv')
+            if safe_results:
+                env.history.df.to_pickle('Simulation')
 
             # Show best episode measurment (current) plot
             best_env_plt = runner.run_data['best_env_plt']
@@ -327,7 +331,8 @@ if __name__ == '__main__':
                 plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4,
                          alpha=.5)
             best_agent_plt.show()
-            best_agent_plt.savefig('len_search/agent_plt.png')
+            if safe_results:
+                best_agent_plt.savefig('len_search/agent_plt.png')
 
         if do_measurement:
             #####################################
@@ -354,8 +359,8 @@ if __name__ == '__main__':
             # ax.set_title('Best Episode')
             # best_env_plt[0].show()
             # best_env_plt[0].savefig('best_env_plt.png')
-
-            agent.history.df.to_csv('hardwareTest_plt/result.csv')
+            if safe_results:
+                agent.history.df.to_csv('hardwareTest_plt/result.csv')
 
             # Show last performance plot
             best_agent_plt = runner.run_data['last_agent_plt']
@@ -377,5 +382,6 @@ if __name__ == '__main__':
                 plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4,
                          alpha=.5)
             best_agent_plt.show()
-            best_agent_plt.savefig('hardwareTest_plt/agent_plt.png')
+            if safe_results:
+                best_agent_plt.savefig('hardwareTest_plt/agent_plt.png')
 
