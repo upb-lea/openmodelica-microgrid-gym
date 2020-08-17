@@ -251,11 +251,15 @@ class ModelicaEnv(gym.Env):
         :return: noisy observation, if measurement noise is defined
         """
 
-        if self.measurement_noise == None:
-            return self._state
+        #if self.measurement_noise == None:
+        #    return self._state
 
         # toDo: Check if noise fits to obs! (length, order)
-        return self._state + np.random.normal(0, self.measurement_noise, len(self._state))
+        #return self._state + np.random.normal(0, self.measurement_noise, len(self._state))
+
+        for ii in range(len(self._state)):
+            self._state[ii] = self._state[ii] + np.random.normal(self.measurement_noise[ii,0], self.measurement_noise[ii,1])
+
 
 
 
@@ -340,7 +344,7 @@ class ModelicaEnv(gym.Env):
 
         # Simulate and observe result state
         self._state = self._simulate()
-        self._state = self._add_measurement_noise()
+        self._add_measurement_noise()
         obs = np.hstack((self._state, self.measurement))
         self.history.append(obs)
 
