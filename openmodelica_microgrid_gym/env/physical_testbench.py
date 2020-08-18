@@ -198,7 +198,8 @@ class TestbenchEnv(gym.Env):
                            'm_Q': self.data[:, 17],
                            'm_0': self.data[:, 18]})
 
-        df.to_pickle('Measurement')
+        #df.to_pickle('Measurement')
+        df.to_pickle('Noise_measurement2')
 
         #plt.plot(t, V_A, t, V_B, t, V_C)
         #plt.ylabel('Voltages (V)')
