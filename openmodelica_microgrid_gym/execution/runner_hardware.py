@@ -61,8 +61,10 @@ class RunnerHardware:
                 #self.env.render()
                 if done:
                     break
+
+            self.env.render(0)
+            #self.env.render(self.agent.history.df.J.iloc[-1])
             self.agent.observe(r, done)
-            self.env.render(self.agent.history.df.J.iloc[-1])
 
             print(self.agent.unsafe)
 
