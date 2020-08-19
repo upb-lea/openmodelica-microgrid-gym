@@ -59,7 +59,7 @@ mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
-i_noise = np.array([[0.2, 0.073], [0.4, 0.108], [0.093, 0.109]])
+i_noise = np.array([[0.2, 0.0822], [0.4, 0.103], [0.093, 0.136]])
 
 # Controller layout due to magniitude optimum:
 L = 2.2e-3  # / H
