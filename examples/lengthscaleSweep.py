@@ -49,7 +49,7 @@ unsafe_vec = np.zeros([kk_steps, ii_steps])
 # Simulation definitions
 delta_t = 1e-4  # simulation time step size / s
 max_episode_steps = 1000  # number of simulation steps per episode
-num_episodes = 3  # number of simulation episodes (i.e. SafeOpt iterations)
+num_episodes = 200  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 60  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -59,7 +59,7 @@ mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
-i_noise = np.array([[0.2, 0.0822], [0.4, 0.103], [0.093, 0.136]])
+i_noise = np.array([[0.0, 0.0822], [0.0, 0.103], [0.0, 0.136]])
 
 # Controller layout due to magniitude optimum:
 L = 2.2e-3  # / H
