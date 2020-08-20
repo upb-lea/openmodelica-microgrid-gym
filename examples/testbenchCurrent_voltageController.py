@@ -17,7 +17,8 @@ import matplotlib.pyplot as plt
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat
-from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQCurrentSourcingController
+from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQCurrentSourcingController, \
+    MultiPhaseDQ0PIPIController
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.env.physical_testbench import TestbenchEnv
 from openmodelica_microgrid_gym.execution.runner_hardware import RunnerHardware
@@ -46,7 +47,7 @@ unsafe_vec = np.zeros(20)
 # Simulation definitions
 delta_t = 1e-4  # simulation time step size / s
 max_episode_steps = 1000  # number of simulation steps per episode
-num_episodes = 200  # number of simulation episodes (i.e. SafeOpt iterations)
+num_episodes = 100  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 60  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -55,7 +56,7 @@ iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
-i_ref = np.array([5, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
+ref = np.array([20, 0, 0])  # exemplary set point i.e. id = 30, iq = 0, i0 = 0 / V
 #i_noise = 0.11 # Current measurement noise detected from testbench
 i_noise = np.array([[0.0, 0.0822], [0.0, 0.103], [0.0, 0.136]])
 
@@ -178,8 +179,13 @@ if __name__ == '__main__':
 
         # For 2D example, choose Kp and Ki as mutable parameters
         elif adjust == 'Kpi':
-            mutable_params = dict(currentP=MutableFloat(Kp_init), currentI=MutableFloat(Ki_init))
-            current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
+            #mutable_params = dict(currentP=MutableFloat(Kp_init), currentI=MutableFloat(Ki_init))
+
+            mutable_params = dict(voltageP=MutableFloat(0.1),
+                                  voltageI=MutableFloat(10))
+            current_dqp_iparams = PI_params(kP=Kp_init, kI=Ki_init, limits=(-1, 1))
+            voltage_dqp_iparams = PI_params(kP=mutable_params['voltageP'], kI=mutable_params['voltageI'],
+                                            limits=(-iLimit, iLimit))
 
         # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
         # filter and the nominal frequency
@@ -191,8 +197,8 @@ if __name__ == '__main__':
         qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
 
         # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
-        ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, droop_param, qdroop_param,
-                                                     undersampling=1, name='master')
+        ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param, qdroop_param,
+                                           undersampling=1, name='master')
 
         #####################################
         # Definition of the optimization agent
@@ -207,7 +213,7 @@ if __name__ == '__main__':
                              [ctrl],
                              dict(master=[[f'rl.inductor{k}.i' for k in '123'],
                                           [f'rl.inductor{k}.i' for k in '123'],
-                                          i_ref]),
+                                          ref]),
                              history=FullHistory()
                              )
 
@@ -340,7 +346,7 @@ if __name__ == '__main__':
             # Execution of the experiment
             # Using a runner to execute 'num_episodes' different episodes (i.e. SafeOpt iterations)
 
-            env = TestbenchEnv(num_steps= max_episode_steps, DT = 1/20000, i_ref = i_ref[0])
+            env = TestbenchEnv(num_steps= max_episode_steps, DT = 1/20000, ref = ref[0])
             runner = RunnerHardware(agent, env)
 
             runner.run(num_episodes, visualise=True)
@@ -363,6 +369,7 @@ if __name__ == '__main__':
             if safe_results:
                 agent.history.df.to_csv('hardwareTest_plt/result.csv')
 
+
             # Show last performance plot
             best_agent_plt = runner.run_data['last_agent_plt']
             ax = best_agent_plt.axes[0]
@@ -380,9 +387,10 @@ if __name__ == '__main__':
                 ax.set_ylabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
                 ax.set_xlabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
                 ax.get_figure().axes[1].set_ylabel(r'$J$')
-                plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4,
-                         alpha=.5)
+                #plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4,
+                #         alpha=.5)
             best_agent_plt.show()
             if safe_results:
                 best_agent_plt.savefig('hardwareTest_plt/agent_plt.png')
+
 

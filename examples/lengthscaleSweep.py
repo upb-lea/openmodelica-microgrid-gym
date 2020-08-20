@@ -39,17 +39,17 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 include_simulate = True
 do_measurement = False
 
-ii_steps = 18
-kk_steps = 20
+ii_steps = 8
+kk_steps = 10
 
-lengthscale_vec_kI = np.linspace(5, 200, ii_steps)
+lengthscale_vec_kI = np.linspace(5, 100, ii_steps)
 lengthscale_vec_kP = np.linspace(0.1, 6, kk_steps)
 unsafe_vec = np.zeros([kk_steps, ii_steps])
 
 # Simulation definitions
 delta_t = 1e-4  # simulation time step size / s
 max_episode_steps = 1000  # number of simulation steps per episode
-num_episodes = 200  # number of simulation episodes (i.e. SafeOpt iterations)
+num_episodes = 20  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 60  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -141,7 +141,7 @@ if __name__ == '__main__':
 
             # For 2D example, choose Kp and Ki as mutable parameters (below) and define bounds and lengthscale for both of them
             if adjust == 'Kpi':
-                bounds = [(0.0, 8), (0, 100)]
+                bounds = [(0.0, 8), (0, 200)]
                 # lengthscale = [lengthscale_vec[ll], 20.]
                 lengthscale = [lengthscale_vec_kP[kk], lengthscale_vec_kI[ii]]
 
@@ -278,6 +278,7 @@ if __name__ == '__main__':
                                ],
                                # viz_cols = ['inverter1.*', 'rl.inductor1.i'],
                                log_level=logging.INFO,
+                               #viz_mode='episode',
                                viz_mode=None,
                                max_episode_steps=max_episode_steps,
                                # model_params={'inverter1.gain.u': v_DC},
