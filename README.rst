@@ -56,6 +56,9 @@ Installation
 
 Install Python Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This is the short installation guide for Windows and Linux. OpenModelica is hardly supported for Mac, they suggest to install in a Linux VM. For this reason, running OMG in a Linux VM is strongly recommended for Mac users!
+
 Since it is not possible to install PyFMI_, a package which is necessary for the communication between the python interface and the environment, via pip, we recommend to install this package in advance in a conda environment.
 
 - If conda is NOT installed on your PC, install miniconda_ for python 3.8
