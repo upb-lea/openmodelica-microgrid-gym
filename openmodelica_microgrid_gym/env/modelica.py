@@ -11,11 +11,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy
 from matplotlib.figure import Figure
-from pyfmi import load_fmu
-from pyfmi.fmi import FMUModelME2
 from scipy import integrate
 
 from openmodelica_microgrid_gym.env.plot import PlotTmpl
+from openmodelica_microgrid_gym.env.pyfmi import PyFMI_Wrapper
+from openmodelica_microgrid_gym.net.net import Network
 from openmodelica_microgrid_gym.util import FullHistory, EmptyHistory
 
 logger = logging.getLogger(__name__)
@@ -100,11 +100,7 @@ class ModelicaEnv(gym.Env):
         self.solver_method = solver_method
 
         # load model from fmu
-        model_name = basename(model_path)
-        logger.debug("Loading model {}".format(model_name))
-        self.model: FMUModelME2 = load_fmu(model_path,
-                                           log_file_name=datetime.now().strftime(f'%Y-%m-%d_{model_name}.txt'))
-        logger.debug("Successfully loaded model {}".format(model_name))
+        self.model = PyFMI_Wrapper.load(model_path)
 
         # if you reward policy is different from just reward/penalty - implement custom step method
         self.reward = reward_fun
@@ -162,30 +158,8 @@ class ModelicaEnv(gym.Env):
 
         # OpenAI Gym requirements
         d_i, d_o = len(self.model_input_names), len(self.model_output_names)
-        self.action_space = gym.spaces.Box(low=np.full(d_i, -np.inf), high=np.full(d_i, np.inf))
+        self.action_space = gym.spaces.Box(low=np.full(d_i, -1), high=np.full(d_i, 1))
         self.observation_space = gym.spaces.Box(low=np.full(d_o, -np.inf), high=np.full(d_o, np.inf))
-
-    def _setup_fmu(self):
-        """
-        Initialize fmu model in self.model
-        """
-
-        self.model.setup_experiment(start_time=self.time_start)
-        self.model.enter_initialization_mode()
-        self.model.exit_initialization_mode()
-
-        e_info = self.model.get_event_info()
-        e_info.newDiscreteStatesNeeded = True
-        # Event iteration
-        while e_info.newDiscreteStatesNeeded:
-            self.model.enter_event_mode()
-            self.model.event_update()
-            e_info = self.model.get_event_info()
-
-        self.model.enter_continuous_time_mode()
-
-        # precalculating indices for more efficient lookup
-        self.model_output_idx = np.array([self.model.get_variable_valueref(k) for k in self.model_output_names])
 
     def _calc_jac(self, t, x) -> np.ndarray:  # noqa
         """
@@ -197,13 +171,7 @@ class ModelicaEnv(gym.Env):
         :param x: state (ignored)
         :return: the Jacobian matrix
         """
-        # get state and derivative value reference lists
-        refs = [[s.value_reference for s in getattr(self.model, attr)().values()]
-                for attr in
-                ['get_states_list', 'get_derivatives_list']]
-        jacobian = np.identity(len(refs[1]))
-        np.apply_along_axis(lambda col: self.model.get_directional_derivative(*refs, col), 0, jacobian)
-        return jacobian
+        return self.model.jacc()
 
     def _get_deriv(self, t: float, x: np.ndarray) -> np.ndarray:
         """
@@ -214,10 +182,10 @@ class ModelicaEnv(gym.Env):
         :return: 1d float array of derivatives
         """
         self.model.time = t
-        self.model.continuous_states = x.copy(order='C')
+        self.model.states = x.copy(order='C')
 
         # Compute the derivative
-        dx = self.model.get_derivatives()
+        dx = self.model.deriv
         return dx
 
     def _simulate(self) -> np.ndarray:
@@ -230,15 +198,15 @@ class ModelicaEnv(gym.Env):
         logger.debug(f'Simulation started for time interval {self.sim_time_interval[0]}-{self.sim_time_interval[1]}')
 
         # Advance
-        x_0 = self.model.continuous_states
+        x_0 = self.model.states
 
         # Get the output from a step of the solver
         sol_out = scipy.integrate.solve_ivp(
             self._get_deriv, self.sim_time_interval, x_0, method=self.solver_method, jac=self._calc_jac)
         # get the last solution of the solver
-        self.model.continuous_states = sol_out.y[:, -1]  # noqa
+        self.model.states = sol_out.y[:, -1]  # noqa
 
-        obs = self.model.get_real(self.model_output_idx)
+        obs = self.model.obs
         return obs
 
     @property
@@ -266,11 +234,7 @@ class ModelicaEnv(gym.Env):
         :return: state of the environment after resetting.
         """
         logger.debug("Experiment reset was called. Resetting the model.")
-
-        self.model.reset()
-        self.model.setup_experiment(start_time=0)
-
-        self._setup_fmu()
+        self.model.setup(self.time_start, self.model_output_names)
         self.sim_time_interval = np.array([self.time_start, self.time_start + self.time_step_size])
         self.history.reset()
         self._state = self._simulate()
@@ -314,11 +278,11 @@ class ModelicaEnv(gym.Env):
 
         # Set input values of the model
         logger.debug('model input: %s, values: %s', self.model_input_names, action)
-        self.model.set(list(self.model_input_names), list(action))
+        self.model.set(**dict(zip(self.model_input_names, action)))
         if self.model_parameters:
-            values = [(var, f(self.sim_time_interval[0])) for var, f in self.model_parameters.items()]
+            values = {var: f(self.sim_time_interval[0]) for var, f in self.model_parameters.items()}
             # list of keys and list of values
-            self.model.set(*zip(*values))
+            self.model.set_params(**values)
 
         # Simulate and observe result state
         self._state = self._simulate()
@@ -367,7 +331,7 @@ class ModelicaEnv(gym.Env):
                     if not cols:
                         continue
                     df = self.history.df[cols].copy()
-                    df.index = self.history.df.index * self.time_step_size
+                    df.index = self.history.df.index * self.time_step_size + self.time_start
 
                     fig, ax = plt.subplots()
                     df.plot(legend=True, figure=fig, ax=ax)
@@ -379,7 +343,9 @@ class ModelicaEnv(gym.Env):
                     fig, ax = plt.subplots()
 
                     for series, kwargs in tmpl:
-                        self.history.df[series].plot(figure=fig, ax=ax, **kwargs)
+                        ser = self.history.df[series].copy()
+                        ser.index = self.history.df.index * self.time_step_size + self.time_start
+                        ser.plot(figure=fig, ax=ax, **kwargs)
                     tmpl.callback(fig)
                     figs.append(fig)
 
@@ -398,3 +364,33 @@ class ModelicaEnv(gym.Env):
         """
         figs = self.render(close=True)
         return True, figs
+
+
+class NormalizedEnv(ModelicaEnv):
+    def __init__(self, net, is_normalized=True, **kwds):
+        self.is_normalized = is_normalized
+        self.net = Network.load(net)
+        super().__init__(time_step=self.net.ts, model_input=self.net.in_vars(),
+                         model_output=self.net.out_vars(False, False),
+                         **kwds)
+        # also add the augmented values to the history
+        self.history.cols = self.net.out_vars(True)
+
+    def reset(self) -> np.ndarray:
+        self.net.reset()
+        obs = super().reset()
+        outputs = self.net.augment(obs, self.is_normalized)
+        outputs = np.hstack((outputs, obs[len(self.net.out_vars(False)):]))
+        return outputs
+
+    def step(self, action: Sequence) -> Tuple[np.ndarray, float, bool, Mapping]:
+        params = self.net.params(action)
+        if params:
+            self.model.set_params(**params)
+        obs, rew, done, info = super().step(action)
+        outputs = self.net.augment(obs, self.is_normalized)
+        outputs = np.hstack((outputs, obs[len(self.net.out_vars(False)):]))
+        self.history._data.pop()
+        self.history.append(outputs)
+
+        return outputs, rew, done, info
