@@ -1,13 +1,17 @@
-Installation and General Remarks
+Toolbox Installation and General Remarks
 ================================
 
 
-In the following, an introduction to the Python code written for th OMG
+In the following, some installation hints and an introduction to the Python code written for the OMG
 toolbox is presented.
 
 
 Installation and Requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is the short installation guide for Windows and Linux. `OpenModelica <https://openmodelica.org/download/download-mac>`__ is hardly supported for Mac, they suggest to install in a Linux VM. For this reason, running OMG in a Linux `VM <https://openmodelica.org/download/virtual-machine>`__ is strongly recommended for Mac users!
+
+
 
 It is recommended to install OMG via pip:
 
