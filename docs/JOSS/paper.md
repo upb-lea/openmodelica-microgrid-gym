@@ -92,8 +92,9 @@ Furthermore, the provided evaluation tools enable the user to compare the perfor
 
 
 # Availability and implementation
-``OMG`` is supported and tested on Linux and Windows. The package can be 
-installed with the PyPI, the Python package index, using 
+
+``OMG`` is supported and tested on Linux and Windows. Mac users are asked to run this toolbox on a Linux VM. 
+The package should be installed in a conda environment. ``PyFMI`` can be installed via `conda install -c conda-forge pyfmi`, the ``OMG`` package by `pip` Python package manager using 
 `pip install openmodelica_microgrid_gym` command. The source code, guide and 
 datasets are available on the GitHub repository (https://github.com/upb-lea/openmodelica-microgrid-gym). 
 

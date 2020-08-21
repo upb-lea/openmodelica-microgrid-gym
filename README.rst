@@ -56,6 +56,9 @@ Installation
 
 Install Python Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This is the short installation guide for Windows and Linux. OpenModelica_ is hardly supported for Mac, they suggest to install in a Linux VM. For this reason, running OMG in a Linux VM is strongly recommended for Mac users!
+
 Since it is not possible to install PyFMI_, a package which is necessary for the communication between the python interface and the environment, via pip, we recommend to install this package in advance in a conda environment.
 As of now, only Windows and Linux are supported officially.
 
@@ -70,7 +73,7 @@ As of now, only Windows and Linux are supported officially.
 
     $ pip install openmodelica_microgrid_gym
 
-
+.. _OpenModelica: https://openmodelica.org/download/download-mac
 .. _miniconda: https://conda.io/en/latest/miniconda.html
 .. _PyFMI: https://github.com/modelon-community/PyFMI
 
