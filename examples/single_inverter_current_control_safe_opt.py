@@ -233,6 +233,7 @@ if __name__ == '__main__':
                 time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
                 if safe_results:
                     fig.savefig('Sim_vgl/abc_current' + time + '.pdf')
+                    #fig.savefig('Sim_vgl/abc_currentJ_{}_abcvoltage.pdf'.format())
 
             def xylables_dq0(fig):
                 ax = fig.gca()
@@ -257,19 +258,17 @@ if __name__ == '__main__':
                            reward_fun=Reward().rew_fun,
                            time_step=delta_t,
                            viz_cols=[
-                               PlotTmpl([f'rl.inductor{i}.i' for i in '123'],
-                                        callback=xylables
+                               PlotTmpl([[f'rl.inductor{i}.i' for i in '123'], [f'master.SPI{i}' for i in 'abc']],
+                                        callback=xylables,
+                                        color = [['b','r','g'], ['b','r','g']],
+                                        style = [[None],['--']]
                                         ),
-                               PlotTmpl([f'master.CVI{i}' for i in 'dq0'],
-                                        callback=xylables_dq0
+                               PlotTmpl([[f'master.CVI{i}' for i in 'dq0'],[f'master.SPI{i}' for i in 'dq0']],
+                                        callback=xylables_dq0,
+                                        color = [['b','r','g'], ['b','r','g']],
+                                        style = [[None],['--']]
                                         )
-                               #PlotTmpl([f'master.m{i}' for i in 'dq0'],
-                               #         callback=xylables_mdq0
-                               #         ),
-                               #PlotTmpl([f'master.m{i}' for i in 'abc'],
-                               #         #callback=xylables_dq0
-                               #         )
-                           ],
+                                     ],
                            #viz_cols = ['inverter1.*', 'rl.inductor1.i'],
                            log_level=logging.INFO,
                            viz_mode='episode',
@@ -297,8 +296,8 @@ if __name__ == '__main__':
             #####################################
             # Performance results and parameters as well as plots are stored in folder pipi_signleInv
             #agent.history.df.to_csv('len_search/result.csv')
-            if safe_results:
-                env.history.df.to_pickle('Simulation')
+            #if safe_results:
+             #   env.history.df.to_pickle('Simulation')
 
             # Show best episode measurment (current) plot
             best_env_plt = runner.run_data['best_env_plt']
@@ -336,7 +335,7 @@ if __name__ == '__main__':
             best_agent_plt.show()
             if safe_results:
                 best_agent_plt.savefig('Sim_vgl/agent_plt.png')
-                agent.history.df.to_csv('hardwareTest_plt/result.csv')
+                agent.history.df.to_csv('Sim_vgl/result.csv')
 
             print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df[:]))
 
