@@ -1,11 +1,10 @@
 import sys
 from itertools import chain
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
 import yaml
-from more_itertools import flatten, collapse
-import numexpr as ne
+from more_itertools import collapse
 
 from openmodelica_microgrid_gym.aux_ctl import PLL, PLLParams, dq0_to_abc, inst_power, inst_reactive, DDS, DroopParams, \
     DroopController, InverseDroopController, InverseDroopParams
