@@ -34,6 +34,9 @@ bibliography: paper.bib
 
 The OpenModelica Microgrid Gym (OMG) toolbox is providing a transient simulation framework for local energy grids based on power electronic converters. OpenModelica is used in the backend allowing to set up arbitrary electric grid designs using its well-known graphical user interface in a plug & play fashion [@Fritzson2018]. A Python-interface is offered for configuring the simulations and specially to integrate software modules for the realization as well testing of closed control loops. In addition, the OpenAI Gym interface is provided for connecting data-driven reinforcement learning algorithms in order to investigate on intelligent microgrid control approaches [@OpenAI2016]. 
 
+![\label{fig:omg}](omg.png)
+_Fig. 1:  Overview of the interconnections between the different parts of the  OMG  toolbox.  The  OpenModelica and  OpenAIGym logos are the property of their respective owners._
+
 
 # Background on microgrids and their control
 
@@ -68,8 +71,6 @@ To highlight the challenges of data-driven control approaches in safety-critical
 ``OMG`` is designed to be used by students, academics and industrial researchers in the field of control and energy engineering as well as data science. The primary objective of the toolbox is to facilitate entry for new users into the modeling, control, and testing of microgrids and to provide a platform on which different control methods (including reinforcement learning) can be compared under defined conditions (benchmarks).
 
 
-![\label{fig:omg}](omg.png)
-_Fig. 1:  Overview of the interconnections between the different parts of the  OMG  toolbox.  The  OpenModelica and  OpenAIGym logos are the property of their respective owners._
 
 # Features
 
@@ -91,7 +92,7 @@ The user can select between a wide range of different grid components and connec
 
 # Examples
 
-Detailed examples are shown in the whitepaper of this toolbox: https://arxiv.org/pdf/2005.04869.pdf
+Detailed examples are shown in the OMG whitepaper: https://arxiv.org/pdf/2005.04869.pdf
 
 Especially the implementation and evaluation of a safe Bayesian controller [@Berkenkamp2020] is explained in detail.
 The SafeOpt learning algorithm is applied to an automatic controller tuning problem with safety-relevant state constraints in different microgrid topologies (e.g. different number of inverters, load characteristics). 
@@ -99,7 +100,7 @@ Furthermore, the provided evaluation tools enable the user to compare the perfor
 
 
 
-# Availability and implementation
+# Availability and installation
 
 ``OMG`` is supported and tested on Linux and Windows. Mac users are asked to run this toolbox on a Linux VM. 
 The package should be installed in a conda environment. ``PyFMI`` can be installed via `conda install -c conda-forge pyfmi`, the ``OMG`` package by `pip` Python package manager using 
