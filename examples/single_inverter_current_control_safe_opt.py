@@ -35,8 +35,8 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
     raise ValueError("Please set 'adjust' to one of the following values: 'Kp', 'Ki', 'Kpi'")
 
 
-include_simulate = False
-do_measurement = True
+include_simulate = True
+do_measurement = False
 
 safe_results = True
 
@@ -55,7 +55,7 @@ iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
-i_ref = np.array([5, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
+i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
 #i_noise = 0.11 # Current measurement noise detected from testbench
 i_noise = np.array([[0.0, 0.0822], [0.0, 0.103], [0.0, 0.136]])
 
@@ -231,7 +231,8 @@ if __name__ == '__main__':
                 plt.title('Simulation')
                 ax.grid(which='both')
                 time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-                #fig.savefig('len_search/abc_current' + time + '.pdf')
+                if safe_results:
+                    fig.savefig('Sim_vgl/abc_current' + time + '.pdf')
 
             def xylables_dq0(fig):
                 ax = fig.gca()
@@ -241,7 +242,8 @@ if __name__ == '__main__':
                 plt.title('Simulation')
                 plt.ylim(0,36)
                 time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-                #fig.savefig('len_search/dq0_current' + time + '.pdf')
+                if safe_results:
+                    fig.savefig('Sim_vgl/dq0_current' + time + '.pdf')
 
             def xylables_mdq0(fig):
                 ax = fig.gca()
@@ -333,7 +335,15 @@ if __name__ == '__main__':
                          alpha=.5)
             best_agent_plt.show()
             if safe_results:
-                best_agent_plt.savefig('len_search/agent_plt.png')
+                best_agent_plt.savefig('Sim_vgl/agent_plt.png')
+                agent.history.df.to_csv('hardwareTest_plt/result.csv')
+
+            print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df[:]))
+
+            print('\n Experiment finished with best set: \n')
+            print('\n  {} = {}'.format(adjust, agent.history.df.at[np.argmax(agent.history.df['J']), 'Params']))
+            print('  Resulting in a performance of J = {}'.format(np.max(agent.history.df['J'])))
+            print('\n\nBest experiment results are plotted in the following:')
 
         if do_measurement:
             #####################################

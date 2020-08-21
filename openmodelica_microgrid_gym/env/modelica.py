@@ -37,7 +37,7 @@ class ModelicaEnv(gym.Env):
                  model_output: Optional[Union[dict, Sequence[str]]] = None, model_path: str = '../fmu/grid.network.fmu',
                  viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[Union[str, PlotTmpl]]]] = None,
                  history: EmptyHistory = FullHistory(),
-                 measurement_noise = None):
+                 measurement_noise = np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])):
         """
         Initialize the Environment.
         The environment can only be used after reset() is called.
