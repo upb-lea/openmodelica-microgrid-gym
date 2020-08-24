@@ -23,13 +23,17 @@ class PyFMI_Wrapper:
         logger.debug('Successfully loaded model "%s"', model_name)
         return model
 
-    def setup(self, time_start, output_names):
+    def setup(self, time_start, output_names, model_params):
         self.model.reset()
         self.model.setup_experiment(start_time=time_start)
 
         # This is needed, because otherwise setting new values seems not to work
-        self.model.enter_initialization_mode()
-        self.model.exit_initialization_mode()
+        #self.model.enter_initialization_mode()
+        if model_params:
+            values = {var: f(time_start) for var, f in model_params.items()}
+            # list of keys and list of values
+            self.set_params(**values)
+        #self.model.exit_initialization_mode()
 
         e_info = self.model.get_event_info()
         e_info.newDiscreteStatesNeeded = True

@@ -37,7 +37,7 @@ class ModelicaEnv(gym.Env):
                  model_output: Optional[Union[dict, Sequence[str]]] = None, model_path: str = '../fmu/grid.network.fmu',
                  viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[Union[str, PlotTmpl]]]] = None,
                  history: EmptyHistory = FullHistory(),
-                 measurement_noise = np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])):
+                 measurement_noise=np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])):
         """
         Initialize the Environment.
         The environment can only be used after reset() is called.
@@ -218,17 +218,15 @@ class ModelicaEnv(gym.Env):
         :return: noisy observation, if measurement noise is defined
         """
 
-        #if self.measurement_noise == None:
+        # if self.measurement_noise == None:
         #    return self._state
 
         # toDo: Check if noise fits to obs! (length, order)
-        #return self._state + np.random.normal(0, self.measurement_noise, len(self._state))
+        # return self._state + np.random.normal(0, self.measurement_noise, len(self._state))
 
         for ii in range(len(self._state)):
-            self._state[ii] = self._state[ii] + np.random.normal(self.measurement_noise[ii,0], self.measurement_noise[ii,1])
-
-
-
+            self._state[ii] = self._state[ii] + np.random.normal(self.measurement_noise[ii, 0],
+                                                                 self.measurement_noise[ii, 1])
 
     @property
     def is_done(self) -> bool:
@@ -258,12 +256,7 @@ class ModelicaEnv(gym.Env):
         logger.debug("Experiment reset was called. Resetting the model.")
 
         self.sim_time_interval = np.array([self.time_start, self.time_start + self.time_step_size])
-        self.model.setup(self.time_start, self.model_output_names)
-
-        if self.model_parameters:
-            values = {var: f(self.sim_time_interval[0]) for var, f in self.model_parameters.items()}
-            # list of keys and list of values
-            self.model.set_params(**values)
+        self.model.setup(self.time_start, self.model_output_names, self.model_parameters)
 
         self.history.reset()
         self._state = self._simulate()
@@ -315,7 +308,7 @@ class ModelicaEnv(gym.Env):
 
         # Simulate and observe result state
         self._state = self._simulate()
-#        self._add_measurement_noise()
+        #        self._add_measurement_noise()
         obs = np.hstack((self._state, self.measurement))
         self.history.append(obs)
 
