@@ -5,6 +5,7 @@
 
 
 import logging
+from functools import partial
 from time import strftime, gmtime
 from typing import List
 
@@ -38,7 +39,8 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 include_simulate = True
 do_measurement = False
 
-safe_results = True
+# If True: Results are stored to directory mentioned in: REBASE to DEV after MERGE #60!!
+safe_results = False
 
 lengthscale_vec = np.linspace(0.5,0.5,1)
 unsafe_vec = np.zeros(20)
@@ -46,7 +48,9 @@ unsafe_vec = np.zeros(20)
 # Simulation definitions
 delta_t = 1e-4  # simulation time step size / s
 max_episode_steps = 1000  # number of simulation steps per episode
-num_episodes = 200  # number of simulation episodes (i.e. SafeOpt iterations)
+num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
+n_MC = 3    # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
+            # distribution to represent real world more accurate
 v_DC = 60  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -61,17 +65,25 @@ i_noise = np.array([[0.0, 0.0822], [0.0, 0.103], [0.0, 0.136]])
 
 # Controller layout due to magnitude optimum:
 L = 2.2e-3  # / H
-R = 585e-3  # / Ohm
+R = 170e-3#585e-3  # / Ohm
 tau_plant = L/R
 gain_plant = 1/R
 
-# take inverter into account uning s&h (exp(-s*delta_T/2))
-
+# take inverter into account using s&h (exp(-s*delta_T/2))
 Tn = tau_plant   # Due to compensate
 Kp_init = tau_plant/(2*delta_t*gain_plant*v_DC)
 Ki_init = Kp_init/(Tn)
 
 
+def load_step(t, gain):
+    """
+    Defines a load step after 0.2 s
+    Doubles the load parameters
+    :param t:
+    :param gain: device parameter
+    :return: Dictionary with load parameters
+    """
+    return 1*gain if t < .05 else 200*gain
 
 
 class Reward:
@@ -154,6 +166,7 @@ if __name__ == '__main__':
 
         # Factor to multiply with the initial reward to give back an abort_reward-times higher negative reward in case of
         # limit exceeded
+        # has to be negative due to normalized performance (regarding J_init = 1)
         abort_reward = -10
 
         # Definition of the kernel
@@ -274,7 +287,13 @@ if __name__ == '__main__':
                            viz_mode='episode',
                            max_episode_steps=max_episode_steps,
                            #model_params={'inverter1.gain.u': v_DC},
-                           model_path='../fmu/grid.testbench_SC.fmu',
+                           model_params={'rl.resistor1.R': partial(load_step, gain=R),
+                                         'rl.resistor2.R': partial(load_step, gain=R),
+                                         'rl.resistor3.R': partial(load_step, gain=R)},
+                           #model_params={'rl.inductor1.L': partial(load_step, gain=L),
+                           #              'rl.inductor2.L': partial(load_step, gain=L),
+                           #              'rl.inductor3.L': partial(load_step, gain=L)},
+                           model_path='../fmu/grid.testbench_SC2.fmu',
                            model_input=['i1p1', 'i1p2', 'i1p3'],
                            model_output=dict(rl=[['inductor1.i', 'inductor2.i', 'inductor3.i']],
                                              #inverter1=['inductor1.i', 'inductor2.i', 'inductor3.i']
