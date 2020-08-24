@@ -81,6 +81,6 @@ class PyFMI_Wrapper:
         self.model.set(*zip(*kwargs.items()))
 
     def set_params(self, **kwargs):
-        self.model.enter_initialization_mode()
+        #self.model.enter_initialization_mode()
         self.model.set(*zip(*kwargs.items()))
-        self.model.exit_initialization_mode()
+        #self.model.exit_initialization_mode()

@@ -47,7 +47,7 @@ unsafe_vec = np.zeros(20)
 
 # Simulation definitions
 delta_t = 1e-4  # simulation time step size / s
-max_episode_steps = 1000  # number of simulation steps per episode
+max_episode_steps = 10000  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 n_MC = 3    # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
             # distribution to represent real world more accurate
@@ -83,7 +83,7 @@ def load_step(t, gain):
     :param gain: device parameter
     :return: Dictionary with load parameters
     """
-    return 1*gain if t < .05 else 200*gain
+    return 1*gain if t < .05 else 20*gain
 
 
 class Reward:
@@ -276,6 +276,10 @@ if __name__ == '__main__':
                                         color = [['b','r','g'], ['b','r','g']],
                                         style = [[None],['--']]
                                         ),
+                               PlotTmpl([[f'rl.resistor{i}.R' for i in '123']],
+                                        ),
+                               PlotTmpl([[f'rl.inductor{i}.L' for i in '123']],
+                                        ),
                                PlotTmpl([[f'master.CVI{i}' for i in 'dq0'],[f'master.SPI{i}' for i in 'dq0']],
                                         callback=xylables_dq0,
                                         color = [['b','r','g'], ['b','r','g']],
@@ -289,13 +293,17 @@ if __name__ == '__main__':
                            #model_params={'inverter1.gain.u': v_DC},
                            model_params={'rl.resistor1.R': partial(load_step, gain=R),
                                          'rl.resistor2.R': partial(load_step, gain=R),
-                                         'rl.resistor3.R': partial(load_step, gain=R)},
-                           #model_params={'rl.inductor1.L': partial(load_step, gain=L),
-                           #              'rl.inductor2.L': partial(load_step, gain=L),
-                           #              'rl.inductor3.L': partial(load_step, gain=L)},
+                                         'rl.resistor3.R': partial(load_step, gain=R),
+                                         'rl.inductor1.L': partial(load_step, gain=L),
+                                         'rl.inductor2.L': partial(load_step, gain=L),
+                                         'rl.inductor3.L': partial(load_step, gain=L)},
                            model_path='../fmu/grid.testbench_SC2.fmu',
                            model_input=['i1p1', 'i1p2', 'i1p3'],
-                           model_output=dict(rl=[['inductor1.i', 'inductor2.i', 'inductor3.i']],
+                           #model_output=dict(#rl=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
+                           model_output=dict(rl=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
+                                                 ['resistor1.R', 'resistor2.R', 'resistor3.R'],
+                                                 ['inductor1.L', 'inductor2.L', 'inductor3.L']]
+                                            #rl=[['resistor1.R', 'resistor2.R', 'resistor3.R']],
                                              #inverter1=['inductor1.i', 'inductor2.i', 'inductor3.i']
                                              ),
                            history=FullHistory(),
