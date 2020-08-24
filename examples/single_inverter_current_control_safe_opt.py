@@ -45,10 +45,12 @@ safe_results = False
 lengthscale_vec = np.linspace(0.5,0.5,1)
 unsafe_vec = np.zeros(20)
 
+np.random.seed(0)
+
 # Simulation definitions
 delta_t = 1e-4  # simulation time step size / s
-max_episode_steps = 10000  # number of simulation steps per episode
-num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
+max_episode_steps = 1000  # number of simulation steps per episode
+num_episodes = 2  # number of simulation episodes (i.e. SafeOpt iterations)
 n_MC = 3    # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
             # distribution to represent real world more accurate
 v_DC = 60  # DC-link voltage / V; will be set as model parameter in the FMU
@@ -74,16 +76,34 @@ Tn = tau_plant   # Due to compensate
 Kp_init = tau_plant/(2*delta_t*gain_plant*v_DC)
 Ki_init = Kp_init/(Tn)
 
+#model_params={'rl.resistor1.R': partial(load_step, gain=R)}
+#model_params={'rl.resistor1.R': load(R)}
+#model_params={'rl.inductor1.L': load(L).load_step}
 
-def load_step(t, gain):
-    """
-    Defines a load step after 0.2 s
-    Doubles the load parameters
-    :param t:
-    :param gain: device parameter
-    :return: Dictionary with load parameters
-    """
-    return 1*gain if t < .05 else 20*gain
+class Load:
+
+    def __init__(self, load_mean, load_std = None, balanced = True):
+
+        if load_std is None:
+            load_std = load_mean*0.1
+        self.gains = [np.random.normal(load_mean, load_std) for _ in range(1 if balanced else 3)]
+
+    def load_step(self, t, n):
+        """
+        Defines a load step after 0.2 s
+        Doubles the load parameters
+        :param t: t :D
+        :param gain: device parameter
+        :return: Dictionary with load parameters
+        """
+
+        if n > 2:
+            raise ValueError('Choose between single or three phase!')
+
+        if len(self.gains) == 1:
+            return 1*self.gains[0] if t < .05 else 2*self.gains[0]
+        else:
+            return 1 * self.gains[n] if t < .05 else 2 * self.gains[n]
 
 
 class Reward:
@@ -267,6 +287,9 @@ if __name__ == '__main__':
                 ax.grid(which='both')
                 #plt.ylim(0,36)
 
+            r_load = Load(R, balanced=False)
+            l_load = Load(L, balanced=False)
+
             env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                            reward_fun=Reward().rew_fun,
                            time_step=delta_t,
@@ -291,12 +314,12 @@ if __name__ == '__main__':
                            viz_mode='episode',
                            max_episode_steps=max_episode_steps,
                            #model_params={'inverter1.gain.u': v_DC},
-                           model_params={'rl.resistor1.R': partial(load_step, gain=R),
-                                         'rl.resistor2.R': partial(load_step, gain=R),
-                                         'rl.resistor3.R': partial(load_step, gain=R),
-                                         'rl.inductor1.L': partial(load_step, gain=L),
-                                         'rl.inductor2.L': partial(load_step, gain=L),
-                                         'rl.inductor3.L': partial(load_step, gain=L)},
+                           model_params={'rl.resistor1.R': partial(r_load.load_step, n=0),
+                                         'rl.resistor2.R': partial(r_load.load_step, n=1),
+                                         'rl.resistor3.R': partial(r_load.load_step, n=2),
+                                         'rl.inductor1.L': partial(l_load.load_step, n=0),
+                                         'rl.inductor2.L': partial(l_load.load_step, n=1),
+                                         'rl.inductor3.L': partial(l_load.load_step, n=2)},
                            model_path='../fmu/grid.testbench_SC2.fmu',
                            model_input=['i1p1', 'i1p2', 'i1p3'],
                            #model_output=dict(#rl=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
