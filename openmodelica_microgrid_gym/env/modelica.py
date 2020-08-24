@@ -251,12 +251,20 @@ class ModelicaEnv(gym.Env):
             * resets model
             * sets simulation start time to 0
             * sets initial parameters of the model
+                - Using the parameters defined in self.model_parameters
             * initializes the model
         :return: state of the environment after resetting.
         """
         logger.debug("Experiment reset was called. Resetting the model.")
-        self.model.setup(self.time_start, self.model_output_names)
+
         self.sim_time_interval = np.array([self.time_start, self.time_start + self.time_step_size])
+        self.model.setup(self.time_start, self.model_output_names)
+
+        if self.model_parameters:
+            values = {var: f(self.sim_time_interval[0]) for var, f in self.model_parameters.items()}
+            # list of keys and list of values
+            self.model.set_params(**values)
+
         self.history.reset()
         self._state = self._simulate()
         self.measurement = []
