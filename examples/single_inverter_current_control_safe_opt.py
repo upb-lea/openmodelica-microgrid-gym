@@ -5,6 +5,7 @@
 
 
 import logging
+import os
 from functools import partial
 from time import strftime, gmtime
 from typing import List
@@ -41,6 +42,11 @@ do_measurement = False
 
 # If True: Results are stored to directory mentioned in: REBASE to DEV after MERGE #60!!
 safe_results = False
+
+# Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
+current_directory = os.getcwd()
+save_folder = os.path.join(current_directory, r'test_save')
+os.makedirs(save_folder, exist_ok=True)
 
 lengthscale_vec = np.linspace(0.5,0.5,1)
 unsafe_vec = np.zeros(20)
@@ -265,7 +271,7 @@ if __name__ == '__main__':
                 ax.grid(which='both')
                 time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
                 if safe_results:
-                    fig.savefig('Sim_vgl/abc_current' + time + '.pdf')
+                    fig.savefig(save_folder+'/abc_current' + time + '.pdf')
                     #fig.savefig('Sim_vgl/abc_currentJ_{}_abcvoltage.pdf'.format())
 
             def xylables_dq0(fig):
@@ -277,7 +283,7 @@ if __name__ == '__main__':
                 plt.ylim(0,36)
                 time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
                 if safe_results:
-                    fig.savefig('Sim_vgl/dq0_current' + time + '.pdf')
+                    fig.savefig(save_folder+'/dq0_current' + time + '.pdf')
 
             def xylables_mdq0(fig):
                 ax = fig.gca()
@@ -384,8 +390,8 @@ if __name__ == '__main__':
                          alpha=.5)
             best_agent_plt.show()
             if safe_results:
-                best_agent_plt.savefig('Sim_vgl/agent_plt.png')
-                agent.history.df.to_csv('Sim_vgl/result.csv')
+                best_agent_plt.savefig(save_folder+'/agent_plt.png')
+                agent.history.df.to_csv(save_folder+'/result.csv')
 
             print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df[:]))
 

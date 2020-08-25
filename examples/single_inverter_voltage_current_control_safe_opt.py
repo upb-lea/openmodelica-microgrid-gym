@@ -92,7 +92,7 @@ class Reward:
 if __name__ == '__main__':
     #####################################
     # Definitions for the GP
-    prior_mean = 2  # mean factor of the GP prior mean which is multiplied with the first performance of the initial set
+    prior_mean = 0#2  # mean factor of the GP prior mean which is multiplied with the first performance of the initial set
     noise_var = 0.001 ** 2  # measurement noise sigma_omega
     prior_var = 2  # prior variance of the GP
 
@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
     # Factor to multiply with the initial reward to give back an abort_reward-times higher negative reward in case of
     # limit exceeded
-    abort_reward = 10
+    abort_reward = -10
 
     # Definition of the kernel
     kernel = GPy.kern.Matern32(input_dim=len(bounds), variance=prior_var, lengthscale=lengthscale, ARD=True)
