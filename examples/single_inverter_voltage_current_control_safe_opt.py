@@ -175,7 +175,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('savesVI_control_safeopt/Inductor_currents'+time+'.pdf')
+        fig.savefig(save_folder + '/Inductor_currents'+time+'.pdf')
 
     def xylables_v_abc(fig):
         ax = fig.gca()
@@ -183,7 +183,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$v_{\mathrm{abc}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('savesVI_control_safeopt/abc_voltage' + time + '.pdf')
+        fig.savefig(save_folder + '/abc_voltage' + time + '.pdf')
 
 
     def xylables_v_dq0(fig):
@@ -192,7 +192,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$v_{\mathrm{dq0}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('savesVI_control_safeopt/dq0_voltage' + time + '.pdf')
+        fig.savefig(save_folder + '/dq0_voltage' + time + '.pdf')
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=Reward().rew_fun,
@@ -228,7 +228,7 @@ if __name__ == '__main__':
 
     #####################################
     # Performance results and parameters as well as plots are stored in folder pipi_signleInvALT
-    agent.history.df.to_csv('savesVI_control_safeopt/result.csv')
+    agent.history.df.to_csv(save_folder + '/result.csv')
 
     print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df.round({'J': 4, 'Params': 4})))
     print('\n Experiment finished with best set: \n')
