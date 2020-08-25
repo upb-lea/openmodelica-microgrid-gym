@@ -22,6 +22,7 @@ from openmodelica_microgrid_gym.agents.util import MutableFloat
 from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQCurrentSourcingController
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.env.physical_testbench import TestbenchEnv
+from openmodelica_microgrid_gym.execution.monte_carlo_runner import MonteCarloRunner
 from openmodelica_microgrid_gym.execution.runner_hardware import RunnerHardware
 from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 
@@ -293,8 +294,8 @@ if __name__ == '__main__':
                 ax.grid(which='both')
                 #plt.ylim(0,36)
 
-            r_load = Load(R, balanced=False)
-            l_load = Load(L, balanced=False)
+            r_load = Load(R, 0.5*R, balanced=False)
+            l_load = Load(L, 0.5*L, balanced=False)
 
             env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                            reward_fun=Reward().rew_fun,
@@ -339,7 +340,7 @@ if __name__ == '__main__':
                            measurement_noise = i_noise
                            )
 
-            runner = Runner(agent, env)
+            runner = MonteCarloRunner(agent, env)
 
             runner.run(num_episodes, visualise=True)
 
