@@ -57,7 +57,7 @@ class SafeOptAgent(StaticControlAgent):
         self.explore_threshold = gp_params['explore_threshold']
 
         self.abort_reward = abort_reward
-        self.episode_reward = None
+        self.episode_return = None
         self.optimizer = None
         self.inital_performance = None
         self.last_best_performance = None
@@ -85,7 +85,7 @@ class SafeOptAgent(StaticControlAgent):
 
         self.params.reset()
         self.optimizer = None
-        self.episode_reward = 0
+        self.episode_return = 0
         self.inital_performance = None
         self.last_best_performance = None
         self.last_worst_performance = None
@@ -106,10 +106,10 @@ class SafeOptAgent(StaticControlAgent):
         :return:
         """
         self._iterations += 1
-        self.episode_reward += reward or 0
+        self.episode_return += reward or 0
         if terminated:
             # calculate MSE, divide Summed error by length of measurement
-            self.performance = 1/ (self.episode_reward / self._iterations)
+            self.performance = 1/ (self.episode_return / self._iterations)
             # safeopt update step
             self.update_params()
             # reset for new episode
@@ -146,7 +146,7 @@ class SafeOptAgent(StaticControlAgent):
 
         else:
             self.performance = self.performance / self.inital_performance
-            if np.isnan(self.episode_reward):
+            if np.isnan(self.episode_return):
                 # set r to doubled (negative!) initial reward
                 self.performance = self.abort_reward #* self.inital_performance
                 # toDo: set reward to -inf and stop agent?

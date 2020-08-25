@@ -73,7 +73,7 @@ class StaticControlAgent(Agent):
          passed in the act function. Will be automatically set by the Runner class
         """
         super().__init__(obs_varnames, **kwargs)
-        self.episode_reward = 0
+        self.episode_return = 0
         self.controllers = {ctrl.name: ctrl for ctrl in ctrls}
         self.obs_template_param = obs_template
         self._obs_template = None
@@ -111,7 +111,7 @@ class StaticControlAgent(Agent):
         :param reward: reward from the environment after the last action
         :param terminated: whether the episode is finished
         """
-        self.episode_reward += reward or 0
+        self.episode_return += reward or 0
         if terminated:
             # reset episode reward
             self.prepare_episode()
@@ -144,7 +144,7 @@ class StaticControlAgent(Agent):
         """
         for ctrl in self.controllers.values():
             ctrl.reset()
-        self.episode_reward = 0
+        self.episode_return = 0
 
     @property
     def has_improved(self) -> bool:
