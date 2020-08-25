@@ -18,3 +18,7 @@ class EpisodicLearnerAgent(Agent):
     @property
     def performance(self):
         return None
+
+    @performance.setter
+    def performance(self, val):
+        pass

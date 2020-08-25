@@ -152,7 +152,7 @@ class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
 
             self.last_best_performance = self.performance
 
-        if self.has_worsen:
+        if self.has_worsened:
             # if performance has improved store the current last index of the df
             self.worst_episode = self.history.df.shape[0] - 1
 
@@ -197,7 +197,7 @@ class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
         return self.performance >= self.last_best_performance
 
     @property
-    def has_worsen(self) -> bool:
+    def has_worsened(self) -> bool:
         """
         Defines if the performance increased or stays constant
 
