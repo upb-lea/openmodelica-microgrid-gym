@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Dict, Any
 from tqdm import tqdm
-from openmodelica_microgrid_gym.agents import Agent
+from openmodelica_microgrid_gym.agents.episodic import EpisodicLearnerAgent
 from openmodelica_microgrid_gym.env import ModelicaEnv
 
 
@@ -18,7 +18,7 @@ class MonteCarloRunner:
     Therefore, the agetn-observe function is called with terminated = True
     """
 
-    def __init__(self, agent: Agent, env: ModelicaEnv):
+    def __init__(self, agent: EpisodicLearnerAgent, env: ModelicaEnv):
         """
 
         :param agent: Agent that acts on the environment
@@ -36,7 +36,7 @@ class MonteCarloRunner:
         - "agent_plt": last agent plot
         """
 
-    def run(self, n_episodes: int = 10, n_MC: int = 5, visualise: bool = False):
+    def run(self, n_episodes: int = 10, n_MC: int = 5, visualise: bool = False, prepare_MC_experiment = lambda: True):
         """
         Trains/executes the agent on the environment for a number of epochs
 
@@ -56,10 +56,14 @@ class MonteCarloRunner:
 
         for i in tqdm(range(n_episodes), desc='episodes', unit='epoch'):
 
+            done, r = False, None
+
             for m in tqdm(range(n_MC), desc='episodes', unit='epoch'):
 
+                prepare_MC_experiment()
+
                 obs = self.env.reset()
-                done, r = False, None
+
                 for _ in tqdm(range(self.env.max_episode_steps), desc='steps', unit='step', leave=False):
                     self.agent.observe(r, False)
                     act = self.agent.act(obs)
@@ -67,7 +71,7 @@ class MonteCarloRunner:
                     obs, r, done, info = self.env.step(act)
                     self.env.render()
                     if done:
-                        self.agent.observe(r, False) # take the last reward into account, too, but without update_params
+                        self.agent.observe(r, False)  # take the last reward into account, too, but without update_params
                         performance_MC[m] = self.agent.performance
                         break
 
@@ -84,8 +88,7 @@ class MonteCarloRunner:
                 self.run_data['best_env_plt'] = env_fig
                 self.run_data['best_episode_idx'] = i
 
-            if i == 0 or self.agent.has_worsen:
+            if i == 0 or self.agent.has_worsened:
                 self.run_data['worst_env_plt'] = env_fig
                 self.run_data['worst_episode_idx'] = i
 
-            print(self.agent.unsafe)

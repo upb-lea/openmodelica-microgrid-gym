@@ -4,6 +4,7 @@ from tqdm import tqdm
 
 from openmodelica_microgrid_gym.agents import Agent
 from openmodelica_microgrid_gym.env import ModelicaEnv
+from openmodelica_microgrid_gym.env.physical_testbench import TestbenchEnv
 
 
 class RunnerHardware:
@@ -12,11 +13,11 @@ class RunnerHardware:
     It handles communication between agent and environment and handles the execution of multiple epochs
     """
 
-    def __init__(self, agent: Agent, env: ModelicaEnv):
+    def __init__(self, agent: Agent, env: TestbenchEnv):
         """
 
         :param agent: Agent that acts on the environment
-        :param env: Environment tha Agent acts on
+        :param env: Environment that Agent acts on
         """
         self.env = env
         self.agent = agent
