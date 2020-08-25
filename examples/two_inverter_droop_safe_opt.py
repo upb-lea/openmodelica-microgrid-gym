@@ -201,7 +201,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('saves_droop_control_safeopt/Inductor_currents' + time + '.pdf')
+        fig.savefig(save_folder + '/Inductor_currents' + time + '.pdf')
 
 
     def xylables_v_abc(fig):
@@ -210,7 +210,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$v_{\mathrm{abc}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('saves_droop_control_safeopt/abc_voltage' + time + '.pdf')
+        fig.savefig(save_folder + '/abc_voltage' + time + '.pdf')
 
 
     def xylables_v_dq0(fig):
@@ -219,7 +219,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$v_{\mathrm{dq0}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('saves_droop_control_safeopt/dq0_voltage' + time + '.pdf')
+        fig.savefig(save_folder + '/dq0_voltage' + time + '.pdf')
 
 
     def xylables_P_master(fig):
@@ -228,7 +228,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$P_{\mathrm{master}}\,/\,\mathrm{W}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('saves_droop_control_safeopt/P_master' + time + '.pdf')
+        fig.savefig(save_folder + '/P_master' + time + '.pdf')
 
 
     def xylables_P_slave(fig):
@@ -237,7 +237,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$P_{\mathrm{slave}}\,/\,\mathrm{W}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('saves_droop_control_safeopt/P_slave' + time + '.pdf')
+        fig.savefig(save_folder + '/P_slave' + time + '.pdf')
 
 
     def xylables_freq(fig):
@@ -246,7 +246,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$f_{\mathrm{slave}}\,/\,\mathrm{Hz}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('saves_droop_control_safeopt/f_slave' + time + '.pdf')
+        fig.savefig(save_folder + '/f_slave' + time + '.pdf')
 
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
@@ -301,7 +301,7 @@ if __name__ == '__main__':
 
     #####################################
     # Performance results and Parameters as well as plots are stored in folder saves_droop
-    agent.history.df.to_csv('saves_droop_control_safeopt/result.csv')
+    agent.history.df.to_csv(save_folder + '/result.csv')
 
     print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df.round({'J': 4, 'Params': 4})))
     print('\n Experiment finished with best set: \n')
