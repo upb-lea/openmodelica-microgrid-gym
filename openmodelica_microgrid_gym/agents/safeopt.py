@@ -9,6 +9,7 @@ from GPy.kern import Kern
 from matplotlib.figure import Figure
 from safeopt import SafeOptSwarm
 
+from openmodelica_microgrid_gym.agents.episodic import EpisodicLearnerAgent
 from openmodelica_microgrid_gym.agents.staticctrl import StaticControlAgent
 from openmodelica_microgrid_gym.agents.util import MutableParams
 from openmodelica_microgrid_gym.aux_ctl import Controller
@@ -16,7 +17,7 @@ from openmodelica_microgrid_gym.aux_ctl import Controller
 logger = logging.getLogger(__name__)
 
 
-class SafeOptAgent(StaticControlAgent):
+class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
     def __init__(self, mutable_params: Union[dict, list], abort_reward: int, kernel: Kern, gp_params: Dict[str, Any],
                  ctrls: List[Controller],
                  obs_template: Mapping[str, List[Union[List[str], np.ndarray]]], obs_varnames: List[str] = None,
@@ -59,10 +60,10 @@ class SafeOptAgent(StaticControlAgent):
         self.abort_reward = abort_reward
         self.episode_return = None
         self.optimizer = None
-        self.inital_performance = None
+        self._performance = None
+        self.initial_performance = 1
         self.last_best_performance = None
         self.last_worst_performance = None
-        self.performance = None
         self.unsafe = False
 
         self._iterations = 0
@@ -86,10 +87,10 @@ class SafeOptAgent(StaticControlAgent):
         self.params.reset()
         self.optimizer = None
         self.episode_return = 0
-        self.inital_performance = None
+        self.initial_performance = 1
+        self._performance = None
         self.last_best_performance = None
         self.last_worst_performance = None
-        self.performance = None
         self.unsafe = False
 
         self._iterations = 0
@@ -108,8 +109,6 @@ class SafeOptAgent(StaticControlAgent):
         self._iterations += 1
         self.episode_return += reward or 0
         if terminated:
-            # calculate MSE, divide Summed error by length of measurement
-            self.performance = 1/ (self.episode_return / self._iterations)
             # safeopt update step
             self.update_params()
             # reset for new episode
@@ -122,12 +121,7 @@ class SafeOptAgent(StaticControlAgent):
         """
         if self.optimizer is None:
             # First Iteration
-            self.inital_performance = self.performance
-            self.performance = self.performance / self.inital_performance
-
-            # Norm for Safe-point
-            # J = 1 / self.episode_reward / self.inital_Performance
-
+            self.initial_performance = self.performance
             self.last_best_performance = self.performance
             self.last_worst_performance = self.performance
 
@@ -145,15 +139,6 @@ class SafeOptAgent(StaticControlAgent):
                                           threshold=self.explore_threshold * self.performance)
 
         else:
-            self.performance = self.performance / self.inital_performance
-            if np.isnan(self.episode_return):
-                # set r to doubled (negative!) initial reward
-                self.performance = self.abort_reward #* self.inital_performance
-                # toDo: set reward to -inf and stop agent?
-                # warning mit logger
-                logger.warning('UNSAFE! Limit exceeded, epsiode abort, give a reward of {} times the'
-                               'initial reward'.format(self.abort_reward))
-
             self.optimizer.add_new_data_point(self.params[:], self.performance)
 
         if self.performance < self.safe_threshold:  # Due to nromalization tp 1 safe_threshold directly enough
@@ -188,7 +173,7 @@ class SafeOptAgent(StaticControlAgent):
         elif len(x) == 2:
             ax.plot(x[0], x[1], 'og')
         else:
-            logger.warning('Choose appropriate numer of control parameters')
+            logger.warning('Choose appropriate number of control parameters')
 
         plt.show()             # only comment for lengthscale sweep
         #plt.close(figure)       # only needed for lengthscale sweep
@@ -220,3 +205,20 @@ class SafeOptAgent(StaticControlAgent):
         """
         return self.performance <= self.last_worst_performance
 
+    @property
+    def performance(self):
+
+        if np.isnan(self.episode_return):
+            # toDo: set reward to -inf and stop agent?
+            # warning mit logger
+            logger.warning('UNSAFE! Limit exceeded, epsiode abort, give a reward of {} times the'
+                           'initial reward'.format(self.abort_reward))
+            # set r to doubled (negative!) initial reward
+            return self.abort_reward  # * self.inital_performance
+
+        # Performance = inverse average return (return/iterations)^⁻1 normalized by initial performance
+        return self._iterations / (self.episode_return * self.initial_performance)
+
+    @performance.setter
+    def performance(self, new_performance):
+        self._performance = new_performance
