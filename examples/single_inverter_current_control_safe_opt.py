@@ -16,7 +16,6 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat
 from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQCurrentSourcingController
@@ -37,7 +36,6 @@ adjust = 'Kpi'
 if adjust not in {'Kp', 'Ki', 'Kpi'}:
     raise ValueError("Please set 'adjust' to one of the following values: 'Kp', 'Ki', 'Kpi'")
 
-
 include_simulate = True
 do_measurement = False
 
@@ -49,7 +47,7 @@ current_directory = os.getcwd()
 save_folder = os.path.join(current_directory, r'test_save')
 os.makedirs(save_folder, exist_ok=True)
 
-lengthscale_vec = np.linspace(0.5,0.5,1)
+lengthscale_vec = np.linspace(0.5, 0.5, 1)
 unsafe_vec = np.zeros(20)
 
 np.random.seed(0)
@@ -58,8 +56,8 @@ np.random.seed(0)
 delta_t = 1e-4  # simulation time step size / s
 max_episode_steps = 1000  # number of simulation steps per episode
 num_episodes = 2  # number of simulation episodes (i.e. SafeOpt iterations)
-n_MC = 3    # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
-            # distribution to represent real world more accurate
+n_MC = 3  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
+# distribution to represent real world more accurate
 v_DC = 60  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -69,38 +67,46 @@ mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
-#i_noise = 0.11 # Current measurement noise detected from testbench
+# i_noise = 0.11 # Current measurement noise detected from testbench
 i_noise = np.array([[0.0, 0.0822], [0.0, 0.103], [0.0, 0.136]])
 
 # Controller layout due to magnitude optimum:
 L = 2.2e-3  # / H
-R = 170e-3#585e-3  # / Ohm
-tau_plant = L/R
-gain_plant = 1/R
+R = 170e-3  # 585e-3  # / Ohm
+tau_plant = L / R
+gain_plant = 1 / R
 
 # take inverter into account using s&h (exp(-s*delta_T/2))
-Tn = tau_plant   # Due to compensate
-Kp_init = tau_plant/(2*delta_t*gain_plant*v_DC)
-Ki_init = Kp_init/(Tn)
+Tn = tau_plant  # Due to compensate
+Kp_init = tau_plant / (2 * delta_t * gain_plant * v_DC)
+Ki_init = Kp_init / Tn
 
-#model_params={'rl.resistor1.R': partial(load_step, gain=R)}
-#model_params={'rl.resistor1.R': load(R)}
-#model_params={'rl.inductor1.L': load(L).load_step}
 
 class Load:
 
-    def __init__(self, load_mean, load_std = None, balanced = True):
+    def __init__(self, load_mean: float, load_std: float = None, balanced: bool = True):
+        """
+        Load class which defines stochastic load. Samples load value from normal Gaussian distribution (GD) using given
+        mean and standard deviation
+        :param load_mean: Mean of the GD the load is sampled from
+        :param load_std: Standard deviation of the GD the load is sampled from
+        :param balanced: If True: all 3 phases are takes as equal; if False symmetrical load is applied
+        """
 
+        self.balanced = balanced
+        self.load_mean = load_mean
         if load_std is None:
-            load_std = load_mean*0.1
-        self.gains = [np.random.normal(load_mean, load_std) for _ in range(1 if balanced else 3)]
+            self.load_std = self.load_mean * 0.1
+        else:
+            self.load_std = load_std
+        self.gains = [np.random.normal(self.load_mean, self.load_std) for _ in range(1 if self.balanced else 3)]
 
-    def load_step(self, t, n):
+    def load_step(self, t, n: int):
         """
         Defines a load step after 0.2 s
         Doubles the load parameters
         :param t: t :D
-        :param gain: device parameter
+        :param n: Index referring to the current phase
         :return: Dictionary with load parameters
         """
 
@@ -108,9 +114,12 @@ class Load:
             raise ValueError('Choose between single or three phase!')
 
         if len(self.gains) == 1:
-            return 1*self.gains[0] if t < .05 else 2*self.gains[0]
+            return 1 * self.gains[0] if t < .05 else 2 * self.gains[0]
         else:
             return 1 * self.gains[n] if t < .05 else 2 * self.gains[n]
+
+    def reset(self):
+        self.gains = [np.random.normal(self.load_mean, self.load_std) for _ in range(1 if self.balanced else 3)]
 
 
 class Reward:
@@ -160,9 +169,9 @@ if __name__ == '__main__':
     for ll in range(len(lengthscale_vec)):
         #####################################
         # Definitions for the GP
-        prior_mean = 0#2  # mean factor of the GP prior mean which is multiplied with the first performance of the initial set
-        noise_var = 0.001#0.001 ** 2  # measurement noise sigma_omega
-        prior_var = 2#0.1  # prior variance of the GP
+        prior_mean = 0  # 2  # mean factor of the GP prior mean which is multiplied with the first performance of the initial set
+        noise_var = 0.001  # 0.001 ** 2  # measurement noise sigma_omega
+        prior_var = 2  # 0.1  # prior variance of the GP
 
         bounds = None
         lengthscale = None
@@ -206,7 +215,7 @@ if __name__ == '__main__':
         if adjust == 'Kp':
             # mutable_params = parameter (Kp gain of the current controller of the inverter) to be optimized using
             # the SafeOpt algorithm
-            mutable_params = dict(currentP=MutableFloat(0.01))#5e-3))
+            mutable_params = dict(currentP=MutableFloat(0.01))  # 5e-3))
 
             # Define the PI parameters for the current controller of the inverter
             current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=115, limits=(-1, 1))
@@ -219,7 +228,8 @@ if __name__ == '__main__':
         # For 2D example, choose Kp and Ki as mutable parameters
         elif adjust == 'Kpi':
             mutable_params = dict(currentP=MutableFloat(Kp_init), currentI=MutableFloat(Ki_init))
-            current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
+            current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'],
+                                            limits=(-1, 1))
 
         # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
         # filter and the nominal frequency
@@ -272,8 +282,9 @@ if __name__ == '__main__':
                 ax.grid(which='both')
                 time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
                 if safe_results:
-                    fig.savefig(save_folder+'/abc_current' + time + '.pdf')
-                    #fig.savefig('Sim_vgl/abc_currentJ_{}_abcvoltage.pdf'.format())
+                    fig.savefig(save_folder + '/abc_current' + time + '.pdf')
+                    # fig.savefig('Sim_vgl/abc_currentJ_{}_abcvoltage.pdf'.format())
+
 
             def xylables_dq0(fig):
                 ax = fig.gca()
@@ -281,10 +292,11 @@ if __name__ == '__main__':
                 ax.set_ylabel('$i_{\mathrm{dq0}}\,/\,\mathrm{A}$')
                 ax.grid(which='both')
                 plt.title('Simulation')
-                plt.ylim(0,36)
+                plt.ylim(0, 36)
                 time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
                 if safe_results:
-                    fig.savefig(save_folder+'/dq0_current' + time + '.pdf')
+                    fig.savefig(save_folder + '/dq0_current' + time + '.pdf')
+
 
             def xylables_mdq0(fig):
                 ax = fig.gca()
@@ -292,10 +304,17 @@ if __name__ == '__main__':
                 ax.set_ylabel('$m_{\mathrm{dq0}}\,/\,\mathrm{}$')
                 plt.title('Simulation')
                 ax.grid(which='both')
-                #plt.ylim(0,36)
+                # plt.ylim(0,36)
 
-            r_load = Load(R, 0.5*R, balanced=False)
-            l_load = Load(L, 0.5*L, balanced=False)
+
+            r_load = Load(R, 0.5 * R, balanced=False)
+            l_load = Load(L, 0.5 * L, balanced=False)
+
+
+            def reset_loads():
+                r_load.reset()
+                l_load.reset()
+
 
             env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                            reward_fun=Reward().rew_fun,
@@ -303,24 +322,24 @@ if __name__ == '__main__':
                            viz_cols=[
                                PlotTmpl([[f'rl.inductor{i}.i' for i in '123'], [f'master.SPI{i}' for i in 'abc']],
                                         callback=xylables,
-                                        color = [['b','r','g'], ['b','r','g']],
-                                        style = [[None],['--']]
+                                        color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+                                        style=[[None], ['--']]
                                         ),
                                PlotTmpl([[f'rl.resistor{i}.R' for i in '123']],
                                         ),
                                PlotTmpl([[f'rl.inductor{i}.L' for i in '123']],
                                         ),
-                               PlotTmpl([[f'master.CVI{i}' for i in 'dq0'],[f'master.SPI{i}' for i in 'dq0']],
+                               PlotTmpl([[f'master.CVI{i}' for i in 'dq0'], [f'master.SPI{i}' for i in 'dq0']],
                                         callback=xylables_dq0,
-                                        color = [['b','r','g'], ['b','r','g']],
-                                        style = [[None],['--']]
+                                        color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+                                        style=[[None], ['--']]
                                         )
-                                     ],
-                           #viz_cols = ['inverter1.*', 'rl.inductor1.i'],
+                           ],
+                           # viz_cols = ['inverter1.*', 'rl.inductor1.i'],
                            log_level=logging.INFO,
                            viz_mode='episode',
                            max_episode_steps=max_episode_steps,
-                           #model_params={'inverter1.gain.u': v_DC},
+                           # model_params={'inverter1.gain.u': v_DC},
                            model_params={'rl.resistor1.R': partial(r_load.load_step, n=0),
                                          'rl.resistor2.R': partial(r_load.load_step, n=1),
                                          'rl.resistor3.R': partial(r_load.load_step, n=2),
@@ -329,20 +348,20 @@ if __name__ == '__main__':
                                          'rl.inductor3.L': partial(l_load.load_step, n=2)},
                            model_path='../fmu/grid.testbench_SC2.fmu',
                            model_input=['i1p1', 'i1p2', 'i1p3'],
-                           #model_output=dict(#rl=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
+                           # model_output=dict(#rl=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
                            model_output=dict(rl=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
                                                  ['resistor1.R', 'resistor2.R', 'resistor3.R'],
                                                  ['inductor1.L', 'inductor2.L', 'inductor3.L']]
-                                            #rl=[['resistor1.R', 'resistor2.R', 'resistor3.R']],
-                                             #inverter1=['inductor1.i', 'inductor2.i', 'inductor3.i']
+                                             # rl=[['resistor1.R', 'resistor2.R', 'resistor3.R']],
+                                             # inverter1=['inductor1.i', 'inductor2.i', 'inductor3.i']
                                              ),
                            history=FullHistory(),
-                           measurement_noise = i_noise
+                           measurement_noise=i_noise
                            )
 
             runner = MonteCarloRunner(agent, env)
 
-            runner.run(num_episodes, visualise=True)
+            runner.run(num_episodes, visualise=True, prepare_MC_experiment=reset_loads)
 
             print(agent.unsafe)
 
@@ -352,24 +371,23 @@ if __name__ == '__main__':
                 unsafe_vec[ll] = 0
             #####################################
             # Performance results and parameters as well as plots are stored in folder pipi_signleInv
-            #agent.history.df.to_csv('len_search/result.csv')
-            #if safe_results:
-             #   env.history.df.to_pickle('Simulation')
+            # agent.history.df.to_csv('len_search/result.csv')
+            # if safe_results:
+            #   env.history.df.to_pickle('Simulation')
 
             # Show best episode measurment (current) plot
             best_env_plt = runner.run_data['best_env_plt']
             ax = best_env_plt[0].axes[0]
             ax.set_title('Best Episode')
             best_env_plt[0].show()
-            #best_env_plt[0].savefig('best_env_plt.png')
+            # best_env_plt[0].savefig('best_env_plt.png')
 
             # Show worst episode measurment (current) plot
             best_env_plt = runner.run_data['worst_env_plt']
             ax = best_env_plt[0].axes[0]
             ax.set_title('Worst Episode')
             best_env_plt[0].show()
-            #best_env_plt[0].savefig('worst_env_plt.png')
-
+            # best_env_plt[0].savefig('worst_env_plt.png')
 
             best_agent_plt = runner.run_data['last_agent_plt']
             ax = best_agent_plt.axes[0]
@@ -387,12 +405,13 @@ if __name__ == '__main__':
                 ax.set_ylabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
                 ax.set_xlabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
                 ax.get_figure().axes[1].set_ylabel(r'$J$')
-                plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4,
+                plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1,
+                         lw=4,
                          alpha=.5)
             best_agent_plt.show()
             if safe_results:
-                best_agent_plt.savefig(save_folder+'/agent_plt.png')
-                agent.history.df.to_csv(save_folder+'/result.csv')
+                best_agent_plt.savefig(save_folder + '/agent_plt.png')
+                agent.history.df.to_csv(save_folder + '/result.csv')
 
             print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df[:]))
 
@@ -406,7 +425,7 @@ if __name__ == '__main__':
             # Execution of the experiment
             # Using a runner to execute 'num_episodes' different episodes (i.e. SafeOpt iterations)
 
-            env = TestbenchEnv(num_steps= max_episode_steps, DT = 1/20000, i_ref = i_ref[0])
+            env = TestbenchEnv(num_steps=max_episode_steps, DT=1 / 20000, ref=i_ref[0])
             runner = RunnerHardware(agent, env)
 
             runner.run(num_episodes, visualise=True)
@@ -414,11 +433,9 @@ if __name__ == '__main__':
             print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df[:]))
 
             print('\n Experiment finished with best set: \n')
-            print('\n  {} = {}' .format(adjust, agent.history.df.at[np.argmax(agent.history.df['J']),'Params']))
+            print('\n  {} = {}'.format(adjust, agent.history.df.at[np.argmax(agent.history.df['J']), 'Params']))
             print('  Resulting in a performance of J = {}'.format(np.max(agent.history.df['J'])))
             print('\n\nBest experiment results are plotted in the following:')
-
-
 
             # # Show best episode measurment (current) plot
             # best_env_plt = runner.run_data['best_env_plt']
@@ -446,9 +463,9 @@ if __name__ == '__main__':
                 ax.set_ylabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
                 ax.set_xlabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
                 ax.get_figure().axes[1].set_ylabel(r'$J$')
-                plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4,
+                plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1,
+                         lw=4,
                          alpha=.5)
             best_agent_plt.show()
             if safe_results:
                 best_agent_plt.savefig('hardwareTest_plt/agent_plt.png')
-
