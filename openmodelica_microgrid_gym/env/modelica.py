@@ -308,7 +308,7 @@ class ModelicaEnv(gym.Env):
 
         # Simulate and observe result state
         self._state = self._simulate()
-        #        self._add_measurement_noise()
+        self._add_measurement_noise()
         obs = np.hstack((self._state, self.measurement))
         self.history.append(obs)
 
