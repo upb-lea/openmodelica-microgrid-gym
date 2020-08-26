@@ -86,5 +86,7 @@ class PyFMI_Wrapper:
 
     def set_params(self, **kwargs):
         #self.model.enter_initialization_mode()
+        self.model.initialize()                 # replacing enter and exit mode -> works to set parameters during
+        # simulation AND model get outputs
         self.model.set(*zip(*kwargs.items()))
         #self.model.exit_initialization_mode()
