@@ -174,7 +174,8 @@ if __name__ == '__main__':
         ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
-        time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        time = strftime("%Y-%m-%d_%H_%M_%S", gmtime())
+        os.path.join(save_folder, f'Inductor_currents{time}.pdf')
         fig.savefig(save_folder + '/Inductor_currents'+time+'.pdf')
 
     def xylables_v_abc(fig):
@@ -182,7 +183,8 @@ if __name__ == '__main__':
         ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$v_{\mathrm{abc}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
-        time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        time = strftime("%Y-%m-%d_%H_%M_%S", gmtime())
+        os.path.join(save_folder, f'abc_voltage{time}.pdf')
         fig.savefig(save_folder + '/abc_voltage' + time + '.pdf')
 
 
@@ -191,7 +193,8 @@ if __name__ == '__main__':
         ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$v_{\mathrm{dq0}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
-        time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        time = strftime("%Y-%m-%d_%H_%M_%S", gmtime())
+        os.path.join(save_folder, f'dq0_voltage{time}.pdf')
         fig.savefig(save_folder + '/dq0_voltage' + time + '.pdf')
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',

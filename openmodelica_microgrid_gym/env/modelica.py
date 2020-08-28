@@ -234,8 +234,10 @@ class ModelicaEnv(gym.Env):
         :return: state of the environment after resetting.
         """
         logger.debug("Experiment reset was called. Resetting the model.")
-        self.model.setup(self.time_start, self.model_output_names)
+
         self.sim_time_interval = np.array([self.time_start, self.time_start + self.time_step_size])
+        self.model.setup(self.time_start, self.model_output_names, self.model_parameters)
+
         self.history.reset()
         self._state = self._simulate()
         self.measurement = []

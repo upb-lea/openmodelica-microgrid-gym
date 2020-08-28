@@ -59,8 +59,8 @@ class Runner:
             self.agent.observe(r, done)
             _, env_fig = self.env.close()
 
-            if visualise:
-                agent_fig = self.agent.render()
+          #  if visualise:
+           #     agent_fig = self.agent.render()
 
             self.run_data['last_agent_plt'] = agent_fig
 
