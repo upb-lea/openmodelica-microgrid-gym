@@ -236,7 +236,7 @@ class ModelicaEnv(gym.Env):
         logger.debug("Experiment reset was called. Resetting the model.")
 
         self.sim_time_interval = np.array([self.time_start, self.time_start + self.time_step_size])
-        self.model.setup(self.time_start, self.model_output_names, self.model_parameters)
+        self.model.setup(self.time_start, self.model_output_names)
 
         self.history.reset()
         self._state = self._simulate()
