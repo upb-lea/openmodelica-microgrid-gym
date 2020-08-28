@@ -82,7 +82,9 @@ class PlotTmpl:
         """
         if self._callback is not None:
             self._callback(fig)
-        plt.show()
+        else:
+            plt.show()
+
 
     def __iter__(self):
         self.i = -1

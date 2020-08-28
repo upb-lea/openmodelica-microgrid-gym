@@ -16,11 +16,13 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
+from openmodelica_microgrid_gym import Agent
 from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat
 from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQCurrentSourcingController
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.env.physical_testbench import TestbenchEnv
+from openmodelica_microgrid_gym.env.stochastic_components import Load, Noise
 from openmodelica_microgrid_gym.execution.monte_carlo_runner import MonteCarloRunner
 from openmodelica_microgrid_gym.execution.runner_hardware import RunnerHardware
 from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
@@ -37,6 +39,7 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
     raise ValueError("Please set 'adjust' to one of the following values: 'Kp', 'Ki', 'Kpi'")
 
 include_simulate = True
+show_plots = True
 do_measurement = False
 
 # If True: Results are stored to directory mentioned in: REBASE to DEV after MERGE #60!!
@@ -44,7 +47,7 @@ safe_results = False
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
-save_folder = os.path.join(current_directory, r'test_save')
+save_folder = os.path.join(current_directory, r'MCTest_bal')
 os.makedirs(save_folder, exist_ok=True)
 
 lengthscale_vec = np.linspace(0.5, 0.5, 1)
@@ -68,11 +71,12 @@ DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
 # i_noise = 0.11 # Current measurement noise detected from testbench
-i_noise = np.array([[0.0, 0.0822], [0.0, 0.103], [0.0, 0.136]])
+# i_noise = np.array([[0.0, 0.0822], [0.0, 0.103], [0.0, 0.136]])
 
 # Controller layout due to magnitude optimum:
-L = 2.2e-3  # / H
-R = 170e-3  # 585e-3  # / Ohm
+L = 2.3e-3  # / H
+R = 400e-3#170e-3  # 585e-3  # / Ohm
+#R = 585e-3#170e-3  # 585e-3  # / Ohm
 tau_plant = L / R
 gain_plant = 1 / R
 
@@ -81,45 +85,15 @@ Tn = tau_plant  # Due to compensate
 Kp_init = tau_plant / (2 * delta_t * gain_plant * v_DC)
 Ki_init = Kp_init / Tn
 
+#Kp_init = 0
 
-class Load:
 
-    def __init__(self, load_mean: float, load_std: float = None, balanced: bool = True):
-        """
-        Load class which defines stochastic load. Samples load value from normal Gaussian distribution (GD) using given
-        mean and standard deviation
-        :param load_mean: Mean of the GD the load is sampled from
-        :param load_std: Standard deviation of the GD the load is sampled from
-        :param balanced: If True: all 3 phases are takes as equal; if False symmetrical load is applied
-        """
+class pltManager:
 
-        self.balanced = balanced
-        self.load_mean = load_mean
-        if load_std is None:
-            self.load_std = self.load_mean * 0.1
-        else:
-            self.load_std = load_std
-        self.gains = [np.random.normal(self.load_mean, self.load_std) for _ in range(1 if self.balanced else 3)]
+    def __init__(self, agent: Agent):
+        self.agent = agent
 
-    def load_step(self, t, n: int):
-        """
-        Defines a load step after 0.2 s
-        Doubles the load parameters
-        :param t: t :D
-        :param n: Index referring to the current phase
-        :return: Dictionary with load parameters
-        """
 
-        if n > 2:
-            raise ValueError('Choose between single or three phase!')
-
-        if len(self.gains) == 1:
-            return 1 * self.gains[0] if t < .05 else 2 * self.gains[0]
-        else:
-            return 1 * self.gains[n] if t < .05 else 2 * self.gains[n]
-
-    def reset(self):
-        self.gains = [np.random.normal(self.load_mean, self.load_std) for _ in range(1 if self.balanced else 3)]
 
 
 class Reward:
@@ -190,7 +164,7 @@ if __name__ == '__main__':
             lengthscale = [.3, 25.]
 
         # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
-        # the initial performance: safe_threshold = 1.2 means. Performance measurement for optimization are seen as
+        # the initial performance: safe_threshold = 0.8 means. Performance measurement for optimization are seen as
         # unsafe, if the new measured performance drops below 20 % of the initial performance of the initial safe (!)
         # parameter set
         safe_threshold = 0.5
@@ -284,7 +258,10 @@ if __name__ == '__main__':
                 if safe_results:
                     fig.savefig(save_folder + '/abc_current' + time + '.pdf')
                     # fig.savefig('Sim_vgl/abc_currentJ_{}_abcvoltage.pdf'.format())
-
+                if show_plots:
+                     plt.show()
+                else:
+                    plt.close(fig)
 
             def xylables_dq0(fig):
                 ax = fig.gca()
@@ -296,6 +273,10 @@ if __name__ == '__main__':
                 time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
                 if safe_results:
                     fig.savefig(save_folder + '/dq0_current' + time + '.pdf')
+                if show_plots:
+                    plt.show()
+                else:
+                    plt.close(fig)
 
 
             def xylables_mdq0(fig):
@@ -306,14 +287,17 @@ if __name__ == '__main__':
                 ax.grid(which='both')
                 # plt.ylim(0,36)
 
+            # Defining unbalanced loads sampling from Gaussian distribution with sdt = 0.2*mean
+            r_load = Load(R, 0.2 * R, balanced=True)
+            l_load = Load(L, 0.2 * L, balanced=True)
+            i_noise = Noise([0, 0, 0], [0.0822, 0.103, 0.136], 0.07, 0.16)
 
-            r_load = Load(R, 0.5 * R, balanced=False)
-            l_load = Load(L, 0.5 * L, balanced=False)
-
+            #i_noise = np.array([[0.0, 0.0822], [0.0, 0.103], [0.0, 0.136]])
 
             def reset_loads():
                 r_load.reset()
                 l_load.reset()
+                i_noise.reset()
 
 
             env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
@@ -325,10 +309,10 @@ if __name__ == '__main__':
                                         color=[['b', 'r', 'g'], ['b', 'r', 'g']],
                                         style=[[None], ['--']]
                                         ),
-                               PlotTmpl([[f'rl.resistor{i}.R' for i in '123']],
-                                        ),
-                               PlotTmpl([[f'rl.inductor{i}.L' for i in '123']],
-                                        ),
+                               #PlotTmpl([[f'rl.resistor{i}.R' for i in '123']],
+                               #         ),
+                               #PlotTmpl([[f'rl.inductor{i}.L' for i in '123']],
+                               #         ),
                                PlotTmpl([[f'master.CVI{i}' for i in 'dq0'], [f'master.SPI{i}' for i in 'dq0']],
                                         callback=xylables_dq0,
                                         color=[['b', 'r', 'g'], ['b', 'r', 'g']],
@@ -349,19 +333,20 @@ if __name__ == '__main__':
                            model_path='../fmu/grid.testbench_SC2.fmu',
                            model_input=['i1p1', 'i1p2', 'i1p3'],
                            # model_output=dict(#rl=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                           model_output=dict(rl=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                                 ['resistor1.R', 'resistor2.R', 'resistor3.R'],
-                                                 ['inductor1.L', 'inductor2.L', 'inductor3.L']]
+                           model_output=dict(rl=[['inductor1.i', 'inductor2.i', 'inductor3.i']]#,
+                                                 #['resistor1.R', 'resistor2.R', 'resistor3.R'],
+                                                 #['inductor1.L', 'inductor2.L', 'inductor3.L']]
                                              # rl=[['resistor1.R', 'resistor2.R', 'resistor3.R']],
                                              # inverter1=['inductor1.i', 'inductor2.i', 'inductor3.i']
                                              ),
                            history=FullHistory(),
-                           measurement_noise=i_noise
+                           measurement_noise=i_noise,
+                           action_time_delay = 1
                            )
 
             runner = MonteCarloRunner(agent, env)
 
-            runner.run(num_episodes, visualise=True, prepare_MC_experiment=reset_loads)
+            runner.run(num_episodes, n_MC = n_MC, visualise=True, prepare_MC_experiment=reset_loads)
 
             print(agent.unsafe)
 
@@ -410,8 +395,8 @@ if __name__ == '__main__':
                          alpha=.5)
             best_agent_plt.show()
             if safe_results:
-                best_agent_plt.savefig(save_folder + '/agent_plt.png')
-                agent.history.df.to_csv(save_folder + '/result.csv')
+                best_agent_plt.savefig(save_folder + '/_agent_plt.png')
+                agent.history.df.to_csv(save_folder + '/_result.csv')
 
             print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df[:]))
 
