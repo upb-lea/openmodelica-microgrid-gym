@@ -162,7 +162,6 @@ class SafeOptAgent(StaticControlAgent):
         """
         Renders the results for the performance
         """
-
         figure, ax = plt.subplots()
         if self.optimizer.x.size > 3:
             # check if the dimensionality is less then 4 dimension
