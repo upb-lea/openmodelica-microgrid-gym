@@ -6,5 +6,5 @@ The environment gets an object of the class PlotTmpl, where can be chosen which 
 For style, linestyle and color the grouping is detected in comparison to the environment variables to be plotted.
 Ajdusting labels and saving the figure can be done via callable, like shown in the example below.
 
-.. literalinclude:: ../../../examples/plotting.py
+.. literalinclude:: ../../../../examples/plotting.py
    :linenos:

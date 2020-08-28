@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,27 +11,29 @@
   
 
   
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="Creating plots of environment variables" href="plotting.html" />
@@ -50,7 +51,7 @@
           
 
           
-            <a href="../../../index.html" class="icon icon-home"> OpenModelica Microgrid
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
           
 
           
@@ -73,6 +74,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -85,14 +87,15 @@
 <li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../OpenModelica.html">OpenModelica</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../fmu.html">Functional Mock-up Unit (FMU)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Pythoncode.html">Installation and General Remarks</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Basic Examples</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Pythoncode.html">Toolbox Installation and General Remarks</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="creating_env.html">Creating an environment</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Creating an agent and a runner</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plotting.html">Creating plots of environment variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="single_inverter_current_control_safe_opt.html">Single Inverter Current Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="two_inverter_static_droop_control.html">Two Inverter Static Droop Control</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html#advanced-examples">Advanced Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../controller_tuning.html">Controller Tuning Hints</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API:</span></p>
@@ -107,6 +110,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -145,9 +149,9 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="../examples.html">Basic Examples</a> &raquo;</li>
+          <li><a href="../examples.html">Examples</a> &raquo;</li>
         
       <li>Creating an agent and a runner</li>
     
@@ -174,10 +178,53 @@
 of agents and environments, as well as the execution of multiple episodes. The class will handle all information
 exchange between agent and environment like presented in the high level code architecture shown below:</p>
 <div class="figure align-default">
-<a class="reference internal image-reference" href="parts/user_guide/examples/../../pictures/highlevel.png"><img alt="" src="parts/user_guide/examples/../../pictures/highlevel.png" style="width: 400px;" /></a>
+<a class="reference internal image-reference" href="../../../_images/highlevel.png"><img alt="" src="../../../_images/highlevel.png" style="width: 400px;" /></a>
 </div>
 <p>Since the inputs are used for both the agent and the environment, they are defined in advance. Although the Agent gets information of the environment, in this small example, its action is still a random number.</p>
 <p>The environment is the same as above. Afterwards, the agent and the runner get defined, and the runner runs for one episode.</p>
+<div class="highlight-default notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gym</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym</span> <span class="kn">import</span> <span class="n">Agent</span><span class="p">,</span> <span class="n">Runner</span>
+
+
+<span class="k">class</span> <span class="nc">RndAgent</span><span class="p">(</span><span class="n">Agent</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">act</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s1">&#39;openmodelica_microgrid_gym:ModelicaEnv-v1&#39;</span><span class="p">,</span>
+                   <span class="n">model_input</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;i1p1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1p2&#39;</span><span class="p">,</span> <span class="s1">&#39;i1p3&#39;</span><span class="p">],</span>
+                   <span class="n">model_output</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">lc1</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;inductor1.i&#39;</span><span class="p">,</span> <span class="s1">&#39;inductor2.i&#39;</span><span class="p">,</span> <span class="s1">&#39;inductor3.i&#39;</span><span class="p">]),</span>
+                   <span class="n">model_path</span><span class="o">=</span><span class="s1">&#39;../fmu/grid.network.fmu&#39;</span><span class="p">)</span>
+
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">RndAgent</span><span class="p">()</span>
+    <span class="n">runner</span> <span class="o">=</span> <span class="n">Runner</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+
+    <span class="n">runner</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
 </div>
 
 
@@ -200,11 +247,19 @@ exchange between agent and environment like presented in the high level code arc
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -215,7 +270,6 @@ exchange between agent and environment like presented in the high level code arc
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

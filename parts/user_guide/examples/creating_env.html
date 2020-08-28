@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,31 +11,33 @@
   
 
   
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="Creating an agent and a runner" href="basic_agent.html" />
-    <link rel="prev" title="Basic Examples" href="../examples.html" /> 
+    <link rel="prev" title="Examples" href="../examples.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -50,7 +51,7 @@
           
 
           
-            <a href="../../../index.html" class="icon icon-home"> OpenModelica Microgrid
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
           
 
           
@@ -73,6 +74,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -85,14 +87,15 @@
 <li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../OpenModelica.html">OpenModelica</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../fmu.html">Functional Mock-up Unit (FMU)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Pythoncode.html">Installation and General Remarks</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Basic Examples</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Pythoncode.html">Toolbox Installation and General Remarks</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Creating an environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="basic_agent.html">Creating an agent and a runner</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plotting.html">Creating plots of environment variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="single_inverter_current_control_safe_opt.html">Single Inverter Current Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="two_inverter_static_droop_control.html">Two Inverter Static Droop Control</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html#advanced-examples">Advanced Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../controller_tuning.html">Controller Tuning Hints</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API:</span></p>
@@ -107,6 +110,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -145,9 +149,9 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="../examples.html">Basic Examples</a> &raquo;</li>
+          <li><a href="../examples.html">Examples</a> &raquo;</li>
         
       <li>Creating an environment</li>
     
@@ -177,6 +181,35 @@ For any other simulation parameters, for example the step-size, default values w
 <p>For the initialisation, the environment needs to be reseted, and env.render will define the output plots.
 The simulation will perform 1000 steps. A different random number will be provided to every of the three previously defined model_inputs.
 Afterwards, the inductor currents of the LC-filter “lc1”shown in the figure above will be plotted, which should result in three increasing and due to the random function noisy  lines.</p>
+<div class="highlight-default notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gym</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s1">&#39;openmodelica_microgrid_gym:ModelicaEnv-v1&#39;</span><span class="p">,</span>
+                   <span class="n">model_input</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;i1p1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1p2&#39;</span><span class="p">,</span> <span class="s1">&#39;i1p3&#39;</span><span class="p">],</span>
+                   <span class="n">max_episode_steps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">model_output</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">lc1</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;inductor1.i&#39;</span><span class="p">,</span> <span class="s1">&#39;inductor2.i&#39;</span><span class="p">,</span> <span class="s1">&#39;inductor3.i&#39;</span><span class="p">]),</span>
+                   <span class="n">model_path</span><span class="o">=</span><span class="s1">&#39;../fmu/grid.network.fmu&#39;</span><span class="p">)</span>
+
+    <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">())</span>  <span class="c1"># take a random action</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</td></tr></table></div>
 </div>
 
 
@@ -190,7 +223,7 @@ Afterwards, the inductor currents of the LC-filter “lc1”shown in the figure 
         <a href="basic_agent.html" class="btn btn-neutral float-right" title="Creating an agent and a runner" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="../examples.html" class="btn btn-neutral float-left" title="Basic Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="../examples.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -199,11 +232,19 @@ Afterwards, the inductor currents of the LC-filter “lc1”shown in the figure 
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -214,7 +255,6 @@ Afterwards, the inductor currents of the LC-filter “lc1”shown in the figure 
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

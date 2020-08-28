@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,27 +11,29 @@
   
 
   
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="omg.util.transforms" href="omg.util.transforms.html" />
@@ -50,7 +51,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> OpenModelica Microgrid
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
           
 
           
@@ -73,6 +74,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -85,9 +87,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/Pythoncode.html">Installation and General Remarks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html">Basic Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html#advanced-examples">Advanced Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/Pythoncode.html">Toolbox Installation and General Remarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API:</span></p>
@@ -107,6 +108,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -145,7 +147,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="omg.util.html">omg.util</a> &raquo;</li>
         
@@ -170,9 +172,9 @@
             
   <div class="section" id="module-openmodelica_microgrid_gym.util.itertools_">
 <span id="omg-util-itertools"></span><h1>omg.util.itertools_<a class="headerlink" href="#module-openmodelica_microgrid_gym.util.itertools_" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
+<dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.itertools_.fill_params">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.itertools_.</code><code class="sig-name descname">fill_params</code><span class="sig-paren">(</span><em class="sig-param">template</em>, <em class="sig-param">data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/itertools_.html#fill_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.itertools_.fill_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.itertools_.</code><code class="sig-name descname">fill_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/itertools_.html#fill_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.itertools_.fill_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Uses a template, that can be traversed by nested_map.
 Each entry in the template, that is a key in the mapping is replaced by the value it is mapped to.</p>
 <dl class="field-list simple">
@@ -191,20 +193,20 @@ Each entry in the template, that is a key in the mapping is replaced by the valu
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.itertools_.flatten">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.itertools_.</code><code class="sig-name descname">flatten</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">remaining_levels=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/itertools_.html#flatten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.itertools_.flatten" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.itertools_.</code><code class="sig-name descname">flatten</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">remaining_levels</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/itertools_.html#flatten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.itertools_.flatten" title="Permalink to this definition">¶</a></dt>
 <dd><p>transform this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">[[</span><span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">],</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">[[</span><span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">],</span>
 <span class="gp">&gt;&gt;&gt; </span>             <span class="p">[</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">]]}}</span>
 </pre></div>
 </div>
 <p>results into</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="s1">&#39;a.b.i&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.v&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.k&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.h&#39;</span><span class="p">]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="s1">&#39;a.b.i&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.v&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.k&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.h&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>or</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[[</span><span class="s1">&#39;a.b.i&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.v&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;a.b.k&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.h&#39;</span><span class="p">]]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[[</span><span class="s1">&#39;a.b.i&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.v&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;a.b.k&#39;</span><span class="p">,</span> <span class="s1">&#39;a.b.h&#39;</span><span class="p">]]</span>
 </pre></div>
 </div>
 <dl class="field-list simple">
@@ -223,9 +225,9 @@ Each entry in the template, that is a key in the mapping is replaced by the valu
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.itertools_.flatten_together">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.itertools_.</code><code class="sig-name descname">flatten_together</code><span class="sig-paren">(</span><em class="sig-param">structure</em>, <em class="sig-param">values</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/itertools_.html#flatten_together"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.itertools_.flatten_together" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.itertools_.</code><code class="sig-name descname">flatten_together</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">structure</span></em>, <em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/itertools_.html#flatten_together"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.itertools_.flatten_together" title="Permalink to this definition">¶</a></dt>
 <dd><p>Flattens and fills a list of values relative to the groupings provided by the structure parameter.
 The explicit values in the structure parameter are ignored. Only the nesting structure is of importance.
 If a single value is provided it is simply repeated as often as the structure has values</p>
@@ -244,9 +246,9 @@ and return <code class="code docutils literal notranslate"><span class="pre">[0,
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.itertools_.nested_depth">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.itertools_.</code><code class="sig-name descname">nested_depth</code><span class="sig-paren">(</span><em class="sig-param">structure</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/itertools_.html#nested_depth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.itertools_.nested_depth" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.itertools_.</code><code class="sig-name descname">nested_depth</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">structure</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/itertools_.html#nested_depth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.itertools_.nested_depth" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the maximum depth of a nested sequence.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -263,9 +265,9 @@ If a single value is passed, the return is 0</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.itertools_.nested_map">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.itertools_.</code><code class="sig-name descname">nested_map</code><span class="sig-paren">(</span><em class="sig-param">fun</em>, <em class="sig-param">structure</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/itertools_.html#nested_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.itertools_.nested_map" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.itertools_.</code><code class="sig-name descname">nested_map</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em>, <em class="sig-param"><span class="n">structure</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/itertools_.html#nested_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.itertools_.nested_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>Traverses data structure and substitutes every element with the result of the callable</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -305,11 +307,19 @@ If a single value is passed, the return is 0</p>
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -320,7 +330,6 @@ If a single value is passed, the return is 0</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

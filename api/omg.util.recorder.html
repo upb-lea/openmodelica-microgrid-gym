@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,27 +11,29 @@
   
 
   
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="omg.env" href="omg.env.html" />
@@ -50,7 +51,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> OpenModelica Microgrid
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
           
 
           
@@ -73,6 +74,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -85,9 +87,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/Pythoncode.html">Installation and General Remarks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html">Basic Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html#advanced-examples">Advanced Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/Pythoncode.html">Toolbox Installation and General Remarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API:</span></p>
@@ -107,6 +108,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -145,7 +147,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="omg.util.html">omg.util</a> &raquo;</li>
         
@@ -170,9 +172,9 @@
             
   <div class="section" id="module-openmodelica_microgrid_gym.util.recorder">
 <span id="omg-util-recorder"></span><h1>omg.util.recorder<a class="headerlink" href="#module-openmodelica_microgrid_gym.util.recorder" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="openmodelica_microgrid_gym.util.recorder.EmptyHistory">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.util.recorder.</code><code class="sig-name descname">EmptyHistory</code><span class="sig-paren">(</span><em class="sig-param">cols=None</em>, <em class="sig-param">data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#EmptyHistory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.EmptyHistory" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.util.recorder.</code><code class="sig-name descname">EmptyHistory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cols</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#EmptyHistory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.EmptyHistory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#openmodelica_microgrid_gym.util.recorder.StructuredMapping" title="openmodelica_microgrid_gym.util.recorder.StructuredMapping"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.util.recorder.StructuredMapping</span></code></a></p>
 <p>Dummy history for recording data in the environment
 This class will not actually store any data</p>
@@ -181,9 +183,9 @@ This class will not actually store any data</p>
 <dd class="field-odd"><p><strong>cols</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]]) – nested lists of strings providing column names and hierarchical structure</p>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.util.recorder.EmptyHistory.append">
-<code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param">values</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#EmptyHistory.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.EmptyHistory.append" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#EmptyHistory.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.EmptyHistory.append" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add new data sample to the history. The History class will determine how the data is updated</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -192,12 +194,12 @@ This class will not actually store any data</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.util.recorder.EmptyHistory.last">
 <code class="sig-name descname">last</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#EmptyHistory.last"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.EmptyHistory.last" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.util.recorder.EmptyHistory.reset">
 <code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#EmptyHistory.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.EmptyHistory.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes all data, but keeps the columns.</p>
@@ -205,9 +207,9 @@ This class will not actually store any data</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="openmodelica_microgrid_gym.util.recorder.FullHistory">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.util.recorder.</code><code class="sig-name descname">FullHistory</code><span class="sig-paren">(</span><em class="sig-param">cols=None</em>, <em class="sig-param">data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#FullHistory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.FullHistory" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.util.recorder.</code><code class="sig-name descname">FullHistory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cols</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#FullHistory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.FullHistory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#openmodelica_microgrid_gym.util.recorder.EmptyHistory" title="openmodelica_microgrid_gym.util.recorder.EmptyHistory"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.util.recorder.EmptyHistory</span></code></a></p>
 <p>Full history that stores all data</p>
 <dl class="field-list simple">
@@ -215,9 +217,9 @@ This class will not actually store any data</p>
 <dd class="field-odd"><p><strong>cols</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]]) – nested lists of strings providing column names and hierarchical structure</p>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.util.recorder.FullHistory.append">
-<code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param">values</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#FullHistory.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.FullHistory.append" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#FullHistory.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.FullHistory.append" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add new data sample to the history. The History class will determine how the data is updated</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -226,17 +228,17 @@ This class will not actually store any data</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.util.recorder.FullHistory.df">
 <em class="property">property </em><code class="sig-name descname">df</code><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.FullHistory.df" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.util.recorder.FullHistory.last">
 <code class="sig-name descname">last</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#FullHistory.last"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.FullHistory.last" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.util.recorder.FullHistory.reset">
 <code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#FullHistory.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.FullHistory.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes all data, but keeps the columns.</p>
@@ -244,9 +246,9 @@ This class will not actually store any data</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="openmodelica_microgrid_gym.util.recorder.SingleHistory">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.util.recorder.</code><code class="sig-name descname">SingleHistory</code><span class="sig-paren">(</span><em class="sig-param">cols=None</em>, <em class="sig-param">data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#SingleHistory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.SingleHistory" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.util.recorder.</code><code class="sig-name descname">SingleHistory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cols</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#SingleHistory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.SingleHistory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#openmodelica_microgrid_gym.util.recorder.EmptyHistory" title="openmodelica_microgrid_gym.util.recorder.EmptyHistory"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.util.recorder.EmptyHistory</span></code></a></p>
 <p>Single history that stores only the last added value</p>
 <dl class="field-list simple">
@@ -254,9 +256,9 @@ This class will not actually store any data</p>
 <dd class="field-odd"><p><strong>cols</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]]) – nested lists of strings providing column names and hierarchical structure</p>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.util.recorder.SingleHistory.append">
-<code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param">values</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#SingleHistory.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.SingleHistory.append" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#SingleHistory.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.SingleHistory.append" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add new data sample to the history. The History class will determine how the data is updated</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -265,12 +267,12 @@ This class will not actually store any data</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.util.recorder.SingleHistory.last">
 <code class="sig-name descname">last</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#SingleHistory.last"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.SingleHistory.last" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.util.recorder.SingleHistory.reset">
 <code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#SingleHistory.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.SingleHistory.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes all data, but keeps the columns.</p>
@@ -278,16 +280,16 @@ This class will not actually store any data</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="openmodelica_microgrid_gym.util.recorder.StructuredMapping">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.util.recorder.</code><code class="sig-name descname">StructuredMapping</code><span class="sig-paren">(</span><em class="sig-param">cols=None</em>, <em class="sig-param">data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#StructuredMapping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.StructuredMapping" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.util.recorder.</code><code class="sig-name descname">StructuredMapping</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cols</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#StructuredMapping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.StructuredMapping" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>cols</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]]) – nested lists of strings providing column names and hierarchical structure</p>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.util.recorder.StructuredMapping.cols">
 <em class="property">property </em><code class="sig-name descname">cols</code><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.StructuredMapping.cols" title="Permalink to this definition">¶</a></dt>
 <dd><p>Columns of the History</p>
@@ -301,19 +303,19 @@ This class will not actually store any data</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.util.recorder.StructuredMapping.data">
 <em class="property">property </em><code class="sig-name descname">data</code><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.StructuredMapping.data" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.util.recorder.StructuredMapping.df">
 <em class="property">property </em><code class="sig-name descname">df</code><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.StructuredMapping.df" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.util.recorder.StructuredMapping.structured_cols">
-<code class="sig-name descname">structured_cols</code><span class="sig-paren">(</span><em class="sig-param">remaining_level=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#StructuredMapping.structured_cols"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.StructuredMapping.structured_cols" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">structured_cols</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">remaining_level</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#StructuredMapping.structured_cols"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.recorder.StructuredMapping.structured_cols" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get columns with the specified amount of levels retained</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -349,11 +351,19 @@ This class will not actually store any data</p>
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -364,7 +374,6 @@ This class will not actually store any data</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

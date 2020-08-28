@@ -1,5 +1,5 @@
-single\_inverter\_current\_control\_safe\_opt.py
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Single Inverter Current Control
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In this example a three phase inverter is supplying a load (rl1) via a filter (lc1)
 like shown in the figure below. From that model a FMU is

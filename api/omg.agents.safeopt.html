@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,27 +11,29 @@
   
 
   
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="omg.agents.staticctrl" href="omg.agents.staticctrl.html" />
@@ -50,7 +51,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> OpenModelica Microgrid
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
           
 
           
@@ -73,6 +74,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -85,9 +87,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/Pythoncode.html">Installation and General Remarks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html">Basic Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html#advanced-examples">Advanced Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/Pythoncode.html">Toolbox Installation and General Remarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API:</span></p>
@@ -108,6 +109,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -146,7 +148,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="omg.agents.html">omg.agents</a> &raquo;</li>
         
@@ -171,9 +173,9 @@
             
   <div class="section" id="module-openmodelica_microgrid_gym.agents.safeopt">
 <span id="omg-agents-safeopt"></span><h1>omg.agents.safeopt<a class="headerlink" href="#module-openmodelica_microgrid_gym.agents.safeopt" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.agents.safeopt.</code><code class="sig-name descname">SafeOptAgent</code><span class="sig-paren">(</span><em class="sig-param">mutable_params</em>, <em class="sig-param">abort_reward</em>, <em class="sig-param">kernel</em>, <em class="sig-param">gp_params</em>, <em class="sig-param">ctrls</em>, <em class="sig-param">obs_template</em>, <em class="sig-param">obs_varnames=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.agents.safeopt.</code><code class="sig-name descname">SafeOptAgent</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mutable_params</span></em>, <em class="sig-param"><span class="n">abort_reward</span></em>, <em class="sig-param"><span class="n">kernel</span></em>, <em class="sig-param"><span class="n">gp_params</span></em>, <em class="sig-param"><span class="n">ctrls</span></em>, <em class="sig-param"><span class="n">obs_template</span></em>, <em class="sig-param"><span class="n">obs_varnames</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent" title="openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent</span></code></a></p>
 <p>Agent to execute safeopt algorithm (<a class="reference external" href="https://arxiv.org/abs/1509.01066">https://arxiv.org/abs/1509.01066</a>) to control the environment by using
 auxiliary controllers and Gaussian process to adopt the controller parameters (mutable_params) to safely
@@ -213,7 +215,7 @@ passed in the act function. Will be automatically set by the Runner class</p></l
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.has_improved">
 <em class="property">property </em><code class="sig-name descname">has_improved</code><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.has_improved" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defines if the performance increased or stays constant</p>
@@ -227,9 +229,9 @@ passed in the act function. Will be automatically set by the Runner class</p></l
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.observe">
-<code class="sig-name descname">observe</code><span class="sig-paren">(</span><em class="sig-param">reward</em>, <em class="sig-param">terminated</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent.observe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.observe" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">observe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reward</span></em>, <em class="sig-param"><span class="n">terminated</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent.observe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.observe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Makes an observation of the enviroment.
 If terminated, then caclulates the performance and the next values for the parameters using safeopt</p>
 <dl class="field-list simple">
@@ -245,13 +247,13 @@ If terminated, then caclulates the performance and the next values for the param
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.prepare_episode">
 <code class="sig-name descname">prepare_episode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent.prepare_episode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.prepare_episode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prepares the next episode; reset iteration counting variable and call superclass to reset controllers</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.render">
 <code class="sig-name descname">render</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent.render"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.render" title="Permalink to this definition">¶</a></dt>
 <dd><p>Renders the results for the performance</p>
@@ -262,24 +264,19 @@ If terminated, then caclulates the performance and the next values for the param
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.reset">
 <code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resets the kernel, episodic reward and the optimizer</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.update_params">
 <code class="sig-name descname">update_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent.update_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.update_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets up the Gaussian process in the first episodes, updates the parameters in the following.</p>
 </dd></dl>
 
 </dd></dl>
-
-<dl class="data">
-<dt id="openmodelica_microgrid_gym.agents.safeopt.logger">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.agents.safeopt.</code><code class="sig-name descname">logger</code><em class="property"> = &lt;Logger openmodelica_microgrid_gym.agents.safeopt (WARNING)&gt;</em><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.logger" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </div>
 
@@ -303,11 +300,19 @@ If terminated, then caclulates the performance and the next values for the param
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -318,7 +323,6 @@ If terminated, then caclulates the performance and the next values for the param
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

@@ -1,41 +1,42 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>single_inverter_current_control_safe_opt.py &mdash; OpenModelica Microgrid 2020 documentation</title>
+  <title>Single Inverter Current Control &mdash; OpenModelica Microgrid 2020 documentation</title>
   
-
-  
-  
-  
-  
-
-  
-  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../../_static/language_data.js"></script>
-    
-    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
-
-    
 
   
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="two_inverter_static_droop_control.py" href="two_inverter_static_droop_control.html" />
+    <link rel="next" title="Two Inverter Static Droop Control" href="two_inverter_static_droop_control.html" />
     <link rel="prev" title="Creating plots of environment variables" href="plotting.html" /> 
 </head>
 
@@ -50,7 +51,7 @@
           
 
           
-            <a href="../../../index.html" class="icon icon-home"> OpenModelica Microgrid
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
           
 
           
@@ -73,6 +74,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -85,11 +87,13 @@
 <li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../OpenModelica.html">OpenModelica</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../fmu.html">Functional Mock-up Unit (FMU)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Pythoncode.html">Installation and General Remarks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html">Basic Examples</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../examples.html#advanced-examples">Advanced Examples</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">single_inverter_current_control_safe_opt.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="two_inverter_static_droop_control.html">two_inverter_static_droop_control.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Pythoncode.html">Toolbox Installation and General Remarks</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="creating_env.html">Creating an environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic_agent.html">Creating an agent and a runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plotting.html">Creating plots of environment variables</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Single Inverter Current Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="two_inverter_static_droop_control.html">Two Inverter Static Droop Control</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../controller_tuning.html">Controller Tuning Hints</a></li>
@@ -106,6 +110,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -144,11 +149,11 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="../examples.html">Basic Examples</a> &raquo;</li>
+          <li><a href="../examples.html">Examples</a> &raquo;</li>
         
-      <li>single_inverter_current_control_safe_opt.py</li>
+      <li>Single Inverter Current Control</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -167,8 +172,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="single-inverter-current-control-safe-opt-py">
-<h1>single_inverter_current_control_safe_opt.py<a class="headerlink" href="#single-inverter-current-control-safe-opt-py" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="single-inverter-current-control">
+<h1>Single Inverter Current Control<a class="headerlink" href="#single-inverter-current-control" title="Permalink to this headline">¶</a></h1>
 <p>In this example a three phase inverter is supplying a load (rl1) via a filter (lc1)
 like shown in the figure below. From that model a FMU is
 built to create the environment.</p>
@@ -305,7 +310,7 @@ parameter set of Kp = 0.0132… and Ki = 135.244…</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="two_inverter_static_droop_control.html" class="btn btn-neutral float-right" title="two_inverter_static_droop_control.py" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="two_inverter_static_droop_control.html" class="btn btn-neutral float-right" title="Two Inverter Static Droop Control" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="plotting.html" class="btn btn-neutral float-left" title="Creating plots of environment variables" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -317,11 +322,19 @@ parameter set of Kp = 0.0132… and Ki = 135.244…</p>
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -332,7 +345,6 @@ parameter set of Kp = 0.0132… and Ki = 135.244…</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,27 +11,29 @@
   
 
   
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="omg.util" href="omg.util.html" />
@@ -50,7 +51,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> OpenModelica Microgrid
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
           
 
           
@@ -73,6 +74,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -85,9 +87,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/Pythoncode.html">Installation and General Remarks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html">Basic Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html#advanced-examples">Advanced Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/Pythoncode.html">Toolbox Installation and General Remarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API:</span></p>
@@ -109,6 +110,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -147,7 +149,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="omg.aux_ctl.html">omg.aux_ctl</a> &raquo;</li>
         
@@ -172,9 +174,9 @@
             
   <div class="section" id="module-openmodelica_microgrid_gym.aux_ctl.pi_controllers">
 <span id="omg-aux-ctl-pi-controllers"></span><h1>omg.aux_ctl.pi_controllers<a class="headerlink" href="#module-openmodelica_microgrid_gym.aux_ctl.pi_controllers" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="openmodelica_microgrid_gym.aux_ctl.pi_controllers.MultiPhasePIController">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.aux_ctl.pi_controllers.</code><code class="sig-name descname">MultiPhasePIController</code><span class="sig-paren">(</span><em class="sig-param">PI_param</em>, <em class="sig-param">ts</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/pi_controllers.html#MultiPhasePIController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.pi_controllers.MultiPhasePIController" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.aux_ctl.pi_controllers.</code><code class="sig-name descname">MultiPhasePIController</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">PI_param</span></em>, <em class="sig-param"><span class="n">ts</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/pi_controllers.html#MultiPhasePIController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.pi_controllers.MultiPhasePIController" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Implements a number of PI controllers for use in multiphase systems
 Number of phases is set to N_phase = 3</p>
@@ -187,15 +189,15 @@ proportional, integral and anti-windup part and the limits of the output)</p></l
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.aux_ctl.pi_controllers.MultiPhasePIController.reset">
 <code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/pi_controllers.html#MultiPhasePIController.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.pi_controllers.MultiPhasePIController.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resets all controllers</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.aux_ctl.pi_controllers.MultiPhasePIController.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">SP</em>, <em class="sig-param">CV</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/pi_controllers.html#MultiPhasePIController.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.pi_controllers.MultiPhasePIController.step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">SP</span></em>, <em class="sig-param"><span class="n">CV</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/pi_controllers.html#MultiPhasePIController.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.pi_controllers.MultiPhasePIController.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a controller step calculating the error itself using the array of
 Setpoints (SP) and Controlled Variables (CV, feedback)</p>
 <dl class="field-list simple">
@@ -216,14 +218,9 @@ Setpoints (SP) and Controlled Variables (CV, feedback)</p>
 
 </dd></dl>
 
-<dl class="data">
-<dt id="openmodelica_microgrid_gym.aux_ctl.pi_controllers.N_phase">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.aux_ctl.pi_controllers.</code><code class="sig-name descname">N_phase</code><em class="property"> = 3</em><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.pi_controllers.N_phase" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="class">
+<dl class="py class">
 <dt id="openmodelica_microgrid_gym.aux_ctl.pi_controllers.PIController">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.aux_ctl.pi_controllers.</code><code class="sig-name descname">PIController</code><span class="sig-paren">(</span><em class="sig-param">PI_param</em>, <em class="sig-param">ts</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/pi_controllers.html#PIController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.pi_controllers.PIController" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.aux_ctl.pi_controllers.</code><code class="sig-name descname">PIController</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">PI_param</span></em>, <em class="sig-param"><span class="n">ts</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/pi_controllers.html#PIController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.pi_controllers.PIController" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Implements a basic, discrete PI controller.
 Uses back calculation for anti-windup.</p>
@@ -236,15 +233,15 @@ proportional, integral and anti-windup part and the limits of the output)</p></l
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.aux_ctl.pi_controllers.PIController.reset">
 <code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/pi_controllers.html#PIController.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.pi_controllers.PIController.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resets the Integrator</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.aux_ctl.pi_controllers.PIController.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">error</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/pi_controllers.html#PIController.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.pi_controllers.PIController.step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">error</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/pi_controllers.html#PIController.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.pi_controllers.PIController.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a step of a basic PI controller with anti-windup by back-calculation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -284,11 +281,19 @@ PI_Parameters provided during initialisation, clipped due to the defined limits<
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -299,7 +304,6 @@ PI_Parameters provided during initialisation, clipped due to the defined limits<
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

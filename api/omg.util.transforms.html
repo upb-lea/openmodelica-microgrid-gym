@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,27 +11,29 @@
   
 
   
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="omg.util.recorder" href="omg.util.recorder.html" />
@@ -50,7 +51,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> OpenModelica Microgrid
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
           
 
           
@@ -73,6 +74,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -85,9 +87,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/Pythoncode.html">Installation and General Remarks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html">Basic Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html#advanced-examples">Advanced Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/Pythoncode.html">Toolbox Installation and General Remarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API:</span></p>
@@ -107,6 +108,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -145,7 +147,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="omg.util.html">omg.util</a> &raquo;</li>
         
@@ -173,9 +175,9 @@
 <p>Created on Fri Jan 24 16:19:01 2020</p>
 <p>&#64;author: jarren</p>
 <p>Common static transforms used commonly in voltage/power inverter control systems</p>
-<dl class="function">
+<dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.transforms.abc_to_alpha_beta">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">abc_to_alpha_beta</code><span class="sig-paren">(</span><em class="sig-param">abc</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#abc_to_alpha_beta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.abc_to_alpha_beta" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">abc_to_alpha_beta</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">abc</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#abc_to_alpha_beta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.abc_to_alpha_beta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transforms from abc frame to the alpha-beta frame
 :type abc: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
 :param abc: The values in the abc reference frame
@@ -187,9 +189,9 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.transforms.abc_to_dq0">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">abc_to_dq0</code><span class="sig-paren">(</span><em class="sig-param">abc</em>, <em class="sig-param">theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#abc_to_dq0"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.abc_to_dq0" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">abc_to_dq0</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">abc</span></em>, <em class="sig-param"><span class="n">theta</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#abc_to_dq0"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.abc_to_dq0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transforms from abc frame to the dq0 frame using the provided angle theta</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -207,9 +209,9 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.transforms.abc_to_dq0_cos_sin">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">abc_to_dq0_cos_sin</code><span class="sig-paren">(</span><em class="sig-param">abc</em>, <em class="sig-param">cos</em>, <em class="sig-param">sin</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#abc_to_dq0_cos_sin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.abc_to_dq0_cos_sin" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">abc_to_dq0_cos_sin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">abc</span></em>, <em class="sig-param"><span class="n">cos</span></em>, <em class="sig-param"><span class="n">sin</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#abc_to_dq0_cos_sin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.abc_to_dq0_cos_sin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transforms from abc frame to the dq0 frame using the provided cos-sin
 This implementation tries to improve by utilising the provided cos-sin
 to minimise calls to calculate the cossine etc</p>
@@ -230,9 +232,9 @@ to minimise calls to calculate the cossine etc</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.transforms.cos_sin">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">cos_sin</code><span class="sig-paren">(</span><em class="sig-param">theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#cos_sin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.cos_sin" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">cos_sin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">theta</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#cos_sin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.cos_sin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transforms from provided angle to the relavent cossine values
 :type theta: <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>
 :param theta: The angle [In RADIANS]
@@ -240,9 +242,9 @@ to minimise calls to calculate the cossine etc</p>
 :return: [alpha,beta] The resultant cossine</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.transforms.dq0_to_abc">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">dq0_to_abc</code><span class="sig-paren">(</span><em class="sig-param">dq0</em>, <em class="sig-param">theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#dq0_to_abc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.dq0_to_abc" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">dq0_to_abc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dq0</span></em>, <em class="sig-param"><span class="n">theta</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#dq0_to_abc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.dq0_to_abc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transforms from DQ frame to the abc frame using the provided angle theta</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -260,9 +262,9 @@ to minimise calls to calculate the cossine etc</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.transforms.dq0_to_abc_cos_sin">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">dq0_to_abc_cos_sin</code><span class="sig-paren">(</span><em class="sig-param">dq0</em>, <em class="sig-param">cos</em>, <em class="sig-param">sin</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#dq0_to_abc_cos_sin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.dq0_to_abc_cos_sin" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">dq0_to_abc_cos_sin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dq0</span></em>, <em class="sig-param"><span class="n">cos</span></em>, <em class="sig-param"><span class="n">sin</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#dq0_to_abc_cos_sin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.dq0_to_abc_cos_sin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transforms from DQ frame to the abc frame using the provided cos-sin
 This implementation tries to improve on the dq0Toabc transform by
 utilising the provided cos-sin to minimise calls to calculate the
@@ -284,9 +286,9 @@ cossine etc</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.transforms.dq0_to_abc_cos_sin_power_inv">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">dq0_to_abc_cos_sin_power_inv</code><span class="sig-paren">(</span><em class="sig-param">dq0</em>, <em class="sig-param">cos</em>, <em class="sig-param">sin</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#dq0_to_abc_cos_sin_power_inv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.dq0_to_abc_cos_sin_power_inv" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">dq0_to_abc_cos_sin_power_inv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dq0</span></em>, <em class="sig-param"><span class="n">cos</span></em>, <em class="sig-param"><span class="n">sin</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#dq0_to_abc_cos_sin_power_inv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.dq0_to_abc_cos_sin_power_inv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transforms from DQ frame to the abc frame using the provided cos-sin
 This implementation tries to improve on the dq0Toabc transform by
 utilising the provided cos-sin to minimise calls to calculate the
@@ -310,9 +312,9 @@ SQRT(3/2) = 1.224744871391589)</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.transforms.inst_power">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">inst_power</code><span class="sig-paren">(</span><em class="sig-param">varr</em>, <em class="sig-param">iarr</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#inst_power"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.inst_power" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">inst_power</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">varr</span></em>, <em class="sig-param"><span class="n">iarr</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#inst_power"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.inst_power" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the instantaneous power
 :type varr: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
 :param varr: voltage
@@ -322,9 +324,9 @@ SQRT(3/2) = 1.224744871391589)</p>
 :return: instantaneous power</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.transforms.inst_reactive">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">inst_reactive</code><span class="sig-paren">(</span><em class="sig-param">varr</em>, <em class="sig-param">iarr</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#inst_reactive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.inst_reactive" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">inst_reactive</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">varr</span></em>, <em class="sig-param"><span class="n">iarr</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#inst_reactive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.inst_reactive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the instantaneous reactive power
 :type varr: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
 :param varr: voltage
@@ -333,9 +335,9 @@ SQRT(3/2) = 1.224744871391589)</p>
 :return: instantaneous reactive power</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.transforms.inst_rms">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">inst_rms</code><span class="sig-paren">(</span><em class="sig-param">arr</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#inst_rms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.inst_rms" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">inst_rms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arr</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#inst_rms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.inst_rms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the instantaneous RMS (root mean sqare) value of the input arr
 :type arr: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
 :param arr: Input
@@ -343,9 +345,9 @@ SQRT(3/2) = 1.224744871391589)</p>
 :return: RMS value of the arr</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.transforms.normalise_abc">
-<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">normalise_abc</code><span class="sig-paren">(</span><em class="sig-param">abc</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#normalise_abc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.normalise_abc" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">openmodelica_microgrid_gym.util.transforms.</code><code class="sig-name descname">normalise_abc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">abc</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#normalise_abc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.transforms.normalise_abc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Normalises the abc magnitudes to the RMS of the 3 magnitudes
 Determines the instantaneous RMS value of the 3 waveforms</p>
 <dl class="field-list simple">
@@ -383,11 +385,19 @@ Determines the instantaneous RMS value of the 3 waveforms</p>
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -398,7 +408,6 @@ Determines the instantaneous RMS value of the 3 waveforms</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {
