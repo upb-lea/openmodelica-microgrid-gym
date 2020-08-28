@@ -2,12 +2,17 @@
 History
 =======
 
+pyfmi wrapper added
+
+
+
+
 0.2.0 (2020-05-27)
 ------------------
 
 
 API
-```
+^^^
 * ModelicaEnv:
    - reward function parameter
    - vis_cols now also supports Plotting templates
@@ -19,15 +24,15 @@ API
 * Runner: plotting can be disabled
 
 Examples
-````````
+^^^^^^^^
 * added example for plotting
 
 Performance
-```````````
+^^^^^^^^^^^
 * 6.6× speedup
 
 Dependencies
-````````````
+^^^^^^^^^^^^
 * Increased Language Level to Python 3.8
 
 

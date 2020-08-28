@@ -1,11 +1,13 @@
 #####################################
-# Example using a FMU by OpenModelica and SafeOpt algorithm to find optimal controller parameters
-# Simulation setup: Single inverter supplying 15 A d-current to an RL-load via a LC filter
-# Controller: PI current controller gain parameters are optimized by SafeOpt
+# Example using an FMU by OpenModelica and SafeOpt algorithm to find optimal controller parameters
+# Simulation setup: Single voltage forming inverter supplying an RL-load via an LC-filter
+# Controller: Cascaded PI-PI voltage and current controller gain parameters are optimized by SafeOpt
 
 
 import logging
+from time import strftime, gmtime
 from typing import List
+import os
 
 import GPy
 import gym
@@ -16,25 +18,16 @@ import matplotlib.pyplot as plt
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat
-from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQCurrentSourcingController
+from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQCurrentSourcingController, \
+    MultiPhaseDQ0PIPIController
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 
-# Choose which controller parameters should be adjusted by SafeOpt.
-# - Kp: 1D example: Only the proportional gain Kp of the PI controller is adjusted
-# - Ki: 1D example: Only the integral gain Ki of the PI controller is adjusted
-# - Kpi: 2D example: Kp and Ki are adjusted simultaneously
-
-adjust = 'Kpi'
-
-# Check if really only one simulation scenario was selected
-if adjust not in {'Kp', 'Ki', 'Kpi'}:
-    raise ValueError("Please set 'adjust' to one of the following values: 'Kp', 'Ki', 'Kpi'")
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 300  # number of simulation steps per episode
-num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
+num_episodes = 30  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -43,8 +36,11 @@ iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
-i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
 
+# Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
+current_directory = os.getcwd()
+save_folder = os.path.join(current_directory, r'saves_VI_control_safeopt')
+os.makedirs(save_folder, exist_ok=True)
 
 class Reward:
     def __init__(self):
@@ -54,14 +50,16 @@ class Reward:
         if self._idx is None:
             self._idx = nested_map(
                 lambda n: obs.index(n),
-                [[f'lc1.inductor{k}.i' for k in '123'], 'master.phase', [f'master.SPI{k}' for k in 'dq0']])
+                [[f'lc1.inductor{k}.i' for k in '123'], 'master.phase', [f'master.SPI{k}' for k in 'dq0'],
+                 [f'lc1.capacitor{k}.v' for k in '123'], [f'master.SPV{k}' for k in 'dq0']])
 
     def rew_fun(self, cols: List[str], data: np.ndarray) -> float:
         """
-        Defines the reward function for the environment. Uses the observations and setpoints to evaluate the quality of the
-        used parameters.
-        Takes current measurement and setpoints so calculate the mean-root-error control error and uses a logarithmic
-        barrier function in case of violating the current limit. Barrier function is adjustable using parameter mu.
+        Defines the reward function for the environment. Uses the observations and set-points to evaluate the quality of
+        the used parameters.
+        Takes current and voltage measurements and set-points to calculate the mean-root control error and uses a
+        logarithmic barrier function in case of violating the current limit. Barrier function is adjustable using
+        parameter mu.
 
         :param cols: list of variable names of the data
         :param data: observation data from the environment (ControlVariables, e.g. currents and voltages)
@@ -70,20 +68,23 @@ class Reward:
         self.set_idx(cols)
         idx = self._idx
 
-        Iabc_master = data[idx[0]]  # 3 phase currents at LC inductors
+        iabc_master = data[idx[0]]  # 3 phase currents at LC inductors
         phase = data[idx[1]]  # phase from the master controller needed for transformation
+        vabc_master = data[idx[3]]  # 3 phase currents at LC inductors
 
-        # setpoints
-        ISPdq0_master = data[idx[2]]  # setting dq reference
-        ISPabc_master = dq0_to_abc(ISPdq0_master, phase)  # convert dq set-points into three-phase abc coordinates
+        # set points (sp)
+        isp_dq0_master = data[idx[2]]  # setting dq current reference
+        isp_abc_master = dq0_to_abc(isp_dq0_master, phase)  # convert dq set-points into three-phase abc coordinates
+        vsp_dq0_master = data[idx[4]]  # setting dq voltage reference
+        vsp_abc_master = dq0_to_abc(vsp_dq0_master, phase)  # convert dq set-points into three-phase abc coordinates
 
         # control error = mean-root-error (MRE) of reference minus measurement
         # (due to normalization the control error is often around zero -> compared to MSE metric, the MRE provides
         #  better, i.e. more significant,  gradients)
         # plus barrier penalty for violating the current constraint
-        error = np.sum((np.abs((ISPabc_master - Iabc_master)) / iLimit) ** 0.5, axis=0) \
-                + -np.sum(mu * np.log(1 - np.maximum(np.abs(Iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0) \
-                * max_episode_steps
+        error = np.sum((np.abs((isp_abc_master - iabc_master)) / iLimit) ** 0.5, axis=0) \
+                + -np.sum(mu * np.log(1 - np.maximum(np.abs(iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0)\
+                + np.sum((np.abs((vsp_abc_master - vabc_master)) / nomVoltPeak) ** 0.5, axis=0)
 
         return -error.squeeze()
 
@@ -93,26 +94,15 @@ if __name__ == '__main__':
     # Definitions for the GP
     prior_mean = 2  # mean factor of the GP prior mean which is multiplied with the first performance of the initial set
     noise_var = 0.001 ** 2  # measurement noise sigma_omega
-    prior_var = 0.1  # prior variance of the GP
+    prior_var = 2  # prior variance of the GP
 
-    bounds = None
-    lengthscale = None
-    if adjust == 'Kp':
-        bounds = [(0.00, 0.03)]  # bounds on the input variable Kp
-        lengthscale = [.01]  # length scale for the parameter variation [Kp] for the GP
-
-    # For 1D example, if Ki should be adjusted
-    if adjust == 'Ki':
-        bounds = [(0, 300)]  # bounds on the input variable Ki
-        lengthscale = [50.]  # length scale for the parameter variation [Ki] for the GP
-
-    # For 2D example, choose Kp and Ki as mutable parameters (below) and define bounds and lengthscale for both of them
-    if adjust == 'Kpi':
-        bounds = [(0.0, 0.03), (0, 300)]
-        lengthscale = [.01, 50.]
+    # Choose Kp and Ki (current and voltage controller) as mutable parameters (below) and define bounds and lengthscale
+    # for both of them
+    bounds = [(0.0, 0.03), (0, 300),(0.0, 0.03), (0, 300)] # bounds on the input variable current-Ki&Kp and voltage-Ki&Kp
+    lengthscale = [.005, 50.,.005, 50.]   # length scale for the parameter variation [current-Ki&Kp and voltage-Ki&Kp] for the GP
 
     # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
-    # the initial performance: safe_threshold = 1.2 means. Performance measurement for optimization are seen as
+    # the initial performance: safe_threshold = 1.2 means: performance measurement for optimization are seen as
     # unsafe, if the new measured performance drops below 20 % of the initial performance of the initial safe (!)
     # parameter set
     safe_threshold = 2
@@ -131,25 +121,12 @@ if __name__ == '__main__':
 
     #####################################
     # Definition of the controllers
-    mutable_params = None
-    current_dqp_iparams = None
-    if adjust == 'Kp':
-        # mutable_params = parameter (Kp gain of the current controller of the inverter) to be optimized using
-        # the SafeOpt algorithm
-        mutable_params = dict(currentP=MutableFloat(5e-3))
+    # Choose Kp and Ki for the current and voltage controller as mutable parameters
+    mutable_params = dict(currentP=MutableFloat(10e-3), currentI=MutableFloat(10), voltageP=MutableFloat(25e-3),
+                            voltageI=MutableFloat(60))
 
-        # Define the PI parameters for the current controller of the inverter
-        current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=115, limits=(-1, 1))
-
-    # For 1D example, if Ki should be adjusted
-    elif adjust == 'Ki':
-        mutable_params = dict(currentI=MutableFloat(10))
-        current_dqp_iparams = PI_params(kP=10e-3, kI=mutable_params['currentI'], limits=(-1, 1))
-
-    # For 2D example, choose Kp and Ki as mutable parameters
-    elif adjust == 'Kpi':
-        mutable_params = dict(currentP=MutableFloat(10e-3), currentI=MutableFloat(10))
-        current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
+    voltage_dqp_iparams = PI_params(kP=mutable_params['voltageP'], kI=mutable_params['voltageI'], limits=(-iLimit, iLimit))
+    current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
 
     # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
     # filter and the nominal frequency
@@ -160,8 +137,8 @@ if __name__ == '__main__':
     # filter and the nominal voltage
     qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
 
-    # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
-    ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, droop_param, qdroop_param,
+    # Define a voltage forming inverter using the PIPI and droop parameters from above
+    ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param, qdroop_param,
                                                  undersampling=2, name='master')
 
     #####################################
@@ -177,7 +154,7 @@ if __name__ == '__main__':
                          [ctrl],
                          dict(master=[[f'lc1.inductor{k}.i' for k in '123'],
                                       [f'lc1.capacitor{k}.v' for k in '123'],
-                                      i_ref]),
+                                      ]),
                          history=FullHistory()
                          )
 
@@ -186,25 +163,49 @@ if __name__ == '__main__':
     # (https://www.openmodelica.org/)
     # Using an inverter supplying a load
     # - using the reward function described above as callable in the env
-    # - viz_cols used to choose which measurement values should be displayed (here, only the 3 currents across the
-    #   inductors of the inverters are plotted. Labels and grid is adjusted using the PlotTmpl (For more information,
-    #   see UserGuide)
+    # - viz_cols used to choose which measurement values should be displayed.
+    #   Labels and grid is adjusted using the PlotTmpl (For more information, see UserGuide)
+    #   generated figures are stored to file
     # - inputs to the models are the connection points to the inverters (see user guide for more details)
-    # - model outputs are the the 3 currents through the inductors and the 3 voltages across the capacitors
+    # - model outputs are the 3 currents through the inductors and the 3 voltages across the capacitors
 
-    def xylables(fig):
+    def xylables_i(fig):
         ax = fig.gca()
         ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
-        #fig.savefig('Inductor_currents.pdf')
+        time = strftime("%Y-%m-%d %H_%M_%S", gmtime())
+        fig.savefig(save_folder + '/Inductor_currents'+time+'.pdf')
+
+    def xylables_v_abc(fig):
+        ax = fig.gca()
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
+        ax.set_ylabel('$v_{\mathrm{abc}}\,/\,\mathrm{V}$')
+        ax.grid(which='both')
+        time = strftime("%Y-%m-%d %H_%M_%S", gmtime())
+        fig.savefig(save_folder + '/abc_voltage' + time + '.pdf')
+
+
+    def xylables_v_dq0(fig):
+        ax = fig.gca()
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
+        ax.set_ylabel('$v_{\mathrm{dq0}}\,/\,\mathrm{V}$')
+        ax.grid(which='both')
+        time = strftime("%Y-%m-%d %H_%M_%S", gmtime())
+        fig.savefig(save_folder + '/dq0_voltage' + time + '.pdf')
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=Reward().rew_fun,
                    time_step=delta_t,
                    viz_cols=[
                        PlotTmpl([f'lc1.inductor{i}.i' for i in '123'],
-                                callback=xylables
+                                callback=xylables_i
+                                ),
+                       PlotTmpl([f'lc1.capacitor{i}.v' for i in '123'],
+                                callback=xylables_v_abc
+                                ),
+                       PlotTmpl([f'master.CVV{i}' for i in 'dq0'],
+                                callback=xylables_v_dq0
                                 )
                    ],
                    log_level=logging.INFO,
@@ -225,40 +226,23 @@ if __name__ == '__main__':
 
     runner.run(num_episodes, visualise=True)
 
-    print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df[:]))
+    #####################################
+    # Performance results and parameters as well as plots are stored in folder pipi_signleInvALT
+    agent.history.df.to_csv(save_folder + '/result.csv')
 
+    print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df.round({'J': 4, 'Params': 4})))
     print('\n Experiment finished with best set: \n')
-    print('\n  {} = {}' .format(adjust, agent.history.df.at[np.argmax(agent.history.df['J']),'Params']))
+    print('\n  Current-Ki&Kp and voltage-Ki&Kp = {}' .format(agent.history.df.at[np.argmax(agent.history.df['J']),'Params']))
     print('  Resulting in a performance of J = {}'.format(np.max(agent.history.df['J'])))
     print('\n\nBest experiment results are plotted in the following:')
 
 
     # Show best episode measurment (current) plot
     best_env_plt = runner.run_data['best_env_plt']
-    ax = best_env_plt[0].axes[0]
-    ax.set_title('Best Episode')
-    best_env_plt[0].show()
-    best_env_plt[0].savefig('best_env_plt.png')
+    for ii in range(len(best_env_plt)):
+        ax = best_env_plt[ii].axes[0]
+        ax.set_title('Best Episode')
+        best_env_plt[ii].show()
+        #best_env_plt[0].savefig('best_env_plt.png')
 
-    # Show last performance plot
-    best_agent_plt = runner.run_data['last_agent_plt']
-    ax = best_agent_plt.axes[0]
-    ax.grid(which='both')
-    ax.set_axisbelow(True)
-
-    if adjust == 'Ki':
-        ax.set_xlabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
-        ax.set_ylabel(r'$J$')
-    elif adjust == 'Kp':
-        ax.set_xlabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
-        ax.set_ylabel(r'$J$')
-    elif adjust == 'Kpi':
-        agent.params.reset()
-        ax.set_xlabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
-        ax.set_ylabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
-        ax.get_figure().axes[1].set_ylabel(r'$J$')
-        plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4,
-                 alpha=.5)
-    best_agent_plt.show()
-    best_agent_plt.savefig('agent_plt.png')
 

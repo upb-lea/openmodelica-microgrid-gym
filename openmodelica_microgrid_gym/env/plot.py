@@ -29,7 +29,8 @@ class PlotTmpl:
         self._callback = callback
 
         # set colors None if not provided
-        if not (colorkey := ({'c', 'color'} & set(kwargs.keys()))):
+        colorkey = ({'c', 'color'} & set(kwargs.keys()))
+        if not colorkey:
             kwargs['c'] = None
             colorkey = 'c'
         elif len(colorkey) > 1:
@@ -44,9 +45,11 @@ class PlotTmpl:
         # apply to a group only if all color values are none inside that group
         if colorkey:
             # if all elements in the variables are lists and they are all of equal length
-            if len(lengths := set([isinstance(l, list) and len(l) for l in variables])) == 1:
+            lengths = set([isinstance(l, list) and len(l) for l in variables])
+            if len(lengths) == 1:
                 # set contains either the length of all lists or false if all values where non-list values
-                if length := lengths.pop():
+                length = lengths.pop()
+                if length:
                     for groups in range(len(variables)):
                         for i in range(length):
                             if args[colorkey][length * groups + i] is None:
@@ -67,7 +70,16 @@ class PlotTmpl:
                     args_[k] = v
             self.kwargs.append(args_)
 
-    def callback(self, fig):
+    def callback(self, fig: Figure):
+        """
+        Will be called in the ModelicaEnv.render() once all plotting is finished.
+        This function enables the user to specify more modifications to apply to the figure.
+        The function will call the callable passed in the constructor.
+        Additionally the figure is plotted by this function.
+
+        :param fig: Finished figure that is one might want to modify.
+        :return:
+        """
         if self._callback is not None:
             self._callback(fig)
         plt.show()

@@ -118,7 +118,7 @@ class SafeOptAgent(StaticControlAgent):
         """
         if self.optimizer is None:
             # First Iteration
-            # self.inital_Performance = 1 / self.episode_reward
+            self.inital_performance = self.performance
 
             # Norm for Safe-point
             # J = 1 / self.episode_reward / self.inital_Performance
@@ -141,7 +141,7 @@ class SafeOptAgent(StaticControlAgent):
         else:
             if np.isnan(self.episode_reward):
                 # set r to doubled (negative!) initial reward
-                self.episode_reward = self.abort_reward * self.inital_performance
+                self.performance = self.abort_reward * self.inital_performance
                 # toDo: set reward to -inf and stop agent?
                 # warning mit logger
                 logger.warning('UNSAFE! Limit exceeded, epsiode abort, give a reward of {} times the'
@@ -163,6 +163,10 @@ class SafeOptAgent(StaticControlAgent):
         Renders the results for the performance
         """
         figure, ax = plt.subplots()
+        if self.optimizer.x.size > 3:
+            # check if the dimensionality is less then 4 dimension
+            logger.info('Plotting of GP landscape not possible for then 3 dimensions')
+            return figure
         self.optimizer.plot(1000, figure=figure)
 
         # mark best performance in green
@@ -173,7 +177,7 @@ class SafeOptAgent(StaticControlAgent):
         elif len(x) == 2:
             ax.plot(x[0], x[1], 'og')
         else:
-            logger.warning('Choose appropriate numer of control parameters')
+            logger.warning('Choose appropriate number of control parameters')
 
         plt.show()
         return figure

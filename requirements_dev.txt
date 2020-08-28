@@ -8,8 +8,8 @@ tables>=3.4.1
 safeopt>=0.16
 GPy>=1.9.9
 
-Sphinx==2.1
-sphinx-autodoc-typehints>=1.10
+Sphinx==3.1
+sphinx-autodoc-typehints>=1.11
 sphinx_rtd_theme
 
 twine==1.14.0
