@@ -27,10 +27,7 @@ class PyFMI_Wrapper:
         self.model.reset()
         self.model.setup_experiment(start_time=time_start)
 
-        # This is needed, because otherwise setting new values seems not to work
-        self.model.enter_initialization_mode()
-        self.model.exit_initialization_mode()
-
+        self.model.initialize()
         e_info = self.model.get_event_info()
         e_info.newDiscreteStatesNeeded = True
         # Event iteration
@@ -81,6 +78,5 @@ class PyFMI_Wrapper:
         self.model.set(*zip(*kwargs.items()))
 
     def set_params(self, **kwargs):
-        self.model.enter_initialization_mode()
+        self.model.initialize()
         self.model.set(*zip(*kwargs.items()))
-        self.model.exit_initialization_mode()

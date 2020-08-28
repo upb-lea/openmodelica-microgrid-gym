@@ -200,7 +200,7 @@ if __name__ == '__main__':
         ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
-        time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        time = strftime("%Y-%m-%d %H_%M_%S", gmtime())
         fig.savefig(save_folder + '/Inductor_currents' + time + '.pdf')
 
 
@@ -209,7 +209,7 @@ if __name__ == '__main__':
         ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$v_{\mathrm{abc}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
-        time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        time = strftime("%Y-%m-%d %H_%M_%S", gmtime())
         fig.savefig(save_folder + '/abc_voltage' + time + '.pdf')
 
 
@@ -218,7 +218,7 @@ if __name__ == '__main__':
         ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$v_{\mathrm{dq0}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
-        time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        time = strftime("%Y-%m-%d %H_%M_%S", gmtime())
         fig.savefig(save_folder + '/dq0_voltage' + time + '.pdf')
 
 
@@ -227,7 +227,7 @@ if __name__ == '__main__':
         ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$P_{\mathrm{master}}\,/\,\mathrm{W}$')
         ax.grid(which='both')
-        time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        time = strftime("%Y-%m-%d %H_%M_%S", gmtime())
         fig.savefig(save_folder + '/P_master' + time + '.pdf')
 
 
@@ -236,7 +236,7 @@ if __name__ == '__main__':
         ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$P_{\mathrm{slave}}\,/\,\mathrm{W}$')
         ax.grid(which='both')
-        time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        time = strftime("%Y-%m-%d %H_%M_%S", gmtime())
         fig.savefig(save_folder + '/P_slave' + time + '.pdf')
 
 
@@ -245,7 +245,7 @@ if __name__ == '__main__':
         ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$f_{\mathrm{slave}}\,/\,\mathrm{Hz}$')
         ax.grid(which='both')
-        time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        time = strftime("%Y-%m-%d %H_%M_%S", gmtime())
         fig.savefig(save_folder + '/f_slave' + time + '.pdf')
 
 
