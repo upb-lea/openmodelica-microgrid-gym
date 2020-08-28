@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from typing import Dict, Any
 from tqdm import tqdm
 from openmodelica_microgrid_gym.agents.episodic import EpisodicLearnerAgent
@@ -57,8 +58,9 @@ class MonteCarloRunner:
         for i in tqdm(range(n_episodes), desc='episodes', unit='epoch'):
 
             done, r = False, None
-
+            np.random.seed(0)
             for m in tqdm(range(n_MC), desc='episodes', unit='epoch'):
+
 
                 prepare_MC_experiment()
 
@@ -72,11 +74,41 @@ class MonteCarloRunner:
                     self.env.render()
                     if done:
                         self.agent.observe(r, False)  # take the last reward into account, too, but without update_params
+
+                        if m == 0 and i == 0:
+                            self.agent.initial_performance = self.agent.performance
+                            self.agent.last_best_performance = self.agent.performance
+                            self.agent.last_worst_performance = self.agent.performance
+
+                            self.agent.best_episode = self.agent.history.df.shape[0]
+                            self.agent.last_best_performance = self.agent.performance
+                            self.agent.worst_episode = self.agent.history.df.shape[0]
+                            self.agent.last_worst_performance = self.agent.performance
+
                         performance_MC[m] = self.agent.performance
                         break
 
-            self.agent.performance = np.mean(performance_MC)
-            _, env_fig = self.env.close()
+                _, env_fig = self.env.close()
+
+                if (m == 0 and i == 0) or self.agent.has_improved:
+                    self.run_data['best_env_plt'] = env_fig
+                    self.run_data['best_episode_idx'] = i
+                    self.agent.last_best_performance = self.agent.performance
+
+                if (m == 0 and i == 0) or self.agent.has_worsened:
+                    self.run_data['worst_env_plt'] = env_fig
+                    self.run_data['worst_episode_idx'] = i
+                    self.agent.last_worst_performance = self.agent.performance
+
+                #plt.close(env_fig)
+
+            if i == 0:
+                initial_tmp = self.agent.initial_performance
+                self.agent.initial_performance = np.mean(performance_MC*self.agent.initial_performance)
+                performance_MC = performance_MC * initial_tmp
+            #self.agent.performance = 1#np.mean(performance_MC) / self.agent.initial_performance
+            self.agent.episode_return = self.agent._iterations / self.agent.initial_performance
+            #self.agent.performance = self.agent.episode_return * self.agent.initial_performance / self._iterations
             self.agent.observe(r, True)
 
             if visualise:
@@ -84,11 +116,5 @@ class MonteCarloRunner:
 
             self.run_data['last_agent_plt'] = agent_fig
 
-            if i == 0 or self.agent.has_improved:
-                self.run_data['best_env_plt'] = env_fig
-                self.run_data['best_episode_idx'] = i
 
-            if i == 0 or self.agent.has_worsened:
-                self.run_data['worst_env_plt'] = env_fig
-                self.run_data['worst_episode_idx'] = i
 
