@@ -62,8 +62,9 @@ class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
         self.optimizer = None
         self._performance = None
         self.initial_performance = 1
-        self.last_best_performance = None
-        self.last_worst_performance = None
+        self.last_best_performance = 0      # set to 0 due to in MC otherwise we do not get the best/worst before the
+        # first update_params after the MC loop
+        self.last_worst_performance = 0
         self.unsafe = False
 
         self._iterations = 0
@@ -89,8 +90,8 @@ class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
         self.episode_return = 0
         self.initial_performance = 1
         self._performance = None
-        self.last_best_performance = None
-        self.last_worst_performance = None
+        self.last_best_performance = 0
+        self.last_worst_performance = 0
         self.unsafe = False
 
         self._iterations = 0
@@ -215,6 +216,7 @@ class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
                            'initial reward'.format(self.abort_reward))
             # set r to doubled (negative!) initial reward
             return self.abort_reward  # * self.inital_performance
+
 
         # Performance = inverse average return (return/iterations)^⁻1 normalized by initial performance
         return self._iterations / (self.episode_return * self.initial_performance)

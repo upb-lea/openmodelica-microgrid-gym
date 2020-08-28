@@ -103,6 +103,9 @@ class MonteCarloRunner:
                 #plt.close(env_fig)
 
             if i == 0:
+
+                self.agent.performance = np.mean(performance_MC*self.agent.initial_performance)
+
                 initial_tmp = self.agent.initial_performance
                 self.agent.initial_performance = np.mean(performance_MC*self.agent.initial_performance)
                 performance_MC = performance_MC * initial_tmp
