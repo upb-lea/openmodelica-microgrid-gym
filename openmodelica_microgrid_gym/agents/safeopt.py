@@ -110,6 +110,8 @@ class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
         self._iterations += 1
         self.episode_return += reward or 0
         if terminated:
+
+            self.performance = self._iterations / (self.episode_return * self.initial_performance)
             # safeopt update step
             self.update_params()
             # reset for new episode
@@ -123,6 +125,7 @@ class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
         if self.optimizer is None:
             # First Iteration
             self.initial_performance = self.performance
+            self.performance = self.performance / self.initial_performance
             self.last_best_performance = self.performance
             self.last_worst_performance = self.performance
 
@@ -212,15 +215,24 @@ class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
         if np.isnan(self.episode_return):
             # toDo: set reward to -inf and stop agent?
             # warning mit logger
-            logger.warning('UNSAFE! Limit exceeded, epsiode abort, give a reward of {} times the'
+            logger.warning('UNSAFE! Limit exceeded, epsiode abort, give a reward of {} times the '
                            'initial reward'.format(self.abort_reward))
             # set r to doubled (negative!) initial reward
-            return self.abort_reward  # * self.inital_performance
+            self._performance = self.abort_reward
 
+        if self._performance is None:
+            # Performance = inverse average return (return/iterations)^⁻1 normalized by initial performance
+            self._performance = self._iterations / (self.episode_return * self.initial_performance)
+        #    return self._iterations / (self.episode_return * self.initial_performance)
+        #else:
+        #    return self._performance
+        #return self._iterations / (self.episode_return * self.initial_performance)
 
-        # Performance = inverse average return (return/iterations)^⁻1 normalized by initial performance
-        return self._iterations / (self.episode_return * self.initial_performance)
+        return self._performance
+
 
     @performance.setter
     def performance(self, new_performance):
         self._performance = new_performance
+        #self.episode_return = self._iterations / (new_performance*self.initial_performance)
+
