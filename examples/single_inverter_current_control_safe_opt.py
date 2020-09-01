@@ -7,7 +7,7 @@
 import logging
 import os
 from functools import partial
-from time import strftime, gmtime
+#from time import strftime, gmtime
 from typing import List
 
 import GPy
@@ -39,15 +39,16 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
     raise ValueError("Please set 'adjust' to one of the following values: 'Kp', 'Ki', 'Kpi'")
 
 include_simulate = True
-show_plots = True
+show_plots = False
+balanced_load = False
 do_measurement = False
 
 # If True: Results are stored to directory mentioned in: REBASE to DEV after MERGE #60!!
-safe_results = False
+safe_results = True
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
-save_folder = os.path.join(current_directory, r'MCTest_bal')
+save_folder = os.path.join(current_directory, r'MC03_lenRun_unbal_lessnoise')
 os.makedirs(save_folder, exist_ok=True)
 
 lengthscale_vec = np.linspace(0.5, 0.5, 1)
@@ -58,8 +59,8 @@ np.random.seed(0)
 # Simulation definitions
 delta_t = 1e-4  # simulation time step size / s
 max_episode_steps = 1000  # number of simulation steps per episode
-num_episodes = 2  # number of simulation episodes (i.e. SafeOpt iterations)
-n_MC = 3  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
+num_episodes = 100  # number of simulation episodes (i.e. SafeOpt iterations)
+n_MC = 5  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
 # distribution to represent real world more accurate
 v_DC = 60  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
@@ -75,8 +76,8 @@ i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0
 
 # Controller layout due to magnitude optimum:
 L = 2.3e-3  # / H
-R = 400e-3#170e-3  # 585e-3  # / Ohm
-#R = 585e-3#170e-3  # 585e-3  # / Ohm
+R = 400e-3  # 170e-3  # 585e-3  # / Ohm
+# R = 585e-3#170e-3  # 585e-3  # / Ohm
 tau_plant = L / R
 gain_plant = 1 / R
 
@@ -85,15 +86,8 @@ Tn = tau_plant  # Due to compensate
 Kp_init = tau_plant / (2 * delta_t * gain_plant * v_DC)
 Ki_init = Kp_init / Tn
 
-#Kp_init = 0
 
-
-class pltManager:
-
-    def __init__(self, agent: Agent):
-        self.agent = agent
-
-
+# Kp_init = 0
 
 
 class Reward:
@@ -161,7 +155,7 @@ if __name__ == '__main__':
         # For 2D example, choose Kp and Ki as mutable parameters (below) and define bounds and lengthscale for both of them
         if adjust == 'Kpi':
             bounds = [(0.0, 4), (0, 200)]
-            lengthscale = [.3, 25.]
+            lengthscale = [0.3, 25.]
 
         # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
         # the initial performance: safe_threshold = 0.8 means. Performance measurement for optimization are seen as
@@ -235,6 +229,36 @@ if __name__ == '__main__':
                              history=FullHistory()
                              )
 
+
+        class PlotManager:
+
+            def __init__(self, used_agent: SafeOptAgent, used_r_load: Load, used_l_load: Load, used_i_noise: Noise):
+                self.agent = used_agent
+                self.r_load = used_r_load
+                self.l_load = used_l_load
+                self.i_noise = used_i_noise
+
+                #self.r_load.gains =  [elem *1e3 for elem in self.r_load.gains]
+                #self.l_load.gains =  [elem *1e3 for elem in self.r_load.gains]
+
+            def set_title(self):
+                plt.title('Simulation: J = {:.2f}; R = {} \n L = {}; \n noise = {}'.format(self.agent.performance,
+                                                                                        ['%.4f' % elem for elem in
+                                                                                         self.r_load.gains],
+                                                                                        ['%.6f' % elem for elem in
+                                                                                         self.l_load.gains],
+                                                                                        ['%.4f' % elem for elem in
+                                                                                         self.i_noise.gains]))
+
+            def save_abc(self, fig):
+                if safe_results:
+                    fig.savefig(save_folder + '/J_{}_i_abc.pdf'.format(self.agent.performance))
+
+            def save_dq0(self, fig):
+                if safe_results:
+                    fig.savefig(save_folder + '/J_{}_i_dq0.pdf'.format(self.agent.performance))
+
+
         #####################################
         # Definition of the environment using a FMU created by OpenModelica
         # (https://www.openmodelica.org/)
@@ -248,31 +272,51 @@ if __name__ == '__main__':
 
         if include_simulate:
 
+            # Defining unbalanced loads sampling from Gaussian distribution with sdt = 0.2*mean
+            r_load = Load(R, 0.2 * R, balanced=balanced_load)
+            l_load = Load(L, 0.2 * L, balanced=balanced_load)
+            #i_noise = Noise([0, 0, 0], [0.0822, 0.103, 0.136], 0.07, 0.16)
+            i_noise = Noise([0, 0, 0], [0.05, 0.05, 0.05], 0.001, 0.1)
+
+
+            # i_noise = np.array([[0.0, 0.0822], [0.0, 0.103], [0.0, 0.136]])
+
+            def reset_loads():
+                r_load.reset()
+                l_load.reset()
+                i_noise.reset()
+
+
+            # plotter = PlotManager(agent, [r_load, l_load, i_noise])
+            plotter = PlotManager(agent, r_load, l_load, i_noise)
+
+
             def xylables(fig):
                 ax = fig.gca()
                 ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
                 ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
-                plt.title('Simulation')
                 ax.grid(which='both')
-                time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-                if safe_results:
-                    fig.savefig(save_folder + '/abc_current' + time + '.pdf')
-                    # fig.savefig('Sim_vgl/abc_currentJ_{}_abcvoltage.pdf'.format())
+                plotter.set_title()
+                plotter.save_abc(fig)
+                # plt.title('Simulation')
+                # time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                # if safe_results:
+                #    fig.savefig(save_folder + '/abc_current' + time + '.pdf')
+                # fig.savefig('Sim_vgl/abc_currentJ_{}_abcvoltage.pdf'.format())
                 if show_plots:
-                     plt.show()
+                    plt.show()
                 else:
                     plt.close(fig)
+
 
             def xylables_dq0(fig):
                 ax = fig.gca()
                 ax.set_xlabel(r'$t\,/\,\mathrm{ms}$')
                 ax.set_ylabel('$i_{\mathrm{dq0}}\,/\,\mathrm{A}$')
                 ax.grid(which='both')
-                plt.title('Simulation')
+                plotter.set_title()
+                plotter.save_dq0(fig)
                 plt.ylim(0, 36)
-                time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-                if safe_results:
-                    fig.savefig(save_folder + '/dq0_current' + time + '.pdf')
                 if show_plots:
                     plt.show()
                 else:
@@ -287,18 +331,6 @@ if __name__ == '__main__':
                 ax.grid(which='both')
                 # plt.ylim(0,36)
 
-            # Defining unbalanced loads sampling from Gaussian distribution with sdt = 0.2*mean
-            r_load = Load(R, 0.2 * R, balanced=True)
-            l_load = Load(L, 0.2 * L, balanced=True)
-            i_noise = Noise([0, 0, 0], [0.0822, 0.103, 0.136], 0.07, 0.16)
-
-            #i_noise = np.array([[0.0, 0.0822], [0.0, 0.103], [0.0, 0.136]])
-
-            def reset_loads():
-                r_load.reset()
-                l_load.reset()
-                i_noise.reset()
-
 
             env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                            reward_fun=Reward().rew_fun,
@@ -309,9 +341,9 @@ if __name__ == '__main__':
                                         color=[['b', 'r', 'g'], ['b', 'r', 'g']],
                                         style=[[None], ['--']]
                                         ),
-                               #PlotTmpl([[f'rl.resistor{i}.R' for i in '123']],
+                               # PlotTmpl([[f'rl.resistor{i}.R' for i in '123']],
                                #         ),
-                               #PlotTmpl([[f'rl.inductor{i}.L' for i in '123']],
+                               # PlotTmpl([[f'rl.inductor{i}.L' for i in '123']],
                                #         ),
                                PlotTmpl([[f'master.CVI{i}' for i in 'dq0'], [f'master.SPI{i}' for i in 'dq0']],
                                         callback=xylables_dq0,
@@ -333,20 +365,20 @@ if __name__ == '__main__':
                            model_path='../fmu/grid.testbench_SC2.fmu',
                            model_input=['i1p1', 'i1p2', 'i1p3'],
                            # model_output=dict(#rl=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                           model_output=dict(rl=[['inductor1.i', 'inductor2.i', 'inductor3.i']]#,
-                                                 #['resistor1.R', 'resistor2.R', 'resistor3.R'],
-                                                 #['inductor1.L', 'inductor2.L', 'inductor3.L']]
+                           model_output=dict(rl=[['inductor1.i', 'inductor2.i', 'inductor3.i']]  # ,
+                                             # ['resistor1.R', 'resistor2.R', 'resistor3.R'],
+                                             # ['inductor1.L', 'inductor2.L', 'inductor3.L']]
                                              # rl=[['resistor1.R', 'resistor2.R', 'resistor3.R']],
                                              # inverter1=['inductor1.i', 'inductor2.i', 'inductor3.i']
                                              ),
                            history=FullHistory(),
                            measurement_noise=i_noise,
-                           action_time_delay = 1
+                           action_time_delay=1
                            )
 
             runner = MonteCarloRunner(agent, env)
 
-            runner.run(num_episodes, n_MC = n_MC, visualise=True, prepare_MC_experiment=reset_loads)
+            runner.run(num_episodes, n_mc=n_MC, visualise=True, prepare_mc_experiment=reset_loads)
 
             print(agent.unsafe)
 
@@ -390,6 +422,7 @@ if __name__ == '__main__':
                 ax.set_ylabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
                 ax.set_xlabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
                 ax.get_figure().axes[1].set_ylabel(r'$J$')
+                plt.title('Lengthscale = {}; balanced = '.format(lengthscale,balanced_load))
                 plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1,
                          lw=4,
                          alpha=.5)
