@@ -49,14 +49,14 @@ safe_results = False
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
-save_folder = os.path.join(current_directory, r'lengthscaleSearchMC')
+save_folder = os.path.join(current_directory, r'lengthscaleSearchMC50_10')
 os.makedirs(save_folder, exist_ok=True)
 
 ii_steps = 1
-kk_steps = 10
+kk_steps = 6
 
 lengthscale_vec_kI = np.linspace(25, 25, ii_steps)
-lengthscale_vec_kP = np.linspace(0.1, 4, kk_steps)
+lengthscale_vec_kP = np.linspace(0.1, 3, kk_steps)
 unsafe_vec = np.zeros([kk_steps, ii_steps])
 
 np.random.seed(0)
@@ -65,7 +65,7 @@ np.random.seed(0)
 delta_t = 1e-4  # simulation time step size / s
 max_episode_steps = 1000  # number of simulation steps per episode
 num_episodes = 50  # number of simulation episodes (i.e. SafeOpt iterations)
-n_MC = 20  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
+n_MC = 10  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
 # distribution to represent real world more accurate
 v_DC = 60  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
