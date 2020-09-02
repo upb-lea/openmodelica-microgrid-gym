@@ -32,6 +32,13 @@ bibliography: paper.bib
 
 # Summary
 
+The OpenModelica Microgrid Gym (OMG) toolbox is providing a transient simulation framework for local energy grids based on power electronic converters. OpenModelica is used in the backend allowing to set up arbitrary electric grid designs using its well-known graphical user interface in a plug & play fashion [@Fritzson2018]. A Python-interface is offered for configuring the simulations and specially to integrate software modules for the realization as well testing of closed control loops. In addition, the OpenAI Gym interface is provided for connecting data-driven reinforcement learning algorithms in order to investigate on intelligent microgrid control approaches [@OpenAI2016]. 
+
+![\label{fig:omg}](omg.png)
+_Fig. 1:  Overview of the interconnections between the different parts of the  OMG  toolbox.  The  OpenModelica and  OpenAIGym logos are the property of their respective owners._
+
+
+# Background on microgrids and their control
 
 Micro- and smart grids (MSG) play an important role both for integrating renewable energy sources in conventional electricity grids and for providing power supply in remote areas [@Lund2017]. 
 Due to their high efficiency and flexibility, power electronic converters are largely used to drive modern MSG.
@@ -45,23 +52,25 @@ This results in high demand for comprehensive testing of new control concepts du
 This applies in particular to data-driven control approaches such as reinforcement learning (RL), the stability and operating behavior of which cannot be evaluated a priori [@Garcia2015].
 
 
+# State of field 
 ``OMG`` is a Python-based package for modeling and simulation of microgrids based on power electronic energy conversion.
 An attached OpenModelica [@Fritzson2018] library enables the user to define their microgrid (i.e. a local electricity grid containing arbitrary sources, storages and loads) in a flexible and scalable way or to use predefined example grids. 
 Due to the component-oriented modeling framework based on OpenModelica, dynamic processes on small time scales are in focus, which allows for accurate control and test investigations during transients and steady-state.
 This is an essential difference to already available open-source solutions for the simulation of electrical energy networks, which, in contrast, generally depict large-scale transmission networks with abstracted models in the (quasi)-stationary state (e.g. PyPSA [@Brown2018] or Pandapower [@Thurner2018]). Besides the pure modeling and simulation of microgrids, basic building blocks for setting up a hierarchical control framework on the inner and primary level [@Guerrero2013] are provided with ``OMG``. 
 
 
+# Interfaces for control and reinforcement learning  
 The API is designed to provide a user-friendly interface to connect a modeled microgrid (the simulation environment) with a wide range of control methods such as classical linear feedback control or model predictive control techniques (cf. Fig. 1). Moreover, the standardized OpenAI Gym interface [@OpenAI2016] is also available for training data-driven control approaches like RL. 
+This enables to integrate contemporary open-source Python-based RL toolboxes such as ``Stable Baselines3`` [@stable-baselines3], ``TF-Agents`` [@TFAgents] or ``keras-rl`` [@plappert2016kerasrl].
 Many auxiliary functionalities for the essential operation of microgrids are shipped with OMG such as coordinate transformations for basic controller classes, monitoring wrappers and phase-locked loops for frequency and phase angle extraction. 
 Following this structure, nearly every control approach including data-driven RL can be implemented and tested with ``OMG`` in a relatively short amount of time. 
 To highlight the challenges of data-driven control approaches in safety-critical environments, application examples using safe Bayesian optimization [@Berkenkamp2020] for automated controller design are provided in the toolbox. 
 
 
-``OMG`` is designed to be used by academics in the field of control and energy engineering as well as data science. The primary objective of the toolbox is to facilitate entry for new users into the modeling, control, and testing of microgrids and to provide a platform on which different control methods can be compared under defined conditions (benchmarks).
+# Intended use and targeted audience
+``OMG`` is designed to be used by students, academics and industrial researchers in the field of control and energy engineering as well as data science. The primary objective of the toolbox is to facilitate entry for new users into the modeling, control, and testing of microgrids and to provide a platform on which different control methods (including reinforcement learning) can be compared under defined conditions (benchmarks).
 
 
-![\label{fig:omg}](omg.png)
-_Fig. 1:  Overview of the interconnections between the different parts of the  OMG  toolbox.  The  OpenModelica and  OpenAIGym logos are the property of their respective owners._
 
 # Features
 
@@ -83,7 +92,7 @@ The user can select between a wide range of different grid components and connec
 
 # Examples
 
-Detailed examples are shown in the whitepaper of this toolbox: https://arxiv.org/pdf/2005.04869.pdf
+Detailed examples are shown in the OMG whitepaper: https://arxiv.org/pdf/2005.04869.pdf
 
 Especially the implementation and evaluation of a safe Bayesian controller [@Berkenkamp2020] is explained in detail.
 The SafeOpt learning algorithm is applied to an automatic controller tuning problem with safety-relevant state constraints in different microgrid topologies (e.g. different number of inverters, load characteristics). 
@@ -91,9 +100,10 @@ Furthermore, the provided evaluation tools enable the user to compare the perfor
 
 
 
-# Availability and implementation
-``OMG`` is supported and tested on Linux and Windows. The package can be 
-installed with the PyPI, the Python package index, using 
+# Availability and installation
+
+``OMG`` is supported and tested on Linux and Windows. Mac users are asked to run this toolbox on a Linux VM. 
+The package should be installed in a conda environment. ``PyFMI`` can be installed via `conda install -c conda-forge pyfmi`, the ``OMG`` package by `pip` Python package manager using 
 `pip install openmodelica_microgrid_gym` command. The source code, guide and 
 datasets are available on the GitHub repository (https://github.com/upb-lea/openmodelica-microgrid-gym). 
 

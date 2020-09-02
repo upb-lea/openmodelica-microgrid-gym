@@ -19,8 +19,8 @@ class TestbenchEnv(gym.Env):
 
     def __init__(self, host: str = '131.234.172.139', username: str = 'root', password: str = '',
                  DT: float = 1/20000, executable_script_name: str = 'my_first_hps' ,num_steps: int = 1000,
-                 kP: float = 0.01, kI: float = 5.0, i_ref: float = 10.0, f_nom: float = 50.0, i_limit: float = 30,
-                 i_nominal: float = 20):
+                 kP: float = 0.01, kI: float = 5.0, kPV: float = 0.01, kIV: float = 5.0,  ref: float = 10.0, f_nom: float = 50.0, i_limit: float = 30,
+                 i_nominal: float = 20, v_nominal: float = 20):
 
         self.ssh = paramiko.SSHClient()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -33,13 +33,16 @@ class TestbenchEnv(gym.Env):
         self.max_episode_steps = num_steps
         self.kP = kP
         self.kI = kI
-        self.i_ref = i_ref
+        self.kPV = kPV
+        self.kIV = kIV
+        self.ref = ref
         self.f_nom = f_nom
         self.data = np.array(list())
         self.current_step = 0
         self.done = False
         self.i_limit = i_limit
         self.i_nominal = i_nominal
+        self.v_nominal = v_nominal
 
     @staticmethod
     def __decode_result(ssh_result):
@@ -63,7 +66,7 @@ class TestbenchEnv(gym.Env):
 
         return decoded_result
 
-    def rew_fun(self, Iabc_meas, Iabc_SP) -> float:
+    def rew_fun(self, vabc_meas, Vabc_SP) -> float:
         """
         Defines the reward function for the environment. Uses the observations and setpoints to evaluate the quality of the
         used parameters.
@@ -83,16 +86,20 @@ class TestbenchEnv(gym.Env):
         # (due to normalization the control error is often around zero -> compared to MSE metric, the MRE provides
         #  better, i.e. more significant,  gradients)
         # plus barrier penalty for violating the current constraint
-        error = np.sum((np.abs((Iabc_SP - Iabc_meas)) / self.i_limit) ** 0.5, axis=0) \
-                + -np.sum(mu * np.log(1 - np.maximum(np.abs(Iabc_meas) - self.i_nominal, 0) / \
-                (self.i_limit - self.i_nominal)), axis=0) * self.max_episode_steps
+        error = np.sum((np.abs((Vabc_SP - vabc_meas)) / self.v_nominal) ** 0.5, axis=0) #+\
+                #np.sum((np.abs((Iabc_SP - Iabc_meas)) / self.i_limit) ** 0.5, axis=0) \
+                #+ -np.sum(mu * np.log(1 - np.maximum(np.abs(Iabc_meas) - self.i_nominal, 0) / \
+                #(self.i_limit - self.i_nominal)), axis=0) * self.max_episode_steps
+
 
         return error.squeeze()
 
-    def reset(self, kP, kI):
+    def reset(self, kP, kI, kPv, kIv):
         # toDo: ssh connection not open every episode!
         self.kP = kP
         self.kI = kI
+        self.kPV = kPv
+        self.kIV = kIv
 
         #self.ssh.connect(self.host, username=self.username, password=self.password)
 
@@ -119,8 +126,13 @@ class TestbenchEnv(gym.Env):
 
 
         #toDo: get SP and kP/I from agent?
-        str_command = './{} {} {} {} {} {}'.format(self.executable_script_name, self.max_episode_steps, self.kP, self.kI,
-                                                   self.i_ref, self.f_nom)
+        #str_command = './{} {} {} {} {} {}'.format(self.executable_script_name, self.max_episode_steps, self.kP, self.kI,
+        #                                           self.i_ref, self.f_nom)
+
+        str_command = './{} {} {} {} {} {} {} {}'.format(self.executable_script_name, self.max_episode_steps, self.kP,
+                                                   self.kI, self.kPV, self.kIV,
+                                                   self.ref, self.f_nom)
+
         ssh_stdin, ssh_stdout, ssh_stderr = self.ssh.exec_command(str_command)
 
         self.data = self.__decode_result(ssh_stdout)
@@ -138,12 +150,17 @@ class TestbenchEnv(gym.Env):
         temp_data = self.data[self.current_step]
         self.current_step += 1
 
-        I_abc_meas = temp_data[[3,4,5]]
+        #I_abc_meas = temp_data[[3,4,5]]
         #Idq0_SP = np.array([self.i_ref,0,0])
-        I_abc_SP = temp_data[[10,11,12]]
+        #I_abc_SP = temp_data[[10,11,12]]
         #phase = temp_data[9]
 
-        reward = self.rew_fun(I_abc_meas, I_abc_SP)
+        #reward = self.rew_fun(I_abc_meas, I_abc_SP)
+
+        V_abc_meas = temp_data[[0, 1, 2]]
+        # Idq0_SP = np.array([self.i_ref,0,0])
+        V_abc_SP = temp_data[[10, 11, 12]]
+        reward = self.rew_fun(V_abc_meas, V_abc_SP)
 
         if self.current_step == self.max_episode_steps:
             self.done = True
@@ -199,11 +216,29 @@ class TestbenchEnv(gym.Env):
                            'm_0': self.data[:, 18]})
 
         #df.to_pickle('Measurement')
-        df.to_pickle('Noise_measurement')
+        #df.to_pickle('Noise_measurement')
 
         #plt.plot(t, V_A, t, V_B, t, V_C)
         #plt.ylabel('Voltages (V)')
         #plt.show()
+
+        fig = plt.figure()
+        plt.plot(t, V_A, 'b', label=r'$v_{\mathrm{a}}$')
+        plt.plot(t, V_B, 'g')
+        plt.plot(t, V_C, 'r')
+        plt.plot(t, SP_A, 'b--', label=r'$v_{\mathrm{SP,a}}$')
+        plt.plot(t, SP_B, 'g--')
+        plt.plot(t, SP_C, 'r--')
+        plt.xlabel(r'$t\,/\,\mathrm{s}$')
+        plt.ylabel('$v_{\mathrm{abc}}\,/\,\mathrm{V}$')
+        plt.title('{}'.format(J))
+        plt.grid()
+        plt.legend()
+        plt.show()
+        time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        # fig.savefig('hardwareTest_plt/{}_abcInductor_currents' + time + '.pdf'.format(J))
+        fig.savefig('hardwareTest_plt/J_{}_abcvoltage.pdf'.format(J))
+
 
         fig = plt.figure()
         plt.plot(t, I_A, 'b' , label = r'$i_{\mathrm{a}}$')
@@ -219,7 +254,8 @@ class TestbenchEnv(gym.Env):
         plt.legend()
         plt.show()
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('hardwareTest_plt/abcInductor_currents' + time + '.pdf')
+        #fig.savefig('hardwareTest_plt/{}_abcInductor_currents' + time + '.pdf'.format(J))
+        fig.savefig('hardwareTest_plt/J_{}_abcInductor_currents.pdf'.format(J))
 
 
         fig = plt.figure()
@@ -231,4 +267,5 @@ class TestbenchEnv(gym.Env):
         plt.grid()
         plt.show()
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('hardwareTest_plt/dq0Inductor_currents' + time + '.pdf')
+        #fig.savefig('hardwareTest_plt/dq0Inductor_currents' + time + '.pdf')
+        fig.savefig('hardwareTest_plt/J_{}_dq0Inductor_currents.pdf'.format(J))

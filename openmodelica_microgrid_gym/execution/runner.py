@@ -60,8 +60,8 @@ class Runner:
             _, env_fig = self.env.close()
             self.agent.observe(r, done)
 
-            if visualise:
-                agent_fig = self.agent.render()
+#            if visualise:
+#                agent_fig = self.agent.render()
 
             self.run_data['last_agent_plt'] = agent_fig
 
@@ -69,7 +69,7 @@ class Runner:
                 self.run_data['best_env_plt'] = env_fig
                 self.run_data['best_episode_idx'] = i
 
-            if i == 0 or self.agent.has_worsen:
+            if i == 0 or self.agent.has_worsened:
                 self.run_data['worst_env_plt'] = env_fig
                 self.run_data['worst_episode_idx'] = i
 

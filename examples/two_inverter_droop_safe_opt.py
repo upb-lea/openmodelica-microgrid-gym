@@ -5,6 +5,7 @@
 
 
 import logging
+import os
 from functools import partial
 from time import strftime, gmtime
 from typing import List
@@ -35,6 +36,11 @@ iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VA/V
+
+# Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
+current_directory = os.getcwd()
+save_folder = os.path.join(current_directory, r'saves_droop_control_safeopt')
+os.makedirs(save_folder, exist_ok=True)
 
 
 def load_step(t, gain):
@@ -195,7 +201,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('saves_droop/Inductor_currents' + time + '.pdf')
+        fig.savefig(save_folder + '/Inductor_currents' + time + '.pdf')
 
 
     def xylables_v_abc(fig):
@@ -204,7 +210,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$v_{\mathrm{abc}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('saves_droop/abc_voltage' + time + '.pdf')
+        fig.savefig(save_folder + '/abc_voltage' + time + '.pdf')
 
 
     def xylables_v_dq0(fig):
@@ -213,7 +219,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$v_{\mathrm{dq0}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('saves_droop/dq0_voltage' + time + '.pdf')
+        fig.savefig(save_folder + '/dq0_voltage' + time + '.pdf')
 
 
     def xylables_P_master(fig):
@@ -222,7 +228,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$P_{\mathrm{master}}\,/\,\mathrm{W}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('saves_droop/P_master' + time + '.pdf')
+        fig.savefig(save_folder + '/P_master' + time + '.pdf')
 
 
     def xylables_P_slave(fig):
@@ -231,7 +237,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$P_{\mathrm{slave}}\,/\,\mathrm{W}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('saves_droop/P_slave' + time + '.pdf')
+        fig.savefig(save_folder + '/P_slave' + time + '.pdf')
 
 
     def xylables_freq(fig):
@@ -240,7 +246,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$f_{\mathrm{slave}}\,/\,\mathrm{Hz}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('saves_droop/f_slave' + time + '.pdf')
+        fig.savefig(save_folder + '/f_slave' + time + '.pdf')
 
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
@@ -295,7 +301,7 @@ if __name__ == '__main__':
 
     #####################################
     # Performance results and Parameters as well as plots are stored in folder saves_droop
-    agent.history.df.to_csv('saves_droop/result.csv')
+    agent.history.df.to_csv(save_folder + '/result.csv')
 
     print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df.round({'J': 4, 'Params': 4})))
     print('\n Experiment finished with best set: \n')

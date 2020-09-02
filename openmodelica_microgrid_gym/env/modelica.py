@@ -11,11 +11,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy
 from matplotlib.figure import Figure
-from pyfmi import load_fmu
-from pyfmi.fmi import FMUModelME2
 from scipy import integrate
 
 from openmodelica_microgrid_gym.env.plot import PlotTmpl
+from openmodelica_microgrid_gym.env.pyfmi import PyFMI_Wrapper
 from openmodelica_microgrid_gym.net.net import Network
 from openmodelica_microgrid_gym.util import FullHistory, EmptyHistory
 
@@ -38,7 +37,8 @@ class ModelicaEnv(gym.Env):
                  model_output: Optional[Union[dict, Sequence[str]]] = None, model_path: str = '../fmu/grid.network.fmu',
                  viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[Union[str, PlotTmpl]]]] = None,
                  history: EmptyHistory = FullHistory(),
-                 measurement_noise = None):
+                 measurement_noise=np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]),
+                 action_time_delay: int = 0):
         """
         Initialize the Environment.
         The environment can only be used after reset() is called.
@@ -89,6 +89,10 @@ class ModelicaEnv(gym.Env):
                                 to match all data series ending with ".i".
              - list of PlotTmpl: Each template will result in a plot
         :param history: history to store observations and measurement (from the agent) after each step
+
+        :param measurement_noise:
+        :param action_time_delay: Defines how many time steps the controller needs before the action is applied; action
+         is buffered in an array
         """
         if model_input is None:
             raise ValueError('Please specify model_input variables from your OM FMU.')
@@ -102,11 +106,7 @@ class ModelicaEnv(gym.Env):
         self.solver_method = solver_method
 
         # load model from fmu
-        model_name = basename(model_path)
-        logger.debug("Loading model {}".format(model_name))
-        self.model: FMUModelME2 = load_fmu(model_path,
-                                           log_file_name=datetime.now().strftime(f'%Y-%m-%d_{model_name}.txt'))
-        logger.debug("Successfully loaded model {}".format(model_name))
+        self.model = PyFMI_Wrapper.load(model_path)
 
         # if you reward policy is different from just reward/penalty - implement custom step method
         self.reward = reward_fun
@@ -168,27 +168,8 @@ class ModelicaEnv(gym.Env):
         self.action_space = gym.spaces.Box(low=np.full(d_i, -1), high=np.full(d_i, 1))
         self.observation_space = gym.spaces.Box(low=np.full(d_o, -np.inf), high=np.full(d_o, np.inf))
 
-    def _setup_fmu(self):
-        """
-        Initialize fmu model in self.model
-        """
-
-        self.model.setup_experiment(start_time=self.time_start)
-        self.model.enter_initialization_mode()
-        self.model.exit_initialization_mode()
-
-        e_info = self.model.get_event_info()
-        e_info.newDiscreteStatesNeeded = True
-        # Event iteration
-        while e_info.newDiscreteStatesNeeded:
-            self.model.enter_event_mode()
-            self.model.event_update()
-            e_info = self.model.get_event_info()
-
-        self.model.enter_continuous_time_mode()
-
-        # precalculating indices for more efficient lookup
-        self.model_output_idx = np.array([self.model.get_variable_valueref(k) for k in self.model_output_names])
+        self.action_time_delay = action_time_delay
+        self.delay_buffer = np.zeros([self.action_time_delay+1, self.action_space.shape[0]])
 
     def _calc_jac(self, t, x) -> np.ndarray:  # noqa
         """
@@ -200,13 +181,7 @@ class ModelicaEnv(gym.Env):
         :param x: state (ignored)
         :return: the Jacobian matrix
         """
-        # get state and derivative value reference lists
-        refs = [[s.value_reference for s in getattr(self.model, attr)().values()]
-                for attr in
-                ['get_states_list', 'get_derivatives_list']]
-        jacobian = np.identity(len(refs[1]))
-        np.apply_along_axis(lambda col: self.model.get_directional_derivative(*refs, col), 0, jacobian)
-        return jacobian
+        return self.model.jacc()
 
     def _get_deriv(self, t: float, x: np.ndarray) -> np.ndarray:
         """
@@ -217,10 +192,10 @@ class ModelicaEnv(gym.Env):
         :return: 1d float array of derivatives
         """
         self.model.time = t
-        self.model.continuous_states = x.copy(order='C')
+        self.model.states = x.copy(order='C')
 
         # Compute the derivative
-        dx = self.model.get_derivatives()
+        dx = self.model.deriv
         return dx
 
     def _simulate(self) -> np.ndarray:
@@ -233,15 +208,15 @@ class ModelicaEnv(gym.Env):
         logger.debug(f'Simulation started for time interval {self.sim_time_interval[0]}-{self.sim_time_interval[1]}')
 
         # Advance
-        x_0 = self.model.continuous_states
+        x_0 = self.model.states
 
         # Get the output from a step of the solver
         sol_out = scipy.integrate.solve_ivp(
             self._get_deriv, self.sim_time_interval, x_0, method=self.solver_method, jac=self._calc_jac)
         # get the last solution of the solver
-        self.model.continuous_states = sol_out.y[:, -1]  # noqa
+        self.model.states = sol_out.y[:, -1]  # noqa
 
-        obs = self.model.get_real(self.model_output_idx)
+        obs = self.model.obs
         return obs
 
     def _add_measurement_noise(self) -> np.ndarray:
@@ -251,17 +226,15 @@ class ModelicaEnv(gym.Env):
         :return: noisy observation, if measurement noise is defined
         """
 
-        #if self.measurement_noise == None:
+        # if self.measurement_noise == None:
         #    return self._state
 
         # toDo: Check if noise fits to obs! (length, order)
-        #return self._state + np.random.normal(0, self.measurement_noise, len(self._state))
+        # return self._state + np.random.normal(0, self.measurement_noise, len(self._state))
 
         for ii in range(len(self._state)):
-            self._state[ii] = self._state[ii] + np.random.normal(self.measurement_noise[ii,0], self.measurement_noise[ii,1])
-
-
-
+            self._state[ii] = self._state[ii] + np.random.normal(self.measurement_noise.noise_mean[ii],
+                                                                 self.measurement_noise.gains[ii])
 
     @property
     def is_done(self) -> bool:
@@ -284,16 +257,15 @@ class ModelicaEnv(gym.Env):
             * resets model
             * sets simulation start time to 0
             * sets initial parameters of the model
+                - Using the parameters defined in self.model_parameters
             * initializes the model
         :return: state of the environment after resetting.
         """
         logger.debug("Experiment reset was called. Resetting the model.")
 
-        self.model.reset()
-        self.model.setup_experiment(start_time=0)
-
-        self._setup_fmu()
         self.sim_time_interval = np.array([self.time_start, self.time_start + self.time_step_size])
+        self.model.setup(self.time_start, self.model_output_names, self.model_parameters)
+
         self.history.reset()
         self._state = self._simulate()
         self.measurement = []
@@ -334,13 +306,20 @@ class ModelicaEnv(gym.Env):
             logger.error(message)
             raise ValueError(message)
 
+        # put action to first row of line
+        self.delay_buffer[0,:] = action
+
+        # take action from last line of buffer
         # Set input values of the model
-        logger.debug('model input: %s, values: %s', self.model_input_names, action)
-        self.model.set(list(self.model_input_names), list(action))
+        logger.debug('model input: %s, values: %s', self.model_input_names, self.delay_buffer[-1,:])
+        self.model.set(**dict(zip(self.model_input_names, self.delay_buffer[-1,:])))
         if self.model_parameters:
-            values = [(var, f(self.sim_time_interval[0])) for var, f in self.model_parameters.items()]
+            values = {var: f(self.sim_time_interval[0]) for var, f in self.model_parameters.items()}
             # list of keys and list of values
-            self.model.set(*zip(*values))
+            self.model.set_params(**values)
+
+        # shift the buffer
+        self.delay_buffer = np.roll(self.delay_buffer, self.action_space.shape[0])
 
         # Simulate and observe result state
         self._state = self._simulate()
@@ -445,7 +424,7 @@ class NormalizedEnv(ModelicaEnv):
     def step(self, action: Sequence) -> Tuple[np.ndarray, float, bool, Mapping]:
         params = self.net.params(action)
         if params:
-            self.model.set(*zip(*params.items()))
+            self.model.set_params(**params)
         obs, rew, done, info = super().step(action)
         outputs = self.net.augment(obs, self.is_normalized)
         outputs = np.hstack((outputs, obs[len(self.net.out_vars(False)):]))

@@ -38,13 +38,13 @@ adjust = 'Kpi'
 if adjust not in {'Kp', 'Ki', 'Kpi'}:
     raise ValueError("Please set 'adjust' to one of the following values: 'Kp', 'Ki', 'Kpi'")
 
-include_simulate = True
-show_plots = False
+include_simulate = False
+show_plots = True
 balanced_load = False
-do_measurement = False
+do_measurement = True
 
 # If True: Results are stored to directory mentioned in: REBASE to DEV after MERGE #60!!
-safe_results = True
+safe_results = False
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()

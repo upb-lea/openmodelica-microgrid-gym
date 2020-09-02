@@ -7,6 +7,7 @@
 import logging
 from time import strftime, gmtime
 from typing import List
+import os
 
 import GPy
 import gym
@@ -26,7 +27,7 @@ from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 300  # number of simulation steps per episode
-num_episodes = 30  # number of simulation episodes (i.e. SafeOpt iterations)
+num_episodes = 2  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
@@ -36,6 +37,10 @@ mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 
+# Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
+current_directory = os.getcwd()
+save_folder = os.path.join(current_directory, r'saves_VI_control_safeopt')
+os.makedirs(save_folder, exist_ok=True)
 
 class Reward:
     def __init__(self):
@@ -87,7 +92,7 @@ class Reward:
 if __name__ == '__main__':
     #####################################
     # Definitions for the GP
-    prior_mean = 2  # mean factor of the GP prior mean which is multiplied with the first performance of the initial set
+    prior_mean = 0#2  # mean factor of the GP prior mean which is multiplied with the first performance of the initial set
     noise_var = 0.001 ** 2  # measurement noise sigma_omega
     prior_var = 2  # prior variance of the GP
 
@@ -100,7 +105,7 @@ if __name__ == '__main__':
     # the initial performance: safe_threshold = 1.2 means: performance measurement for optimization are seen as
     # unsafe, if the new measured performance drops below 20 % of the initial performance of the initial safe (!)
     # parameter set
-    safe_threshold = 2
+    safe_threshold = 0.5
 
     # The algorithm will not try to expand any points that are below this threshold. This makes the algorithm stop
     # expanding points eventually.
@@ -109,7 +114,7 @@ if __name__ == '__main__':
 
     # Factor to multiply with the initial reward to give back an abort_reward-times higher negative reward in case of
     # limit exceeded
-    abort_reward = 10
+    abort_reward = -10
 
     # Definition of the kernel
     kernel = GPy.kern.Matern32(input_dim=len(bounds), variance=prior_var, lengthscale=lengthscale, ARD=True)
@@ -170,7 +175,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('pipi_signleInv/Inductor_currents'+time+'.pdf')
+        fig.savefig(save_folder + '/Inductor_currents'+time+'.pdf')
 
     def xylables_v_abc(fig):
         ax = fig.gca()
@@ -178,7 +183,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$v_{\mathrm{abc}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('pipi_signleInv/abc_voltage' + time + '.pdf')
+        fig.savefig(save_folder + '/abc_voltage' + time + '.pdf')
 
 
     def xylables_v_dq0(fig):
@@ -187,7 +192,7 @@ if __name__ == '__main__':
         ax.set_ylabel('$v_{\mathrm{dq0}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        fig.savefig('pipi_signleInv/dq0_voltage' + time + '.pdf')
+        fig.savefig(save_folder + '/dq0_voltage' + time + '.pdf')
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=Reward().rew_fun,
@@ -222,8 +227,8 @@ if __name__ == '__main__':
     runner.run(num_episodes, visualise=True)
 
     #####################################
-    # Performance results and parameters as well as plots are stored in folder pipi_signleInv
-    agent.history.df.to_csv('pipi_signleInv/result.csv')
+    # Performance results and parameters as well as plots are stored in folder pipi_signleInvALT
+    agent.history.df.to_csv(save_folder + '/result.csv')
 
     print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df.round({'J': 4, 'Params': 4})))
     print('\n Experiment finished with best set: \n')

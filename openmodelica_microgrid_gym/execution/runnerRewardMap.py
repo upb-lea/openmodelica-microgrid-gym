@@ -71,5 +71,5 @@ class RunnerRewardMap:
                         break
                 self.agent.observe(r, done)
                 self.env.render([self.agent.kMatrix[0][i], self.agent.kMatrix[1][j]])
-                self.rewardMatrix[i,j] = self.agent.episode_reward
+                self.rewardMatrix[i,j] = self.agent.episode_return
 
