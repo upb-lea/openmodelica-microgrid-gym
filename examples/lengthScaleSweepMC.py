@@ -6,8 +6,9 @@
 
 import logging
 import os
+import pandas as pd
 from functools import partial
-#from time import strftime, gmtime
+# from time import strftime, gmtime
 from typing import List
 
 import GPy
@@ -38,29 +39,33 @@ adjust = 'Kpi'
 if adjust not in {'Kp', 'Ki', 'Kpi'}:
     raise ValueError("Please set 'adjust' to one of the following values: 'Kp', 'Ki', 'Kpi'")
 
-include_simulate = False
-show_plots = True
+include_simulate = True
+show_plots = False
 balanced_load = False
-do_measurement = True
+do_measurement = False
 
 # If True: Results are stored to directory mentioned in: REBASE to DEV after MERGE #60!!
 safe_results = False
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
-save_folder = os.path.join(current_directory, r'MC03_lenRun_unbal_lessnoise')
+save_folder = os.path.join(current_directory, r'lengthscaleSearchMC')
 os.makedirs(save_folder, exist_ok=True)
 
-lengthscale_vec = np.linspace(0.5, 0.5, 1)
-unsafe_vec = np.zeros(20)
+ii_steps = 1
+kk_steps = 10
+
+lengthscale_vec_kI = np.linspace(25, 25, ii_steps)
+lengthscale_vec_kP = np.linspace(0.1, 4, kk_steps)
+unsafe_vec = np.zeros([kk_steps, ii_steps])
 
 np.random.seed(0)
 
 # Simulation definitions
 delta_t = 1e-4  # simulation time step size / s
 max_episode_steps = 1000  # number of simulation steps per episode
-num_episodes = 100  # number of simulation episodes (i.e. SafeOpt iterations)
-n_MC = 5  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
+num_episodes = 50  # number of simulation episodes (i.e. SafeOpt iterations)
+n_MC = 20  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
 # distribution to represent real world more accurate
 v_DC = 60  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
@@ -134,7 +139,7 @@ class Reward:
 
 if __name__ == '__main__':
 
-    for ll in range(len(lengthscale_vec)):
+    for kk in range(len(lengthscale_vec_kP)):
         #####################################
         # Definitions for the GP
         prior_mean = 0  # 2  # mean factor of the GP prior mean which is multiplied with the first performance of the initial set
@@ -155,7 +160,8 @@ if __name__ == '__main__':
         # For 2D example, choose Kp and Ki as mutable parameters (below) and define bounds and lengthscale for both of them
         if adjust == 'Kpi':
             bounds = [(0.0, 4), (0, 200)]
-            lengthscale = [0.3, 25.]
+            # lengthscale = [0.3, 25.]
+            lengthscale = [lengthscale_vec_kP[kk], 25.]
 
         # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
         # the initial performance: safe_threshold = 0.8 means. Performance measurement for optimization are seen as
@@ -238,17 +244,17 @@ if __name__ == '__main__':
                 self.l_load = used_l_load
                 self.i_noise = used_i_noise
 
-                #self.r_load.gains =  [elem *1e3 for elem in self.r_load.gains]
-                #self.l_load.gains =  [elem *1e3 for elem in self.r_load.gains]
+                # self.r_load.gains =  [elem *1e3 for elem in self.r_load.gains]
+                # self.l_load.gains =  [elem *1e3 for elem in self.r_load.gains]
 
             def set_title(self):
                 plt.title('Simulation: J = {:.2f}; R = {} \n L = {}; \n noise = {}'.format(self.agent.performance,
-                                                                                        ['%.4f' % elem for elem in
-                                                                                         self.r_load.gains],
-                                                                                        ['%.6f' % elem for elem in
-                                                                                         self.l_load.gains],
-                                                                                        ['%.4f' % elem for elem in
-                                                                                         self.i_noise.gains]))
+                                                                                           ['%.4f' % elem for elem in
+                                                                                            self.r_load.gains],
+                                                                                           ['%.6f' % elem for elem in
+                                                                                            self.l_load.gains],
+                                                                                           ['%.4f' % elem for elem in
+                                                                                            self.i_noise.gains]))
 
             def save_abc(self, fig):
                 if safe_results:
@@ -275,9 +281,10 @@ if __name__ == '__main__':
             # Defining unbalanced loads sampling from Gaussian distribution with sdt = 0.2*mean
             r_load = Load(R, 0.2 * R, balanced=balanced_load)
             l_load = Load(L, 0.2 * L, balanced=balanced_load)
-            #i_noise = Noise([0, 0, 0], [0.0822, 0.103, 0.136], 0.07, 0.16)
-            i_noise = Noise([0, 0, 0], [0.05, 0.05, 0.05], 0.001, 0.1)
+            i_noise = Noise([0, 0, 0], [0.0822, 0.103, 0.136], 0.05, 0.2)
 
+
+            # i_noise = Noise([0, 0, 0], [0.05, 0.05, 0.05], 0.001, 0.1)
 
             # i_noise = np.array([[0.0, 0.0822], [0.0, 0.103], [0.0, 0.136]])
 
@@ -383,29 +390,39 @@ if __name__ == '__main__':
             print(agent.unsafe)
 
             if agent.unsafe:
-                unsafe_vec[ll] = 1
+                unsafe_vec[kk] = 1
             else:
-                unsafe_vec[ll] = 0
-            #####################################
-            # Performance results and parameters as well as plots are stored in folder pipi_signleInv
-            # agent.history.df.to_csv('len_search/result.csv')
-            # if safe_results:
-            #   env.history.df.to_pickle('Simulation')
+                unsafe_vec[kk] = 0
 
-            # Show best episode measurment (current) plot
-            best_env_plt = runner.run_data['best_env_plt']
-            ax = best_env_plt[0].axes[0]
-            ax.set_title('Best Episode')
-            best_env_plt[0].show()
-            # best_env_plt[0].savefig('best_env_plt.png')
+            df = pd.DataFrame([[unsafe_vec],
+                               [lengthscale_vec_kP],
+                               [lengthscale_vec_kI]])  # ,
+            # 'lengthscale_vec_kP': lengthscale_vec_kP,
+            # 'lengthscale_vec_kI': lengthscale_vec_kI})
+            df.to_pickle('Unsafe_matrix')
 
-            # Show worst episode measurment (current) plot
-            best_env_plt = runner.run_data['worst_env_plt']
-            ax = best_env_plt[0].axes[0]
-            ax.set_title('Worst Episode')
-            best_env_plt[0].show()
-            # best_env_plt[0].savefig('worst_env_plt.png')
+            """
+                            #####################################
+                            # Performance results and parameters as well as plots are stored in folder pipi_signleInv
+                            agent.history.df.to_csv('len_search/result.csv')
 
+                            env.history.df.to_pickle('Simulation')
+
+                            # Show best episode measurment (current) plot
+                            best_env_plt = runner.run_data['best_env_plt']
+                            ax = best_env_plt[0].axes[0]
+                            ax.set_title('Best Episode')
+                            best_env_plt[0].show()
+                            #best_env_plt[0].savefig('best_env_plt.png')
+
+                            # Show worst episode measurment (current) plot
+                            best_env_plt = runner.run_data['worst_env_plt']
+                            ax = best_env_plt[0].axes[0]
+                            ax.set_title('Worst Episode')
+                            best_env_plt[0].show()
+                            #best_env_plt[0].savefig('worst_env_plt.png')
+
+                            """
             best_agent_plt = runner.run_data['last_agent_plt']
             ax = best_agent_plt.axes[0]
             ax.grid(which='both')
@@ -422,21 +439,13 @@ if __name__ == '__main__':
                 ax.set_ylabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
                 ax.set_xlabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
                 ax.get_figure().axes[1].set_ylabel(r'$J$')
-                plt.title('Lengthscale = {}; balanced = '.format(lengthscale,balanced_load))
-                plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1,
-                         lw=4,
+                ax.set_title('lengthscale {}'.format([lengthscale_vec_kP[kk], lengthscale_vec_kI[ii]]))
+                plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-',
+                         zorder=1, lw=4,
                          alpha=.5)
+
             best_agent_plt.show()
-            if safe_results:
-                best_agent_plt.savefig(save_folder + '/_agent_plt.png')
-                agent.history.df.to_csv(save_folder + '/_result.csv')
-
-            print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df[:]))
-
-            print('\n Experiment finished with best set: \n')
-            print('\n  {} = {}'.format(adjust, agent.history.df.at[np.argmax(agent.history.df['J']), 'Params']))
-            print('  Resulting in a performance of J = {}'.format(np.max(agent.history.df['J'])))
-            print('\n\nBest experiment results are plotted in the following:')
+            best_agent_plt.savefig(save_folder + '/_agent_plt{}_{}.png'.format(kk, 1))
 
         if do_measurement:
             #####################################
