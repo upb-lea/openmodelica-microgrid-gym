@@ -362,7 +362,7 @@ if __name__ == '__main__':
                                          'rl.inductor1.L': partial(l_load.load_step, n=0),
                                          'rl.inductor2.L': partial(l_load.load_step, n=1),
                                          'rl.inductor3.L': partial(l_load.load_step, n=2)},
-                           model_path='../fmu/grid.testbench_SC2.fmu',
+                           model_path='../OpenModelica_Microgrids/OpenModelica_Microgrids.Grids.Testbench_SC2.fmu',
                            model_input=['i1p1', 'i1p2', 'i1p3'],
                            # model_output=dict(#rl=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
                            model_output=dict(rl=[['inductor1.i', 'inductor2.i', 'inductor3.i']]  # ,
