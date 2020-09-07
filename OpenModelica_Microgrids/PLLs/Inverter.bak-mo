@@ -1,0 +1,65 @@
+within OpenModelica_Microgrids.PLLs;
+
+model Inverter
+  parameter Real v_DC = 1000;
+  Modelica.Electrical.Analog.Basic.Ground ground1 annotation(
+    Placement(visible = true, transformation(origin = {-74, -82}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  Modelica.Electrical.Analog.Sources.SignalVoltage signalVoltage1 annotation(
+    Placement(visible = true, transformation(origin = {-74, -42}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
+  Modelica.Electrical.Analog.Sources.SignalVoltage signalVoltage2 annotation(
+    Placement(visible = true, transformation(origin = {-74, 18}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
+  Modelica.Electrical.Analog.Sources.SignalVoltage signalVoltage3 annotation(
+    Placement(visible = true, transformation(origin = {-74, 78}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
+  Modelica.Blocks.Interfaces.RealInput u1 annotation(
+    Placement(visible = true, transformation(origin = {-104, -60}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, -60}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
+  Modelica.Blocks.Interfaces.RealInput u3 annotation(
+    Placement(visible = true, transformation(origin = {-104, 60}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 60}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
+  Modelica.Blocks.Interfaces.RealInput u2 annotation(
+    Placement(visible = true, transformation(origin = {-104, 4.44089e-16}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 4.44089e-16}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
+  Modelica.Electrical.Analog.Interfaces.Pin pin3 annotation(
+    Placement(visible = true, transformation(origin = {100, 60}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, 60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  Modelica.Electrical.Analog.Interfaces.Pin pin2 annotation(
+    Placement(visible = true, transformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  Modelica.Electrical.Analog.Interfaces.Pin pin1 annotation(
+    Placement(visible = true, transformation(origin = {100, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  Modelica.Blocks.Math.Gain gain3(k = v_DC) annotation(
+    Placement(visible = true, transformation(origin = {-26, 60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  Modelica.Blocks.Math.Gain gain1(k = v_DC) annotation(
+    Placement(visible = true, transformation(origin = {-26, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  Modelica.Blocks.Math.Gain gain2(k = v_DC) annotation(
+    Placement(visible = true, transformation(origin = {-26, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+equation
+  connect(signalVoltage2.p, pin2) annotation(
+    Line(points = {{-74, 28}, {80, 28}, {80, 0}, {100, 0}}, color = {0, 0, 255}));
+  connect(signalVoltage3.p, pin3) annotation(
+    Line(points = {{-74, 88}, {80, 88}, {80, 60}, {100, 60}}, color = {0, 0, 255}));
+  connect(signalVoltage1.p, pin1) annotation(
+    Line(points = {{-74, -32}, {80, -32}, {80, -60}, {100, -60}, {100, -60}}, color = {0, 0, 255}));
+  connect(signalVoltage3.n, ground1.p) annotation(
+    Line(points = {{-74, 68}, {-74, 48}, {-82, 48}, {-82, -72}, {-74, -72}}, color = {0, 0, 255}));
+  connect(signalVoltage2.n, ground1.p) annotation(
+    Line(points = {{-74, 8}, {-82, 8}, {-82, -72}, {-74, -72}}, color = {0, 0, 255}));
+  connect(signalVoltage1.n, ground1.p) annotation(
+    Line(points = {{-74, -52}, {-74, -72}}, color = {0, 0, 255}));
+/*  connect(signalVoltage1.v, regler1) annotation(
+    Line);
+  connect(signalVoltage2.v, regler2) annotation(
+    Line);
+  connect(signalVoltage3.v, regler3) annotation(
+    Line);
+*/
+  connect(u1, gain1.u) annotation(
+    Line(points = {{-104, -60}, {-38, -60}, {-38, -60}, {-38, -60}}, color = {0, 0, 127}));
+  connect(gain1.y, signalVoltage1.v) annotation(
+    Line(points = {{-14, -60}, {-6, -60}, {-6, -42}, {-60, -42}, {-60, -42}, {-62, -42}}, color = {0, 0, 127}));
+  connect(u2, gain2.u) annotation(
+    Line(points = {{-104, 0}, {-38, 0}, {-38, 0}, {-38, 0}}, color = {0, 0, 127}));
+  connect(gain2.y, signalVoltage2.v) annotation(
+    Line(points = {{-14, 0}, {-6, 0}, {-6, 18}, {-62, 18}, {-62, 18}}, color = {0, 0, 127}));
+  connect(u3, gain3.u) annotation(
+    Line(points = {{-104, 60}, {-38, 60}, {-38, 60}, {-38, 60}}, color = {0, 0, 127}));
+  connect(gain3.y, signalVoltage3.v) annotation(
+    Line(points = {{-14, 60}, {-6, 60}, {-6, 78}, {-62, 78}, {-62, 78}}, color = {0, 0, 127}));
+  annotation(
+    uses(Modelica(version = "3.2.3")));
+end Inverter;
