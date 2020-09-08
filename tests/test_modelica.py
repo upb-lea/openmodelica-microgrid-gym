@@ -12,7 +12,7 @@ from pytest import approx
 def env():
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode=None,
-                   model_path='fmu/test.fmu',
+                   model_path='OpenModelica_Microgrids/test.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output={'lc1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
@@ -58,7 +58,7 @@ def test_params_simple():
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode=None,
                    max_episode_steps=100,
-                   model_path='fmu/test.fmu',
+                   model_path='OpenModelica_Microgrids/test.fmu',
                    model_params=dict(i1p1=lambda t: np.sin(t), i1p2=3, i1p3=fun),
                    model_input=['i2p1', 'i2p2', 'i2p3'],
                    model_output={'lc1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
