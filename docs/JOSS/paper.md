@@ -86,7 +86,9 @@ Users can select between a wide range of different grid components and connect t
 
 * Calculation, evaluation and monitoring of every single time step covering states, action and auxiliary quantities provides an interface for manual or automated inspection. The latter is particularly useful for the automatic training of data-driven control approaches such as reinforcement learning.
 
-* Many software auxiliaries for the control and monitoring of power electronic-driven microgrids are provided.
+* Large variety of predefined and parameterizable controllers (droop, voltage, current in multi- and singlephase) available, easy implementation of user-defined control structures possible.
+
+* Monitoring tools to follow the live performance of the RL agent and to map the overall grid behaviour depending of each selected parameter set
 
 * Interesting use cases applying safe data-driven learning to highlight the requirement of safety in a delicate control environment are available.
 
