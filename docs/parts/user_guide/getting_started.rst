@@ -15,7 +15,7 @@ In addition, the OMG toolbox can be used for pure simulation and classical contr
 Each microgrid model is built in the open source software
 `OpenModelica <https://www.openmodelica.org/>`__ and can be easily adapted.
 
-.. figure:: ../../pictures/network.png
+.. figure:: ../../pictures/network1.png
    :alt: 
 
 For the transfer to Python, it needs to get exported as a `Functional

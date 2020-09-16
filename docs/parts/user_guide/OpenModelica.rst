@@ -8,30 +8,31 @@ industrial and academic usage.
 Installation of OpenModelica
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The models shown below were createf by using
+The models shown below were created by using
 `OMEdit <https://openmodelica.org/download/download-windows>`__ v1.16.
 
 Using a Linux OS, sometimes may lead to problems while trying to install
 OpenModelica. In this case, try to download the pre-built `virtual
 machine <https://openmodelica.org/download/virtual-machine>`__.
 
+Mac users are strongly encouraged to run OpenModelica as well as the OMG toolbox in a Linux VM.
+
 Creating Microgrids with OpenModelica
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The microgrids are created with a  user defined library provided in the
-modelica model *grid.mo* located in the folder fmu.
+The microgrids are created with a  user defined library. To start it, run the file *package.mo* directly in the folder *OpenModelica_Microgrids*.
 
-The package "grid" contains a library with components required for
-creating the power electronics-driven microgrids.
 
-.. figure:: ../../pictures/library.jpg
+This package contains all components and required for
+creating the power electronics driven microgrids, as well as some example networks.
+
+.. figure:: ../../pictures/library1.jpg
    :alt: 
 
-It contains several packages (red 'P' symbol) with predefined components,
-filters, loads etc. Gridmodels and test-settings, which provide for
-example a direct sine-voltage to the inputs, are placed directly in the
-package (blue 'M', after loading with doubleclick shown as input/output
-diagram like "network" in the picture above).
+It contains several folders with predefined components,
+filters, loads etc. as well as microgrids for the FMU export to Python (*Grids*-Folder) and some stand-alone *Examples* which can be run directly in OpenModelica (G
+
+
 
 .. figure:: ../../pictures/omedit.jpg
    :alt: 
@@ -44,7 +45,7 @@ python code (model\_input=['one', 'two',...] in the env=gym.make()
 call).
 
 **Important**: By using filters/loads with inductors or capacitors,
-leave the initialization in the provided settings. Changes are likely to
+leave the checkbox for the initialization in the provided settings. Changes are likely to
 result in errors while creating the FMU or running the Python files.
 
 The provided examples are designed for up to two inverters, but the underlying models can be
@@ -55,8 +56,8 @@ Power Losses
 ^^^^^^^^^^^^
 
 In the default example "network", no power losses in the inverters or filters are included.
-For the latter they can be added by using parts out of the "filter" package instead of
-the "ideal\_filter" package. Due to a big increase of components and
+For the latter they can be added by using parts out of the "Filter.LossesFilter" package instead of
+the "Filter.IdealFilter" package. Due to a big increase of components and
 equations in the ODE-system, the simulation time will increase.
 For modeling losses inside the power electronic converters, adding a model in the Python interface
 scripts is recommending. Integrating, e.g switching losses, directly in the OpenModelia model will
@@ -82,7 +83,7 @@ connected to the grid. Connections with resistors in such dimension
 cause numerical issues while simulating as the ODE system becomes stiff.
 There are solvers available for stiff equation systems like BDF and
 Radau or ones with automatic stiffness detection, but using the switches
-often ran into non-converging systems and execution errors.
+often runs into non-converging systems and execution errors.
 
 The working alternative is a parameter-variation of the load. It is
 possible to change the parameters of any load during a simulation and
