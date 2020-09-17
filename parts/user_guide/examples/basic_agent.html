@@ -217,7 +217,7 @@ exchange between agent and environment like presented in the high level code arc
     <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s1">&#39;openmodelica_microgrid_gym:ModelicaEnv-v1&#39;</span><span class="p">,</span>
                    <span class="n">model_input</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;i1p1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1p2&#39;</span><span class="p">,</span> <span class="s1">&#39;i1p3&#39;</span><span class="p">],</span>
                    <span class="n">model_output</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">lc1</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;inductor1.i&#39;</span><span class="p">,</span> <span class="s1">&#39;inductor2.i&#39;</span><span class="p">,</span> <span class="s1">&#39;inductor3.i&#39;</span><span class="p">]),</span>
-                   <span class="n">model_path</span><span class="o">=</span><span class="s1">&#39;../fmu/grid.network.fmu&#39;</span><span class="p">)</span>
+                   <span class="n">model_path</span><span class="o">=</span><span class="s1">&#39;../OpenModelica_Microgrids/OpenModelica_Microgrids.Grids.Network.fmu&#39;</span><span class="p">)</span>
 
     <span class="n">agent</span> <span class="o">=</span> <span class="n">RndAgent</span><span class="p">()</span>
     <span class="n">runner</span> <span class="o">=</span> <span class="n">Runner</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
