@@ -163,7 +163,7 @@ class SafeOptAgent(StaticControlAgent):
         Renders the results for the performance
         """
         figure, ax = plt.subplots()
-        if self.optimizer.x.size > 3:
+        if self.optimizer.x.shape[1] > 3:
             # check if the dimensionality is less then 4 dimension
             logger.info('Plotting of GP landscape not possible for then 3 dimensions')
             return figure
