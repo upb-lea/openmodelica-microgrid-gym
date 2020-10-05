@@ -22,9 +22,9 @@ authors:
     orcid: 0000-0001-9362-8777
     affiliation: 2
 affiliations:
- - name: Chair of Intelligent Systems and Machine Learning, Paderborn University, Germany
+ - name: Chair of Intelligent Systems and Machine Learning, Paderborn University, Paderborn, Germany
    index: 1
- - name: Chair of Power Electronics and Electrical Drives, Paderborn University, Germany
+ - name: Chair of Power Electronics and Electrical Drives, Paderborn University, Paderborn, Germany
    index: 2
 date: 25 May 2020
 bibliography: paper.bib
