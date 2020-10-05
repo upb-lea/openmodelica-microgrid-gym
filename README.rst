@@ -3,7 +3,7 @@ OpenModelica Microgrid Gym
 ==========================
 
 | |build| |cov| |nbsp| |nbsp| |python| |pypi| |download| |nbsp| |nbsp| |license|
-| |doc| |whitepaper|
+| |doc| |whitepaper| |joss|
 
 .. |nbsp|   unicode:: U+00A0 .. NO-BREAK SPACE
 
@@ -30,6 +30,10 @@ OpenModelica Microgrid Gym
 
 .. |whitepaper| image:: https://img.shields.io/badge/arXiv-whitepaper-informational
     :target: https://arxiv.org/pdf/2005.04869.pdf
+    
+.. |joss| image:: https://joss.theoj.org/papers/10.21105/joss.02435/status.svg
+   :target: https://doi.org/10.21105/joss.02435
+
 
 
 .. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/raw/develop/docs/pictures/omg_flow.png
