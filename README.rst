@@ -147,8 +147,20 @@ Please find a white paper on the OMG toolbox including an exemplary usage scenar
 - https://arxiv.org/abs/2005.04869
 
 Please use the following BibTeX entry for citing us::
+    @article{OMG-code2020,
+          doi = {10.21105/joss.02435},
+          url = {https://doi.org/10.21105/joss.02435},
+          year = {2020},
+          publisher = {The Open Journal},
+          volume = {5},
+          number = {54},
+          pages = {2435},
+          author = {Stefan Heid and Daniel Weber and Henrik Bode and Eyke Hüllermeier and Oliver Wallscheid},
+          title = {OMG: A Scalable and Flexible Simulation and Testing Environment Toolbox for Intelligent Microgrid Control},
+          journal = {Journal of Open Source Software}
+    }
 
-    @misc{OMG2020,
+    @article{OMG-whitepaper2020,
         title={Towards a Scalable and Flexible Simulation and
                Testing Environment Toolbox for Intelligent Microgrid Control},
         author={Henrik Bode and Stefan Heid and Daniel Weber and Eyke Hüllermeier and Oliver Wallscheid},
