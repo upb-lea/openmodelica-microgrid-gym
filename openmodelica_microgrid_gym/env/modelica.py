@@ -1,9 +1,7 @@
 import logging
 import re
-from datetime import datetime
 from fnmatch import translate
 from functools import partial
-from os.path import basename
 from typing import Sequence, Callable, List, Union, Tuple, Optional, Mapping, Dict, Any
 
 import gym
@@ -96,6 +94,7 @@ class ModelicaEnv(gym.Env):
             raise ValueError(f'Please select one of the following viz_modes: {self.viz_modes}')
 
         self.viz_mode = viz_mode
+        self._register_render = False
         logger.setLevel(log_level)
         self.solver_method = solver_method
 
@@ -242,6 +241,7 @@ class ModelicaEnv(gym.Env):
         self.measurement = []
         self.history.append(self._state)
         self._failed = False
+        self._register_render = False
 
         return self._state
 
@@ -317,11 +317,17 @@ class ModelicaEnv(gym.Env):
         """
         if self.viz_mode is None:
             return []
-        elif close:
-            if self.viz_mode == 'step':
+        elif self.viz_mode == 'step':
+            if close:
                 # TODO close plot
                 pass
-            else:
+            pass
+
+        elif self.viz_mode == 'episode':
+            # TODO update plot
+            if not close:
+                self._register_render = True
+            elif self._register_render:
                 figs = []
 
                 # plot cols by theirs structure filtered by the vis_cols param
@@ -351,10 +357,6 @@ class ModelicaEnv(gym.Env):
                     figs.append(fig)
 
                 return figs
-
-        elif self.viz_mode == 'step':
-            # TODO update plot
-            pass
 
     def close(self) -> Tuple[bool, Any]:
         """
