@@ -212,7 +212,7 @@ if __name__ == '__main__':
                    viz_mode='episode',
                    max_episode_steps=max_episode_steps,
                    model_params={'inverter1.v_DC': v_DC},
-                   model_path='../OpenModelica_Microgrids/OpenModelica_Microgrids.Grids.NetworkSingleInverter.fmu',
+                   model_path='../omg_grid/OpenModelica_Microgrids.Grids.NetworkSingleInverter.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3'],
                    model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
                                           ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]),
