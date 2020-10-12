@@ -161,8 +161,11 @@ if __name__ == '__main__':
     qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
 
     # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
-    ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, droop_param, qdroop_param,
-                                                 undersampling=2, name='master')
+    #ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, droop_param, qdroop_param,
+    #                                             undersampling=2, name='master')
+
+    ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, f_nom=nomFreq,
+                                                     undersampling=2, name='master')
 
     #####################################
     # Definition of the optimization agent
@@ -176,8 +179,7 @@ if __name__ == '__main__':
                               safe_threshold=safe_threshold, explore_threshold=explore_threshold),
                          [ctrl],
                          dict(master=[[f'lc1.inductor{k}.i' for k in '123'],
-                                      [f'lc1.capacitor{k}.v' for k in '123'],
-                                      i_ref]),
+                                       i_ref]),
                          history=FullHistory()
                          )
 
