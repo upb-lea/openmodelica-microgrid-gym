@@ -23,7 +23,7 @@ components:
     #  kP: 10
     #  kI: 200
     in:
-      u: [i2p1, i2p2, i2p3]
+      u: [i1p1, i1p2, i1p3]    # names of the inputs
     out:
       v: [lcl1.capacitor1.v,lcl1.capacitor2.v, lcl1.capacitor3.v]
       i: [lcl1.inductor1.i, lcl1.inductor2.i, lcl1.inductor3.i]

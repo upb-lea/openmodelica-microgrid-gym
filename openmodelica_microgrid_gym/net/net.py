@@ -4,7 +4,7 @@ from typing import Optional
 
 import numpy as np
 import yaml
-from more_itertools import collapse
+from more_itertools import collapse, flatten
 
 from openmodelica_microgrid_gym.aux_ctl import PLL, PLLParams, dq0_to_abc, inst_power, inst_reactive, DDS, DroopParams, \
     DroopController, InverseDroopController, InverseDroopParams
@@ -16,6 +16,17 @@ class Network:
         self.v_nom = v_nom
         self.freq_nom = freq_nom
 
+    @staticmethod
+    def _validate_load_data(data):
+        # validate that inputs are disjoined
+        components_with_inputs = [component['in'].values() for component in data['components'].values() if 'in' in component]
+        inputs = list(flatten(components_with_inputs))
+        if sum(map(len, inputs)) != len(set().union(*inputs)):
+            # all inputs are pairwise disjoint if the total number of inputs is the same as the number of elements in the union
+            raise ValueError('The inputs of the components should be disjoined')
+
+        return True
+
     @classmethod
     def load(cls, configurl='net.yaml'):
         """
@@ -25,6 +36,8 @@ class Network:
         :return:
         """
         data = yaml.safe_load(open(configurl))
+        if not cls._validate_load_data(data):
+            raise ValueError(f'loading {configurl} failed due to validation')
         components = data['components']
         del data['components']
         self = cls(**data)
