@@ -5,24 +5,20 @@
 
 
 import logging
+import os
 from time import strftime, gmtime
 from typing import List
-import os
 
 import GPy
 import gym
 import numpy as np
 
-import matplotlib.pyplot as plt
-
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat
-from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQCurrentSourcingController, \
-    MultiPhaseDQ0PIPIController
+from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQ0PIPIController
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
-
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
@@ -41,6 +37,7 @@ QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 current_directory = os.getcwd()
 save_folder = os.path.join(current_directory, r'saves_VI_control_safeopt')
 os.makedirs(save_folder, exist_ok=True)
+
 
 class Reward:
     def __init__(self):
@@ -83,7 +80,7 @@ class Reward:
         #  better, i.e. more significant,  gradients)
         # plus barrier penalty for violating the current constraint
         error = np.sum((np.abs((isp_abc_master - iabc_master)) / iLimit) ** 0.5, axis=0) \
-                + -np.sum(mu * np.log(1 - np.maximum(np.abs(iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0)\
+                + -np.sum(mu * np.log(1 - np.maximum(np.abs(iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0) \
                 + np.sum((np.abs((vsp_abc_master - vabc_master)) / nomVoltPeak) ** 0.5, axis=0)
 
         return -error.squeeze()
@@ -98,8 +95,10 @@ if __name__ == '__main__':
 
     # Choose Kp and Ki (current and voltage controller) as mutable parameters (below) and define bounds and lengthscale
     # for both of them
-    bounds = [(0.0, 0.03), (0, 300),(0.0, 0.03), (0, 300)] # bounds on the input variable current-Ki&Kp and voltage-Ki&Kp
-    lengthscale = [.005, 50.,.005, 50.]   # length scale for the parameter variation [current-Ki&Kp and voltage-Ki&Kp] for the GP
+    bounds = [(0.0, 0.03), (0, 300), (0.0, 0.03),
+              (0, 300)]  # bounds on the input variable current-Ki&Kp and voltage-Ki&Kp
+    lengthscale = [.005, 50., .005,
+                   50.]  # length scale for the parameter variation [current-Ki&Kp and voltage-Ki&Kp] for the GP
 
     # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
     # the initial performance: safe_threshold = 1.2 means: performance measurement for optimization are seen as
@@ -123,9 +122,10 @@ if __name__ == '__main__':
     # Definition of the controllers
     # Choose Kp and Ki for the current and voltage controller as mutable parameters
     mutable_params = dict(currentP=MutableFloat(10e-3), currentI=MutableFloat(10), voltageP=MutableFloat(25e-3),
-                            voltageI=MutableFloat(60))
+                          voltageI=MutableFloat(60))
 
-    voltage_dqp_iparams = PI_params(kP=mutable_params['voltageP'], kI=mutable_params['voltageI'], limits=(-iLimit, iLimit))
+    voltage_dqp_iparams = PI_params(kP=mutable_params['voltageP'], kI=mutable_params['voltageI'],
+                                    limits=(-iLimit, iLimit))
     current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
 
     # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
@@ -139,7 +139,7 @@ if __name__ == '__main__':
 
     # Define a voltage forming inverter using the PIPI and droop parameters from above
     ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param, qdroop_param,
-                                                 undersampling=2, name='master')
+                                       undersampling=2, name='master')
 
     #####################################
     # Definition of the optimization agent
@@ -158,6 +158,7 @@ if __name__ == '__main__':
                          history=FullHistory()
                          )
 
+
     #####################################
     # Definition of the environment using a FMU created by OpenModelica
     # (https://www.openmodelica.org/)
@@ -175,7 +176,8 @@ if __name__ == '__main__':
         ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H_%M_%S", gmtime())
-        fig.savefig(save_folder + '/Inductor_currents'+time+'.pdf')
+        fig.savefig(save_folder + '/Inductor_currents' + time + '.pdf')
+
 
     def xylables_v_abc(fig):
         ax = fig.gca()
@@ -193,6 +195,7 @@ if __name__ == '__main__':
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H_%M_%S", gmtime())
         fig.savefig(save_folder + '/dq0_voltage' + time + '.pdf')
+
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=Reward().rew_fun,
@@ -232,10 +235,10 @@ if __name__ == '__main__':
 
     print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df.round({'J': 4, 'Params': 4})))
     print('\n Experiment finished with best set: \n')
-    print('\n  Current-Ki&Kp and voltage-Ki&Kp = {}' .format(agent.history.df.at[np.argmax(agent.history.df['J']),'Params']))
+    print('\n  Current-Ki&Kp and voltage-Ki&Kp = {}'.format(
+        agent.history.df.at[np.argmax(agent.history.df['J']), 'Params']))
     print('  Resulting in a performance of J = {}'.format(np.max(agent.history.df['J'])))
     print('\n\nBest experiment results are plotted in the following:')
-
 
     # Show best episode measurment (current) plot
     best_env_plt = runner.run_data['best_env_plt']
@@ -243,6 +246,4 @@ if __name__ == '__main__':
         ax = best_env_plt[ii].axes[0]
         ax.set_title('Best Episode')
         best_env_plt[ii].show()
-        #best_env_plt[0].savefig('best_env_plt.png')
-
-
+        # best_env_plt[0].savefig('best_env_plt.png')

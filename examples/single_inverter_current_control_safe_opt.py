@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat
-from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQCurrentSourcingController
+from openmodelica_microgrid_gym.aux_ctl import PI_params, MultiPhaseDQCurrentSourcingController
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 
@@ -41,8 +41,6 @@ nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
 iLimit = 30  # inverter current limit / A
 iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
-DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
-QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
 i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
 
 
@@ -150,15 +148,6 @@ if __name__ == '__main__':
     elif adjust == 'Kpi':
         mutable_params = dict(currentP=MutableFloat(10e-3), currentI=MutableFloat(10))
         current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
-
-    # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
-    # filter and the nominal frequency
-    # Droop controller used to calculate the virtual frequency drop due to load changes
-    droop_param = DroopParams(DroopGain, 0.005, nomFreq)
-
-    # Define the Q-droop parameters for the inverter of the reactive power VAR/Volt, delta_t (0.002) used for the
-    # filter and the nominal voltage
-    qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
 
     # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
     ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, f_nom=nomFreq,

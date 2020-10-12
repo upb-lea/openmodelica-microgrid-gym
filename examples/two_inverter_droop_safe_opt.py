@@ -14,15 +14,13 @@ import GPy
 import gym
 import numpy as np
 
-import matplotlib.pyplot as plt
-
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat
-from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQCurrentSourcingController, \
+from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, \
     MultiPhaseDQ0PIPIController, PLLParams, InverseDroopParams, MultiPhaseDQCurrentController
 from openmodelica_microgrid_gym.env import PlotTmpl
-from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
+from openmodelica_microgrid_gym.util import nested_map, FullHistory
 
 # Simulation definitions
 delta_t = 0.5e-4  # simulation time step size / s
@@ -160,7 +158,7 @@ if __name__ == '__main__':
 
     # Add to dict
     ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, iLimit, droop_param_slave,
-                                              qdroop_param_slave,  name='slave'))
+                                              qdroop_param_slave, name='slave'))
 
     #####################################
     # Definition of the optimization agent
@@ -305,7 +303,7 @@ if __name__ == '__main__':
 
     print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df.round({'J': 4, 'Params': 4})))
     print('\n Experiment finished with best set: \n')
-    print('\n  [pDroop_master, pDroop_slave, qDroop_master, qDroop_slave]= {}'.format(agent.history.df.at[np.argmax(agent.history.df['J']), 'Params']))
+    print('\n  [pDroop_master, pDroop_slave, qDroop_master, qDroop_slave]= {}'.format(
+        agent.history.df.at[np.argmax(agent.history.df['J']), 'Params']))
     print('  Resulting in a performance of J = {}'.format(np.max(agent.history.df['J'])))
     print('\n\nBest experiment results are plotted in the following:')
-
