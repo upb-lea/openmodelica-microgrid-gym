@@ -70,7 +70,7 @@ def env():
                      ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]}
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode=None,
-                   model_path='OpenModelica_Microgrids/test.fmu',
+                   model_path='omg_grid/test.fmu',
                    max_episode_steps=100,
                    model_input=model_input,
                    model_output=conf)

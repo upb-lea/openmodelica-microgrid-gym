@@ -82,7 +82,6 @@ class Controller:
         """
         pass
 
-
 class VoltageCtl(Controller):
     def __init__(self, VPIParams: PI_params, IPIParams: PI_params, tau: float,
                  Pdroop_param: DroopParams, Qdroop_param: DroopParams,
@@ -337,57 +336,52 @@ class MultiPhaseDQCurrentController(CurrentCtl):
         return control
 
 
-class MultiPhaseDQCurrentSourcingController(VoltageCtl):
+class MultiPhaseDQCurrentSourcingController(Controller):
     """
     Implements a discrete multiphase PI current controller to supply an amount of current to a load / the grid which can
-    be chosen via state"extension" using idq0SP
+    be chosen via state"extension" using idq0SP at a frequency of f_nom.
     Has its own internal oscillator to keep track of the internal angle.
-    Due to it is the only inverter to supply the load, it inherits from the voltage controller but sets the parameters
-    of VPIParams to zero to not implement the voltage controller but uses the there defined ("direct")Droop (e.g.
-    frequency drop due to loaded.
 
     Controls each phase individually in the dq0 axis.
     """
 
-    def __init__(self, IPIParams: PI_params, tau: float, PdroopParams: DroopParams, QdroopParams: DroopParams,
+    def __init__(self, IPIParams: PI_params, tau: float, f_nom: float = 50.0,
                  undersampling: int = 1, *args, **kwargs):
         """
         :param IPIParams: PI_parameter for the current control loop
         :param tau: sampling time
-        :param PdroopParams: Droop parameters for P-droop
-        :param QdroopParams: Droop parameters for Q-droop
+        :param f_nom: nominal frequency for current sourcing ctrl
         :param undersampling: Control is applied every undersmpling* cycles
         """
-        super().__init__(PI_params(0, 0, (0, 0)), IPIParams, tau, PdroopParams, QdroopParams, undersampling,
-                         *args, **kwargs)
+        super().__init__(IPIParams, tau, undersampling, *args, **kwargs)
+        self._phaseDDS = DDS(self._ts)
+        self.f_nom = f_nom
         self._set_hist_cols(['phase',
-                             [f'CVV{s}' for s in 'dq0'], [f'CVI{s}' for s in 'dq0'],
+                             [f'CVI{s}' for s in 'dq0'],
                              [f'SPI{s}' for s in 'dq0'],
-                             [f'm{s}' for s in 'dq0'], 'instPow', 'instQ',
-                             'freq'])
+                             [f'm{s}' for s in 'dq0']])
 
         self._prev_CV = np.zeros(N_PHASE)
 
-    def control(self, currentCV: np.ndarray, voltageCV: np.ndarray, idq0SP: np.ndarray = np.zeros(3), **kwargs):
+    def reset(self):
+        super().reset()
+        self._phaseDDS.reset()
+
+    def control(self, currentCV: np.ndarray, idq0SP: np.ndarray = np.zeros(3), **kwargs):
         """
         Performs the calculations for a discrete step of the controller
 
         :param currentCV: 1d-array with 3 entries, one for each phase in abc. The feedback values for current
-        :param voltageCV:  1d-array with 3 entries, one for each phase in abc. The feedback values for voltage
+        :param idq0SP: 1d-array with 3 entries, one for each phase in dq0. Current set points for current sourcing ctrl
 
         :return: Modulation index for the inverter in abc
         """
 
-        instPow = -inst_power(voltageCV, currentCV)
-        freq = self._PdroopController.step(instPow)
         # Get the next phase rotation angle to implement
-        phase = self._phaseDDS.step(freq)
-
-        instQ = -inst_reactive(voltageCV, currentCV)
+        phase = self._phaseDDS.step(self.f_nom)
 
         # Transform the feedback to the dq0 frame
         CVIdq0 = abc_to_dq0(currentCV, phase)
-        CVVdq0 = abc_to_dq0(voltageCV, phase)
 
         # current setpoint
         SPIdq0 = idq0SP
@@ -396,7 +390,7 @@ class MultiPhaseDQCurrentSourcingController(VoltageCtl):
         MVdq0 = self._currentPI.step(SPIdq0, CVIdq0)
 
         # Add intern measurment
-        self.history.append([phase, *CVVdq0, *CVIdq0, *SPIdq0, *MVdq0, instPow, instQ, freq])
+        self.history.append([phase, *CVIdq0, *SPIdq0, *MVdq0])
 
         # Transform the MVs back to the abc frame
         return dq0_to_abc(MVdq0, phase)
