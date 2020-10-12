@@ -82,16 +82,6 @@ class Controller:
         """
         pass
 
-
-class GridformingCurrentCtl(Controller):
-
-
-    def __init__(self, IPIParams, tau, undersampling, f_nom, *args, **kwargs):
-
-        super().__init__(IPIParams, tau, undersampling, *args, **kwargs)
-        self.f_nom = f_nom
-        self._phaseDDS = DDS(self._ts)
-
 class VoltageCtl(Controller):
     def __init__(self, VPIParams: PI_params, IPIParams: PI_params, tau: float,
                  Pdroop_param: DroopParams, Qdroop_param: DroopParams,
@@ -376,7 +366,6 @@ class MultiPhaseDQCurrentSourcingController(Controller):
     def reset(self):
         super().reset()
         self._phaseDDS.reset()
-
 
     def control(self, currentCV: np.ndarray, idq0SP: np.ndarray = np.zeros(3), **kwargs):
         """
