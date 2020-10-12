@@ -161,9 +161,6 @@ if __name__ == '__main__':
     qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
 
     # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
-    #ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, droop_param, qdroop_param,
-    #                                             undersampling=2, name='master')
-
     ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, f_nom=nomFreq,
                                                      undersampling=2, name='master')
 
