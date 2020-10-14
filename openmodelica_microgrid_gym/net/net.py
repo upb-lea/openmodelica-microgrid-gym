@@ -19,7 +19,8 @@ class Network:
     @staticmethod
     def _validate_load_data(data):
         # validate that inputs are disjoined
-        components_with_inputs = [component['in'].values() for component in data['components'].values() if 'in' in component]
+        components_with_inputs = [component['in'].values() for component in data['components'].values() if
+                                  'in' in component]
         inputs = list(flatten(components_with_inputs))
         if sum(map(len, inputs)) != len(set().union(*inputs)):
             # all inputs are pairwise disjoint if the total number of inputs is the same as the number of elements in the union
@@ -303,6 +304,21 @@ class MasterInverter(Inverter):
     def normalize(self, calc_data):
         super().normalize(calc_data),
         calc_data['v_ref'] /= self.v_lim
+
+
+class MasterInverterCurrentSourcing(Inverter):
+    def __init__(self, f_nom=50, **kwargs):
+        super().__init__(out_calc=dict(i_ref=3), **kwargs)
+        self.dds = DDS(self.net.ts)
+        self.f_nom = f_nom
+
+    def reset(self):
+        self.dds.reset()
+
+    def calculate(self):
+        # Get the next phase rotation angle to implement
+        phase = self.dds.step(self.f_nom)
+        return dict(i_ref=dq0_to_abc(self.i_ref, phase))
 
 
 class Load(Component):

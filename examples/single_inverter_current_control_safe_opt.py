@@ -35,7 +35,6 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 300  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
-v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
 nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
 iLimit = 30  # inverter current limit / A
@@ -189,7 +188,6 @@ if __name__ == '__main__':
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=Reward().rew_fun,
-                   time_step=delta_t,
                    viz_cols=[
                        PlotTmpl([f'lc1.inductor{i}.i' for i in '123'],
                                 callback=xylables
@@ -198,11 +196,8 @@ if __name__ == '__main__':
                    log_level=logging.INFO,
                    viz_mode='episode',
                    max_episode_steps=max_episode_steps,
-                   model_params={'inverter1.v_DC': v_DC},
+                   net='net_single-inv-curr.yaml',
                    model_path='../omg_grid/OpenModelica_Microgrids.Grids.NetworkSingleInverter.fmu',
-                   model_input=['i1p1', 'i1p2', 'i1p3'],
-                   model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]),
                    history=FullHistory()
                    )
 
