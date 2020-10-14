@@ -18,15 +18,13 @@ from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat
 from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQ0PIPIController
 from openmodelica_microgrid_gym.env import PlotTmpl
+from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 
 # Simulation definitions
-delta_t = 0.5e-4  # simulation time step size / s
+net = Network.load('net_single-inv-curr.yaml')
 max_episode_steps = 300  # number of simulation steps per episode
 num_episodes = 30  # number of simulation episodes (i.e. SafeOpt iterations)
-v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
-nomFreq = 50  # nominal grid frequency / Hz
-nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
 iLimit = 30  # inverter current limit / A
 iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
@@ -81,7 +79,7 @@ class Reward:
         # plus barrier penalty for violating the current constraint
         error = np.sum((np.abs((isp_abc_master - iabc_master)) / iLimit) ** 0.5, axis=0) \
                 + -np.sum(mu * np.log(1 - np.maximum(np.abs(iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0) \
-                + np.sum((np.abs((vsp_abc_master - vabc_master)) / nomVoltPeak) ** 0.5, axis=0)
+                + np.sum((np.abs((vsp_abc_master - vabc_master)) / net.v_nom) ** 0.5, axis=0)
 
         return -error.squeeze()
 
@@ -131,14 +129,14 @@ if __name__ == '__main__':
     # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
     # filter and the nominal frequency
     # Droop controller used to calculate the virtual frequency drop due to load changes
-    droop_param = DroopParams(DroopGain, 0.005, nomFreq)
+    droop_param = DroopParams(DroopGain, 0.005, net.freq_nom)
 
     # Define the Q-droop parameters for the inverter of the reactive power VAR/Volt, delta_t (0.002) used for the
     # filter and the nominal voltage
-    qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
+    qdroop_param = DroopParams(QDroopGain, 0.002, net.v_nom)
 
     # Define a voltage forming inverter using the PIPI and droop parameters from above
-    ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param, qdroop_param,
+    ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, net.ts, droop_param, qdroop_param,
                                        undersampling=2, name='master')
 
     #####################################
@@ -199,7 +197,6 @@ if __name__ == '__main__':
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=Reward().rew_fun,
-                   time_step=delta_t,
                    viz_cols=[
                        PlotTmpl([f'lc1.inductor{i}.i' for i in '123'],
                                 callback=xylables_i
@@ -214,11 +211,8 @@ if __name__ == '__main__':
                    log_level=logging.INFO,
                    viz_mode='episode',
                    max_episode_steps=max_episode_steps,
-                   model_params={'inverter1.v_DC': v_DC},
+                   net=net,
                    model_path='../omg_grid/OpenModelica_Microgrids.Grids.NetworkSingleInverter.fmu',
-                   model_input=['i1p1', 'i1p2', 'i1p3'],
-                   model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]),
                    history=FullHistory()
                    )
 

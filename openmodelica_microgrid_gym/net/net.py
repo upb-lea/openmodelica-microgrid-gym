@@ -3,6 +3,7 @@ from itertools import chain
 from typing import Optional
 
 import numpy as np
+import numexpr as ne
 import yaml
 from more_itertools import collapse, flatten
 
@@ -13,7 +14,7 @@ from openmodelica_microgrid_gym.aux_ctl import PLL, PLLParams, dq0_to_abc, inst_
 class Network:
     def __init__(self, ts, v_nom, freq_nom=50):
         self.ts = ts
-        self.v_nom = v_nom
+        self.v_nom = ne.evaluate(str(v_nom))
         self.freq_nom = freq_nom
 
     @staticmethod

@@ -18,6 +18,7 @@ from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat
 from openmodelica_microgrid_gym.aux_ctl import PI_params, MultiPhaseDQCurrentSourcingController
 from openmodelica_microgrid_gym.env import PlotTmpl
+from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 
 # Choose which controller parameters should be adjusted by SafeOpt.
@@ -32,11 +33,9 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
     raise ValueError("Please set 'adjust' to one of the following values: 'Kp', 'Ki', 'Kpi'")
 
 # Simulation definitions
-delta_t = 0.5e-4  # simulation time step size / s
+net = Network.load('../net/net_single-inv-curr.yaml')
 max_episode_steps = 300  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
-nomFreq = 50  # nominal grid frequency / Hz
-nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
 iLimit = 30  # inverter current limit / A
 iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
@@ -149,7 +148,7 @@ if __name__ == '__main__':
         current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
 
     # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
-    ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t, f_nom=nomFreq,
+    ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, net.ts, f_nom=net.freq_nom,
                                                      undersampling=2, name='master')
 
     #####################################
@@ -196,7 +195,7 @@ if __name__ == '__main__':
                    log_level=logging.INFO,
                    viz_mode='episode',
                    max_episode_steps=max_episode_steps,
-                   net='net_single-inv-curr.yaml',
+                   net=net,
                    model_path='../omg_grid/OpenModelica_Microgrids.Grids.NetworkSingleInverter.fmu',
                    history=FullHistory()
                    )

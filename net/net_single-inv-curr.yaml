@@ -1,4 +1,4 @@
-v_nom: 230
+v_nom: 230*sqrt(2)
 #freq_nom: 50
 ts: .5e-4
 
@@ -7,7 +7,7 @@ components:
     id: inverter1
     #i_nom: 20
     #i_lim: 30
-    #v_DC: 1000
+    v_DC: 1000
     cls: MasterInverterCurrentSourcing
     in:
       u: [i1p1, i1p2, i1p3]    # names of the inputs

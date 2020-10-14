@@ -13,11 +13,7 @@ def env():
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode=None,
                    model_path='omg_grid/test.fmu',
-                   model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
-                   model_output={'lc1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                         ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
-                                 'lcl1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]})
+                   net='net/net_test.yaml')
     return env
 
 
@@ -60,11 +56,7 @@ def test_params_simple():
                    max_episode_steps=100,
                    model_path='omg_grid/test.fmu',
                    model_params=dict(i1p1=lambda t: np.sin(t), i1p2=3, i1p3=fun),
-                   model_input=['i2p1', 'i2p2', 'i2p3'],
-                   model_output={'lc1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                         ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
-                                 'lcl1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]})
+                   net='net.yaml')
     env.reset()
     obs, r, done, _ = env.step(np.random.random(3))
     assert obs == approx([-3.08472072e-01, 2.56346548e+02, 8.56263731e+01, 1.46876784e+01,

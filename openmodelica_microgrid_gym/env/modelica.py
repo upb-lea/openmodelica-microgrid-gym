@@ -27,11 +27,11 @@ class ModelicaEnv(gym.Env):
     viz_modes = {'episode', 'step', None}
     """Set of all valid visualisation modes"""
 
-    def __init__(self, time_start: float = 0,
+    def __init__(self, net: Union[str, Network] , time_start: float = 0,
                  reward_fun: Callable[[List[str], np.ndarray], float] = lambda cols, obs: 1, is_normalized=True,
                  log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: Optional[int] = 200,
                  model_params: Optional[Dict[str, Union[Callable[[float], float], float]]] = None,
-                 net: str = None, model_path: str = '../fmu/grid.network.fmu',
+                 model_path: str = '../fmu/grid.network.fmu',
                  viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[Union[str, PlotTmpl]]]] = None,
                  history: EmptyHistory = FullHistory()):
         """
@@ -91,7 +91,10 @@ class ModelicaEnv(gym.Env):
         # Parameters required by this implementation
         self.max_episode_steps = max_episode_steps
         self.time_start = time_start
-        self.net = Network.load(net)
+        if isinstance(net, Network):
+            self.net = net
+        else:
+            self.net = Network.load(net)
         self.time_step_size = self.net.ts
         self.time_end = np.inf if max_episode_steps is None \
             else self.time_start + max_episode_steps * self.time_step_size

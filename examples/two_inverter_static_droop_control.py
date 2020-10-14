@@ -12,12 +12,14 @@ from functools import partial
 import gym
 import numpy as np
 
+from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import StaticControlAgent
 from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQ0PIPIController, \
     MultiPhaseDQCurrentController, InverseDroopParams, PLLParams
 
 # Simulation definitions
+net = Network.load('net.yaml')
 delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 6000  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes
@@ -88,8 +90,7 @@ if __name__ == '__main__':
                    # viz_cols=['*.m[dq0]', 'slave.freq', 'lcl1.*'],
                    viz_cols=['master.inst*', 'slave.inst*', 'lcl1.*', 'lc1.*', 'slave.freq'],
                    log_level=logging.INFO,
-                   time_step=delta_t,
-                   max_episode_steps=max_episode_steps,
+                   # max_episode_steps=max_episode_steps,
                    model_params={'rl1.resistor1.R': partial(load_step,gain=20),
                                  'rl1.resistor2.R': partial(load_step,gain=20),
                                  'rl1.resistor3.R': partial(load_step,gain=20),
@@ -97,13 +98,8 @@ if __name__ == '__main__':
                                  'rl1.inductor2.L': 0.001,
                                  'rl1.inductor3.L': 0.001
                                  },
-                   model_path='../OpenModelica_Microgrids/OpenModelica_Microgrids.Grids.Network.fmu',
-                   model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
-                   model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
-                                     rl1=[f'inductor{i}.i' for i in range(1, 4)],
-                                     lcl1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                           ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]),
+                   model_path='../omg_grid/OpenModelica_Microgrids.Grids.Network.fmu',
+                   net=net
                    )
 
     # User runner to execute num_episodes-times episodes of the env controlled by the agent
