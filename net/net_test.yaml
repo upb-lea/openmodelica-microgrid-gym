@@ -4,10 +4,10 @@ ts: .5e-4
 
 components:
   inv1:
-    #id: inverter1
+    id: inverter1
     #i_nom: 20
     #i_lim: 30
-    #v_DC: 1000
+    v_DC: 1000
     cls: MasterInverter
     in:
       u: [i1p1, i1p2, i1p3]    # names of the inputs

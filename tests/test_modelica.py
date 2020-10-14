@@ -18,7 +18,9 @@ def env():
 
 
 def test_reset(env):
-    assert np.array_equal(np.zeros(12), env.reset())
+    assert np.array_equal(np.array(
+        [0., 0., 0., 0., 0., 0., 0., 0., 0., 325.2289917, -158.19001069, -167.03898101, 0., 0., 0., 0., 0., 0., 0.]),
+                          env.reset())
 
 
 def test_step(env):
@@ -56,7 +58,7 @@ def test_params_simple():
                    max_episode_steps=100,
                    model_path='omg_grid/test.fmu',
                    model_params=dict(i1p1=lambda t: np.sin(t), i1p2=3, i1p3=fun),
-                   net='net.yaml')
+                   net='net/net.yaml')
     env.reset()
     obs, r, done, _ = env.step(np.random.random(3))
     assert obs == approx([-3.08472072e-01, 2.56346548e+02, 8.56263731e+01, 1.46876784e+01,
