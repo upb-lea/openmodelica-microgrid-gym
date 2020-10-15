@@ -83,8 +83,7 @@ def test_main(agent, env):
     df = df.reindex(sorted(df.columns), axis=1)
     df2 = pd.read_hdf('tests/test_main.hd5', 'hist').head(100)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
-    assert df[set(out_params) & set(df2.columns)].to_numpy() == approx(
-        df2[set(out_params) & set(df2.columns)].to_numpy(), 5e-2)
+    assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-2)
 
 
 def test_main_paramchange(agent, env):
@@ -98,13 +97,11 @@ def test_main_paramchange(agent, env):
     df = df.reindex(sorted(df.columns), axis=1)
     df2 = pd.read_hdf('tests/test_main.hd5', 'hist').head(50)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
-    assert df[set(out_params) & set(df2.columns)].to_numpy() != approx(
-        df2[set(out_params) & set(df2.columns)].to_numpy(), 5e-3)
+    assert df[out_params].to_numpy() != approx(df2[out_params].to_numpy(), 5e-3)
 
     df2 = pd.read_hdf('tests/test_main2.hd5', 'hist').head(50)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
-    assert df[set(out_params) & set(df2.columns)].to_numpy() == approx(
-        df2[set(out_params) & set(df2.columns)].to_numpy(), 5e-2)
+    assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-2)
 
 
 def test_simpleagent(env):
@@ -124,5 +121,4 @@ def test_simpleagent(env):
     df = df.reindex(sorted(df.columns), axis=1)
     df2 = pd.read_hdf('tests/test_main3.hd5', 'hist').head(50)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
-    assert df[set(out_params) & set(df2.columns)].to_numpy() == approx(
-        df2[set(out_params) & set(df2.columns)].to_numpy(), 5e-3)
+    assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-3)
