@@ -14,6 +14,7 @@ from openmodelica_microgrid_gym import Runner, Agent
 from openmodelica_microgrid_gym.agents import StaticControlAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat
 from openmodelica_microgrid_gym.aux_ctl import *
+from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import flatten
 
 
@@ -63,19 +64,14 @@ def agent():
 
 @pytest.fixture()
 def env():
-    model_input = ['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3']
-    conf = {'lc1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                    ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
-            'lcl1': [['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                     ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]}
+    net = Network.load('net/net_test.yaml')
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode=None,
                    model_path='omg_grid/test.fmu',
                    max_episode_steps=100,
-                   model_input=model_input,
-                   model_output=conf)
+                   net=net)
 
-    return env, model_input, flatten(conf)
+    return env, net.in_vars(), flatten(net.out_vars())
 
 
 def test_main(agent, env):
