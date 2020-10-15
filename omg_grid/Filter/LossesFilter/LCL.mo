@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.Filter.LossesFilter;
+within omg_grid.Filter.LossesFilter;
 
 model LCL
   parameter SI.Capacitance C1 = 0.00001;

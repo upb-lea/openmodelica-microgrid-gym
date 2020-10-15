@@ -1,5 +1,5 @@
 within ;
-package OpenModelica_Microgrids
+package omg_grid
   extends Modelica.Icons.Package;
   // Import mathematical constants and functions
   import SI = Modelica.SIunits;
@@ -18,7 +18,7 @@ package OpenModelica_Microgrids
   preferredView="info",
   uses(Modelica(version="3.2.3"), Complex(version="3.2.3"), ModelicaServices(version = "3.2.3")),
   Documentation(info="<html>
-  <p><b>OpenModelica_Microgrids</b> is a free package that is developed with the Modelica&reg; language from the
+  <p><b>omg_grid</b> is a free package that is developed with the Modelica&reg; language from the
   Modelica Association, see <a href=\"https://www.Modelica.org\">https://www.Modelica.org</a>.</p>  It was designed in the scope of the OpenModelica Microgrid Gym (OMG) project  see <a href=\"https://github.com/upb-lea/openmodelica-microgrid-gym\">https://github.com/upb-lea/openmodelica-microgrid-gym</a>
   <p>It provides model components for microgrids.</p> 
   <p><b>Licensed under the Modelica License 2</b><br>
@@ -30,4 +30,4 @@ package OpenModelica_Microgrids
   or visit <a href=\"https://www.modelica.org/licenses/ModelicaLicense2\"> https://www.modelica.org/licenses/ModelicaLicense2</a>.</i></p>  
   <p/>
   </html>"));
-end OpenModelica_Microgrids;
+end omg_grid;

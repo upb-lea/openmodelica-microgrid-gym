@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids;
+within omg_grid;
 package Inverters 
 extends Modelica.Icons.Package;
 

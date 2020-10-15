@@ -1,7 +1,7 @@
-within OpenModelica_Microgrids.Grids;
+within omg_grid.Grids;
 
 model Testbench_SC2
-  OpenModelica_Microgrids.Inverters.Inverter inverter1(v_DC = 60)  annotation(
+  omg_grid.Inverters.Inverter inverter1(v_DC = 60)  annotation(
     Placement(visible = true, transformation(origin = {-70, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   Modelica.Blocks.Interfaces.RealInput i1p1 annotation(
     Placement(visible = true, transformation(origin = {-104, 18}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 18}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
@@ -9,7 +9,7 @@ model Testbench_SC2
     Placement(visible = true, transformation(origin = {-104, 30}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 30}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
   Modelica.Blocks.Interfaces.RealInput i1p3 annotation(
     Placement(visible = true, transformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
-OpenModelica_Microgrids.Filter.LossesFilter.L rl(L1 = 0.0023, L2 = 0.0023, L3 = 0.0023, R1 = 0.170, R2 = 0.170, R3 = 0.170)  annotation(
+omg_grid.Filter.LossesFilter.L rl(L1 = 0.0023, L2 = 0.0023, L3 = 0.0023, R1 = 0.170, R2 = 0.170, R3 = 0.170)  annotation(
     Placement(visible = true, transformation(origin = {-30, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
 equation
   connect(i1p1, inverter1.u1) annotation(

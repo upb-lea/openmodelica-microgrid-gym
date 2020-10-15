@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.Grids;
+within omg_grid.Grids;
 
 model NetworkSineTest
 
@@ -14,7 +14,7 @@ model NetworkSineTest
     Placement(visible = true, transformation(origin = {-76, 48}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   Modelica.Blocks.Sources.Sine sine5(amplitude = 230, freqHz = 50, phase = 4.18879) annotation(
     Placement(visible = true, transformation(origin = {-76, 80}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-OpenModelica_Microgrids.Grids.Network network1 annotation(
+omg_grid.Grids.Network network1 annotation(
     Placement(visible = true, transformation(origin = {38, 2}, extent = {{-46, -46}, {46, 46}}, rotation = 0)));
 equation
   connect(sine5.y, network1.i1p3) annotation(

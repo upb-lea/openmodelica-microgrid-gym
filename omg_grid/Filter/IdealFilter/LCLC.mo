@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.Filter.IdealFilter;
+within omg_grid.Filter.IdealFilter;
 
 model LCLC
   parameter SI.Capacitance C1 = 0.00001;

@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.Filter;
+within omg_grid.Filter;
 
 package IdealFilter
 end IdealFilter;

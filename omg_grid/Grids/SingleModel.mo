@@ -1,9 +1,9 @@
-within OpenModelica_Microgrids.Grids;
+within omg_grid.Grids;
 
 model SingleModel
-  OpenModelica_Microgrids.Inverters.Inverter inverter1 annotation(
+  omg_grid.Inverters.Inverter inverter1 annotation(
     Placement(visible = true, transformation(origin = {-70, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  OpenModelica_Microgrids.Inverters.Inverter inverter2 annotation(
+  omg_grid.Inverters.Inverter inverter2 annotation(
     Placement(visible = true, transformation(origin = {-70, -30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   Modelica.Blocks.Interfaces.RealInput i1p1 annotation(
     Placement(visible = true, transformation(origin = {-104, 18}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 18}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
@@ -17,9 +17,9 @@ model SingleModel
     Placement(visible = true, transformation(origin = {-104, -18}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, -18}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
   Modelica.Blocks.Interfaces.RealInput i1p3 annotation(
     Placement(visible = true, transformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
-OpenModelica_Microgrids.Loads.R r(R1 = 100, R2 = 100, R3 = 100)  annotation(
+omg_grid.Loads.R r(R1 = 100, R2 = 100, R3 = 100)  annotation(
     Placement(visible = true, transformation(origin = {8, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-OpenModelica_Microgrids.Filter.IdealFilter.L l annotation(
+omg_grid.Filter.IdealFilter.L l annotation(
     Placement(visible = true, transformation(origin = {-40, -30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
 equation
   connect(i1p1, inverter1.u1) annotation(
