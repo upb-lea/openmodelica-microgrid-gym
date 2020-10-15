@@ -1,4 +1,4 @@
-from .modelica import ModelicaEnv, NormalizedEnv
+from .modelica import ModelicaEnv
 from .plot import PlotTmpl
 
-__all__ = ['ModelicaEnv', 'NormalizedEnv', 'PlotTmpl']
+__all__ = ['ModelicaEnv', 'PlotTmpl']

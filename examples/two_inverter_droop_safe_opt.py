@@ -249,7 +249,6 @@ if __name__ == '__main__':
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=Reward().rew_fun,
-                   time_step=delta_t,
                    viz_cols=[
                        PlotTmpl([f'lc1.inductor{i}.i' for i in '123'],
                                 callback=xylables_i
@@ -281,12 +280,7 @@ if __name__ == '__main__':
                                  'rl1.inductor3.L': partial(load_step, gain=0.001)  # 0.001
                                  },
                    model_path='../omg_grid/omg_grid.Grids.Network.fmu',
-                   model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
-                   model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                          ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
-                                     rl1=[f'inductor{i}.i' for i in range(1, 4)],
-                                     lcl1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                                           ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']]),
+                   net='../net/net.yaml',
                    history=FullHistory()
                    )
 
