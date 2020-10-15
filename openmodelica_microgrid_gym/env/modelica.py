@@ -298,7 +298,7 @@ class ModelicaEnv(gym.Env):
         self._failed = np.isnan(reward) or np.isinf(reward) and reward < 0 or reward is None
 
         # only return the state, the agent does not need the measurement
-        return obs, reward, self.is_done, {}
+        return outputs, reward, self.is_done, {}
 
     def render(self, mode: str = 'human', close: bool = False) -> List[Figure]:
         """

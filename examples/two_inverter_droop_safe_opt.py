@@ -280,7 +280,7 @@ if __name__ == '__main__':
                                  'rl1.inductor3.L': partial(load_step, gain=0.001)  # 0.001
                                  },
                    model_path='../omg_grid/omg_grid.Grids.Network.fmu',
-                   net='net.yaml',
+                   net='../net/net.yaml',
                    history=FullHistory()
                    )
 

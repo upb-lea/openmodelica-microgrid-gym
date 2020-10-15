@@ -19,7 +19,7 @@ from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhas
     MultiPhaseDQCurrentController, InverseDroopParams, PLLParams
 
 # Simulation definitions
-net = Network.load('net.yaml')
+net = Network.load('../net/net.yaml')
 delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 6000  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes

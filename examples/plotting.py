@@ -26,8 +26,8 @@ if __name__ == '__main__':
                                 label=[None, 'something'])
                    ],
                    max_episode_steps=None,
-                   net='net.yaml',
-                   model_path='../omg_grid/OpenModelica_Microgrids.Grids.Network.fmu')
+                   net='../net/net.yaml',
+                   model_path='../omg_grid/omg_grid.Grids.Network.fmu')
 
     env.reset()
     for _ in range(100):

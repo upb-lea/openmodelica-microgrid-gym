@@ -64,7 +64,7 @@ def agent():
 
 @pytest.fixture()
 def env():
-    net = Network.load('net/net.yaml')
+    net = Network.load('net/net_test.yaml')
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode=None,
                    model_path='omg_grid/test.fmu',
@@ -83,7 +83,7 @@ def test_main(agent, env):
     df = df.reindex(sorted(df.columns), axis=1)
     df2 = pd.read_hdf('tests/test_main.hd5', 'hist').head(100)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
-    assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-2)
+    assert df[set(out_params)&set(df2.columns)].to_numpy() == approx(df2[set(out_params)&set(df2.columns)].to_numpy(), 5e-2)
 
 
 def test_main_paramchange(agent, env):
@@ -101,7 +101,7 @@ def test_main_paramchange(agent, env):
 
     df2 = pd.read_hdf('tests/test_main2.hd5', 'hist').head(50)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
-    assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-2)
+    assert df[set(out_params)&set(df2.columns)].to_numpy() == approx(df2[set(out_params)&set(df2.columns)].to_numpy(), 5e-2)
 
 
 def test_simpleagent(env):
@@ -121,4 +121,4 @@ def test_simpleagent(env):
     df = df.reindex(sorted(df.columns), axis=1)
     df2 = pd.read_hdf('tests/test_main3.hd5', 'hist').head(50)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
-    assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-3)
+    assert df[set(out_params)&set(df2.columns)].to_numpy() == approx(df2[set(out_params)&set(df2.columns)].to_numpy(), 5e-3)

@@ -18,9 +18,9 @@ def env():
 
 
 def test_reset(env):
-    assert np.array_equal(np.array(
-        [0., 0., 0., 0., 0., 0., 0., 0., 0., 325.2289917, -158.19001069, -167.03898101, 0., 0., 0., 0., 0., 0., 0.]),
-                          env.reset())
+    assert env.reset() == approx(
+        [0., 0., 0., 0., 0., 0., 0., 0., 0., 325.10861867, -153.70643068, -171.40218799,
+         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
 
 
 def test_step(env):
@@ -46,23 +46,3 @@ def test_proper_reset(env):
     for a in actions:
         env.step(a)
     assert state == str(env) + str(env.history.df)
-
-
-def test_params_simple():
-    def fun(t):
-        return t + 1
-
-    np.random.seed(1)
-    env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
-                   viz_mode=None,
-                   max_episode_steps=100,
-                   model_path='omg_grid/test.fmu',
-                   model_params=dict(i1p1=lambda t: np.sin(t), i1p2=3, i1p3=fun),
-                   net='net/net.yaml')
-    env.reset()
-    obs, r, done, _ = env.step(np.random.random(3))
-    assert obs == approx([-3.08472072e-01, 2.56346548e+02, 8.56263731e+01, 1.46876784e+01,
-                          1.19315365e+03, 3.89265210e+02, 3.54071687e+01, 5.89398985e+01,
-                          -7.29991175e-01, 1.76505718e+02, 4.10540511e+02, 3.52688013e+01])
-    assert r == 1
-    assert not done

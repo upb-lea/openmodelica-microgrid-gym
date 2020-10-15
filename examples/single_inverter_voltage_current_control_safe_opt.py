@@ -22,7 +22,7 @@ from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 
 # Simulation definitions
-net = Network.load('net_single-inv-curr.yaml')
+net = Network.load('../net/net_single-inv-curr.yaml')
 max_episode_steps = 300  # number of simulation steps per episode
 num_episodes = 30  # number of simulation episodes (i.e. SafeOpt iterations)
 iLimit = 30  # inverter current limit / A
