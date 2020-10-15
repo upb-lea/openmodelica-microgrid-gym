@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.Loads;
+within omg_grid.Loads;
 
 model RC
   parameter SI.Resistance R1 = 20;

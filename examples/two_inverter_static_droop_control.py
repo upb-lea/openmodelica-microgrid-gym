@@ -98,7 +98,7 @@ if __name__ == '__main__':
                                  'rl1.inductor2.L': 0.001,
                                  'rl1.inductor3.L': 0.001
                                  },
-                   model_path='../omg_grid/OpenModelica_Microgrids.Grids.Network.fmu',
+                   model_path='../omg_grid/omg_grid.Grids.Network.fmu',
                    net=net
                    )
 

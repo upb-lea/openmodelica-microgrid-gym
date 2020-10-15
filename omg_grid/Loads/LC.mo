@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.Loads;
+within omg_grid.Loads;
 
 model LC
   parameter SI.Capacitance C1(start = 0.00001);

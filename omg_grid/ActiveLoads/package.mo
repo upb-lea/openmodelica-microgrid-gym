@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids;
+within omg_grid;
 package ActiveLoads 
 //extends Modelica.Icons.Package;
 

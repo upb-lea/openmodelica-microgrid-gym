@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.Transformations;
+within omg_grid.Transformations;
 
 model ABC2DQ_Currents
   Real Pi = 3.14159265;

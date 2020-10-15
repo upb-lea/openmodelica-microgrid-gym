@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids;
+within omg_grid;
 package UsersGuide "User's guide"
   extends Modelica.Icons.Information;
 

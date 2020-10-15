@@ -249,26 +249,26 @@ if __name__ == '__main__':
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=Reward().rew_fun,
-                   # viz_cols=[
-                   #     PlotTmpl([f'lc1.inductor{i}.i' for i in '123'],
-                   #              callback=xylables_i
-                   #              ),
-                   #     PlotTmpl([f'lc1.capacitor{i}.v' for i in '123'],
-                   #              callback=xylables_v_abc
-                   #              ),
-                   #     PlotTmpl([f'master.instPow'],
-                   #              callback=xylables_P_master
-                   #              ),
-                   #     PlotTmpl([f'slave.instPow'],
-                   #              callback=xylables_P_slave
-                   #              ),
-                   #     PlotTmpl([f'slave.freq'],
-                   #              callback=xylables_freq
-                   #              ),
-                   #     PlotTmpl([f'master.CVV{i}' for i in 'dq0'],
-                   #              callback=xylables_v_dq0
-                   #              )
-                   # ],
+                   viz_cols=[
+                       PlotTmpl([f'lc1.inductor{i}.i' for i in '123'],
+                                callback=xylables_i
+                                ),
+                       PlotTmpl([f'lc1.capacitor{i}.v' for i in '123'],
+                                callback=xylables_v_abc
+                                ),
+                       PlotTmpl([f'master.instPow'],
+                                callback=xylables_P_master
+                                ),
+                       PlotTmpl([f'slave.instPow'],
+                                callback=xylables_P_slave
+                                ),
+                       PlotTmpl([f'slave.freq'],
+                                callback=xylables_freq
+                                ),
+                       PlotTmpl([f'master.CVV{i}' for i in 'dq0'],
+                                callback=xylables_v_dq0
+                                )
+                   ],
                    log_level=logging.INFO,
                    viz_mode='episode',
                    max_episode_steps=max_episode_steps,
@@ -279,7 +279,7 @@ if __name__ == '__main__':
                                  'rl1.inductor2.L': partial(load_step, gain=0.001),  # 0.001,
                                  'rl1.inductor3.L': partial(load_step, gain=0.001)  # 0.001
                                  },
-                   model_path='../omg_grid/OpenModelica_Microgrids.Grids.Network.fmu',
+                   model_path='../omg_grid/omg_grid.Grids.Network.fmu',
                    net='net.yaml',
                    history=FullHistory()
                    )

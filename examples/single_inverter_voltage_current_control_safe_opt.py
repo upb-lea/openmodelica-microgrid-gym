@@ -212,7 +212,7 @@ if __name__ == '__main__':
                    viz_mode='episode',
                    max_episode_steps=max_episode_steps,
                    net=net,
-                   model_path='../omg_grid/OpenModelica_Microgrids.Grids.NetworkSingleInverter.fmu',
+                   model_path='../omg_grid/omg_grid.Grids.NetworkSingleInverter.fmu',
                    history=FullHistory()
                    )
 

@@ -41,8 +41,6 @@ class Runner:
         self.env.history.cols = self.env.history.structured_cols(None) + self.agent.measurement_cols
         self.agent.obs_varnames = self.env.history.cols
 
-        if not visualise:
-            self.env.viz_mode = None
         agent_fig = None
 
         for i in tqdm(range(n_episodes), desc='episodes', unit='epoch'):
@@ -53,7 +51,8 @@ class Runner:
                 act = self.agent.act(obs)
                 self.env.measurement = self.agent.measurement
                 obs, r, done, info = self.env.step(act)
-                self.env.render()
+                if visualise:
+                    self.env.render()
                 if done:
                     break
             self.agent.observe(r, done)

@@ -9,9 +9,8 @@ from typing import List
 
 import GPy
 import gym
-import numpy as np
-
 import matplotlib.pyplot as plt
+import numpy as np
 
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
@@ -149,7 +148,7 @@ if __name__ == '__main__':
 
     # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
     ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, net.ts, f_nom=net.freq_nom,
-                                                     undersampling=2, name='master')
+                                                 undersampling=2, name='master')
 
     #####################################
     # Definition of the optimization agent
@@ -163,9 +162,10 @@ if __name__ == '__main__':
                               safe_threshold=safe_threshold, explore_threshold=explore_threshold),
                          [ctrl],
                          dict(master=[[f'lc1.inductor{k}.i' for k in '123'],
-                                       i_ref]),
+                                      i_ref]),
                          history=FullHistory()
                          )
+
 
     #####################################
     # Definition of the environment using a FMU created by OpenModelica
@@ -183,7 +183,8 @@ if __name__ == '__main__':
         ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
-        #fig.savefig('Inductor_currents.pdf')
+        # fig.savefig('Inductor_currents.pdf')
+
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=Reward().rew_fun,
@@ -196,7 +197,7 @@ if __name__ == '__main__':
                    viz_mode='episode',
                    max_episode_steps=max_episode_steps,
                    net=net,
-                   model_path='../omg_grid/OpenModelica_Microgrids.Grids.NetworkSingleInverter.fmu',
+                   model_path='../omg_grid/omg_grid.Grids.NetworkSingleInverter.fmu',
                    history=FullHistory()
                    )
 
@@ -210,37 +211,37 @@ if __name__ == '__main__':
     print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df[:]))
 
     print('\n Experiment finished with best set: \n')
-    print('\n  {} = {}' .format(adjust, agent.history.df.at[np.argmax(agent.history.df['J']),'Params']))
+    print('\n  {} = {}'.format(adjust, agent.history.df.at[np.argmax(agent.history.df['J']), 'Params']))
     print('  Resulting in a performance of J = {}'.format(np.max(agent.history.df['J'])))
     print('\n\nBest experiment results are plotted in the following:')
 
-
     # Show best episode measurment (current) plot
     best_env_plt = runner.run_data['best_env_plt']
-    ax = best_env_plt[0].axes[0]
-    ax.set_title('Best Episode')
-    best_env_plt[0].show()
-    best_env_plt[0].savefig('best_env_plt.png')
+    if best_env_plt:
+        ax = best_env_plt[0].axes[0]
+        ax.set_title('Best Episode')
+        best_env_plt[0].show()
+        best_env_plt[0].savefig('best_env_plt.png')
 
     # Show last performance plot
     best_agent_plt = runner.run_data['last_agent_plt']
-    ax = best_agent_plt.axes[0]
-    ax.grid(which='both')
-    ax.set_axisbelow(True)
+    if best_agent_plt:
+        ax = best_agent_plt.axes[0]
+        ax.grid(which='both')
+        ax.set_axisbelow(True)
 
-    if adjust == 'Ki':
-        ax.set_xlabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
-        ax.set_ylabel(r'$J$')
-    elif adjust == 'Kp':
-        ax.set_xlabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
-        ax.set_ylabel(r'$J$')
-    elif adjust == 'Kpi':
-        agent.params.reset()
-        ax.set_xlabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
-        ax.set_ylabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
-        ax.get_figure().axes[1].set_ylabel(r'$J$')
-        plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4,
-                 alpha=.5)
-    best_agent_plt.show()
-    best_agent_plt.savefig('agent_plt.png')
-
+        if adjust == 'Ki':
+            ax.set_xlabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
+            ax.set_ylabel(r'$J$')
+        elif adjust == 'Kp':
+            ax.set_xlabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
+            ax.set_ylabel(r'$J$')
+        elif adjust == 'Kpi':
+            agent.params.reset()
+            ax.set_xlabel(r'$K_\mathrm{i}\,/\,\mathrm{(VA^{-1}s^{-1})}$')
+            ax.set_ylabel(r'$K_\mathrm{p}\,/\,\mathrm{(VA^{-1})}$')
+            ax.get_figure().axes[1].set_ylabel(r'$J$')
+            plt.plot(bounds[0], [mutable_params['currentP'].val, mutable_params['currentP'].val], 'k-', zorder=1, lw=4,
+                     alpha=.5)
+        best_agent_plt.show()
+        best_agent_plt.savefig('agent_plt.png')

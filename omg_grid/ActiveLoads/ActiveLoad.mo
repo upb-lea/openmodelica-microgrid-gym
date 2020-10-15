@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.ActiveLoads;
+within omg_grid.ActiveLoads;
 
 model ActiveLoad
   parameter SI.Power p_ref(start = 5000);
@@ -8,15 +8,15 @@ model ActiveLoad
     Placement(visible = true, transformation(origin = {-100, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-100, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   Modelica.Electrical.Analog.Interfaces.Pin pin2 annotation(
     Placement(visible = true, transformation(origin = {-100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  OpenModelica_Microgrids.PLLs.PLL_DQ pll_dq annotation(
+  omg_grid.PLLs.PLL_DQ pll_dq annotation(
     Placement(visible = true, transformation(origin = {-50, 76}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  OpenModelica_Microgrids.Transformations.ABC2DQ_Currents abc2dq_current annotation(
+  omg_grid.Transformations.ABC2DQ_Currents abc2dq_current annotation(
     Placement(visible = true, transformation(origin = {-58, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  OpenModelica_Microgrids.Inverters.Inverter inverter annotation(
+  omg_grid.Inverters.Inverter inverter annotation(
     Placement(visible = true, transformation(origin = {-4, -12}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));
   Modelica.Blocks.Continuous.LimPID PID2(Td = 0, Ti = 1.33, k = 0.013, limitsAtInit = true, yMax = 1 / 2.8284, yMin = -1 / 2.8284) annotation(
     Placement(visible = true, transformation(origin = {34, -48}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  OpenModelica_Microgrids.Transformations.DQ2ABC dq2abc annotation(
+  omg_grid.Transformations.DQ2ABC dq2abc annotation(
     Placement(visible = true, transformation(origin = {68, -66}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   Modelica.Blocks.Continuous.LimPID PID1(Td = 0, Ti = 1.33, k = 0.013, limitsAtInit = true, yMax = 1 / 2.8284, yMin = -1 / 2.8284) annotation(
     Placement(visible = true, transformation(origin = {34, -78}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -28,17 +28,17 @@ model ActiveLoad
     Placement(visible = true, transformation(origin = {-84, -86}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   Modelica.Blocks.Sources.RealExpression realExpression2(y = 1000 / 325) annotation(
     Placement(visible = true, transformation(origin = {-82, -72}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-OpenModelica_Microgrids.Filter.IdealFilter.LC lc(L1 = 0.004, L2 = 0.004, L3 = 0.004)  annotation(
+omg_grid.Filter.IdealFilter.LC lc(L1 = 0.004, L2 = 0.004, L3 = 0.004)  annotation(
     Placement(visible = true, transformation(origin = {-24, 8}, extent = {{-10, -10}, {10, 10}}, rotation = 180)));
 Modelica.Blocks.Sources.RealExpression realExpression1(y = 1) annotation(
     Placement(visible = true, transformation(origin = {-4, -58}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
 Modelica.Blocks.Sources.RealExpression realExpression3(y = 0) annotation(
     Placement(visible = true, transformation(origin = {-6, -72}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-OpenModelica_Microgrids.Components.StartValues startvalues(startTime = 0.1)  annotation(
+omg_grid.Components.StartValues startvalues(startTime = 0.1)  annotation(
     Placement(visible = true, transformation(origin = {38, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 180)));
-OpenModelica_Microgrids.Components.StartValues startvalues1(startTime = 0.1)  annotation(
+omg_grid.Components.StartValues startvalues1(startTime = 0.1)  annotation(
     Placement(visible = true, transformation(origin = {38, 34}, extent = {{-10, -10}, {10, 10}}, rotation = 180)));
-OpenModelica_Microgrids.Components.StartValues startvalues2(startTime = 0.1)  annotation(
+omg_grid.Components.StartValues startvalues2(startTime = 0.1)  annotation(
     Placement(visible = true, transformation(origin = {38, 66}, extent = {{-10, -10}, {10, 10}}, rotation = 180)));
 equation
   connect(pin1, pll_dq.c) annotation(
