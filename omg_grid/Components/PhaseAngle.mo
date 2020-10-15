@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.Components;
+within omg_grid.Components;
 
 model PhaseAngle
   parameter Real freq(start = 50);

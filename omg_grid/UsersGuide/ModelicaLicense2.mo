@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.UsersGuide;
+within omg_grid.UsersGuide;
 class ModelicaLicense2 "Modelica License 2"
   extends Modelica.Icons.Information;
 

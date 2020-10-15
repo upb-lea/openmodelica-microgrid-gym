@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.Loads;
+within omg_grid.Loads;
 
 model L
   parameter SI.Inductance L1 = 0.001;

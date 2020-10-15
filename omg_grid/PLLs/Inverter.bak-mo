@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.PLLs;
+within omg_grid.PLLs;
 
 model Inverter
   parameter Real v_DC = 1000;

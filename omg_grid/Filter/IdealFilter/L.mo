@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.Filter.IdealFilter;
+within omg_grid.Filter.IdealFilter;
 
 model L
   parameter SI.Inductance L1 = 0.001;

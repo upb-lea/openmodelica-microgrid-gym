@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.Transformations;
+within omg_grid.Transformations;
 
 model DQ2ABC
   Real pi = 2 * Modelica.Math.asin(1.0);
