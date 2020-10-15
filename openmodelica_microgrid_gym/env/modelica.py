@@ -27,7 +27,7 @@ class ModelicaEnv(gym.Env):
     viz_modes = {'episode', 'step', None}
     """Set of all valid visualisation modes"""
 
-    def __init__(self, net: Union[str, Network] , time_start: float = 0,
+    def __init__(self, net: Union[str, Network], time_start: float = 0,
                  reward_fun: Callable[[List[str], np.ndarray], float] = lambda cols, obs: 1, is_normalized=True,
                  log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: Optional[int] = 200,
                  model_params: Optional[Dict[str, Union[Callable[[float], float], float]]] = None,
