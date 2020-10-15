@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.Components;
+within omg_grid.Components;
 
 block StartValues "Output the input signal filtered with a low pass Butterworth filter of any order"
   extends Modelica.Blocks.Interfaces.SISO;

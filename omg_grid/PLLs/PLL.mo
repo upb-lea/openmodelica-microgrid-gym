@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.PLLs;
+within omg_grid.PLLs;
 
 model PLL
   Modelica.Electrical.Analog.Interfaces.Pin a annotation(
@@ -15,7 +15,7 @@ model PLL
     Placement(visible = true, transformation(origin = {-86, 50}, extent = {{-6, -6}, {6, 6}}, rotation = 90)));
   Modelica.Electrical.Analog.Sensors.VoltageSensor voltageSensor_b annotation(
     Placement(visible = true, transformation(origin = {-88, 22}, extent = {{-6, -6}, {6, 6}}, rotation = 90)));
-  OpenModelica_Microgrids.Transformations.ABC2AlphaBeta abc2AlphaBeta annotation(
+  omg_grid.Transformations.ABC2AlphaBeta abc2AlphaBeta annotation(
     Placement(visible = true, transformation(origin = {-62, 20}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   Modelica.Blocks.Math.Sin sin annotation(
     Placement(visible = true, transformation(origin = {-10, -6}, extent = {{-4, -4}, {4, 4}}, rotation = 180)));

@@ -280,7 +280,7 @@ if __name__ == '__main__':
                                  'rl1.inductor2.L': partial(load_step, gain=0.001),  # 0.001,
                                  'rl1.inductor3.L': partial(load_step, gain=0.001)  # 0.001
                                  },
-                   model_path='../OpenModelica_Microgrids/OpenModelica_Microgrids.Grids.Network.fmu',
+                   model_path='../omg_grid/omg_grid.Grids.Network.fmu',
                    model_input=['i1p1', 'i1p2', 'i1p3', 'i2p1', 'i2p2', 'i2p3'],
                    model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
                                           ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],

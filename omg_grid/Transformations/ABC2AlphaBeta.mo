@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.Transformations;
+within omg_grid.Transformations;
 
 model ABC2AlphaBeta
   Modelica.Blocks.Interfaces.RealInput a annotation(

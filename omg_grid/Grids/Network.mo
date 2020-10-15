@@ -1,13 +1,13 @@
-within OpenModelica_Microgrids.Grids;
+within omg_grid.Grids;
 
 model Network
-  OpenModelica_Microgrids.Inverters.Inverter inverter1 annotation(
+  omg_grid.Inverters.Inverter inverter1 annotation(
     Placement(visible = true, transformation(origin = {-70, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  OpenModelica_Microgrids.Filter.IdealFilter.LC lc1 annotation(
+  omg_grid.Filter.IdealFilter.LC lc1 annotation(
     Placement(visible = true, transformation(origin = {-30, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  OpenModelica_Microgrids.Inverters.Inverter inverter2 annotation(
+  omg_grid.Inverters.Inverter inverter2 annotation(
     Placement(visible = true, transformation(origin = {-70, -30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  OpenModelica_Microgrids.Filter.IdealFilter.LC lc2 annotation(
+  omg_grid.Filter.IdealFilter.LC lc2 annotation(
     Placement(visible = true, transformation(origin = {30, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   Modelica.Blocks.Interfaces.RealInput i1p1 annotation(
     Placement(visible = true, transformation(origin = {-104, 18}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 18}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
@@ -21,9 +21,9 @@ model Network
     Placement(visible = true, transformation(origin = {-104, -18}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, -18}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
   Modelica.Blocks.Interfaces.RealInput i1p3 annotation(
     Placement(visible = true, transformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
-  OpenModelica_Microgrids.Filter.IdealFilter.LCL lcl1 annotation(
+  omg_grid.Filter.IdealFilter.LCL lcl1 annotation(
     Placement(visible = true, transformation(origin = {-32, -30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-OpenModelica_Microgrids.Loads.RL rl1 annotation(
+omg_grid.Loads.RL rl1 annotation(
     Placement(visible = true, transformation(origin = {70, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
 equation
   connect(lc1.pin6, lc2.pin3) annotation(

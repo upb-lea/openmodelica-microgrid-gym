@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids.UsersGuide;
+within omg_grid.UsersGuide;
 model Contact "Contact"
     extends Modelica.Icons.Contact;
 

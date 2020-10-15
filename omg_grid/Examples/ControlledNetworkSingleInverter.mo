@@ -1,21 +1,21 @@
-within OpenModelica_Microgrids.Examples;
+within omg_grid.Examples;
 
 model ControlledNetworkSingleInverter
-  OpenModelica_Microgrids.Inverters.Inverter inverter1 annotation(
+  omg_grid.Inverters.Inverter inverter1 annotation(
     Placement(visible = true, transformation(origin = {-70, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  OpenModelica_Microgrids.Filter.IdealFilter.LC lc1(L1 = 0.001, L2 = 0.001, L3 = 0.001) annotation(
+  omg_grid.Filter.IdealFilter.LC lc1(L1 = 0.001, L2 = 0.001, L3 = 0.001) annotation(
     Placement(visible = true, transformation(origin = {-30, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  OpenModelica_Microgrids.Loads.RL rl1(L1 = 0.0005, L2 = 0.0005, L3 = 0.0005) annotation(
+  omg_grid.Loads.RL rl1(L1 = 0.0005, L2 = 0.0005, L3 = 0.0005) annotation(
     Placement(visible = true, transformation(origin = {30, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  OpenModelica_Microgrids.PLLs.PLL_DQ pll_dq annotation(
+  omg_grid.PLLs.PLL_DQ pll_dq annotation(
     Placement(visible = true, transformation(origin = {2, 62}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  OpenModelica_Microgrids.Transformations.ABC2DQ_Currents abc2dq_current annotation(
+  omg_grid.Transformations.ABC2DQ_Currents abc2dq_current annotation(
     Placement(visible = true, transformation(origin = {0, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   Modelica.Blocks.Sources.RealExpression realExpression(y = -350) annotation(
     Placement(visible = true, transformation(origin = {2, 90}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   Modelica.Blocks.Sources.RealExpression realExpression1(y = 230 * 1.41427) annotation(
     Placement(visible = true, transformation(origin = {5, 77}, extent = {{-13, -11}, {13, 11}}, rotation = 0)));
-  OpenModelica_Microgrids.Transformations.DQ2ABC dq2abc annotation(
+  omg_grid.Transformations.DQ2ABC dq2abc annotation(
     Placement(visible = true, transformation(origin = {36, -18}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   Modelica.Blocks.Continuous.LimPID pid(Td = 0, Ti = 0.006, k = 0.3, limitsAtInit = true, yMax = 150) annotation(
     Placement(visible = true, transformation(origin = {78, 86}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -25,7 +25,7 @@ model ControlledNetworkSingleInverter
     Placement(visible = true, transformation(origin = {-34, -34}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   Modelica.Blocks.Continuous.LimPID PID2(Td = 0, Ti = 1.33, k = 0.013, limitsAtInit = true, yMax = 1 / 2.8284, yMin = -1 / 2.8284) annotation(
     Placement(visible = true, transformation(origin = {-34, -4}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  OpenModelica_Microgrids.Components.PhaseAngle angle annotation(
+  omg_grid.Components.PhaseAngle angle annotation(
     Placement(visible = true, transformation(origin = {19, 5}, extent = {{-5, -5}, {5, 5}}, rotation = 0)));
 equation
   connect(inverter1.pin3, lc1.pin3) annotation(

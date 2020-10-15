@@ -1,4 +1,4 @@
-within OpenModelica_Microgrids;
+within omg_grid;
 package Transformations 
 extends Modelica.Icons.Package;
 

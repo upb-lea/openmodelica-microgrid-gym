@@ -1,8 +1,8 @@
-within OpenModelica_Microgrids.Examples;
+within omg_grid.Examples;
 
 model PLL_Test
 
-  OpenModelica_Microgrids.Transformations.ABC2AlphaBeta abc2AlphaBeta annotation(
+  omg_grid.Transformations.ABC2AlphaBeta abc2AlphaBeta annotation(
     Placement(visible = true, transformation(origin = {-14, 4}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   Modelica.Blocks.Sources.Sine sine(amplitude = 230 * 1.414, freqHz = 50) annotation(
     Placement(visible = true, transformation(origin = {-90, 34}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -10,9 +10,9 @@ model PLL_Test
     Placement(visible = true, transformation(origin = {-88, 6}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   Modelica.Blocks.Sources.Sine sine2(amplitude = 230 * 1.414, freqHz = 50, phase = -4.18879) annotation(
     Placement(visible = true, transformation(origin = {-88, -26}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  OpenModelica_Microgrids.Inverters.Inverter inverter annotation(
+  omg_grid.Inverters.Inverter inverter annotation(
     Placement(visible = true, transformation(origin = {-14, 58}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  OpenModelica_Microgrids.PLLs.PLL pll annotation(
+  omg_grid.PLLs.PLL pll annotation(
     Placement(visible = true, transformation(origin = {28, 56}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
 equation
   connect(abc2AlphaBeta.a, sine.y) annotation(
