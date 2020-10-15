@@ -230,12 +230,12 @@ class ModelicaEnv(gym.Env):
         self.history.reset()
         self._state = self._simulate()
         self.measurement = []
-        self.history.append(self._state)
         self._failed = False
         self._register_render = False
         obs = self._state
         outputs = self.net.augment(obs, self.is_normalized)
         outputs = np.hstack((outputs, obs[len(self.net.out_vars(False)):]))
+        self.history.append(outputs)
         return outputs
 
     def step(self, action: Sequence) -> Tuple[np.ndarray, float, bool, Mapping]:
