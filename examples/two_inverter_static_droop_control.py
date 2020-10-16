@@ -90,7 +90,7 @@ if __name__ == '__main__':
                    # viz_cols=['*.m[dq0]', 'slave.freq', 'lcl1.*'],
                    viz_cols=['master.inst*', 'slave.inst*', 'lcl1.*', 'lc1.*', 'slave.freq'],
                    log_level=logging.INFO,
-                   # max_episode_steps=max_episode_steps,
+                   max_episode_steps=max_episode_steps,
                    model_params={'rl1.resistor1.R': partial(load_step,gain=20),
                                  'rl1.resistor2.R': partial(load_step,gain=20),
                                  'rl1.resistor3.R': partial(load_step,gain=20),

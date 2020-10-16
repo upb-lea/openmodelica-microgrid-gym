@@ -61,6 +61,10 @@ class Network:
 
         return self
 
+    def risk(self) -> float:
+        #TODO call risk of all components
+        return 0
+
     def reset(self):
         for comp in self.components:
             comp.reset()
