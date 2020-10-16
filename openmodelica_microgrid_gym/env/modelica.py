@@ -272,8 +272,15 @@ class ModelicaEnv(gym.Env):
 
         # Set input values of the model
         logger.debug('model input: %s, values: %s', self.model_input_names, action)
-        self.model.set(**dict(zip(list(self.model_input_names), list(action))))
-        params = self.net.params(action)
+        self.model.set(**dict(zip(self.model_input_names, action)))
+
+
+        if self.model_parameters:
+            values = {var: f(self.sim_time_interval[0]) for var, f in self.model_parameters.items()}
+        else:
+            values = {}
+
+        params =  {**values, **self.net.params(action)}
         if params:
             self.model.set_params(**params)
 

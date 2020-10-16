@@ -27,7 +27,7 @@ if __name__ == '__main__':
                    ],
                    max_episode_steps=None,
                    net='../net/net.yaml',
-                   model_path='../omg_grid/omg_grid.Grids.Network.fmu')
+                   model_path='../omg_grid/grid.network.fmu')
 
     env.reset()
     for _ in range(100):
