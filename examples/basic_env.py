@@ -4,7 +4,7 @@ if __name__ == '__main__':
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv-v1',
                    max_episode_steps=None,
                    net='../net/net.yaml',
-                   model_path='../omg_grid/omg_grid.Grids.Network.fmu')
+                   model_path='../omg_grid/grid.network.fmu')
 
     env.reset()
     for _ in range(1000):
