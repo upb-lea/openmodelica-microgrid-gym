@@ -33,12 +33,14 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 
 # Simulation definitions
 net = Network.load('../net/net_single-inv-curr.yaml')
-max_episode_steps = 300  # number of simulation steps per episode
+max_episode_steps = 1200  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 iLimit = 30  # inverter current limit / A
 iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
-i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
+i_ref = np.array([8, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
+def load_step(t):
+    return 20 if t< 0.006 else 100
 
 
 class Reward:
@@ -195,9 +197,21 @@ if __name__ == '__main__':
                    ],
                    log_level=logging.INFO,
                    viz_mode='episode',
+                   model_params={'rl1.resistor1.R': load_step,
+                                 'rl1.resistor2.R': load_step,
+                                 'rl1.resistor3.R': load_step,
+                                 'rl1.inductor1.L': 0.001,
+                                 'rl1.inductor2.L': 0.001,
+                                 'rl1.inductor3.L': 0.001
+                                 },
                    max_episode_steps=max_episode_steps,
                    net=net,
                    model_path='../omg_grid/grid.network_singleInverter.fmu',
+
+                   # model_input=['i1p1', 'i1p2', 'i1p3'],
+                   # model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
+                   #                        ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
+                   #                   ),
                    history=FullHistory()
                    )
 
@@ -245,3 +259,9 @@ if __name__ == '__main__':
                      alpha=.5)
         best_agent_plt.show()
         best_agent_plt.savefig('agent_plt.png')
+
+
+df = env.history.df[['lc1.inductor1.i', 'lc1.inductor2.i']]
+print(df)
+mean_lc1 = df["lc1.inductor1.i"].mean()
+mean_lc2 = df["lc1.inductor2.i"].mean()
