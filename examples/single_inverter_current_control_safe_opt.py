@@ -47,27 +47,25 @@ R=20                         #sets the resistance value of RL
 
 #Creation of a random walk of the load step: The starting value of the the resistance is 20 Ohm.
 #Every step, it goes either 1 Ohm up or down for a third of the simulation time.
-#After 1/3 of the simulation time the random walk of the load jump is finished. The controller is now given time to control the current to its setpoint.
+#After 1/3 of the simulation time the random walk of the load jump is finished.
+#The controller is now given time to control the current to its setpoint.
 
-def load_step_random_walk():
-    seed(1)
-    random_walk = []
-    random_walk.append(R)
-    # random_walk.append(-1 if random() <0.5 else 1)
-
-    for i in range(1, 100):
-        movement = -1 if random() < 0.5 else 1
-        value = random_walk[i - 1] + movement
-        if value < 0:
-            value = 0
-        random_walk.append(value)
-    return random_walk
-
-
-pyplot.plot(load_step_random_walk())
-pyplot.show()
-
-
+# def load_step_random_walk():
+#     seed(1)
+#     random_walk = []
+#     random_walk.append(R)
+#     load_step_time = int(max_episode_steps * 1/3) # 1/3 of the simulation time
+#     for i in range(1, load_step_time):
+#         movement = -1 if random() < 0.5 else 1
+#         value = random_walk[i - 1] + movement
+#         if value < 0:
+#             value = 0
+#         random_walk.append(value)
+#     return random_walk
+#
+# #This function is used to give values to the resistor
+# def resistor_parameters(t):
+#     load_step_random_walk() #the function is called to get the list of the parameters
 
 
 
@@ -235,9 +233,9 @@ if __name__ == '__main__':
                    ],
                    log_level=logging.INFO,
                    viz_mode='episode',
-                   model_params={'rl1.resistor1.R': load_step,
-                                 'rl1.resistor2.R': load_step,
-                                 'rl1.resistor3.R': load_step,
+                   model_params={'rl1.resistor1.R': 20,
+                                 'rl1.resistor2.R': 20,
+                                 'rl1.resistor3.R': 20,
                                  'rl1.inductor1.L': 0.001,
                                  'rl1.inductor2.L': 0.001,
                                  'rl1.inductor3.L': 0.001
