@@ -20,6 +20,9 @@ from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 
+from random import seed
+from random import random
+
 # Choose which controller parameters should be adjusted by SafeOpt.
 # - Kp: 1D example: Only the proportional gain Kp of the PI controller is adjusted
 # - Ki: 1D example: Only the integral gain Ki of the PI controller is adjusted
@@ -39,8 +42,33 @@ iLimit = 30  # inverter current limit / A
 iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
 i_ref = np.array([8, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
-def load_step(t):
-    return 20 if t< 0.006 else 100
+R=20                         #sets the resistance value of RL
+
+
+#Creation of a random walk of the load step: The starting value of the the resistance is 20 Ohm.
+#Every step, it goes either 1 Ohm up or down for a third of the simulation time.
+#After 1/3 of the simulation time the random walk of the load jump is finished. The controller is now given time to control the current to its setpoint.
+
+def load_step_random_walk():
+    seed(1)
+    random_walk = []
+    random_walk.append(R)
+    # random_walk.append(-1 if random() <0.5 else 1)
+
+    for i in range(1, 100):
+        movement = -1 if random() < 0.5 else 1
+        value = random_walk[i - 1] + movement
+        if value < 0:
+            value = 0
+        random_walk.append(value)
+    return random_walk
+
+
+pyplot.plot(load_step_random_walk())
+pyplot.show()
+
+
+
 
 
 class Reward:
@@ -187,13 +215,23 @@ if __name__ == '__main__':
         ax.grid(which='both')
         # fig.savefig('Inductor_currents.pdf')
 
+    def xylables_R(fig):
+        ax = fig.gca()
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$') #zeit
+        ax.set_ylabel('$R_{\mathrm{123}}\,/\,\mathrm{Ohm}$') #widerstände definieren , ohm angucken backslash omega
+        ax.grid(which='both')
+        # fig.savefig('Inductor_currents.pdf')
+
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=Reward().rew_fun,
                    viz_cols=[
-                       PlotTmpl([f'lc1.inductor{i}.i' for i in '123'],
+                       PlotTmpl([f'lc1.inductor{i}.i' for i in '123'], #Plot Strom durch Filterinduktivität
                                 callback=xylables
-                                )
+                                ),
+                       PlotTmpl([f'rl1.resistor{i}.R' for i in '123'],  #Plot Widerstand RL
+                                callback=xylables_R
+                                 )
                    ],
                    log_level=logging.INFO,
                    viz_mode='episode',
