@@ -11,6 +11,7 @@ import GPy
 import gym
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
@@ -36,36 +37,50 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 
 # Simulation definitions
 net = Network.load('../net/net_single-inv-curr.yaml')
-max_episode_steps = 1200  # number of simulation steps per episode
+max_episode_steps = 600  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 iLimit = 30  # inverter current limit / A
 iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
-i_ref = np.array([8, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
-R=20                         #sets the resistance value of RL
+i_ref = np.array([10, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
+R=20  #sets the resistance value of RL
+load_jump=5 #defines the load jump that is implemented at every quarter of the simulation time
+ts= 1e-4
 
 
-#Creation of a random walk of the load step: The starting value of the the resistance is 20 Ohm.
-#Every step, it goes either 1 Ohm up or down for a third of the simulation time.
-#After 1/3 of the simulation time the random walk of the load jump is finished.
-#The controller is now given time to control the current to its setpoint.
+#The starting value of the the resistance is 20 Ohm.
+#Every step and therefore the whole simulationt time, it randomly changes +/- 0.01 Ohm to generate noise.
+#Every quarter of the simulation time, a bigger load jump of 5  Ohms is implemented.
+#After 3/4 of the simulation time, the controller is given time to control the current to its setpoint.
 
-# def load_step_random_walk():
-#     seed(1)
-#     random_walk = []
-#     random_walk.append(R)
-#     load_step_time = int(max_episode_steps * 1/3) # 1/3 of the simulation time
-#     for i in range(1, load_step_time):
-#         movement = -1 if random() < 0.5 else 1
-#         value = random_walk[i - 1] + movement
-#         if value < 0:
-#             value = 0
-#         random_walk.append(value)
-#     return random_walk
-#
-# #This function is used to give values to the resistor
-# def resistor_parameters(t):
-#     load_step_random_walk() #the function is called to get the list of the parameters
+def load_step_random_walk():
+    random_walk = []
+    random_walk.append(R)
+    load_step_t1 = max_episode_steps * 0.25
+    load_step_t2 = max_episode_steps * 0.5
+    load_step_t3 = max_episode_steps * 0.75
+    for i in range(1, max_episode_steps):
+        movement = -0.01 if random() < 0.5 else 0.01
+        value=random_walk[i-1] + movement
+        if value < 0:
+            value = 1
+        if i == load_step_t1 or i == load_step_t2 or i == load_step_t3:
+            movement = load_jump if random() < 0.5 else -1*load_jump
+            value = random_walk[i - 1] + movement
+        random_walk.append(value)
+    return random_walk
+
+#print(load_step_random_walk())
+#print(len(load_step_random_walk()))
+#list_resistor=load_step_random_walk()
+
+def load_step(t):
+    for i in range(1,len(list_resistor)):
+        if t <= ts * i + ts:
+            return list_resistor[i]
+
+
+
 
 
 
@@ -233,9 +248,9 @@ if __name__ == '__main__':
                    ],
                    log_level=logging.INFO,
                    viz_mode='episode',
-                   model_params={'rl1.resistor1.R': 20,
-                                 'rl1.resistor2.R': 20,
-                                 'rl1.resistor3.R': 20,
+                   model_params={'rl1.resistor1.R': load_step,
+                                 'rl1.resistor2.R': load_step,
+                                 'rl1.resistor3.R': load_step,
                                  'rl1.inductor1.L': 0.001,
                                  'rl1.inductor2.L': 0.001,
                                  'rl1.inductor3.L': 0.001
@@ -296,8 +311,11 @@ if __name__ == '__main__':
         best_agent_plt.show()
         best_agent_plt.savefig('agent_plt.png')
 
-
-df = env.history.df[['lc1.inductor1.i', 'lc1.inductor2.i']]
-print(df)
-mean_lc1 = df["lc1.inductor1.i"].mean()
-mean_lc2 = df["lc1.inductor2.i"].mean()
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', None)
+pd.set_option('display.max_colwidth', -1)
+#df = env.history.df[['lc1.inductor1.i', 'lc1.inductor2.i','rl1.resistor1.R']]
+#print(df)
+#mean_lc1 = df["lc1.inductor1.i"].mean()
+#mean_lc2 = df["lc1.inductor2.i"].mean()

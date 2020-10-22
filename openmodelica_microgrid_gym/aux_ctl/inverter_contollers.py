@@ -232,11 +232,11 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
         # Voltage controller calculations
         VSP = voltage
         # Voltage SP in dq0 (static for the moment)
-        SPVdq0 = np.array([VSP, 0, 0])
-        SPIdq0 = self._voltagePI.step(SPVdq0, CVVdq0)
+        SPVdq0 = np.array([VSP, 0, 0])  #voltage for controller
+        SPIdq0 = self._voltagePI.step(SPVdq0, CVVdq0) #set points und messung werden in spannungsregler
 
         # Current controller calculations
-        MVdq0 = self._currentPI.step(SPIdq0, CVIdq0)
+        MVdq0 = self._currentPI.step(SPIdq0, CVIdq0) #setpoint vom current controller wird übergeben, cascaded control structure
 
         # Add intern measurment
         self.history.append([phase, *SPVdq0, *SPIdq0, *CVVdq0, *CVIdq0, *MVdq0, instPow, instQ, freq])

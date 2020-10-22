@@ -26,10 +26,14 @@ components:
       u: [i2p1, i2p2, i2p3]
     out:
       v: [lcl1.capacitor1.v, lcl1.capacitor2.v, lcl1.capacitor3.v]
-      i: [lcl1.inductor1.i, lcl1.inductor2.i, lcl1.inductor3.i]
+      #i: [lcl1.inductor1.i, lcl1.inductor2.i, lcl1.inductor3.i]
+      i: [.resistor1.R, .resistor2.R, .resistor3.R, .resistor1.i, .resistor2.i, .resistor3.i ]
     #i_ref: [15,0,0]
-  load:
-    id: rl1
-    cls: Load
-    out:
-      i: [.inductor1.i, .inductor2.i, .inductor3.i]
+#  load:
+#    id: rl1
+#    cls: Load
+#    out:
+#      i: [.inductor1.i, .inductor2.i, .inductor3.i]
+#      #i: [.resistor1.R, .resistor2.R, .resistor3.R]
+
+
