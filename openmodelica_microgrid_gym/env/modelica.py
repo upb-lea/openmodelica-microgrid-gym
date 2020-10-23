@@ -301,7 +301,7 @@ class ModelicaEnv(gym.Env):
         else:
             logger.debug("Experiment step done, experiment done.")
 
-        reward = self.reward(self.history.cols, obs)
+        reward = self.reward(self.history.cols, outputs)
         self._failed = np.isnan(reward) or np.isinf(reward) and reward < 0 or reward is None
 
         # only return the state, the agent does not need the measurement
