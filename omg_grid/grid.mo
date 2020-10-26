@@ -891,11 +891,11 @@ package grid
         Placement(visible = true, transformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Electrical.Analog.Interfaces.Pin pin1 annotation(
         Placement(visible = true, transformation(origin = {100, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {100, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      Modelica.Blocks.Math.Gain gain3(k = v_DC) annotation(
+      Modelica.Blocks.Math.Gain gain3(k = v_DC/2) annotation(
         Placement(visible = true, transformation(origin = {-26, 60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      Modelica.Blocks.Math.Gain gain1(k = v_DC) annotation(
+      Modelica.Blocks.Math.Gain gain1(k = v_DC/2) annotation(
         Placement(visible = true, transformation(origin = {-26, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-      Modelica.Blocks.Math.Gain gain2(k = v_DC) annotation(
+      Modelica.Blocks.Math.Gain gain2(k = v_DC/2) annotation(
         Placement(visible = true, transformation(origin = {-26, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     equation
       connect(signalVoltage2.p, pin2) annotation(
