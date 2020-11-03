@@ -5,6 +5,7 @@ from typing import List
 import gym
 import numpy as np
 from stable_baselines3 import PPO
+from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback, EveryNTimesteps
 from stable_baselines3.common.monitor import Monitor
 
 from openmodelica_microgrid_gym.env import PlotTmpl
@@ -57,8 +58,8 @@ class Reward:
         #  better, i.e. more significant,  gradients)
         # plus barrier penalty for violating the current constraint
         error = np.sum((np.abs((ISPabc_master - Iabc_master)) / iLimit) ** 0.5, axis=0) \
-            # + -np.sum(mu * np.log(1 - np.maximum(np.abs(Iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0) \
-        # * max_episode_steps
+            # + -np.sum(mu * np.log(1 - np.maximum(np.abs(Iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0)
+        error /= max_episode_steps
 
         return -np.clip(error.squeeze(), 0, 1e5)
 
@@ -74,7 +75,7 @@ def xylables(fig):
 env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                reward_fun=Reward().rew_fun,
                viz_cols=[
-                   PlotTmpl([[f'lc.inductor{i}.i' for i in '123'], [f'inverter1.i_ref.{k}' for k in '012']],
+                   PlotTmpl([[f'lc1.inductor{i}.i' for i in '123'], [f'inverter1.i_ref.{k}' for k in '012']],
                             callback=xylables,
                             color=[['b', 'r', 'g'], ['b', 'r', 'g']],
                             style=[[None], ['--']]
@@ -89,15 +90,24 @@ with open(f'{timestamp}/env.txt', 'w') as f:
     print(str(env), file=f)
 env = Monitor(env)
 
-model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=f'{timestamp}/')
-model.learn(total_timesteps=1000000)
-model.save(f'{timestamp}/model')
 
-obs = env.reset()
-for _ in range(1000):
-    env.render()
-    action, _states = model.predict(obs, deterministic=True)
-    obs, reward, done, info = env.step(action)
-    if done:
-        break
-env.close()
+class RecordEnvCallback(BaseCallback):
+    def _on_step(self) -> bool:
+        obs = env.reset()
+        for _ in range(max_episode_steps):
+            env.render()
+            action, _states = model.predict(obs, deterministic=True)
+            obs, reward, done, info = env.step(action)
+            if done:
+                break
+        env.close()
+        env.reset()
+        return True
+
+
+model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=f'{timestamp}/')
+checkpoint_on_event = CheckpointCallback(save_freq=1, save_path=f'{timestamp}/checkpoints/')
+cp_callback = EveryNTimesteps(n_steps=100000, callback=checkpoint_on_event)
+record_env = RecordEnvCallback()
+plot_callback = EveryNTimesteps(n_steps=200000, callback=record_env)
+model.learn(total_timesteps=5000000, callback=[cp_callback, plot_callback])
