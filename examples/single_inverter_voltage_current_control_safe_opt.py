@@ -126,27 +126,28 @@ class Reward:
 class LoadstepCallback(Callback):
     def __init__(self):
         self.metric = Metrics()
-        self.databuffer = None
+        self.databuffer = None #window for the moving average (spannung rein)
         self._idx = None
 
     def set_idx(self, obs):  # [f'lc1.inductor{k}.i' for k in '123']
         if self._idx is None:
             self._idx = nested_map(
                 lambda n: obs.index(n),
-                [[f'lc1.inductor{k}.i' for k in '123'], 'master.phase', [f'master.SPI{k}' for k in 'dq0'],
+                [[f'lc1.inductor{k}.i' for k in '123'], 'master.phase', [f'master.SPI{k}' for k in 'dq0'], #hier angucken master.controll.variable dqo
                  [f'lc1.capacitor{k}.v' for k in '123'], [f'master.SPV{k}' for k in 'dq0']])
 
     def reset(self):
-        self.databuffer = np.emtpy(10)
+        self.databuffer = np.empty(10)
 
-    def __call__(self, cols, obs):
-        self.set_idx(cols)
+    def __call__(self, cols, obs):   #in obs sind die daten der history drinne
+        self.set_idx(cols)          #self.databuffer=obs[self._idx] #snipping tool
+        self.databuffer[-1]=            #vorher einen nach linksschieben und hinten dran hänegn, np.roll (intelligentere lösung), stackoverflow
         # TODO update DAtabuffer
 
     def load_step(self, t):
-        # Todo calculate if metric fine
-        for i in range(1, len(list_resistor)):
-            if self.metric is happy:
+        # Todo calculate if metric fine   #self.metric.steady_state= (von den daten habe ich im Mittel x volt), true oder false zurückgeben, der dann wieder zeitabhängig
+        for i in range(1, len(list_resistor)): # load step resistor, überlegen wie
+            if self.metric is happy:  #self.metric.happy
                 return list_resistor[i]
 
 

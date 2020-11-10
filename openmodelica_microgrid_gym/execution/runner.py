@@ -56,7 +56,7 @@ class Runner:
                 self.env.measurement = self.agent.measurement
                 obs, r, done, info = self.env.step(act)
                 if self.callback is not None:
-                    self.callback(self.env.history.cols, self.env.history.last())
+                    self.callback(self.env.history.cols, self.env.history.last()) #hier führe ich z.142 in single_inverter_voltage
                 if visualise:
                     self.env.render()
                 if done:

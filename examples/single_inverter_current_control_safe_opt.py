@@ -23,6 +23,7 @@ from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 
 from random import seed
 from random import random
+from sklearn.metrics import mean_squared_error
 
 # Choose which controller parameters should be adjusted by SafeOpt.
 # - Kp: 1D example: Only the proportional gain Kp of the PI controller is adjusted
@@ -235,6 +236,15 @@ if __name__ == '__main__':
         ax.grid(which='both')
         # fig.savefig('Inductor_currents.pdf')
 
+    def xylables_i_dq0(fig):
+        ax = fig.gca()
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
+        ax.set_ylabel('$i_{\mathrm{dq0}}\,/\,\mathrm{i}$')
+        ax.grid(which='both')
+        #time = strftime("%Y-%m-%d %H_%M_%S", gmtime())
+        #fig.savefig(save_folder + '/dq0_current' + time + '.pdf')
+
+
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=Reward().rew_fun,
@@ -244,7 +254,10 @@ if __name__ == '__main__':
                                 ),
                        PlotTmpl([f'rl1.resistor{i}.R' for i in '123'],  #Plot Widerstand RL
                                 callback=xylables_R
-                                 )
+                                 ),
+                       PlotTmpl([f'master.CVi{s}' for s in 'dq0'],  # Plot Widerstand RL I=s
+                                callback=xylables_i_dq0
+                                )
                    ],
                    log_level=logging.INFO,
                    viz_mode='episode',
@@ -258,11 +271,6 @@ if __name__ == '__main__':
                    max_episode_steps=max_episode_steps,
                    net=net,
                    model_path='../omg_grid/grid.network_singleInverter.fmu',
-
-                   # model_input=['i1p1', 'i1p2', 'i1p3'],
-                   # model_output=dict(lc1=[['inductor1.i', 'inductor2.i', 'inductor3.i'],
-                   #                        ['capacitor1.v', 'capacitor2.v', 'capacitor3.v']],
-                   #                   ),
                    history=FullHistory()
                    )
 
@@ -311,10 +319,69 @@ if __name__ == '__main__':
         best_agent_plt.show()
         best_agent_plt.savefig('agent_plt.png')
 
+df_inductor_i=env.history.df[['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i']]
 pd.set_option('display.max_rows', None)
-pd.set_option('display.max_columns', None)
-pd.set_option('display.width', None)
-pd.set_option('display.max_colwidth', -1)
+df_master_CVV = env.history.df[['master.CVI{dq0} ']] #current for the Controller, it is the measurement of the Master-Inverter's Voltage
+
+print(df_master_CVV)
+
+
+
+
+
+class Metrics:
+    ref_value=i_ref[0] #set value of inverter that serves as a set value for the outer voltage controller
+    ts=1e-4 #duration of the episodes in seconds
+    def __init__(self,quantity):
+       self.quantity=quantity #here the class is given any quantity to calculate the metrics
+
+    def overshoot(self):
+        max_quantity=self.quantity.iloc[:int(max_episode_steps/4)].max() #the maximum value of the quantity in the first quarter is stored
+        overshoot=(max_quantity/self.ref_value)-1 #calculation of the overshoot
+        return round(overshoot[0],4)
+
+    def rise_time(self):        #it's an underdamped system, that's why it's 0% to 100% of its value
+        position_rise_time=self.quantity[self.quantity['master.CVVd'] >= self.ref_value].index[0] #the number of episode steps where the real value = set_value is stored
+        rise_time_in_seconds= position_rise_time * ts
+        return round(rise_time_in_seconds,4)
+
+    def settling_time(self):
+        array_settling_time=self.quantity.iloc[int(max_episode_steps/2+6):]  #stores the values after the second load jump (a little delay +6) in an array
+        upper_bound= 1.02*self.ref_value #the settling time is defined as the time when the inverter's voltage is
+        lower_bound=0.98*self.ref_value  #within the upper and lower bound of the set value for the first time at Steady State
+        position_settling_time = array_settling_time[(array_settling_time['master.CVVd'] >= lower_bound) & (array_settling_time['master.CVVd'] <= upper_bound)].index[0] #returns the position of the settling time
+        settling_time_in_seconds=position_settling_time*ts
+        return round(settling_time_in_seconds,4)
+
+    def RMSE(self):
+        Y_true = self.quantity.to_numpy().reshape(-1) #converts and reshapes it into an array with size [max_epsiodes,]
+        Y_true = Y_true[~np.isnan(Y_true)] #drops nan
+        Y_pred = [self.ref_value]*(len(Y_true)) #creates an list with the set value of the voltage and the length of the real voltages (Y_true)
+        Y_pred = np.array(Y_pred) #converts this list into an array
+        return round(sqrt(mean_squared_error(Y_true, Y_pred)),4) #returns the MSE from sklearn
+
+    def steady_state_error(self): #for a Controller with an integral part, steady_state_error is almost equal to zero
+        last_value_quantity=self.quantity.iloc[max_episode_steps] #the last value of the quantity is stored
+        steady_state_error=np.abs(self.ref_value-last_value_quantity[0]) #calculation of the steady-state-error
+        return  round(steady_state_error,4)
+
+
+voltage_controller_metrics= Metrics(df_master_CVV)
+print(voltage_controller_metrics.overshoot())
+print(voltage_controller_metrics.rise_time())
+print(voltage_controller_metrics.settling_time())
+print(voltage_controller_metrics.RMSE())
+print(voltage_controller_metrics.steady_state_error())
+
+d={'Overshoot': [voltage_controller_metrics.overshoot()],
+            'Rise Time/s ': [voltage_controller_metrics.rise_time()],
+            'Settling Time/s ': [voltage_controller_metrics.settling_time()],
+            'Root Mean Squared Error/V': [voltage_controller_metrics.RMSE()],
+            'Steady State Error/V': [voltage_controller_metrics.rise_time()]}
+
+df_metrics=pd.DataFrame(data=d).T
+df_metrics.columns=['Value']
+print(df_metrics)
 #df = env.history.df[['lc1.inductor1.i', 'lc1.inductor2.i','rl1.resistor1.R']]
 #print(df)
 #mean_lc1 = df["lc1.inductor1.i"].mean()
