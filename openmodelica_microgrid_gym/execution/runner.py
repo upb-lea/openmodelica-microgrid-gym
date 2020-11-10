@@ -1,9 +1,10 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from tqdm import tqdm
 
 from openmodelica_microgrid_gym.agents import Agent
 from openmodelica_microgrid_gym.env import ModelicaEnv
+from openmodelica_microgrid_gym.execution.callbacks import Callback
 
 
 class Runner:
@@ -12,7 +13,7 @@ class Runner:
     It handles communication between agent and environment and handles the execution of multiple epochs
     """
 
-    def __init__(self, agent: Agent, env: ModelicaEnv):
+    def __init__(self, agent: Agent, env: ModelicaEnv, callback: Optional[Callback] = None):
         """
 
         :param agent: Agent that acts on the environment
@@ -22,6 +23,7 @@ class Runner:
         self.agent = agent
         self.agent.env = env
         self.run_data = dict()  # type: Dict[str,Any]
+        self.callback = callback
         """
         Dictionary storing information about the experiment.
         
@@ -45,12 +47,16 @@ class Runner:
 
         for i in tqdm(range(n_episodes), desc='episodes', unit='epoch'):
             obs = self.env.reset()
+            if self.callback is not None:
+                self.callback.reset()
             done, r = False, None
             for _ in tqdm(range(self.env.max_episode_steps), desc='steps', unit='step', leave=False):
                 self.agent.observe(r, done)
                 act = self.agent.act(obs)
                 self.env.measurement = self.agent.measurement
                 obs, r, done, info = self.env.step(act)
+                if self.callback is not None:
+                    self.callback(self.env.history.cols, self.env.history.last())
                 if visualise:
                     self.env.render()
                 if done:
