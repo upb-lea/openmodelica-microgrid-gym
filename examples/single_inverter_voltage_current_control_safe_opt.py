@@ -41,28 +41,22 @@ R = 20  # sets the resistance value of RL
 load_jump = 5  # defines the load jump that is implemented at every quarter of the simulation time
 ts = 1e-4
 v_ref = np.array([325, 0, 0])  # muss ich noch anpassen, wo kriege ich die her
-movement_1 = load_jump if random() < 0.5 else -1 * load_jump
-movement_2 = (load_jump if random() < 0.5 else -1 * load_jump) + movement_1
+movement_1 = load_jump if random() < 0.5 else -1 * load_jump #randomly chosen first load jump
+movement_2 = (load_jump if random() < 0.5 else -1 * load_jump) + movement_1 #randomly chosen load jump
 
 
 # The starting value of the the resistance is 20 Ohm.
 # Every step and therefore the whole simulationt time, it randomly changes +/- 0.01 Ohm to generate noise.
-# Every quarter of the simulation time, a bigger load jump of 5  Ohms is implemented.
-# After 3/4 of the simulation time, the controller is given time to control the current to its setpoint.
+
 
 def load_step_random_walk():
     random_walk = []
     random_walk.append(R)  # R=20 Ohm
-    #load_step_t1 = max_episode_steps * 0.25  # time t1 for bigger load jump
-    #load_step_t2 = max_episode_steps * 0.5  # time t2 for bigger load jump
     for i in range(1, max_episode_steps):
         movement = -0.01 if random() < 0.5 else 0.01  # constant slight and random fluctuation of load
         value = random_walk[i - 1] + movement
         if value < 0:
             value = 1
-        #if i == load_step_t1 or i == load_step_t2:  # bigger load steps are implemented
-            #movement = load_jump if random() < 0.5 else -1 * load_jump  # bigger load jumps of +/-5 Ohm
-            #value = random_walk[i - 1] + movement
         random_walk.append(value)
     return random_walk
 
@@ -124,19 +118,15 @@ class Reward:
 
         return -error.squeeze()
 
+#This class first identifies the steady state
+#Then two load jumps are implemented to check the controller's performance
 
 class LoadstepCallback(Callback):
     def __init__(self):
-        #self.metric = Metrics()
         self.steady_state_reached=False
-        self.databuffer = None #window for the moving average (spannung rein)
+        self.databuffer = None
         self._idx = None
-        self.michael=None
-        self.matrix=None
-        self.std1=None
-        self.mean1=None
-        self.hanna=None
-        self.movement_2=None
+
 
 
     def set_idx(self, obs):  # [f'lc1.inductor{k}.i' for k in '123']
@@ -152,26 +142,24 @@ class LoadstepCallback(Callback):
 
     def __call__(self, cols, obs):   #in obs sind die daten der history drinne
         self.set_idx(cols)
-        self.databuffer=np.roll(self.databuffer, -1)
-        self.databuffer[-1]=obs[self._idx[5][0]] #
-        #self.mean1=np.round(self.databuffer.mean())
-        #self.std1=self.databuffer.std()
-        if self.databuffer.std() < 0.1 and np.round(self.databuffer.mean())==v_ref[0]:
-            self.steady_state_reached=True
+        self.databuffer=np.roll(self.databuffer, -1) #all values are shifted to the left by one
+        self.databuffer[-1]=obs[self._idx[5][0]] #the last element of the array is replaced with the current value of the inverter's voltage
+        if self.databuffer.std() < 0.1 and np.round(self.databuffer.mean())==v_ref[0]:  #v_ref[0]=325 V
+            self.steady_state_reached=True #if the ten values in the databuffer fulfill the conditions (std <0.1 and
+            # rounded mean == 325 V), the the steady state is reached
 
-
+    # After steady state is reached, a bigger random load jump of +/- 5 Ohm is implemented
+    # After 3/4 of the simulation time, another random load jump of +/- 5 Ohm is implemented
 
     def load_step(self, t):
-
-
         for i in range(1, len(list_resistor)):
-            if self.steady_state_reached==False and t <= ts * i + ts:
-                return list_resistor[i]
+            if self.steady_state_reached==False and t <= ts * i + ts: #while steady state is not reached, no load jump
+                return list_resistor[i] # contains for every step values that fluctuate a little bit
             elif self.steady_state_reached==True and t<=ts*i+ts and i<=max_episode_steps*0.75:
-                return list_resistor[i] + movement_1
+                return list_resistor[i] + movement_1 #when steady state reached, a load jump of +5/-5 Ohm is implemented (movement 1)
             elif self.steady_state_reached==True and t<=ts * i+ts and i>max_episode_steps*0.75:
-                self.movement_2=movement_2
-                return list_resistor[i] + movement_2
+               #after 75% of the simulation time, another load jump is implemented
+                return list_resistor[i] + movement_2 #the load jump of +/- 5 Ohm is stored in movement_2
 
 
 if __name__ == '__main__':
@@ -383,8 +371,7 @@ class Metrics:
         self.quantity = quantity  # here the class is given any quantity to calculate the metrics
 
     def overshoot(self):
-        max_quantity = self.quantity.iloc[:int(
-            max_episode_steps / 4)].max()  # the maximum value of the quantity in the first quarter is stored
+        max_quantity = self.quantity.iloc[:int(max_episode_steps / 4)].max()  # the maximum value of the quantity in the first quarter is stored
         overshoot = (max_quantity / self.ref_value) - 1  # calculation of the overshoot
         return round(overshoot[0], 4)
 
