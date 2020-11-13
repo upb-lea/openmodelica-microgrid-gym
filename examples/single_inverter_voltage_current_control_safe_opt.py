@@ -15,7 +15,9 @@ import GPy
 import gym
 import numpy as np
 import pandas as pd
+from gym.envs.tests.test_envs_semantics import steps
 from sklearn.metrics import mean_squared_error
+
 
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
@@ -28,7 +30,7 @@ from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 
 # Simulation definitions
 net = Network.load('../net/net_single-inv-curr.yaml')
-max_episode_steps = 300  # number of simulation steps per episode
+max_episode_steps = 600  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 iLimit = 30  # inverter current limit / A
 iNominal = 20  # nominal inverter current / A
@@ -39,6 +41,8 @@ R = 20  # sets the resistance value of RL
 load_jump = 5  # defines the load jump that is implemented at every quarter of the simulation time
 ts = 1e-4
 v_ref = np.array([325, 0, 0])  # muss ich noch anpassen, wo kriege ich die her
+movement_1 = load_jump if random() < 0.5 else -1 * load_jump
+movement_2 = (load_jump if random() < 0.5 else -1 * load_jump) + movement_1
 
 
 # The starting value of the the resistance is 20 Ohm.
@@ -49,22 +53,20 @@ v_ref = np.array([325, 0, 0])  # muss ich noch anpassen, wo kriege ich die her
 def load_step_random_walk():
     random_walk = []
     random_walk.append(R)  # R=20 Ohm
-    load_step_t1 = max_episode_steps * 0.25  # time t1 for bigger load jump
-    load_step_t2 = max_episode_steps * 0.5  # time t2 for bigger load jump
+    #load_step_t1 = max_episode_steps * 0.25  # time t1 for bigger load jump
+    #load_step_t2 = max_episode_steps * 0.5  # time t2 for bigger load jump
     for i in range(1, max_episode_steps):
         movement = -0.01 if random() < 0.5 else 0.01  # constant slight and random fluctuation of load
         value = random_walk[i - 1] + movement
         if value < 0:
             value = 1
-        if i == load_step_t1 or i == load_step_t2:  # bigger load steps are implemented
-            movement = load_jump if random() < 0.5 else -1 * load_jump  # bigger load jumps of +/-5 Ohm
-            value = random_walk[i - 1] + movement
+        #if i == load_step_t1 or i == load_step_t2:  # bigger load steps are implemented
+            #movement = load_jump if random() < 0.5 else -1 * load_jump  # bigger load jumps of +/-5 Ohm
+            #value = random_walk[i - 1] + movement
         random_walk.append(value)
     return random_walk
 
 
-# print(load_step_random_walk())
-# print(len(load_step_random_walk()))
 list_resistor = load_step_random_walk()
 
 # Data of the Current and Voltage in the Inverter in dq-coordinates
@@ -125,30 +127,51 @@ class Reward:
 
 class LoadstepCallback(Callback):
     def __init__(self):
-        self.metric = Metrics()
+        #self.metric = Metrics()
+        self.steady_state_reached=False
         self.databuffer = None #window for the moving average (spannung rein)
         self._idx = None
+        self.michael=None
+        self.matrix=None
+        self.std1=None
+        self.mean1=None
+        self.hanna=None
+        self.movement_2=None
+
 
     def set_idx(self, obs):  # [f'lc1.inductor{k}.i' for k in '123']
         if self._idx is None:
             self._idx = nested_map(
                 lambda n: obs.index(n),
-                [[f'lc1.inductor{k}.i' for k in '123'], 'master.phase', [f'master.SPI{k}' for k in 'dq0'], #hier angucken master.controll.variable dqo
-                 [f'lc1.capacitor{k}.v' for k in '123'], [f'master.SPV{k}' for k in 'dq0']])
+                [[f'lc1.inductor{k}.i' for k in '123'], 'master.phase', [f'master.SPI{k}' for k in 'dq0'],
+                 [f'lc1.capacitor{k}.v' for k in '123'], [f'master.SPV{k}' for k in 'dq0'], [f'master.CVV{i}' for i in 'dq0']])
 
     def reset(self):
         self.databuffer = np.empty(10)
 
+
     def __call__(self, cols, obs):   #in obs sind die daten der history drinne
-        self.set_idx(cols)          #self.databuffer=obs[self._idx] #snipping tool
-        self.databuffer[-1]=            #vorher einen nach linksschieben und hinten dran hänegn, np.roll (intelligentere lösung), stackoverflow
-        # TODO update DAtabuffer
+        self.set_idx(cols)
+        self.databuffer=np.roll(self.databuffer, -1)
+        self.databuffer[-1]=obs[self._idx[5][0]] #
+        #self.mean1=np.round(self.databuffer.mean())
+        #self.std1=self.databuffer.std()
+        if self.databuffer.std() < 0.1 and np.round(self.databuffer.mean())==v_ref[0]:
+            self.steady_state_reached=True
+
+
 
     def load_step(self, t):
-        # Todo calculate if metric fine   #self.metric.steady_state= (von den daten habe ich im Mittel x volt), true oder false zurückgeben, der dann wieder zeitabhängig
-        for i in range(1, len(list_resistor)): # load step resistor, überlegen wie
-            if self.metric is happy:  #self.metric.happy
+
+
+        for i in range(1, len(list_resistor)):
+            if self.steady_state_reached==False and t <= ts * i + ts:
                 return list_resistor[i]
+            elif self.steady_state_reached==True and t<=ts*i+ts and i<=max_episode_steps*0.75:
+                return list_resistor[i] + movement_1
+            elif self.steady_state_reached==True and t<=ts * i+ts and i>max_episode_steps*0.75:
+                self.movement_2=movement_2
+                return list_resistor[i] + movement_2
 
 
 if __name__ == '__main__':
@@ -409,6 +432,8 @@ d = {'Overshoot': [voltage_controller_metrics.overshoot()],
      'Settling Time/s ': [voltage_controller_metrics.settling_time()],
      'Root Mean Squared Error/V': [voltage_controller_metrics.RMSE()],
      'Steady State Error/V': [voltage_controller_metrics.rise_time()]}
+
+
 
 df_metrics = pd.DataFrame(data=d).T
 df_metrics.columns = ['Value']
