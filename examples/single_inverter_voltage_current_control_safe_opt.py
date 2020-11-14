@@ -15,8 +15,10 @@ import GPy
 import gym
 import numpy as np
 import pandas as pd
+import scipy
 from gym.envs.tests.test_envs_semantics import steps
 from sklearn.metrics import mean_squared_error
+from scipy.signal import argrelextrema
 
 
 from openmodelica_microgrid_gym import Runner
@@ -358,26 +360,38 @@ if __name__ == '__main__':
 df_inductor_i = env.history.df[['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i']]
 pd.set_option('display.max_rows', None)
 df_master_CVV = env.history.df[
-    ['master.CVVd']]  # voltage for the Controller, it is the measurement of the Master-Inverter's Voltage
+    ['master.CVVd']]  # voltage for the Controller, it is the measurement of the Master-Inverter's Voltage7
 
-print(df_master_CVV)
+#df_master_CVV['max'] = df_master_CVV[(df_master_CVV['master.CVVd'].shift(1) < df_master_CVV['master.CVVd']) & (df_master_CVV['master.CVVd'].shift(-1) < df_master_CVV['master.CVVd'])]
+# df_master_CVV['max'] = df_master_CVV.iloc[argrelextrema(df_master_CVV['master.CVVd'].values, np.greater_equal, order=n)[0]]['master.CVVd']
+# index_first_max=df_master_CVV['max'].first_valid_index()
+#print(df_master_CVV['max'])
+#print(index_first_max)
+#print(df_master_CVV.iloc[index_first_max][0])
 
 
 class Metrics:
     ref_value = v_ref[0]  # set value of inverter that serves as a set value for the outer voltage controller
     ts = 1e-4  # duration of the episodes in seconds
+    n=5 ## number of points to be checked before and after
 
     def __init__(self, quantity):
         self.quantity = quantity  # here the class is given any quantity to calculate the metrics
 
+    # def overshoot(self):
+    #     max_quantity = self.quantity.iloc[:int(max_episode_steps / 4)].max()  # the maximum value of the quantity in the first quarter is stored
+    #     overshoot = (max_quantity / self.ref_value) - 1  # calculation of the overshoot
+    #     return round(overshoot[0], 4)
+
     def overshoot(self):
-        max_quantity = self.quantity.iloc[:int(max_episode_steps / 4)].max()  # the maximum value of the quantity in the first quarter is stored
-        overshoot = (max_quantity / self.ref_value) - 1  # calculation of the overshoot
-        return round(overshoot[0], 4)
+        self.quantity['max']=self.quantity.iloc[argrelextrema(self.quantity['master.CVVd'].values, np.greater_equal, order=self.n)[0]]['master.CVVd']
+        index_first_max = self.quantity['max'].first_valid_index()
+        max_quantity=self.quantity.iloc[index_first_max][0]
+        overshoot = (max_quantity / self.ref_value) - 1
+        return round(overshoot,4)
 
     def rise_time(self):  # it's an underdamped system, that's why it's 0% to 100% of its value
-        position_rise_time = self.quantity[self.quantity['master.CVVd'] >= self.ref_value].index[
-            0]  # the number of episode steps where the real value = set_value is stored
+        position_rise_time = self.quantity[self.quantity['master.CVVd'] >= self.ref_value].index[0]  # the number of episode steps where the real value = set_value is stored
         rise_time_in_seconds = position_rise_time * ts
         return round(rise_time_in_seconds, 4)
 
@@ -393,22 +407,21 @@ class Metrics:
         return round(settling_time_in_seconds, 4)
 
     def RMSE(self):
-        Y_true = self.quantity.to_numpy().reshape(
-            -1)  # converts and reshapes it into an array with size [max_epsiodes,]
+        Y_true = self.quantity.to_numpy().reshape(-1)  # converts and reshapes it into an array with size [max_epsiodes,]
         Y_true = Y_true[~np.isnan(Y_true)]  # drops nan
-        Y_pred = [self.ref_value] * (len(
-            Y_true))  # creates an list with the set value of the voltage and the length of the real voltages (Y_true)
+        Y_pred = [self.ref_value] * (len(Y_true))  # creates an list with the set value of the voltage and the length of the real voltages (Y_true)
         Y_pred = np.array(Y_pred)  # converts this list into an array
         return round(sqrt(mean_squared_error(Y_true, Y_pred)), 4)  # returns the MSE from sklearn
 
     def steady_state_error(self):  # for a Controller with an integral part, steady_state_error is almost equal to zero
-        last_value_quantity = self.quantity.iloc[max_episode_steps]  # the last value of the quantity is stored
+        last_value_quantity = self.quantity.iloc[max_episode_steps-1]  # the last value of the quantity is stored
         steady_state_error = np.abs(self.ref_value - last_value_quantity[0])  # calculation of the steady-state-error
         return round(steady_state_error, 4)
 
 
 voltage_controller_metrics = Metrics(df_master_CVV)
 print(voltage_controller_metrics.overshoot())
+#print(voltage_controller_metrics.overshoot_test())
 print(voltage_controller_metrics.rise_time())
 print(voltage_controller_metrics.settling_time())
 print(voltage_controller_metrics.RMSE())
