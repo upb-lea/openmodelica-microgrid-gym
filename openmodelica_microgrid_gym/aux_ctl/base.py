@@ -39,13 +39,49 @@ class DDS:
 
         :return theta: The angle in RADIANS [0:2pi]
         """
-        self._integralSum = self._integralSum + self._ts * freq
+        self._integralSum += self._ts * freq
 
-        # Limit output to exactly the limit
+        # reset oscilator one phase
         if self._integralSum > self._max:
-            self._integralSum = self._integralSum - self._max
+            self._integralSum -= self._max
 
         return self._integralSum * 2 * np.pi
+
+
+class LimitLoadIntegral:
+    def __init__(self, dt, freq, i_lim, i_nom=None):
+        """
+
+        :param dt: time resolution in s
+        :param freq: nominal frequency, used to calculate timewindow of interest
+        :param i_lim: maximum energy allowed over one half frequency time in J
+        :param i_nom: nominal energy allowed over one half frequency time in J
+        """
+        self.dt = dt
+        # number of samples for a half freq
+        self._buffer = np.empty(int(1/freq / 2 / dt))  # type:np.ndarray
+        self._buff_idx = 0
+        self.integral = 0
+        self.lim_integral = self._buffer.size * self.dt * i_lim ** 2
+        if i_nom:
+            self.nom_integral = self._buffer.size * self.dt * i_nom
+        else:
+            self.nom_integral = self._buffer.size * self.dt * i_lim * .9
+
+    def reset(self):
+        self.integral = 0
+        self._buffer.fill(0)
+        self._buff_idx = 0
+
+    def step(self, value):
+        self.integral += self.dt * value ** 2
+        last = self._buffer[np.ravel_multi_index([self._buff_idx - 1], self._buffer.size, mode='wrap')]
+        self.integral -= self.dt * last ** 2
+        self._buff_idx = np.ravel_multi_index([self._buff_idx + 1], self._buffer.size, mode='wrap')
+        self._buffer[self._buff_idx] = value
+
+    def risk(self):
+        return np.clip((self.integral - self.nom_integral) / (self.lim_integral - self.nom_integral), 0, 1)
 
 
 class PLL:

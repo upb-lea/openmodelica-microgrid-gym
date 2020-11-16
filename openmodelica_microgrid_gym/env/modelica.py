@@ -13,7 +13,7 @@ from scipy import integrate
 
 from openmodelica_microgrid_gym.env.plot import PlotTmpl
 from openmodelica_microgrid_gym.env.pyfmi import PyFMI_Wrapper
-from openmodelica_microgrid_gym.net.net import Network
+from openmodelica_microgrid_gym.net.base import Network
 from openmodelica_microgrid_gym.util import FullHistory, EmptyHistory
 
 logger = logging.getLogger(__name__)
