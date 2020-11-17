@@ -126,6 +126,7 @@ class Reward:
 class LoadstepCallback(Callback):
     def __init__(self):
         self.steady_state_reached=False
+        self.settling_time=0
         self.databuffer = None
         self._idx = None
 
@@ -149,6 +150,7 @@ class LoadstepCallback(Callback):
         if self.databuffer.std() < 0.1 and np.round(self.databuffer.mean())==v_ref[0]:  #v_ref[0]=325 V
             self.steady_state_reached=True #if the ten values in the databuffer fulfill the conditions (std <0.1 and
             # rounded mean == 325 V), the the steady state is reached
+
 
     # After steady state is reached, a bigger random load jump of +/- 5 Ohm is implemented
     # After 3/4 of the simulation time, another random load jump of +/- 5 Ohm is implemented
@@ -375,9 +377,10 @@ class Metrics:
     ts = 1e-4  # duration of the episodes in seconds
     n=5 ## number of points to be checked before and after
 
+
     def __init__(self, quantity):
         self.quantity = quantity  # here the class is given any quantity to calculate the metrics
-
+        self.test=None
     # def overshoot(self):
     #     max_quantity = self.quantity.iloc[:int(max_episode_steps / 4)].max()  # the maximum value of the quantity in the first quarter is stored
     #     overshoot = (max_quantity / self.ref_value) - 1  # calculation of the overshoot
@@ -386,6 +389,7 @@ class Metrics:
     def overshoot(self):
         self.quantity['max']=self.quantity.iloc[argrelextrema(self.quantity['master.CVVd'].values, np.greater_equal, order=self.n)[0]]['master.CVVd']
         index_first_max = self.quantity['max'].first_valid_index()
+        self.quantity.drop(columns=['max'])
         max_quantity=self.quantity.iloc[index_first_max][0]
         overshoot = (max_quantity / self.ref_value) - 1
         return round(overshoot,4)
@@ -396,15 +400,25 @@ class Metrics:
         return round(rise_time_in_seconds, 4)
 
     def settling_time(self):
-        array_settling_time = self.quantity.iloc[int(
-            max_episode_steps / 2 + 6):]  # stores the values after the second load jump (a little delay +6) in an array
+        self.quantity['max'] = \
+        self.quantity.iloc[argrelextrema(self.quantity['master.CVVd'].values, np.greater_equal, order=self.n)[0]][
+            'master.CVVd']
+        index_first_max = self.quantity['max'].first_valid_index() #returns the index of the maximum that is used for the calculation
+        self.quantity.drop(columns=['max'])
+        array_settling_time = self.quantity.iloc[int(index_first_max):]  # stores the values after the second load jump (a little delay +6) in an array
         upper_bound = 1.02 * self.ref_value  # the settling time is defined as the time when the inverter's voltage is
         lower_bound = 0.98 * self.ref_value  # within the upper and lower bound of the set value for the first time at Steady State
         position_settling_time = array_settling_time[(array_settling_time['master.CVVd'] >= lower_bound) & (
                 array_settling_time['master.CVVd'] <= upper_bound)].index[
             0]  # returns the position of the settling time
         settling_time_in_seconds = position_settling_time * ts
-        return round(settling_time_in_seconds, 4)
+        settling_time_df= self.quantity['master.CVVd'].iloc[position_settling_time:(position_settling_time + 20)] #array
+        if (settling_time_df.mean() < upper_bound) & (settling_time_df.mean() > lower_bound): #checks if the quantity is still in steady state after the settling_time
+            return round(settling_time_in_seconds, 4)
+        else:
+            sentence_error="The settling time could not be identified"
+            return sentence_error
+
 
     def RMSE(self):
         Y_true = self.quantity.to_numpy().reshape(-1)  # converts and reshapes it into an array with size [max_epsiodes,]
@@ -421,9 +435,11 @@ class Metrics:
 
 voltage_controller_metrics = Metrics(df_master_CVV)
 print(voltage_controller_metrics.overshoot())
+print(voltage_controller_metrics.settling_time())
+
 #print(voltage_controller_metrics.overshoot_test())
 print(voltage_controller_metrics.rise_time())
-print(voltage_controller_metrics.settling_time())
+
 print(voltage_controller_metrics.RMSE())
 print(voltage_controller_metrics.steady_state_error())
 
