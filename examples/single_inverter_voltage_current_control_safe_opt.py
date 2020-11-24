@@ -45,10 +45,11 @@ ts = 1e-4
 v_ref = np.array([325, 0, 0])  # muss ich noch anpassen, wo kriege ich die her
 movement_1 = load_jump if random() < 0.5 else -1 * load_jump #randomly chosen first load jump
 movement_2 = (load_jump if random() < 0.5 else -1 * load_jump) + movement_1 #randomly chosen load jump
+position_settling_time=0
 
 
 # The starting value of the the resistance is 20 Ohm.
-# Every step and therefore the whole simulationt time, it randomly changes +/- 0.01 Ohm to generate noise.
+# Every step and therefore the whole simulation time, it randomly changes +/- 0.01 Ohm to generate noise.
 
 
 def load_step_random_walk():
@@ -92,7 +93,6 @@ class Reward:
         Takes current and voltage measurements and set-points to calculate the mean-root control error and uses a
         logarithmic barrier function in case of violating the current limit. Barrier function is adjustable using
         parameter mu.
-
         :param cols: list of variable names of the data
         :param data: observation data from the environment (ControlVariables, e.g. currents and voltages)
         :return: Error as negative reward
@@ -129,6 +129,11 @@ class LoadstepCallback(Callback):
         self.settling_time=0
         self.databuffer = None
         self._idx = None
+        self.counter2 = 0
+        self.counter1 = 0
+        self.list_data = []
+        self.upper_bound = 1.02 * v_ref[0]
+        self.lower_bound = 0.98 * v_ref[0]
 
 
 
@@ -145,10 +150,17 @@ class LoadstepCallback(Callback):
 
     def __call__(self, cols, obs):   #in obs sind die daten der history drinne
         self.set_idx(cols)
-        self.databuffer=np.roll(self.databuffer, -1) #all values are shifted to the left by one
         self.databuffer[-1]=obs[self._idx[5][0]] #the last element of the array is replaced with the current value of the inverter's voltage
-        if self.databuffer.std() < 0.1 and np.round(self.databuffer.mean())==v_ref[0]:  #v_ref[0]=325 V
-            self.steady_state_reached=True #if the ten values in the databuffer fulfill the conditions (std <0.1 and
+        self.databuffer=np.roll(self.databuffer, -1) #all values are shifted to the left by one
+        self.list_data.append(obs[self._idx[5][0]])
+        if obs[self._idx[5][0]]>self.lower_bound and obs[self._idx[5][0]]<self.upper_bound and np.round(self.databuffer.mean())==v_ref[0]:
+            if self.counter2 <1:
+                global position_settling_time
+                position_settling_time=len(self.list_data)
+                self.counter2 = +1
+            if self.databuffer.std() < 0.1:  #i_ref[0]= 15 A
+                self.steady_state_reached=True
+        #if the ten values in the databuffer fulfill the conditions (std <0.1 and
             # rounded mean == 325 V), the the steady state is reached
 
 
@@ -364,60 +376,72 @@ pd.set_option('display.max_rows', None)
 df_master_CVV = env.history.df[
     ['master.CVVd']]  # voltage for the Controller, it is the measurement of the Master-Inverter's Voltage7
 
-#df_master_CVV['max'] = df_master_CVV[(df_master_CVV['master.CVVd'].shift(1) < df_master_CVV['master.CVVd']) & (df_master_CVV['master.CVVd'].shift(-1) < df_master_CVV['master.CVVd'])]
-# df_master_CVV['max'] = df_master_CVV.iloc[argrelextrema(df_master_CVV['master.CVVd'].values, np.greater_equal, order=n)[0]]['master.CVVd']
-# index_first_max=df_master_CVV['max'].first_valid_index()
-#print(df_master_CVV['max'])
-#print(index_first_max)
-#print(df_master_CVV.iloc[index_first_max][0])
+
 
 
 class Metrics:
     ref_value = v_ref[0]  # set value of inverter that serves as a set value for the outer voltage controller
     ts = 1e-4  # duration of the episodes in seconds
     n=5 ## number of points to be checked before and after
+    overshoot_available=True
+
 
 
     def __init__(self, quantity):
         self.quantity = quantity  # here the class is given any quantity to calculate the metrics
         self.test=None
-    # def overshoot(self):
-    #     max_quantity = self.quantity.iloc[:int(max_episode_steps / 4)].max()  # the maximum value of the quantity in the first quarter is stored
-    #     overshoot = (max_quantity / self.ref_value) - 1  # calculation of the overshoot
-    #     return round(overshoot[0], 4)
+
 
     def overshoot(self):
         self.quantity['max']=self.quantity.iloc[argrelextrema(self.quantity['master.CVVd'].values, np.greater_equal, order=self.n)[0]]['master.CVVd']
         index_first_max = self.quantity['max'].first_valid_index()
         self.quantity.drop(columns=['max'])
-        max_quantity=self.quantity.iloc[index_first_max][0]
-        overshoot = (max_quantity / self.ref_value) - 1
-        return round(overshoot,4)
+        self.max_quantity=self.quantity.iloc[index_first_max][0]
+        overshoot = (self.max_quantity / self.ref_value) - 1
+        if self.max_quantity>self.ref_value:
+            return round(overshoot,4)
+        else:
+            self.overshoot_available=False
+            sentence_error1="No overshoot"
+            return sentence_error1
 
     def rise_time(self):  # it's an underdamped system, that's why it's 0% to 100% of its value
-        position_rise_time = self.quantity[self.quantity['master.CVVd'] >= self.ref_value].index[0]  # the number of episode steps where the real value = set_value is stored
-        rise_time_in_seconds = position_rise_time * ts
+        if self.overshoot_available: # if overdamped system
+            position_rise_time = self.quantity[self.quantity['master.CVVd'] >= self.ref_value].index[0]  # the number of episode steps where the real value = set_value is stored
+            rise_time_in_seconds = position_rise_time * ts
+        else: #if underdamped/critically damped
+            position_start_rise_time=self.quantity[self.quantity['master.CVVd'] >= 0.05*self.ref_value].index[0] #5% of its final value
+            position_end_rise_time= self.quantity[self.quantity['master.CVVd'] <= 0.95*self.ref_value].index[0] #95% of its final value
+            position_rise_time=position_end_rise_time-position_start_rise_time
+            rise_time_in_seconds=position_rise_time *ts
+
+
         return round(rise_time_in_seconds, 4)
 
     def settling_time(self):
-        self.quantity['max'] = \
-        self.quantity.iloc[argrelextrema(self.quantity['master.CVVd'].values, np.greater_equal, order=self.n)[0]][
-            'master.CVVd']
-        index_first_max = self.quantity['max'].first_valid_index() #returns the index of the maximum that is used for the calculation
-        self.quantity.drop(columns=['max'])
-        array_settling_time = self.quantity.iloc[int(index_first_max):]  # stores the values after the second load jump (a little delay +6) in an array
-        upper_bound = 1.02 * self.ref_value  # the settling time is defined as the time when the inverter's voltage is
-        lower_bound = 0.98 * self.ref_value  # within the upper and lower bound of the set value for the first time at Steady State
-        position_settling_time = array_settling_time[(array_settling_time['master.CVVd'] >= lower_bound) & (
-                array_settling_time['master.CVVd'] <= upper_bound)].index[
-            0]  # returns the position of the settling time
-        settling_time_in_seconds = position_settling_time * ts
-        settling_time_df= self.quantity['master.CVVd'].iloc[position_settling_time:(position_settling_time + 20)] #array
-        if (settling_time_df.mean() < upper_bound) & (settling_time_df.mean() > lower_bound): #checks if the quantity is still in steady state after the settling_time
-            return round(settling_time_in_seconds, 4)
-        else:
-            sentence_error="The settling time could not be identified"
-            return sentence_error
+        settling_time_value = position_settling_time * ts
+        return settling_time_value
+        # if self.overshoot_available:
+        #     self.quantity['max'] = \
+        #     self.quantity.iloc[argrelextrema(self.quantity['master.CVVd'].values, np.greater_equal, order=self.n)[0]][
+        #     'master.CVVd']
+        #     index_first_max = self.quantity['max'].first_valid_index() #returns the index of the maximum that is used for the calculation
+        #     self.quantity.drop(columns=['max'])
+        #     array_settling_time = self.quantity.iloc[int(index_first_max):]
+        # else:
+        #     array_settling_time=self.quantity['master.CVVd']# stores the values after the second load jump (a little delay +6) in an array
+        # upper_bound = 1.02 * self.ref_value  # the settling time is defined as the time when the inverter's voltage is
+        # lower_bound = 0.98 * self.ref_value  # within the upper and lower bound of the set value for the first time at Steady State
+        # position_settling_time = array_settling_time[(array_settling_time['master.CVVd'] >= lower_bound) & (
+        #         array_settling_time['master.CVVd'] <= upper_bound)].index[
+        #     0]  # returns the position of the settling time
+        # settling_time_in_seconds = position_settling_time * ts
+        # settling_time_df= self.quantity['master.CVVd'].iloc[position_settling_time:(position_settling_time + 20)] #array
+        # if (settling_time_df.mean() < upper_bound) & (settling_time_df.mean() > lower_bound): #checks if the quantity is still in steady state after the settling_time
+        #     return round(settling_time_in_seconds, 4)
+        # else:
+        #     sentence_error2="The settling time could not be identified"
+        #     return sentence_error2
 
 
     def RMSE(self):
@@ -447,19 +471,10 @@ d = {'Overshoot': [voltage_controller_metrics.overshoot()],
      'Rise Time/s ': [voltage_controller_metrics.rise_time()],
      'Settling Time/s ': [voltage_controller_metrics.settling_time()],
      'Root Mean Squared Error/V': [voltage_controller_metrics.RMSE()],
-     'Steady State Error/V': [voltage_controller_metrics.rise_time()]}
+     'Steady State Error/V': [voltage_controller_metrics.steady_state_error()]}
 
 
 
 df_metrics = pd.DataFrame(data=d).T
 df_metrics.columns = ['Value']
 print(df_metrics)
-
-# def rise_time(self):  #tr
-#
-# def settling_time(self):
-#
-# def MSE(self):
-
-
-# def steady_state_error (self):  #If not PI-controller
