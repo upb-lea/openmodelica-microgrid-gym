@@ -12,11 +12,11 @@ from functools import partial
 import gym
 import numpy as np
 
-from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import StaticControlAgent
 from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQ0PIPIController, \
     MultiPhaseDQCurrentController, InverseDroopParams, PLLParams
+from openmodelica_microgrid_gym.net import Network
 
 # Simulation definitions
 net = Network.load('../net/net.yaml')
@@ -43,7 +43,7 @@ def load_step(t, gain):
     :param gain: device parameter
     :return: Dictionary with load parameters
     """
-    return 1*gain if t < .3 else 2*gain
+    return 1 * gain if t < .3 else 2 * gain
 
 
 if __name__ == '__main__':
@@ -91,9 +91,9 @@ if __name__ == '__main__':
                    viz_cols=['master.inst*', 'slave.inst*', 'lcl1.*', 'lc1.*', 'slave.freq'],
                    log_level=logging.INFO,
                    max_episode_steps=max_episode_steps,
-                   model_params={'rl1.resistor1.R': partial(load_step,gain=20),
-                                 'rl1.resistor2.R': partial(load_step,gain=20),
-                                 'rl1.resistor3.R': partial(load_step,gain=20),
+                   model_params={'rl1.resistor1.R': partial(load_step, gain=20),
+                                 'rl1.resistor2.R': partial(load_step, gain=20),
+                                 'rl1.resistor3.R': partial(load_step, gain=20),
                                  'rl1.inductor1.L': 0.001,
                                  'rl1.inductor2.L': 0.001,
                                  'rl1.inductor3.L': 0.001

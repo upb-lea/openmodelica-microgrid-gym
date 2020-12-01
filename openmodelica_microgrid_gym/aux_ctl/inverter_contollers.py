@@ -47,29 +47,31 @@ class Controller:
         """
         self.history.reset()
         # enforce the first step call to calculate the set point
-        self._undersampling_count = self._undersample
+        self._undersampling_count = 0
         self._stored_control = np.zeros(N_PHASE)
 
         self._currentPI.reset()
 
-    def step(self, currentCV: np.ndarray, voltageCV: np.ndarray, *args, **kwargs):
+    def step(self):
         """
-        Will call self.control() with the given \*args and \*\*kwargs and handle undersampling.
+        Will use precalculated action and handle undersampling.
         The function will replay the last control action for the duration of the undersampling.
-
-        :param currentCV: 1d-array with 3 entries, one for each phase. The feedback values for current
-        :param voltageCV:  1d-array with 3 entries, one for each phase. The feedback values for voltage
 
         :return: most up to date control action
         """
-        self._undersampling_count += 1
-        if self._undersampling_count >= self._undersample:
-            self._undersampling_count = 0
-            self._stored_control = self.control(currentCV, voltageCV, *args, **kwargs)
 
         return self._stored_control
 
-    def control(self, currentCV: np.ndarray, voltageCV: np.ndarray, idq0SP: np.ndarray = None, *args, **kwargs):
+    def prepare(self, *args, **kwargs):
+        """
+        Performs the calculations for a discrete step of the controller and stores control response
+        """
+
+        if self._undersampling_count == 0:
+            self._stored_control = self.control(*args, **kwargs)
+        self._undersampling_count = (self._undersampling_count + 1) % self._undersample
+
+    def control(self, *args, **kwargs):
         """
         Performs the calculations for a discrete step of the controller
 
@@ -77,10 +79,10 @@ class Controller:
         :param voltageCV:  1d-array with 3 entries, one for each phase. The feedback values for voltage
         :param idq0SP:
 
-        :return: The controller output for the current calculation in the ABC
-                    frame
+        :return: The controller output for the current calculation in the ABC frame
         """
         pass
+
 
 class VoltageCtl(Controller):
     def __init__(self, VPIParams: PI_params, IPIParams: PI_params, tau: float,

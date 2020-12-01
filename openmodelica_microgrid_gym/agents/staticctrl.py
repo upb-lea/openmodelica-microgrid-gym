@@ -97,10 +97,7 @@ class StaticControlAgent(Agent):
         :param state: the agent itself is stateless. the state is stored in the controllers.
         Therefore we simply pass the observation from the environment into the controllers.
         """
-        controls = []
-        for key, tmpl in self.obs_template.items():
-            params = tmpl.fill(state)
-            controls.append(self.controllers[key].step(*params))
+        controls = [self.controllers[key].step() for key in self.obs_template.keys()]
         return np.concatenate(controls)
 
     def observe(self, reward: float, terminated: bool):
@@ -124,10 +121,10 @@ class StaticControlAgent(Agent):
 
         :return: structured columns of measurement
         """
+
         return [ctrl.history.structured_cols(None) for ctrl in self.controllers.values()]
 
-    @property
-    def measurement(self) -> np.ndarray:
+    def measure(self, state) -> np.ndarray:
         """
         Measurements the agent takes on the environment. This data is passed to the environment.
         The values returned by this property should be fully determined by the environment.
@@ -136,6 +133,9 @@ class StaticControlAgent(Agent):
 
         :return: current measurement
         """
+        for key, tmpl in self.obs_template.items():
+            params = tmpl.fill(state)
+            self.controllers[key].prepare(*params)
         return np.array(list(chain.from_iterable([ctrl.history.last() for ctrl in self.controllers.values()])))
 
     def prepare_episode(self):

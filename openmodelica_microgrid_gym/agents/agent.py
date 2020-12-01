@@ -59,8 +59,7 @@ class Agent:
         """
         return []
 
-    @property
-    def measurement(self) -> np.ndarray:
+    def measure(self, obs: np.ndarray) -> np.ndarray:
         """
         Measurements the agent takes on the environment. This data is passed to the environment.
         The values returned by this property should be fully determined by the environment.
