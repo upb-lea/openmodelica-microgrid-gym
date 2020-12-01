@@ -51,7 +51,7 @@ class Reward:
                 lambda n: obs.index(n),
                 [[f'lc1.inductor{k}.i' for k in '123'], 'master.phase', [f'master.SPI{k}' for k in 'dq0']])
 
-    def rew_fun(self, cols: List[str], data: np.ndarray) -> float:
+    def rew_fun(self, cols: List[str], data: np.ndarray, risk) -> float:
         """
         Defines the reward function for the environment. Uses the observations and setpoints to evaluate the quality of the
         used parameters.

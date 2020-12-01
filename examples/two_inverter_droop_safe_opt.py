@@ -63,7 +63,7 @@ class Reward:
                 [[f'slave.freq'],
                  [f'master.CVV{s}' for s in 'dq0']])
 
-    def rew_fun(self, cols: List[str], data: np.ndarray) -> float:
+    def rew_fun(self, cols: List[str], data: np.ndarray, risk) -> float:
         """
         Defines the reward function for the environment. Uses the observations and set-points to evaluate the quality of
         the used parameters.
