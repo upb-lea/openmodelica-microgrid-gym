@@ -15,7 +15,7 @@ from openmodelica_microgrid_gym.env.plot import PlotTmpl
 from openmodelica_microgrid_gym.env.pyfmi import PyFMI_Wrapper
 from openmodelica_microgrid_gym.env.stochastic_components import Noise
 from openmodelica_microgrid_gym.net.base import Network
-from openmodelica_microgrid_gym.util import FullHistory, EmptyHistory
+from openmodelica_microgrid_gym.util import FullHistory, EmptyHistory, Fastqueue
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ class ModelicaEnv(gym.Env):
                  model_path: str = '../omg_grid/grid.network.fmu',
                  viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[Union[str, PlotTmpl]]]] = None,
                  history: EmptyHistory = FullHistory(),
-                 state_noise: Optional[Noise] =None,
+                 state_noise: Optional[Noise] = None,
                  action_time_delay: int = 0):
         """
         Initialize the Environment.
@@ -128,9 +128,9 @@ class ModelicaEnv(gym.Env):
         # variable names are flattened to a list if they have specified in the nested dict manner)
         self.model_output_names = self.net.out_vars(False, True)
 
-
         if state_noise is None:
-            state_noise = Noise(np.zeros(len(self.model_output_names)), np.zeros(len(self.model_output_names)), 0.0, 0.0)
+            state_noise = Noise(np.zeros(len(self.model_output_names)), np.zeros(len(self.model_output_names)), 0.0,
+                                0.0)
         if len(self.model_output_names) != len(state_noise):
             raise ValueError('Number of model_outputs does not align with number of noise values!')
         self.state_noise = state_noise
@@ -167,7 +167,7 @@ class ModelicaEnv(gym.Env):
         self.observation_space = gym.spaces.Box(low=np.full(d_o, -np.inf), high=np.full(d_o, np.inf))
 
         self.action_time_delay = action_time_delay
-        self.delay_buffer = np.zeros([self.action_time_delay+1, self.action_space.shape[0]])
+        self.delay_buffer = Fastqueue(self.action_time_delay + 1, self.action_space.shape[0])
 
     def _calc_jac(self, t, x) -> np.ndarray:  # noqa
         """
@@ -253,6 +253,7 @@ class ModelicaEnv(gym.Env):
         self.measurement = []
         self._failed = False
         self._register_render = False
+        self.delay_buffer.clear()
         outputs = self._create_state()
         return outputs
 
@@ -288,26 +289,22 @@ class ModelicaEnv(gym.Env):
             logger.error(message)
             raise ValueError(message)
 
-        # put action to first row of line
-        self.delay_buffer[0,:] = action
+        # enqueue action and get delayed/last action
+        delayed_action = self.delay_buffer.shift(action)
 
-        # take action from last line of buffer
         # Set input values of the model
-        logger.debug('model input: %s, values: %s', self.model_input_names, self.delay_buffer[-1,:])
-        self.model.set(**dict(zip(self.model_input_names, self.delay_buffer[-1,:])))
+        logger.debug('model input: %s, values: %s', self.model_input_names, delayed_action)
+        self.model.set(**dict(zip(self.model_input_names, delayed_action)))
 
         if self.model_parameters:
             values = {var: f(self.sim_time_interval[0]) for var, f in self.model_parameters.items()}
         else:
             values = {}
 
-        params = {**values, **self.net.params(self.delay_buffer[-1,:])}
+        params = {**values, **self.net.params(delayed_action)}
         if params:
             self.model.set_params(**params)
         risk = self.net.risk()
-
-        # shift the buffer
-        self.delay_buffer = np.roll(self.delay_buffer, self.action_space.shape[0])
 
         # Simulate and observe result state
         self._state = self._simulate()
