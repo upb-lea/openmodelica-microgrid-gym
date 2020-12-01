@@ -111,7 +111,7 @@ class ModelicaEnv(gym.Env):
 
         self.sim_time_interval = None
         self._state = []
-        self.measurement = []
+        self.measure = lambda obs: np.empty(0)  # type : Callable([np.ndarray],np.ndarray)
         self.record_states = viz_mode == 'episode'
         self.history = history
         self.is_normalized = is_normalized
@@ -229,14 +229,9 @@ class ModelicaEnv(gym.Env):
         self.model.setup(self.time_start, self.model_output_names)
 
         self.history.reset()
-        self._state = self._simulate()
-        self.measurement = []
         self._failed = False
         self._register_render = False
-        obs = self._state
-        outputs = self.net.augment(obs, self.is_normalized)
-        outputs = np.hstack((outputs, obs[len(self.net.out_vars(False)):]))
-        self.history.append(outputs)
+        outputs = self._create_state()
         return outputs
 
     def step(self, action: Sequence) -> Tuple[np.ndarray, float, bool, Mapping]:
@@ -285,12 +280,7 @@ class ModelicaEnv(gym.Env):
             self.model.set_params(**params)
         risk = self.net.risk()
 
-        # Simulate and observe result state
-        self._state = self._simulate()
-        obs = np.hstack((self._state, self.measurement))
-        outputs = self.net.augment(obs, self.is_normalized)
-        outputs = np.hstack((outputs, obs[len(self.net.out_vars(False)):]))
-        self.history.append(outputs)
+        outputs = self._create_state()
 
         logger.debug("model output: %s, values: %s", self.model_output_names, self._state)
 
@@ -307,6 +297,14 @@ class ModelicaEnv(gym.Env):
 
         # only return the state, the agent does not need the measurement
         return outputs, reward, self.is_done, dict(risk=risk)
+
+    def _create_state(self):
+        # Simulate and observe result state
+        self._state = self._simulate()
+        outputs = self.net.augment(self._state, self.is_normalized)
+        outputs = np.hstack([outputs, self.measure(outputs)])
+        self.history.append(outputs)
+        return outputs
 
     def render(self, mode: str = 'human', close: bool = False) -> List[Figure]:
         """

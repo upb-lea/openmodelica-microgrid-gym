@@ -281,7 +281,6 @@ if __name__ == '__main__':
                                  },
                    model_path='../omg_grid/grid.network.fmu',
                    net='../net/net.yaml',
-                   history=FullHistory()
                    )
 
     #####################################
