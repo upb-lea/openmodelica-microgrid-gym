@@ -37,7 +37,6 @@ class Controller:
         self._undersampling_count = None
         self._stored_control = None
         self.name = name
-        self._last_ctl = None
 
     def _set_hist_cols(self, cols):
         self.history.cols = nested_map(lambda col: '.'.join([self.name, col]), cols)
@@ -48,43 +47,29 @@ class Controller:
         """
         self.history.reset()
         # enforce the first step call to calculate the set point
-        self._undersampling_count = self._undersample
+        self._undersampling_count = 0
         self._stored_control = np.zeros(N_PHASE)
-        self._last_ctl = None
 
         self._currentPI.reset()
 
     def step(self):
         """
-        Will call self.control() with the given \*args and \*\*kwargs and handle undersampling.
+        Will use precalculated action and handle undersampling.
         The function will replay the last control action for the duration of the undersampling.
-
-        :param currentCV: 1d-array with 3 entries, one for each phase. The feedback values for current
-        :param voltageCV:  1d-array with 3 entries, one for each phase. The feedback values for voltage
 
         :return: most up to date control action
         """
-        self._undersampling_count += 1
-        if self._undersampling_count >= self._undersample:
-            self._undersampling_count = 0
-            if self._last_ctl is None:
-                raise RuntimeError('call prepare( before calling step()')
-            self._stored_control = self._last_ctl
-            self._last_ctl = None
 
         return self._stored_control
 
     def prepare(self, *args, **kwargs):
         """
-        Performs the calculations for a discrete step of the controller
-
-        :param currentCV: 1d-array with 3 entries, one for each phase. The feedback values for current
-        :param voltageCV:  1d-array with 3 entries, one for each phase. The feedback values for voltage
-        :param idq0SP:
-
-        :return: The controller output for the current calculation in the ABC frame
+        Performs the calculations for a discrete step of the controller and stores control response
         """
-        self._last_ctl = self.control(*args, **kwargs)
+
+        if self._undersampling_count == 0:
+            self._stored_control = self.control(*args, **kwargs)
+        self._undersampling_count = (self._undersampling_count + 1) % self._undersample
 
     def control(self, *args, **kwargs):
         """
