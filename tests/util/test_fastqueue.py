@@ -1,3 +1,5 @@
+from pytest import approx
+
 from openmodelica_microgrid_gym.util import Fastqueue
 import numpy as np
 
@@ -17,4 +19,4 @@ def test_fastqueue2d():
     first_val = np.random.uniform(size=2)
     test_queue2d.shift(first_val)
     test_queue2d.shift(np.random.uniform(size=2))
-    assert first_val == test_queue2d.shift(np.random.uniform(size=2))
+    assert first_val == approx(test_queue2d.shift(np.random.uniform(size=2)))
