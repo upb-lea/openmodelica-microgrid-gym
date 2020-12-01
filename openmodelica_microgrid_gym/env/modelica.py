@@ -13,7 +13,7 @@ from scipy import integrate
 
 from openmodelica_microgrid_gym.env.plot import PlotTmpl
 from openmodelica_microgrid_gym.env.pyfmi import PyFMI_Wrapper
-from openmodelica_microgrid_gym.net.net import Network
+from openmodelica_microgrid_gym.net.base import Network
 from openmodelica_microgrid_gym.util import FullHistory, EmptyHistory
 
 logger = logging.getLogger(__name__)
@@ -28,10 +28,11 @@ class ModelicaEnv(gym.Env):
     """Set of all valid visualisation modes"""
 
     def __init__(self, net: Union[str, Network], time_start: float = 0,
-                 reward_fun: Callable[[List[str], np.ndarray], float] = lambda cols, obs: 1, is_normalized=True,
+                 reward_fun: Callable[[List[str], np.ndarray, float], float] = lambda cols, obs, risk: 1,
+                 is_normalized=True,
                  log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: Optional[int] = 200,
                  model_params: Optional[Dict[str, Union[Callable[[float], float], float]]] = None,
-                 model_path: str = '../fmu/grid.network.fmu',
+                 model_path: str = '../omg_grid/grid.network.fmu',
                  viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[Union[str, PlotTmpl]]]] = None,
                  history: EmptyHistory = FullHistory()):
         """
@@ -41,7 +42,8 @@ class ModelicaEnv(gym.Env):
         :param time_start: offset of the time in seconds
 
         :param reward_fun:
-            The function receives as a list of variable names and a np.ndarray of the values of the current observation.
+            The function receives as a list of variable names and a np.ndarray of the values
+             of the current observation as well as a risk value between 0 and 1.
             The separation is mainly for performance reasons, such that the resolution of data indices can be cached.
             It must return the reward of this timestep as float.
             It should return np.nan or -np.inf or None in case of a failiure.
@@ -206,9 +208,8 @@ class ModelicaEnv(gym.Env):
         :return: True if simulation time exceeded
         """
         if self._failed:
-            logger.info(f'reward was extreme, episode terminated')
+            logger.info(f'risk level exceeded')
             return True
-        # TODO allow for other stopping criteria
         logger.debug(f't: {self.sim_time_interval[1]}, ')
         return abs(self.sim_time_interval[1]) > self.time_end
 
@@ -274,15 +275,15 @@ class ModelicaEnv(gym.Env):
         logger.debug('model input: %s, values: %s', self.model_input_names, action)
         self.model.set(**dict(zip(self.model_input_names, action)))
 
-
         if self.model_parameters:
             values = {var: f(self.sim_time_interval[0]) for var, f in self.model_parameters.items()}
         else:
             values = {}
 
-        params =  {**values, **self.net.params(action)}
+        params = {**values, **self.net.params(action)}
         if params:
             self.model.set_params(**params)
+        risk = self.net.risk()
 
         # Simulate and observe result state
         self._state = self._simulate()
@@ -301,11 +302,11 @@ class ModelicaEnv(gym.Env):
         else:
             logger.debug("Experiment step done, experiment done.")
 
-        reward = self.reward(self.history.cols, outputs)
-        self._failed = np.isnan(reward) or np.isinf(reward) and reward < 0 or reward is None
+        reward = self.reward(self.history.cols, outputs, risk)
+        self._failed = risk >= 1 or np.isnan(reward) or (np.isinf(reward) and reward < 0) or reward is None
 
         # only return the state, the agent does not need the measurement
-        return outputs, reward, self.is_done, {}
+        return outputs, reward, self.is_done, dict(risk=risk)
 
     def render(self, mode: str = 'human', close: bool = False) -> List[Figure]:
         """

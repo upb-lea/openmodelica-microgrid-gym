@@ -48,7 +48,7 @@ class Reward:
                 [[f'lc1.inductor{k}.i' for k in '123'], 'master.phase', [f'master.SPI{k}' for k in 'dq0'],
                  [f'lc1.capacitor{k}.v' for k in '123'], [f'master.SPV{k}' for k in 'dq0']])
 
-    def rew_fun(self, cols: List[str], data: np.ndarray) -> float:
+    def rew_fun(self, cols: List[str], data: np.ndarray, risk) -> float:
         """
         Defines the reward function for the environment. Uses the observations and set-points to evaluate the quality of
         the used parameters.
