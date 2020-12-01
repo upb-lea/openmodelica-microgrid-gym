@@ -111,7 +111,7 @@ class ModelicaEnv(gym.Env):
 
         self.sim_time_interval = None
         self._state = []
-        self.measurement = []
+        self.measure = lambda obs: np.empty(0)  # type : Callable([np.ndarray],np.ndarray)
         self.record_states = viz_mode == 'episode'
         self.history = history
         self.is_normalized = is_normalized
@@ -229,13 +229,11 @@ class ModelicaEnv(gym.Env):
         self.model.setup(self.time_start, self.model_output_names)
 
         self.history.reset()
-        self._state = self._simulate()
-        self.measurement = []
         self._failed = False
         self._register_render = False
-        obs = self._state
-        outputs = self.net.augment(obs, self.is_normalized)
-        outputs = np.hstack((outputs, obs[len(self.net.out_vars(False)):]))
+        self._state = self._simulate()
+        outputs = self.net.augment(self._state, self.is_normalized)
+        outputs = np.hstack([outputs, self.measure(outputs)])
         self.history.append(outputs)
         return outputs
 
@@ -287,9 +285,8 @@ class ModelicaEnv(gym.Env):
 
         # Simulate and observe result state
         self._state = self._simulate()
-        obs = np.hstack((self._state, self.measurement))
-        outputs = self.net.augment(obs, self.is_normalized)
-        outputs = np.hstack((outputs, obs[len(self.net.out_vars(False)):]))
+        outputs = self.net.augment(self._state, self.is_normalized)
+        outputs = np.hstack([outputs, self.measure(outputs)])
         self.history.append(outputs)
 
         logger.debug("model output: %s, values: %s", self.model_output_names, self._state)
