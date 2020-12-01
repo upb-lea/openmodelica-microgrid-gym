@@ -10,18 +10,17 @@ import os
 from distutils.util import strtobool
 from functools import partial
 from itertools import product
+from itertools import tee
 from multiprocessing import Pool
 from os.path import isfile
-import seaborn as sns
-from itertools import tee
 
 import GPy
 import gym
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
-import matplotlib.pyplot as plt
-import matplotlib
+import seaborn as sns
 
 from openmodelica_microgrid_gym.env.plotmanager import PlotManager
 from openmodelica_microgrid_gym.env.rewards import Reward
@@ -290,7 +289,8 @@ def run_experiment(len_kp, len_ki):
                                     style=[[None], ['--']]
                                     ),
                            PlotTmpl([[f'master.m{i}' for i in 'abc']],
-                                    callback=plotter.xylables_mabc
+                                    callback=lambda fig: plotter.update_axes(fig, title='Simulation',
+                                                                             ylabel='$m_{\mathrm{abc}}\,/\,\mathrm{}$')
                                     ),
                            PlotTmpl([[f'master.CVI{i}' for i in 'dq0'], [f'master.SPI{i}' for i in 'dq0']],
                                     callback=plotter.xylables_i_dq0,

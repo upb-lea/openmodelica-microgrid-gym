@@ -5,15 +5,20 @@
 # b) connecting via ssh to a testbench to perform real-world measurement
 
 import logging
+import os
 from functools import partial
 from itertools import tee
-import os
+
 import GPy
 import gym
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib
+
+from experiments.model_validation.env.testbench_voltage_ctrl import TestbenchEnvVoltage
+from experiments.model_validation.execution.monte_carlo_runner import MonteCarloRunner
+from experiments.model_validation.execution.runner_hardware import RunnerHardwareGradient
 from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat
 from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, \
@@ -22,9 +27,6 @@ from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.env.plotmanager import PlotManager
 from openmodelica_microgrid_gym.env.rewards import Reward
 from openmodelica_microgrid_gym.env.stochastic_components import Load, Noise
-from experiments.model_validation.env.testbench_voltage_ctrl import TestbenchEnvVoltage
-from experiments.model_validation.execution.monte_carlo_runner import MonteCarloRunner
-from experiments.model_validation.execution.runner_hardware import RunnerHardwareGradient
 from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import FullHistory
 
@@ -62,29 +64,29 @@ np.random.seed(1)
 
 # Simulation definitions
 net = Network.load('../net/net_single-inv-Paper_Loadstep.yaml')
-delta_t = 1e-4 # simulation time step size / s
+delta_t = 1e-4  # simulation time step size / s
 undersample = 1
-max_episode_steps = 2000 # number of simulation steps per episode
-num_episodes = 1 # number of simulation episodes (i.e. SafeOpt iterations)
-n_MC = 1 # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
+max_episode_steps = 2000  # number of simulation steps per episode
+num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
+n_MC = 1  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
 v_DC = 600  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 60  # nominal grid frequency / Hz
 nomVoltPeak = 169.7  # 230 * 1.414  # nominal grid voltage / V
 iLimit = 16  # inverter current limit / A
 iNominal = 12  # nominal inverter current / A
 vNominal = 190  # nominal inverter current / A
-vLimit = vNominal*1.5  # inverter current limit / A
+vLimit = vNominal * 1.5  # inverter current limit / A
 funnelFactor = 0.02
-vFunnel = np.array([vNominal*funnelFactor, vNominal*funnelFactor, vNominal*funnelFactor])
-mu = 400 # factor for barrier function (see below)
+vFunnel = np.array([vNominal * funnelFactor, vNominal * funnelFactor, vNominal * funnelFactor])
+mu = 400  # factor for barrier function (see below)
 DroopGain = 0.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 0.0  # virtual droop gain for reactive power / VAR/V
 
 # plant
 L_filter = 2.3e-3  # / H
 R_filter = 400e-3  # / Ohm
-C_filter = 10e-6   # / F
-R = 28 #nomVoltPeak / 7.5   # / Ohm
+C_filter = 10e-6  # / F
+R = 28  # nomVoltPeak / 7.5   # / Ohm
 
 phase_shift = 5
 amp_dev = 1.1
@@ -101,7 +103,7 @@ C = np.array([[1, 0, 0],
 
 # Observer values
 L_iL_iL = 2e3
-L_vc_iL = -435       # influence from delta_y_vc onto xdot = iL
+L_vc_iL = -435  # influence from delta_y_vc onto xdot = iL
 L_iL_vc = 100229
 L_vc_vc = 4000
 L_iL_io = -13.22
@@ -112,12 +114,12 @@ L = np.array([[L_iL_iL, L_vc_iL],
               [L_iL_io, L_vc_io]])
 
 
-
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
     a, b = tee(iterable)
     next(b, None)
     return zip(a, b)
+
 
 def cal_J_min(phase_shift, amp_dev):
     """
@@ -137,29 +139,30 @@ def cal_J_min(phase_shift, amp_dev):
     irefs = [0, nomVoltPeak, nomVoltPeak]
     ts = [0, max_episode_steps // 2, max_episode_steps]
 
-    noiseH = 0.02*np.sin(2*np.pi*1500 * t) # add noise for dev return
-
+    noiseH = 0.02 * np.sin(2 * np.pi * 1500 * t)  # add noise for dev return
 
     for l in range(len(ph_list)):
         for p in range(3):
             amplitudeSP = np.concatenate([np.full(t1 - t0, r1)
-                for (r0, t0), (r1, t1) in pairwise(zip(irefs, ts))])
+                                          for (r0, t0), (r1, t1) in pairwise(zip(irefs, ts))])
             amplitude = np.concatenate(
                 [np.minimum(
                     r0 + grad * np.arange(0, t1 - t0),  # ramp up phase
                     np.full(t1 - t0, r1)  # max amplitude
                 ) for (r0, t0), (r1, t1) in pairwise(zip(irefs, ts))])
-            Mess = noiseH * amplitude + amp_list[l] * amplitude * np.cos(2 * np.pi * 60 * t + (ph_list[l] * np.pi / 180) + (ph_shift[p] * np.pi / 180))
+            Mess = noiseH * amplitude + amp_list[l] * amplitude * np.cos(
+                2 * np.pi * 60 * t + (ph_list[l] * np.pi / 180) + (ph_shift[p] * np.pi / 180))
             SP = amplitudeSP * np.cos(2 * np.pi * 60 * t + (ph_shift[p] * np.pi / 180))
             error_Jmin[p] = -np.sum((np.abs((SP - Mess)) / vLimit) ** 0.5, axis=0) / max_episode_steps
-            w2 = noiseH *amplitude + amplitude
+            w2 = noiseH * amplitude + amplitude
             dw2 = np.gradient(w2)
-            SP_sattle = (amplitude > amplitudeSP * (1-0.12)).astype(int)
-            error2 = -np.mean(abs(SP_sattle*dw2))
-            error_Jmin[p] += error2 / 2 # add gradient error
-        return_Jmin[l] = np.sum(error_Jmin) # Sum all 3 phases
+            SP_sattle = (amplitude > amplitudeSP * (1 - 0.12)).astype(int)
+            error2 = -np.mean(abs(SP_sattle * dw2))
+            error_Jmin[p] += error2 / 2  # add gradient error
+        return_Jmin[l] = np.sum(error_Jmin)  # Sum all 3 phases
 
     return max(return_Jmin)
+
 
 if __name__ == '__main__':
 
@@ -168,7 +171,6 @@ if __name__ == '__main__':
                  obs_dict=[[f'lc.inductor{k}.i' for k in '123'], 'master.phase', [f'master.SPI{k}' for k in 'dq0'],
                            [f'lc.capacitor{k}.v' for k in '123'], [f'master.SPV{k}' for k in 'dq0'],
                            [f'master.CVV{k}' for k in 'dq0']])
-
 
     #####################################
     # Definitions for the GP
@@ -186,7 +188,7 @@ if __name__ == '__main__':
     # unsafe, if the new measured performance drops below 20 % of the initial performance of the initial safe (!)
     # parameter set
     safe_threshold = 0
-    j_min = cal_J_min(phase_shift, amp_dev) # cal min allowed performance
+    j_min = cal_J_min(phase_shift, amp_dev)  # cal min allowed performance
 
     # The algorithm will not try to expand any points that are below this threshold. This makes the algorithm stop
     # expanding points eventually.
@@ -203,14 +205,13 @@ if __name__ == '__main__':
     #####################################
     # Definition of the controllers
     # Choose Kp and Ki for the current and voltage controller as mutable parameters
-    mutable_params = dict(voltageP=MutableFloat(0.0175), voltageI=MutableFloat(12))     # 300Hz
+    mutable_params = dict(voltageP=MutableFloat(0.0175), voltageI=MutableFloat(12))  # 300Hz
     voltage_dqp_iparams = PI_params(kP=mutable_params['voltageP'], kI=mutable_params['voltageI'],
                                     limits=(-iLimit, iLimit))
 
     kp_c = 0.04
     ki_c = 11.8
-    current_dqp_iparams = PI_params(kP=kp_c, kI=ki_c, limits=(-1, 1))     # Current controller values
-
+    current_dqp_iparams = PI_params(kP=kp_c, kI=ki_c, limits=(-1, 1))  # Current controller values
 
     # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
     # filter and the nominal frequency
@@ -224,7 +225,7 @@ if __name__ == '__main__':
     # Define a voltage forming inverter using the PIPI and droop parameters from above
 
     # Controller with observer
-    #ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param, qdroop_param,
+    # ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param, qdroop_param,
     #                                   observer=[Lueneberger(*params) for params in
     #                                             repeat((A, B, C, L, delta_t * undersample, v_DC / 2), 3)], undersampling=undersample,
     #                                   name='master')
@@ -286,9 +287,9 @@ if __name__ == '__main__':
             c_filt.reset()
             meas_noise.reset()
 
+
         plotter = PlotManager(agent, r_filt, l_filt, meas_noise, save_results=save_results, save_folder=save_folder,
                               show_plots=show_plots)
-
 
         env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                        reward_fun=rew.rew_fun_v,
@@ -309,12 +310,15 @@ if __name__ == '__main__':
                                     style=[[None], ['--']]
                                     ),
                            PlotTmpl([[f'master.I_hat{i}' for i in 'abc'], [f'r_load.resistor{i}.i' for i in '123'], ],
-                                    callback=plotter.xylables_i_hat,
+                                    callback=lambda fig: plotter.update_axes(fig, title='Simulation',
+                                                                             ylabel='$i_{\mathrm{o estimate,abc}}\,/\,\mathrm{A}$'),
                                     color=[['b', 'r', 'g'], ['b', 'r', 'g']],
                                     style=[['-*'], ['--*']]
                                     ),
-                          PlotTmpl([[f'master.m{i}' for i in 'dq0'] ],
-                                    callback=plotter.xylables_mdq0
+                           PlotTmpl([[f'master.m{i}' for i in 'dq0']],
+                                    callback=lambda fig: plotter.update_axes(fig, title='Simulation',
+                                                                             ylabel='$m_{\mathrm{dq0}}\,/\,\mathrm{}$',
+                                                                             filename='Sim_m_dq0')
                                     ),
                            PlotTmpl([[f'master.CVi{i}' for i in 'dq0'], [f'master.SPI{i}' for i in 'dq0']],
                                     callback=plotter.xylables_i_dq0,
@@ -397,7 +401,7 @@ if __name__ == '__main__':
 
         env = TestbenchEnvVoltage(num_steps=max_episode_steps, DT=1 / 10000, v_nominal=nomVoltPeak,
                                   kP=kp_c, kI=ki_c, v_limit=vLimit, f_nom=nomFreq, mu=mu)
-        #runner = RunnerHardware(agent, env)
+        # runner = RunnerHardware(agent, env)
         runner = RunnerHardwareGradient(agent, env)
 
         runner.run(num_episodes, visualise=True, save_folder=save_folder)
@@ -415,7 +419,6 @@ if __name__ == '__main__':
                                'balanced_load': balanced_load,
                                'barrier_param_mu': mu,
                                'J_min': j_min})
-
 
         if save_results:
             agent.history.df.to_csv(save_folder + '/_meas_result.csv')
@@ -439,4 +442,3 @@ if __name__ == '__main__':
             best_agent_plt.savefig(save_folder + '/_meas_agent_plt.png')
             best_agent_plt.savefig(save_folder + '/_meas_agent_plt.pdf')
             best_agent_plt.savefig(save_folder + '/_meas_agent_plt.pgf')
-

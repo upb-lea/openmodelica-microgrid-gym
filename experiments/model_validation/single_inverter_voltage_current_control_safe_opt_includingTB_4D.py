@@ -5,15 +5,14 @@
 
 
 import logging
-from functools import partial
 import os
+from functools import partial
 
 import GPy
 import gym
+import matplotlib
 import numpy as np
 import pandas as pd
-
-import matplotlib
 
 from openmodelica_microgrid_gym.env.plotmanager import PlotManager
 from openmodelica_microgrid_gym.env.rewards import Reward
@@ -269,12 +268,15 @@ if __name__ == '__main__':
                                     style=[[None], ['--']]
                                     ),
                            PlotTmpl([[f'master.I_hat{i}' for i in 'abc'], [f'r_load.resistor{i}.i' for i in '123'], ],
-                                    callback=plotter.xylables_i_hat,
+                                    callback=lambda fig: plotter.update_axes(fig, title='Simulation',
+                                                                             ylabel='$i_{\mathrm{o estimate,abc}}\,/\,\mathrm{A}$'),
                                     color=[['b', 'r', 'g'], ['b', 'r', 'g']],
                                     style=[['-*'], ['--*']]
                                     ),
                            PlotTmpl([[f'master.m{i}' for i in 'dq0']],
-                                    callback=plotter.xylables_mdq0
+                                    callback=lambda fig: plotter.update_axes(fig, title='Simulation',
+                                                                             ylabel='$m_{\mathrm{dq0}}\,/\,\mathrm{}$',
+                                                                             filename='Sim_m_dq0')
                                     ),
                            PlotTmpl([[f'master.CVi{i}' for i in 'dq0'], [f'master.SPI{i}' for i in 'dq0']],
                                     callback=plotter.xylables_i_dq0,

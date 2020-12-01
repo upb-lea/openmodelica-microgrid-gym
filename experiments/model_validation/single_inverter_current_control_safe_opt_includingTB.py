@@ -9,24 +9,25 @@ import logging
 import os
 from functools import partial
 from itertools import tee
+
 import GPy
 import gym
-import matplotlib.pyplot as plt
 import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from openmodelica_microgrid_gym.env.plotmanager import PlotManager
-from openmodelica_microgrid_gym.env.rewards import Reward
-from openmodelica_microgrid_gym.net import Network
+from experiments.model_validation.env.physical_testbench import TestbenchEnv
+from experiments.model_validation.execution.monte_carlo_runner import MonteCarloRunner
+from experiments.model_validation.execution.runner_hardware import RunnerHardware
 from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat, MutableParams
 from openmodelica_microgrid_gym.aux_ctl import PI_params, MultiPhaseDQCurrentSourcingController
 from openmodelica_microgrid_gym.env import PlotTmpl
-from experiments.model_validation.env.physical_testbench import TestbenchEnv
+from openmodelica_microgrid_gym.env.plotmanager import PlotManager
+from openmodelica_microgrid_gym.env.rewards import Reward
 from openmodelica_microgrid_gym.env.stochastic_components import Load, Noise
-from experiments.model_validation.execution.monte_carlo_runner import MonteCarloRunner
-from experiments.model_validation.execution.runner_hardware import RunnerHardware
+from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import FullHistory
 
 # Plotting params
@@ -122,7 +123,7 @@ def cal_j_min(phase_shift, amp_dev):
     for q in range(len(ph_list)):
         for p in range(3):
             amplitude_sp = np.concatenate([np.full(t1 - t0, r1)
-                                          for (r0, t0), (r1, t1) in pairwise(zip(irefs, ts))])
+                                           for (r0, t0), (r1, t1) in pairwise(zip(irefs, ts))])
             amplitude = np.concatenate(
                 [np.minimum(
                     r0 + grad * np.arange(0, t1 - t0),  # ramp up phase
@@ -286,7 +287,9 @@ if __name__ == '__main__':
                                     style=[[None], ['--']]
                                     ),
                            PlotTmpl([[f'master.m{i}' for i in 'abc']],
-                                    callback=plotter.xylables_mabc
+                                    callback=lambda fig: plotter.update_axes(fig, title='Simulation',
+                                                                             ylabel='$m_{\mathrm{abc}}\,/\,\mathrm{}$')
+
                                     ),
                            PlotTmpl([[f'master.CVI{i}' for i in 'dq0'], [f'master.SPI{i}' for i in 'dq0']],
                                     callback=plotter.xylables_i_dq0,

@@ -1,6 +1,8 @@
-import numpy as np
-from openmodelica_microgrid_gym.util import nested_map, dq0_to_abc
 from typing import List
+
+import numpy as np
+
+from openmodelica_microgrid_gym.util import nested_map, dq0_to_abc
 
 
 class Reward:
@@ -22,7 +24,6 @@ class Reward:
         """
 
         self._idx = None
-
         self.i_limit = i_limit
         self.i_nominal = i_nominal
         self.v_limit = v_limit
@@ -147,7 +148,7 @@ class Reward:
                  + -np.sum(self.mu_v * np.log(1 - np.maximum(np.abs(vabc_master) - self.v_nominal, 0) /
                                               (self.v_limit - self.v_nominal)), axis=0)) \
                 / self.max_episode_steps
- 
+
         return -error.squeeze()
 
     def rew_fun_funnel(self, cols: List[str], data: np.ndarray) -> float:

@@ -1,10 +1,12 @@
+from os import path as p
+
+import matplotlib.pyplot as plt
+
 from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.env.stochastic_components import Load, Noise
-import matplotlib.pyplot as plt
 
 
 class PlotManager:
-
     def __init__(self, used_agent: SafeOptAgent, used_r_load: Load, used_l_filt: Load, used_noise: Noise,
                  save_results: bool = False, save_folder: str = 'test_folder', show_plots: bool = True):
         """
@@ -28,125 +30,65 @@ class PlotManager:
         self.show_plots = show_plots
 
     def set_title(self):
-        plt.title('Simulation: J = {:.2f}; R = {} \n L = {}; \n noise = {}'.format(self.agent.performance,
-                                                                                   ['%.4f' % elem for elem in
-                                                                                    self.r_load.gains],
-                                                                                   ['%.6f' % elem for elem in
-                                                                                    self.l_filt.gains],
-                                                                                   ['%.4f' % elem for elem in
-                                                                                    self.noise.gains]))
+        plt.title('Simulation: J = {:.2f}; R = {} \n L = {}; \n noise = {}'.format(
+            self.agent.performance,
+            [f'{elem:.4f}' for elem in self.r_load.gains],
+            [f'{elem:.6f}' for elem in self.l_filt.gains],
+            [f'{elem:.4f}' for elem in self.noise.gains]))
 
     def xylables_v_abc(self, fig):
-        ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
-        ax.set_ylabel('$v_{\mathrm{abc}}\,/\,\mathrm{V}$')
-        ax.grid(which='both')
-        plt.legend(ax.lines[::3], ('Measurement', 'Setpoint'), loc='best')
-        if self.save_results:
-            fig.savefig(
-                self.save_folder + '/{}_J_{}_v_abc.pdf'.format(self.agent.history.df.shape[0], self.agent.performance))
-            fig.savefig(
-                self.save_folder + '/{}_J_{}_v_abc.pgf'.format(self.agent.history.df.shape[0], self.agent.performance))
-        if self.show_plots:
-            plt.show()
-        else:
-            plt.close(fig)
+        self.update_axes(fig,
+                         ylabel='$v_{\mathrm{abc}}\,/\,\mathrm{V}$',
+                         filename=f'{self.agent.history.df.shape[0]}_J_{self.agent.performance}_v_abc0',
+                         legend=dict(handle_slice=slice(None, None, 3), labels=('Measurement', 'Setpoint'), loc='best'))
 
     def xylables_v_dq0(self, fig):
-        ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
-        ax.set_ylabel('$v_{\mathrm{dq0}}\,/\,\mathrm{V}$')
-        ax.grid(which='both')
-        plt.legend(ax.lines[::3], ('Measurement', 'Setpoint'), loc='best')
-        if self.save_results:
-            fig.savefig(
-                self.save_folder + '/{}_J_{}_v_dq0.pdf'.format(self.agent.history.df.shape[0], self.agent.performance))
-            fig.savefig(
-                self.save_folder + '/{}_J_{}_v_dq0.pgf'.format(self.agent.history.df.shape[0], self.agent.performance))
-        if self.show_plots:
-            plt.show()
-        else:
-            plt.close(fig)
+        self.update_axes(fig,
+                         ylabel='$v_{\mathrm{dq0}}\,/\,\mathrm{V}$',
+                         filename=f'{self.agent.history.df.shape[0]}_J_{self.agent.performance}_v_dq0',
+                         legend=dict(handle_slice=slice(None, None, 3), labels=('Measurement', 'Setpoint'), loc='best'))
 
     def xylables_i_abc(self, fig):
-        ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
-        ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
-        ax.grid(which='both')
-        # plt.xlim(0.02, 0.0205)
-        # plt.ylim(-5, -3)
-        # plt.legend(['Measurement', None , None, 'Setpoint', None, None], loc='best')
-        plt.legend(ax.lines[::3], ('Measurement', 'Setpoint'), loc='best')
-        # self.set_title()
-        if self.save_results:
-            fig.savefig(
-                self.save_folder + '/{}_J_{}_i_abc.pdf'.format(self.agent.history.df.shape[0], self.agent.performance))
-            fig.savefig(
-                self.save_folder + '/{}_J_{}_i_abc.pgf'.format(self.agent.history.df.shape[0], self.agent.performance))
-        if self.show_plots:
-            plt.show()
-        else:
-            plt.close(fig)
+        self.update_axes(fig,
+                         ylabel='$i_{\mathrm{abc}}\,/\,\mathrm{A}$',
+                         filename=f'{self.agent.history.df.shape[0]}_J_{self.agent.performance}_i_abc',
+                         legend=dict(handle_slice=slice(None, None, 3), labels=('Measurement', 'Setpoint'), loc='best'))
 
     def xylables_i_dq0(self, fig):
-        ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
-        ax.set_ylabel('$i_{\mathrm{dq0}}\,/\,\mathrm{A}$')
-        ax.grid(which='both')
-        # plotter.set_title()
-        if self.save_results:
-            fig.savefig(
-                self.save_folder + '/{}_J_{}_i_dq0.pdf'.format(self.agent.history.df.shape[0], self.agent.performance))
-            fig.savefig(
-                self.save_folder + '/{}_J_{}_i_dq0.pgf'.format(self.agent.history.df.shape[0], self.agent.performance))
-        plt.ylim(0, 36)
-        if self.show_plots:
-            plt.show()
-        else:
-            plt.close(fig)
+        self.update_axes(fig,
+                         ylabel='$i_{\mathrm{dq0}}\,/\,\mathrm{A}$',
+                         filename=f'{self.agent.history.df.shape[0]}_J_{self.agent.performance}_i_dq0',
+                         legend=dict(handle_slice=slice(None, None, 3), labels=('Measurement', 'Setpoint'), loc='best'))
 
-    def xylables_i_hat(self, fig):
+    def update_axes(self, fig, title=None, xlabel=r'$t\,/\,\mathrm{s}$', ylabel=None, legend=None, filename=None):
+        """
+        General function to handle most of the standard modifications
+        :param fig: figure to change
+        :param title: optional title
+        :param xlabel: optional label, time in seconds is default
+        :param ylabel: optional ylabel
+        :param legend: optional legend, can have optional key "handle_slice" which is used to slice the line handles for legend and set labels accordingly.
+        :param filename: optional filename
+        """
         ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
-        ax.set_ylabel('$i_{\mathrm{o estimate,abc}}\,/\,\mathrm{A}$')
+        if title is not None:
+            plt.title(title)
+        if xlabel is not None:
+            ax.set_xlabel(xlabel)
+        if ylabel is not None:
+            ax.set_ylabel(ylabel)
         ax.grid(which='both')
-        if self.show_plots:
-            plt.show()
-        else:
-            plt.close(fig)
+        if legend is not None:
+            if 'handle_slice' in legend:
+                _slice = legend['handle_slice']
+                del legend['handle_slice']
+                plt.legend(ax.lines[_slice], **legend)
+            else:
+                plt.legend(**legend)
 
-    def xylables_mdq0(self, fig):
-        ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
-        ax.set_ylabel('$m_{\mathrm{dq0}}\,/\,\mathrm{}$')
-        plt.title('Simulation')
-        ax.grid(which='both')
-        # plt.ylim(0,36)
-        if self.save_results:
-            fig.savefig(self.save_folder + '/Sim_m_dq0.pdf')
-            fig.savefig(self.save_folder + '/Sim_m_dq0.pgf')
-        if self.show_plots:
-            plt.show()
-        else:
-            plt.close(fig)
-
-    def xylables_mabc(self, fig):
-        ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
-        ax.set_ylabel('$m_{\mathrm{abc}}\,/\,\mathrm{}$')
-        plt.title('Simulation')
-        ax.grid(which='both')
-        # plt.ylim(0,36)
-        if self.show_plots:
-            plt.show()
-        else:
-            plt.close(fig)
-
-    def xylables_R(self, fig):
-        ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
-        ax.set_ylabel('$R_{\mathrm{123}}\,/\,\mathrm{\Omega}$')
-        ax.grid(which='both')
+        if self.save_results and filename is not None:
+            for filetype in ['pgf', 'pdf']:
+                fig.savefig(p.join(self.save_folder, f'{filename}.{filetype}'))
         if self.show_plots:
             plt.show()
         else:
