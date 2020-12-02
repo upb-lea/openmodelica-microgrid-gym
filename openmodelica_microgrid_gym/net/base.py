@@ -97,8 +97,11 @@ class Component:
 
     def calculate(self) -> Dict[str, np.ndarray]:
         """
-        will write internal variables it is called after all internal variables are set
-        The return value must be a dictionary whose keys match the keys of self.out_calc and whose values are of the length of outcalcs values
+        Will modify object variables (like current i of an inductor) it is called after all internal variables are set.
+        Therefore the function has side-effects.
+        The return value must be a dictionary whose keys match the keys of self.out_calc
+        and whose values are of the length of out_calcs values.
+        The returned values are hence additional values (like reference current i_ref).
 
         set(self.out_calc.keys()) == set(return)
         all([len(v) == self.out_calc[k] for k,v in return.items()])
@@ -107,6 +110,10 @@ class Component:
         pass
 
     def normalize(self, calc_data):
+        """
+        Will modify object variables it is called after all internal variables are set.
+        Therefore the function has side-effects, similarly to calculate().
+        """
         pass
 
     def augment(self, state, normalize=True):
@@ -130,6 +137,12 @@ class Component:
 
 
 class Network:
+    """
+    This class has two main functions:
+    - :code:`load()`: load yaml files to instantiate a object structure of electronic components
+    - :code:`augment()`: traverses all components and uses the data from the simulation and augments or modifies it.
+    """
+
     def __init__(self, ts, v_nom, freq_nom=50):
         self.ts = float(ts)
         self.v_nom = ne.evaluate(str(v_nom))
@@ -175,7 +188,7 @@ class Network:
             if 'out' in component:
                 component['out_vars'] = component.pop('out')
 
-            # instanciate component class
+            # instantiate component class
             try:
                 components_obj.append(comp_cls(net=self, **component))
             except AttributeError as e:
