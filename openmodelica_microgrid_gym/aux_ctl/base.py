@@ -72,7 +72,7 @@ class LimitLoadIntegral:
         self._buffer.clear()
 
     def step(self, value):
-        self.integral += self.dt * self._buffer.shift(value) ** 2
+        self.integral += self.dt * (value ** 2 - self._buffer.shift(value) ** 2)
 
     def risk(self):
         return np.clip((self.integral - self.nom_integral) / (self.lim_integral - self.nom_integral), 0, 1)
