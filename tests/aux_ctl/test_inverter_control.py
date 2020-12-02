@@ -32,7 +32,7 @@ def test_step2(seed, droop_par, pll_par):
     ctl.reset()
     ctl.prepare(np.random.random(3), np.random.random(3), np.random.random(3))
     mv = ctl.step()
-    assert mv == approx([1.2610252, -1.18258947, 0.18577202])
+    assert mv == approx([1, -1, 0.18577202])
 
 
 def test_step3(seed, droop_par, pll_par):
@@ -40,4 +40,4 @@ def test_step3(seed, droop_par, pll_par):
     ctl.reset()
     ctl.prepare(np.random.random(3), np.random.random(3))
     mv = ctl.step()
-    assert mv == approx([-2.12585763, -1.17821977, 0.3040774])
+    assert mv == approx([-1, -1, 0.3040774])

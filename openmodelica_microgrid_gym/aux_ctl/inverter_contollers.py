@@ -48,7 +48,7 @@ class Controller:
         :param cols:
         :return:
         """
-        self.history.cols = nested_map(lambda col: '.'.join([self.name, col + [f'm{s}_clipped' for s in 'abc']]), cols)
+        self.history.cols = nested_map(lambda col: '.'.join([self.name, col]), cols + [f'm{s}_clipped' for s in 'abc'])
 
     def reset(self):
         """
@@ -78,10 +78,10 @@ class Controller:
 
         if self._undersampling_count == 0:
             abc_action = self.control(*args, **kwargs)
-            act = np.clip(abc_action, -1, 1)
-            self._last_meas.append(*act)
+            abc_action = np.clip(abc_action, -1, 1)
+            self._last_meas.extend(abc_action)
             self.history.append(self._last_meas)
-            self._stored_control = act
+            self._stored_control = abc_action
         self._undersampling_count = (self._undersampling_count + 1) % self._undersample
 
     def control(self, *args, **kwargs) -> np.ndarray:
@@ -231,7 +231,7 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
         self._lastMabc = np.zeros(N_PHASE)
         super().reset()
 
-    def control(self, currentCV: np.ndarray, voltageCV: np.ndarray, Io_abc, **kwargs):
+    def control(self, currentCV: np.ndarray, voltageCV: np.ndarray, **kwargs):
         """
         Performs the calculations for a discrete step of the controller
 
@@ -251,7 +251,6 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
 
         # Transform the feedback to the dq0 frame
         CVIdq0 = abc_to_dq0(currentCV, phase)
-        Iodq0 = abc_to_dq0(Io_abc, phase)
         CVVdq0 = abc_to_dq0(voltageCV, phase)
 
         # If available, calulate load current using observer
