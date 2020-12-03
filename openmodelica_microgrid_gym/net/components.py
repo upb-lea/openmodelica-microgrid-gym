@@ -16,19 +16,21 @@ class Inverter(Component):
         self.u = u
         self.v = v
         self.i = i
-        if i_noise is None:
-            self.i_noise = partial(np.zeros, len(out_vars['i']))
-        else:
-            key, value = [i[0] for i in zip(*i_noise.items())]
-            # toDo: shift clip values to yaml
-            self.i_noise = lambda: np.clip(getattr(np.random.default_rng(), key)(**value, size=len(out_vars['i'])), -1,
-                                           1)
-        if v_noise is None:
-            self.v_noise = partial(np.zeros, len(out_vars['v']))
-        else:
-            key, value = [v[0] for v in zip(*v_noise.items())]
-            self.v_noise = lambda: np.clip(getattr(np.random.default_rng(), key)(**value, size=len(out_vars['v'])), -1,
-                                           1)
+        # to feed static code analyser; vars will be set dynamically in the following loop
+        self.i_noise = None
+        self.v_noise = None
+        for var in ['i', 'v']:
+            # gets vars with reflection to create self.i_noise, self.v_noise
+            noise_var = locals()[f'{var}_noise']  # type:dict
+            if noise_var is None:
+                fun = partial(np.zeros, len(out_vars[var]))
+            else:
+                key, value = [i[0] for i in zip(*noise_var['fun'].items())]
+                clip_kwargs = noise_var.get('clip', dict(a_min=-float('inf'), a_max=float('inf')))
+                fun = lambda: np.clip(getattr(np.random.default_rng(), key)(**value, size=len(out_vars[var])),
+                                      **clip_kwargs)
+            setattr(self, f'{var}_noise', fun)
+
         self.i_nom = i_nom
         self.i_lim = i_lim
         self.v_lim = v_lim

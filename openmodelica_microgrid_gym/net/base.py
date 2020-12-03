@@ -164,6 +164,8 @@ class Network:
     def load(cls, configurl='net.yaml'):
         """
         Initialize object from config file
+        Structure of yaml-file:
+        toDo - Kontextfreie Grammatik
 
         :param configurl:
         :return:
