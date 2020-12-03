@@ -139,7 +139,7 @@ class Component:
 class Network:
     """
     This class has two main functions:
-    - :code:`load()`: load yaml files to instantiate a object structure of electronic components
+    - :code:`load()`: load yaml files to instantiate an object structure of electronic components
     - :code:`augment()`: traverses all components and uses the data from the simulation and augments or modifies it.
     """
 

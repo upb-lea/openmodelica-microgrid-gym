@@ -50,14 +50,14 @@ params = {'backend': 'ps',
 matplotlib.rcParams.update(params)
 
 include_simulate = True
-show_plots = True
+show_plots = False
 balanced_load = False
 do_measurement = False
-save_results = True
+save_results = False
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
-save_folder = os.path.join(current_directory, r'../1TestV')
+save_folder = os.path.join(current_directory, r'MC_VSim_rebase')
 os.makedirs(save_folder, exist_ok=True)
 
 np.random.seed(1)
@@ -67,8 +67,8 @@ net = Network.load('../net/net_single-inv-Paper_Loadstep.yaml')
 delta_t = 1e-4  # simulation time step size / s
 undersample = 1
 max_episode_steps = 2000  # number of simulation steps per episode
-num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
-n_MC = 1  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
+num_episodes = 40  # number of simulation episodes (i.e. SafeOpt iterations)
+n_MC = 10  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
 v_DC = 600  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 60  # nominal grid frequency / Hz
 nomVoltPeak = 169.7  # 230 * 1.414  # nominal grid voltage / V
@@ -335,9 +335,9 @@ if __name__ == '__main__':
                                      'lc.resistor4.R': 0.0000001,
                                      'lc.resistor5.R': 0.0000001,
                                      'lc.resistor6.R': 0.0000001,
-                                     'lc.inductor1.L': L_filter,
-                                     'lc.inductor2.L': L_filter,
-                                     'lc.inductor3.L': L_filter,
+                                     'lc.inductor1.L': partial(l_filt.load_step, n=0),
+                                     'lc.inductor2.L': partial(l_filt.load_step, n=1),
+                                     'lc.inductor3.L': partial(l_filt.load_step, n=2),
                                      'lc.capacitor1.C': partial(c_filt.load_step, n=0),
                                      'lc.capacitor2.C': partial(c_filt.load_step, n=1),
                                      'lc.capacitor3.C': partial(c_filt.load_step, n=2),
