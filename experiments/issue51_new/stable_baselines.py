@@ -106,8 +106,7 @@ class RecordEnvCallback(BaseCallback):
 
 
 model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=f'{timestamp}/')
-checkpoint_on_event = CheckpointCallback(save_freq=1, save_path=f'{timestamp}/checkpoints/')
-cp_callback = EveryNTimesteps(n_steps=100000, callback=checkpoint_on_event)
+checkpoint_on_event = CheckpointCallback(save_freq=100000, save_path=f'{timestamp}/checkpoints/')
 record_env = RecordEnvCallback()
-plot_callback = EveryNTimesteps(n_steps=200000, callback=record_env)
-model.learn(total_timesteps=5000000, callback=[cp_callback, plot_callback])
+plot_callback = EveryNTimesteps(n_steps=20000, callback=record_env)
+model.learn(total_timesteps=5000000, callback=[checkpoint_on_event, plot_callback])
