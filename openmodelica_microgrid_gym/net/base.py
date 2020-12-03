@@ -63,7 +63,7 @@ class Component:
             return r + [[self._prefix_var([self.id, attr, str(i)]) for i in range(n)] for attr, n in
                         self.out_calc.items()]
 
-    def fill_tmpl(self, state):
+    def fill_tmpl(self, state: np.ndarray):
         if self.out_idx is None:
             raise ValueError('call set_tmplidx before fill_tmpl. the keys must be converted to indices for efficiency')
         for attr, idxs in self.out_idx.items():
@@ -116,7 +116,7 @@ class Component:
         """
         pass
 
-    def augment(self, state, normalize=True):
+    def augment(self, state: np.ndarray, normalize=True):
         self.fill_tmpl(state)
         calc_data = self.calculate()
 
@@ -245,3 +245,14 @@ class Network:
         keys = self.out_vars(with_aug=False, flattened=True)
         for comp in self.components:
             comp.set_outidx(keys)
+
+    def __getitem__(self, item):
+        """
+        get component by id
+        :param item: name of the component
+        :return:
+        """
+        for component in self.components:
+            if component.id == item:
+                return component
+        raise ValueError(f'no such component named "{item}"')

@@ -9,20 +9,23 @@ class Fastqueue:
         Efficient numpy implementation of constant sized queue
         :param size: Size of queue
         """
-        self._buffer = np.empty((size, dim))
+        self._buffer = None
+        self._size, self._dim = (size, dim)
         self._idx = 0
 
     def shift(self, val):
         """
         Pushes val into buffer and returns popped last element
         """
+        if self._buffer is None:
+            raise RuntimeError('please call reset() before using the object')
         last = self._buffer[np.ravel_multi_index([self._idx - 1], (len(self._buffer),), mode='wrap'), :]
         self._idx = np.ravel_multi_index([self._idx + 1], (len(self._buffer),), mode='wrap')
         self._buffer[self._idx, :] = val
         return last
 
     def __len__(self):
-        return self._buffer.shape[0]
+        return self._size
 
     def clear(self):
-        self._buffer.fill(0)
+        self._buffer = np.zeros((self._size, self._dim))
