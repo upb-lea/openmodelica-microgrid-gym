@@ -10,7 +10,8 @@ from openmodelica_microgrid_gym.util import dq0_to_abc, inst_power, inst_reactiv
 
 
 class Inverter(Component):
-    def __init__(self, u=None, i=None, i_noise=None, v=None, i_nom=20, i_lim=30, v_lim=600, v_DC=1000, i_ref=(0, 0, 0),
+    def __init__(self, u=None, i=None, i_noise=None, v=None, v_noise=None, i_nom=20, i_lim=30, v_lim=600, v_DC=1000,
+                 i_ref=(0, 0, 0),
                  out_vars=None, **kwargs):
         self.u = u
         self.v = v
@@ -19,7 +20,14 @@ class Inverter(Component):
             self.i_noise = partial(np.zeros, len(out_vars['i']))
         else:
             key, value = [i[0] for i in zip(*i_noise.items())]
+            # toDo: shift clip values to yaml
             self.i_noise = lambda: np.clip(getattr(np.random.default_rng(), key)(**value, size=len(out_vars['i'])), -1,
+                                           1)
+        if v_noise is None:
+            self.v_noise = partial(np.zeros, len(out_vars['v']))
+        else:
+            key, value = [v[0] for v in zip(*v_noise.items())]
+            self.v_noise = lambda: np.clip(getattr(np.random.default_rng(), key)(**value, size=len(out_vars['v'])), -1,
                                            1)
         self.i_nom = i_nom
         self.i_lim = i_lim
@@ -47,6 +55,7 @@ class Inverter(Component):
 
     def calculate(self):
         self.i = self.i + self.i_noise()
+        self.v = self.v + self.v_noise()
         [integ.step(i) for i, integ in zip(self.i, self.limit_load_integrals)]
         # self.i += self.noise(std_i)
 

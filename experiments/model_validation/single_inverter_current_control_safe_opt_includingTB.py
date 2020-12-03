@@ -64,7 +64,7 @@ include_simulate = True
 show_plots = True
 balanced_load = True
 do_measurement = False
-save_results = True
+save_results = False
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
@@ -74,7 +74,7 @@ os.makedirs(save_folder, exist_ok=True)
 np.random.seed(1)
 
 # Simulation definitions
-net = Network.load('../net/net_single-inv-curr_Paper_SC.yaml')
+net = Network.load('../../net/net_single-inv-curr_Paper_SC.yaml')
 delta_t = 1e-4  # simulation time step size / s
 undersample = 1  # undersampling of controller
 max_episode_steps = 1000  # number of simulation steps per episode
