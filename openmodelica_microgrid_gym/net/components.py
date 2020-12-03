@@ -1,4 +1,5 @@
 from functools import partial
+from typing import Optional
 
 import numpy as np
 
@@ -10,9 +11,33 @@ from openmodelica_microgrid_gym.util import dq0_to_abc, inst_power, inst_reactiv
 
 
 class Inverter(Component):
-    def __init__(self, u=None, i=None, i_noise=None, v=None, v_noise=None, i_nom=20, i_lim=30, v_lim=600, v_DC=1000,
+    def __init__(self, u=None, i=None, i_noise=Optional[dict], v=None, v_noise=Optional[dict], i_nom=20, i_lim=30,
+                 v_lim=600, v_DC=1000,
                  i_ref=(0, 0, 0),
                  out_vars=None, **kwargs):
+        """
+
+
+        :param u:
+        :param i:
+        :param i_noise: structured like: must contain the key 'fun',
+        the key 'clip' is optional and no clipping is applied if ommited
+        ::
+            {
+            'fun':
+               {<np.random function name, e.g. "normal">: <dict of kwargs to be passed to the func>},
+            'clip': <kwargs passed to clip>
+            }
+        :param v:
+        :param v_noise: similar to i_noise
+        :param i_nom:
+        :param i_lim:
+        :param v_lim:
+        :param v_DC:
+        :param i_ref:
+        :param out_vars: implicit parameter not to be passed in the net.yaml, but calculated dynamically in :code:`Network`
+        :param kwargs:
+        """
         self.u = u
         self.v = v
         self.i = i

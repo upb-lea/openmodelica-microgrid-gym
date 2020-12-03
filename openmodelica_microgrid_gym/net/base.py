@@ -1,6 +1,6 @@
 from importlib import import_module
 from itertools import chain
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 
 import numexpr as ne
 import numpy as np
@@ -12,10 +12,11 @@ class Component:
     def __init__(self, net: 'Network', id=None, in_vars=None, out_vars=None, out_calc=None):
         """
 
+
         :param net: Network to which component belongs to
         :param id: Component ID
         :param in_vars: Input variables to component
-        :param out_vars: Output variavles from component
+        :param out_vars: Output variables from component
         :param out_calc: (mapping from attr name to...???) Adds values (e.g. references,...) to output
         """
         self.net = net
@@ -143,7 +144,7 @@ class Network:
     - :code:`augment()`: traverses all components and uses the data from the simulation and augments or modifies it.
     """
 
-    def __init__(self, ts, v_nom, freq_nom=50):
+    def __init__(self, ts: float, v_nom: Union[int, str], freq_nom: float = 50):
         self.ts = float(ts)
         self.v_nom = ne.evaluate(str(v_nom))
         self.freq_nom = freq_nom
@@ -165,7 +166,24 @@ class Network:
         """
         Initialize object from config file
         Structure of yaml-file:
-        toDo - Kontextfreie Grammatik
+        ::
+            conf::             *net_params* *components*
+            net_params::       <parameters passed to Network.__init__()>
+            components::       components:
+                                 *component*
+                                 ...
+                                 *component*
+            component::        <key; has no semantic meaning, but needs to be unique>:
+                                 *component_params*
+            component_params:: cls: <ComponentCls>
+                               in:
+                                  <ComponentCls attr name>: <list of variablenames, see augment>
+                               out:
+                                  <ComponentCls attr name>: <list of variablenames, see augment>
+                               <additional parameters passed to ComponentCls.__init__()>
+
+        All 'in' and 'out' variable names together define the interaction with the environment,
+        expected cardinality and order of the vector provided to the augment().
 
         :param configurl:
         :return:
