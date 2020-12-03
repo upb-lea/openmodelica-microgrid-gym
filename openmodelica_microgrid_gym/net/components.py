@@ -38,6 +38,7 @@ class Inverter(Component):
 
     def calculate(self):
         [integ.step(i) for i, integ in zip(self.i, self.limit_load_integrals)]
+        # self.i += self.noise(std_i)
 
 
 class SlaveInverter(Inverter):
@@ -48,6 +49,7 @@ class SlaveInverter(Inverter):
         qdroop = {**dict(gain=50.0), **(qdroop or {})}
         pll = {**dict(kP=10, kI=200), **(pll or {})}
 
+        # toDo: set time Constant for droop Filter correct
         self.pdroop_ctl = InverseDroopController(
             InverseDroopParams(tau=self.net.ts, nom_value=self.net.freq_nom, **pdroop), self.net.ts)
         self.qdroop_ctl = InverseDroopController(

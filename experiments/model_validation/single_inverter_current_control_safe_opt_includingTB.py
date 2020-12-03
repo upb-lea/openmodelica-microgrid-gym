@@ -266,7 +266,7 @@ if __name__ == '__main__':
                               show_plots=show_plots)
 
 
-        def ugly_foo(t):
+        def reference_step(t):
 
             if t >= .05:
                 i_ref[:] = i_ref2
@@ -305,7 +305,7 @@ if __name__ == '__main__':
                                      'lc.resistor3.R': partial(r_load.give_value, n=2),
                                      'lc.inductor1.L': partial(l_load.give_value, n=0),
                                      'lc.inductor2.L': partial(l_load.give_value, n=1),
-                                     'lc.inductor3.L': ugly_foo},
+                                     'lc.inductor3.L': reference_step},
                        model_path='../../omg_grid/grid.paper.fmu',
                        # model_path='../omg_grid/omg_grid.Grids.Paper_SC.fmu',
                        net=net,

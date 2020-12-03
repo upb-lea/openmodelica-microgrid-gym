@@ -12,11 +12,11 @@ class Component:
     def __init__(self, net: 'Network', id=None, in_vars=None, out_vars=None, out_calc=None):
         """
 
-        :param net:
-        :param id:
-        :param in_vars:
-        :param out_vars:
-        :param out_calc: mapping from attr name to
+        :param net: Network to which component belongs to
+        :param id: Component ID
+        :param in_vars: Input variables to component
+        :param out_vars: Output variavles from component
+        :param out_calc: (mapping from attr name to...???) Adds values (e.g. references,...) to output
         """
         self.net = net
         self.id = id
