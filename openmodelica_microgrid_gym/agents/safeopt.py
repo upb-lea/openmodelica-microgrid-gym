@@ -144,7 +144,7 @@ class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
 
             gp = GPy.models.GPRegression(np.array([self.params[:]]),  # noqa
                                          np.array([[self.performance]]), self.kernel,
-                                         noise_var=self.noise_var)  # , mean_function=mf)
+                                         noise_var=self.noise_var)
             self.optimizer = SafeOptSwarm(gp, self.safe_threshold * self.performance, bounds=self.bounds,
                                           threshold=self.explore_threshold * self.performance)
 
