@@ -183,7 +183,6 @@ class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
         y, x = self.history.df.loc[self.best_episode, ['J', 'Params']]
 
         y0, x0 = self.history.df.loc[0, ['J', 'Params']]
-        # ax.scatter([x0], [y0], s=20, marker='x', linewidths=3, color='m')
 
         if len(x) == 1:
             ax.scatter([x], [y], s=20, marker='x', linewidths=3, color='g')
