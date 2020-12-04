@@ -12,6 +12,7 @@ from random import random
 import GPy
 import gym
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 import numpy as np
 import pandas as pd
 import scipy
@@ -46,7 +47,7 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
 
 # Simulation definitions
 net = Network.load('../net/net_single-inv-curr.yaml')
-max_episode_steps = 600  # number of simulation steps per episode
+max_episode_steps = 1200  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 iLimit = 30  # inverter current limit / A
 iNominal = 20  # nominal inverter current / A
@@ -56,8 +57,9 @@ R=20  #sets the resistance value of RL
 load_jump=5 #defines the load jump that is implemented at every quarter of the simulation time
 ts= 1e-4
 position_settling_time=0
-movement_1 = load_jump if random() < 0.5 else -1 * load_jump #randomly chosen first load jump
+movement_1 = load_jump if random() < 0.5 else -1 * load_jump # randomly chosen first load jump
 movement_2 = (load_jump if random() < 0.5 else -1 * load_jump) + movement_1 #randomly chosen load jump
+
 
 # The starting value of the the resistance is 20 Ohm.
 # Every step and therefore the whole simulation time, it randomly changes +/- 0.01 Ohm to generate noise.
@@ -121,6 +123,7 @@ class Reward:
 
         return -error.squeeze()
 
+######################################
 #This class first identifies the steady state
 #Then two load jumps are implemented to check the controller's performance
 
@@ -138,9 +141,6 @@ class LoadstepCallback(Callback):
         self.lower_bound=0.98*i_ref[0]
         self.databuffer_settling_time=[]
 
-
-
-
     def set_idx(self, obs):  # [f'lc1.inductor{k}.i' for k in '123']
         if self._idx is None:
             self._idx = nested_map(
@@ -150,48 +150,31 @@ class LoadstepCallback(Callback):
     def reset(self):
         self.databuffer = np.empty(20)
 
-    if steps==300:
-        print("Hallo")
-
-    def __call__(self, cols, obs):   #in obs sind die daten der history drinne
-        self.set_idx(cols)
-         #all values are shifted to the left by one
-
+    def __call__(self, cols, obs):
+        self.set_idx(cols) #all values are shifted to the left by one
         self.databuffer[-1]=obs[self._idx[3][0]]
-        self.list_data.append(obs[self._idx[3][0]])#the last element of the array is replaced with the current value of the inverter's current
-        # if (obs[self._idx[3][0]] < self.upper_bound) and (obs[self._idx[3][0]]>self.lower_bound): #checks if oservation is within the specified bound
-        #     self.databuffer_settling_time.append(obs[self._idx[3][0]]) #creates an array
-        #     if np.round(mean(self.databuffer_settling_time))==i_ref[0] and (self.counter1==4): # array is filled with the next 4 values and its mean must be equal to i_ref to guarantee steady state
-        #         global position_settling_time
-        #         position_settling_time=len(self.list_data) - 4 #returns the position of the settling time
-        #     self.counter1=+1 #increments by one
+        self.list_data.append(obs[self._idx[3][0]]) #the last element of the array is replaced with the current value of the inverter's current
 
         self.databuffer = np.roll(self.databuffer, -1)
-        if obs[self._idx[3][0]]>self.lower_bound and obs[self._idx[3][0]]<self.upper_bound and np.round(self.databuffer.mean())==i_ref[0]:
+        if obs[self._idx[3][0]]>self.lower_bound and obs[self._idx[3][0]]<self.upper_bound and np.round(self.databuffer.mean(),decimals=1)==i_ref[0]:  #checks if oservation is within the specified bound
             if self.counter2 <1:
                 global position_settling_time
                 position_settling_time=len(self.list_data)
                 self.counter2 = +1
             if self.databuffer.std() < 0.05:  #i_ref[0]= 15 A
                 self.steady_state_reached=True
-
-
-
-
             #if the ten values in the databuffer fulfill the conditions (std <0.1 and
             # rounded mean == 15 A), then the steady state is reached
 
-
     # After steady state is reached, a bigger random load jump of +/- 5 Ohm is implemented
     # After 3/4 of the simulation time, another random load jump of +/- 5 Ohm is implemented
-
     def load_step(self, t):
         for i in range(1, len(list_resistor)):
 
-            if self.steady_state_reached==False and t <= ts * i + ts: #while steady state is not reached, no load jump
+            if self.steady_state_reached==False and t <= ts * i + ts: # while steady state is not reached, no load jump
                 return list_resistor[i] # contains for every step values that fluctuate a little bit
             elif self.steady_state_reached==True and t<=ts*i+ts and i<=max_episode_steps*0.75:
-                return list_resistor[i] + movement_1 #when steady state reached, a load jump of +5/-5 Ohm is implemented (movement 1)
+                return list_resistor[i] + movement_1 # when steady state reached, a load jump of +5/-5 Ohm is implemented (movement 1)
             elif self.steady_state_reached==True and t<=ts * i+ts and i>max_episode_steps*0.75:
                #after 75% of the simulation time, another load jump is implemented
                 return list_resistor[i] + movement_2 #the load jump of +/- 5 Ohm is stored in movement_2
@@ -245,7 +228,7 @@ if __name__ == '__main__':
     if adjust == 'Kp':
         # mutable_params = parameter (Kp gain of the current controller of the inverter) to be optimized using
         # the SafeOpt algorithm
-        mutable_params = dict(currentP=MutableFloat(5e-3))
+        mutable_params = dict(currentP=MutableFloat(5e-2))
 
         # Define the PI parameters for the current controller of the inverter
         current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=115, limits=(-1, 1))
@@ -257,7 +240,7 @@ if __name__ == '__main__':
 
     # For 2D example, choose Kp and Ki as mutable parameters
     elif adjust == 'Kpi':
-        mutable_params = dict(currentP=MutableFloat(10e-3), currentI=MutableFloat(10))
+        mutable_params = dict(currentP=MutableFloat(5e-3), currentI=MutableFloat(10)) #setP= 10 e^-3 and setQ=10
         current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
 
     # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
@@ -302,7 +285,7 @@ if __name__ == '__main__':
     def xylables_R(fig):
         ax = fig.gca()
         ax.set_xlabel(r'$t\,/\,\mathrm{s}$') #zeit
-        ax.set_ylabel('$R_{\mathrm{123}}\,/\,\mathrm{Ohm}$') #widerstände definieren , ohm angucken backslash omega
+        ax.set_ylabel('$R_{\mathrm{123}}\,/\,\mathrm{\u03A9}$') #widerstände definieren , ohm angucken backslash omega
         ax.grid(which='both')
         # fig.savefig('Inductor_currents.pdf')
 
@@ -392,10 +375,12 @@ if __name__ == '__main__':
 
 df_master_CVI=env.history.df[['master.CVId']]
 
+##############################################
+# Implementation of the class metrics
 class Metrics:
     ref_value = i_ref[0]  # set value of inverter that serves as a set value for the inner current controller
     ts = 1e-4  # duration of the episodes in seconds
-    n=2## number of points to be checked before and after #n=2
+    n=2 # number of points to be checked before and after n=2
     overshoot_available=True
 
 
@@ -406,11 +391,11 @@ class Metrics:
 
 
     def overshoot(self):
-        self.quantity['max']=self.quantity.iloc[argrelextrema(self.quantity['master.CVId'].values, np.greater_equal, order=self.n)[0]]['master.CVId']
-        index_first_max = self.quantity['max'].first_valid_index()
+        self.quantity['max']=self.quantity.iloc[argrelextrema(self.quantity['master.CVId'].values, np.greater_equal, order=self.n)[0]]['master.CVId'] #looks for first maximum that is above the reference value
+        index_first_max = self.quantity['max'].first_valid_index() # returns the index
         self.quantity.drop(columns=['max'])
-        self.max_quantity=self.quantity.iloc[index_first_max][0]
-        overshoot = (self.max_quantity / self.ref_value) - 1
+        self.max_quantity=self.quantity.iloc[index_first_max][0] # returns the value
+        overshoot = (self.max_quantity / self.ref_value) - 1 # calculation of overshoot
         if self.max_quantity>self.ref_value:
             return round(overshoot,4)
         else:
@@ -423,8 +408,8 @@ class Metrics:
             position_rise_time = self.quantity[self.quantity['master.CVId'] >= self.ref_value].index[0]  # the number of episode steps where the real value = set_value is stored
             rise_time_in_seconds = position_rise_time * ts
         else: #if underdamped/critically damped
-            position_start_rise_time=self.quantity[self.quantity['master.CVId'] >= 0.05*self.ref_value].index[0] #5% of its final value
-            position_end_rise_time= self.quantity[self.quantity['master.CVId'] >= 0.95*self.ref_value].index[0] #95% of its final value
+            position_start_rise_time=self.quantity[self.quantity['master.CVId'] >= 0.1*self.ref_value].index[0] #5% of its final value
+            position_end_rise_time= self.quantity[self.quantity['master.CVId'] >= 0.9*self.ref_value].index[0] #95% of its final value
             position_rise_time=position_end_rise_time-position_start_rise_time
             rise_time_in_seconds=position_rise_time *ts
             test=self.quantity['master.CVId']
@@ -433,7 +418,7 @@ class Metrics:
         return round(rise_time_in_seconds, 4)
 
     def settling_time(self):
-        settling_time_value=position_settling_time*ts
+        settling_time_value=position_settling_time*ts # the settling is calculated in the class LoadstepCallback
         return settling_time_value
         # if self.overshoot_available:
         #     self.quantity['max'] = \
@@ -471,22 +456,59 @@ class Metrics:
 
 
 current_controller_metrics = Metrics(df_master_CVI)
-print(current_controller_metrics.overshoot())
-print(current_controller_metrics.rise_time())
-print(current_controller_metrics.settling_time())
 
-#print(voltage_controller_metrics.overshoot_test())
-
-
-print(current_controller_metrics.RMSE())
-print(current_controller_metrics.steady_state_error())
 
 d = {'Overshoot': [current_controller_metrics.overshoot()],
      'Rise Time/s ': [current_controller_metrics.rise_time()],
      'Settling Time/s ': [current_controller_metrics.settling_time()],
-     'Root Mean Squared Error/V': [current_controller_metrics.RMSE()],
-     'Steady State Error/V': [current_controller_metrics.rise_time()]}
+     'Root Mean Squared Error/A': [current_controller_metrics.RMSE()],
+     'Steady State Error/A': [current_controller_metrics.steady_state_error()]}
 
 df_metrics = pd.DataFrame(data=d).T
 df_metrics.columns = ['Value']
 print(df_metrics)
+print('\n')
+
+#####################################
+# Creation of plots for documentation
+
+import plot_quantities
+import matplotlib.pyplot as plt
+
+ax = plt.axes()
+ax.arrow(0.06, 7.5,-0.04,6.8, head_width=0.005, head_length=0.5, fc='r', ec='r')
+ax.arrow(0.06, 17.5,0,-1.9, head_width=0.005, head_length=0.5, fc='black', ec='black')
+#plt.arrow(0.06, 7.5,-0.04,6.8, color='r', length_includes_head=True)
+plt.plot(plot_quantities.test(df_master_CVI['master.CVId'],ts)[0],plot_quantities.test(df_master_CVI['master.CVId'], ts)[1])
+plt.axhline(y=i_ref[0], color='black', linestyle='-')
+plt.xlabel(r'$t\,/\,\mathrm{s}$')
+plt.ylabel('$i_{\mathrm{d0}}\,/\,\mathrm{A}$')
+plt.text(0.045,6.5,'Steady State reached')
+plt.text(0.057,18.0,'$i_{\mathrm{d0}}^*$')
+#plt.arrow(0.06,7.5,-(0.06-0.02),14.3-7.5,color='red',arrowprops={'arrowstyle': '->'})
+#
+#plt.grid()
+#plt.arrow(0.06, 7.5,-0.04,6.8,  head_width=0.05, head_length=0.03, linewidth=4, color='r', length_includes_head=False)
+#p1 = patches.FancyArrowPatch((0.06, 7.5), (0.02, 14.3), arrowstyle='->', mutation_scale=20)
+plt.show()
+
+ax = plt.axes()
+ax.arrow(0.06, 7.5,-0.04,6.8, head_width=0.005, head_length=0.5, fc='r', ec='r')
+#ax.arrow(0.00, 16.6,0,-0.5, head_width=0.005, head_length=0.5, fc='r', ec='r')
+ax.arrow(0.06, 17.5,0,-1.9, head_width=0.005, head_length=0.5, fc='black', ec='black')
+ax.arrow(0.02, 5,-(0.02-0.0082),(13.47-5), head_width=0.005, head_length=0.5, fc='red', ec='red')
+#plt.arrow(0.06, 7.5,-0.04,6.8, color='r', length_includes_head=True)
+plt.plot(plot_quantities.test(df_master_CVI['master.CVId'],ts)[0],plot_quantities.test(df_master_CVI['master.CVId'], ts)[1])
+plt.axhline(y=i_ref[0], color='black', linestyle='-')
+plt.xlabel(r'$t\,/\,\mathrm{s}$')
+plt.ylabel('$i_{\mathrm{d0}}\,/\,\mathrm{A}$')
+plt.text(0.045,6.7,'Settling Time')
+plt.text(0.057,18.0,'$i_{\mathrm{d0}}^*$')
+plt.text(0.011,4.2,'Rise Time')
+#plt.text(-0.006, 17.1, 'Overshoot')
+#plt.arrow(0.06,7.5,-(0.06-0.02),14.3-7.5,color='red',arrowprops={'arrowstyle': '->'})
+#
+#plt.grid()
+#plt.arrow(0.06, 7.5,-0.04,6.8,  head_width=0.05, head_length=0.03, linewidth=4, color='r', length_includes_head=False)
+#p1 = patches.FancyArrowPatch((0.06, 7.5), (0.02, 14.3), arrowstyle='->', mutation_scale=20)
+plt.show()

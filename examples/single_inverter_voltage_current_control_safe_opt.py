@@ -19,6 +19,7 @@ import scipy
 from gym.envs.tests.test_envs_semantics import steps
 from sklearn.metrics import mean_squared_error
 from scipy.signal import argrelextrema
+from matplotlib import pyplot as plt
 
 
 from openmodelica_microgrid_gym import Runner
@@ -32,7 +33,7 @@ from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 
 # Simulation definitions
 net = Network.load('../net/net_single-inv-curr.yaml')
-max_episode_steps = 600  # number of simulation steps per episode
+max_episode_steps = 1200  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 iLimit = 30  # inverter current limit / A
 iNominal = 20  # nominal inverter current / A
@@ -42,9 +43,9 @@ QDroopGain = 0  # virtual droop gain for reactive power / VAR/V 1000
 R = 20  # sets the resistance value of RL
 load_jump = 5  # defines the load jump that is implemented at every quarter of the simulation time
 ts = 1e-4
-v_ref = np.array([325, 0, 0])  # muss ich noch anpassen, wo kriege ich die her
-movement_1 = load_jump if random() < 0.5 else -1 * load_jump #randomly chosen first load jump
-movement_2 = (load_jump if random() < 0.5 else -1 * load_jump) + movement_1 #randomly chosen load jump
+v_ref = np.array([325, 0, 0])
+movement_1 = load_jump if random() < 0.5 else -1 * load_jump # randomly chosen first load jump
+movement_2 = (load_jump if random() < 0.5 else -1 * load_jump) + movement_1 # randomly chosen load jump
 position_settling_time=0
 
 
@@ -65,9 +66,6 @@ def load_step_random_walk():
 
 
 list_resistor = load_step_random_walk()
-
-# Data of the Current and Voltage in the Inverter in dq-coordinates
-
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
@@ -120,6 +118,7 @@ class Reward:
 
         return -error.squeeze()
 
+###########################################
 #This class first identifies the steady state
 #Then two load jumps are implemented to check the controller's performance
 
@@ -135,8 +134,6 @@ class LoadstepCallback(Callback):
         self.upper_bound = 1.02 * v_ref[0]
         self.lower_bound = 0.98 * v_ref[0]
 
-
-
     def set_idx(self, obs):  # [f'lc1.inductor{k}.i' for k in '123']
         if self._idx is None:
             self._idx = nested_map(
@@ -147,35 +144,32 @@ class LoadstepCallback(Callback):
     def reset(self):
         self.databuffer = np.empty(10)
 
-
-    def __call__(self, cols, obs):   #in obs sind die daten der history drinne
+    def __call__(self, cols, obs):
         self.set_idx(cols)
-        self.databuffer[-1]=obs[self._idx[5][0]] #the last element of the array is replaced with the current value of the inverter's voltage
-        self.databuffer=np.roll(self.databuffer, -1) #all values are shifted to the left by one
+        self.databuffer[-1]=obs[self._idx[5][0]] # the last element of the array is replaced with the current value of the inverter's voltage
+        self.databuffer=np.roll(self.databuffer, -1) # all values are shifted to the left by one
         self.list_data.append(obs[self._idx[5][0]])
         if obs[self._idx[5][0]]>self.lower_bound and obs[self._idx[5][0]]<self.upper_bound and np.round(self.databuffer.mean())==v_ref[0]:
             if self.counter2 <1:
                 global position_settling_time
                 position_settling_time=len(self.list_data)
                 self.counter2 = +1
-            if self.databuffer.std() < 0.1:  #i_ref[0]= 15 A
+            if self.databuffer.std() < 0.1:  # i_ref[0]= 15 A
                 self.steady_state_reached=True
-        #if the ten values in the databuffer fulfill the conditions (std <0.1 and
+        # if the ten values in the databuffer fulfill the conditions (std <0.1 and
             # rounded mean == 325 V), the the steady state is reached
-
 
     # After steady state is reached, a bigger random load jump of +/- 5 Ohm is implemented
     # After 3/4 of the simulation time, another random load jump of +/- 5 Ohm is implemented
-
     def load_step(self, t):
         for i in range(1, len(list_resistor)):
-            if self.steady_state_reached==False and t <= ts * i + ts: #while steady state is not reached, no load jump
+            if self.steady_state_reached==False and t <= ts * i + ts: # while steady state is not reached, no load jump
                 return list_resistor[i] # contains for every step values that fluctuate a little bit
             elif self.steady_state_reached==True and t<=ts*i+ts and i<=max_episode_steps*0.75:
-                return list_resistor[i] + movement_1 #when steady state reached, a load jump of +5/-5 Ohm is implemented (movement 1)
+                return list_resistor[i] + movement_1 # when steady state reached, a load jump of +5/-5 Ohm is implemented (movement 1)
             elif self.steady_state_reached==True and t<=ts * i+ts and i>max_episode_steps*0.75:
-               #after 75% of the simulation time, another load jump is implemented
-                return list_resistor[i] + movement_2 #the load jump of +/- 5 Ohm is stored in movement_2
+               # after 75% of the simulation time, another load jump is implemented
+                return list_resistor[i] + movement_2 # the load jump of +/- 5 Ohm is stored in movement_2
 
 
 if __name__ == '__main__':
@@ -377,12 +371,13 @@ df_master_CVV = env.history.df[
     ['master.CVVd']]  # voltage for the Controller, it is the measurement of the Master-Inverter's Voltage7
 
 
-
+##############################################
+# Implementation of the class Metrics
 
 class Metrics:
     ref_value = v_ref[0]  # set value of inverter that serves as a set value for the outer voltage controller
     ts = 1e-4  # duration of the episodes in seconds
-    n=5 ## number of points to be checked before and after
+    n=5 # number of points to be checked before and after
     overshoot_available=True
 
 
@@ -405,13 +400,13 @@ class Metrics:
             sentence_error1="No overshoot"
             return sentence_error1
 
-    def rise_time(self):  # it's an underdamped system, that's why it's 0% to 100% of its value
+    def rise_time(self):
         if self.overshoot_available: # if overdamped system
             position_rise_time = self.quantity[self.quantity['master.CVVd'] >= self.ref_value].index[0]  # the number of episode steps where the real value = set_value is stored
             rise_time_in_seconds = position_rise_time * ts
         else: #if underdamped/critically damped
-            position_start_rise_time=self.quantity[self.quantity['master.CVVd'] >= 0.05*self.ref_value].index[0] #5% of its final value
-            position_end_rise_time= self.quantity[self.quantity['master.CVVd'] <= 0.95*self.ref_value].index[0] #95% of its final value
+            position_start_rise_time=self.quantity[self.quantity['master.CVVd'] >= 0.1*self.ref_value].index[0] # 5% of its final value
+            position_end_rise_time= self.quantity[self.quantity['master.CVVd'] <= 0.9*self.ref_value].index[0] # 95% of its final value
             position_rise_time=position_end_rise_time-position_start_rise_time
             rise_time_in_seconds=position_rise_time *ts
 
@@ -458,14 +453,7 @@ class Metrics:
 
 
 voltage_controller_metrics = Metrics(df_master_CVV)
-print(voltage_controller_metrics.overshoot())
-print(voltage_controller_metrics.settling_time())
 
-#print(voltage_controller_metrics.overshoot_test())
-print(voltage_controller_metrics.rise_time())
-
-print(voltage_controller_metrics.RMSE())
-print(voltage_controller_metrics.steady_state_error())
 
 d = {'Overshoot': [voltage_controller_metrics.overshoot()],
      'Rise Time/s ': [voltage_controller_metrics.rise_time()],
@@ -473,8 +461,34 @@ d = {'Overshoot': [voltage_controller_metrics.overshoot()],
      'Root Mean Squared Error/V': [voltage_controller_metrics.RMSE()],
      'Steady State Error/V': [voltage_controller_metrics.steady_state_error()]}
 
-
-
 df_metrics = pd.DataFrame(data=d).T
 df_metrics.columns = ['Value']
 print(df_metrics)
+
+#####################################
+# Creation of plots for documentation
+
+import plot_quantities
+import matplotlib.pyplot as plt
+ax = plt.axes()
+#ax.arrow(0.00, 16.6,0,-0.5, head_width=0.005, head_length=0.5, fc='r', ec='r')
+#ax.arrow(0.06, 17.5,0,-1.9, head_width=0.005, head_length=0.5, fc='black', ec='black')
+#plt.arrow(0.06, 7.5,-0.04,6.8, color='r', length_includes_head=True)
+plt.plot(plot_quantities.test(df_master_CVV['master.CVVd'],ts)[0],plot_quantities.test(df_master_CVV['master.CVVd'], ts)[1])
+plt.axhline(y=v_ref[0], color='black', linestyle='-')
+plt.xlabel(r'$t\,/\,\mathrm{s}$')
+plt.ylabel('$V_{\mathrm{d0}}\,/\,\mathrm{V}$')
+ax.arrow(0.02, 150,-0.015,160, head_width=0.005, head_length=5, fc='r', ec='r')
+plt.text(0.01,130,'Rise Time')
+ax.arrow(0.06, 150,-0.045,162, head_width=0.005, head_length=7, fc='r', ec='r')
+plt.text(0.05,130,'Settling Time')
+ax.arrow(0.06, 350,0,-17, head_width=0.005, head_length=7, fc='black', ec='black')
+plt.text(0.057,360,'$V_{\mathrm{dq0}}^*$')
+
+plt.text(-0.002, 360, 'Overshoot')
+#plt.arrow(0.06,7.5,-(0.06-0.02),14.3-7.5,color='red',arrowprops={'arrowstyle': '->'})
+#
+#plt.grid()
+#plt.arrow(0.06, 7.5,-0.04,6.8,  head_width=0.05, head_length=0.03, linewidth=4, color='r', length_includes_head=False)
+#p1 = patches.FancyArrowPatch((0.06, 7.5), (0.02, 14.3), arrowstyle='->', mutation_scale=20)
+plt.show()
