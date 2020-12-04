@@ -12,16 +12,16 @@ from safeopt import SafeOptSwarm
 from openmodelica_microgrid_gym.agents.episodic import EpisodicLearnerAgent
 from openmodelica_microgrid_gym.agents.staticctrl import StaticControlAgent
 from openmodelica_microgrid_gym.agents.util import MutableParams
-from openmodelica_microgrid_gym.aux_ctl import Controller, DDS
+from openmodelica_microgrid_gym.aux_ctl import Controller
 
 logger = logging.getLogger(__name__)
 
 
 class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
-    def __init__(self, mutable_params: Union[dict, list], abort_reward: int, kernel: Kern, gp_params: Dict[str, Any],
+    def __init__(self, mutable_params: Union[dict, list], abort_reward: int, min_performance: float, kernel: Kern,
+                 gp_params: Dict[str, Any],
                  ctrls: List[Controller],
                  obs_template: Mapping[str, List[Union[List[str], np.ndarray]]], obs_varnames: List[str] = None,
-                 min_performance: float = None,
                  **kwargs):
         """
         Agent to execute safeopt algorithm (https://arxiv.org/abs/1509.01066) to control the environment by using
@@ -64,8 +64,8 @@ class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
         self.optimizer = None
         self._performance = None
         self._min_performance = min_performance
-        self.initial_performance = min_performance/2
-        self.last_best_performance = 0      # set to 0 due to in MC otherwise we do not get the best/worst before the
+        self.initial_performance = min_performance / 2
+        self.last_best_performance = 0  # set to 0 due to in MC otherwise we do not get the best/worst before the
         # first update_params after the MC loop
         self.last_worst_performance = 0
         self.unsafe = False
@@ -117,8 +117,9 @@ class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
             if self.optimizer is None:
                 self.initial_performance = self.episode_return
 
-            #self.performance = self._iterations / (self.episode_return * self.initial_performance)
-            self.performance = (self.episode_return - self._min_performance) / (self.initial_performance - self.min_performance)
+            # self.performance = self._iterations / (self.episode_return * self.initial_performance)
+            self.performance = (self.episode_return - self._min_performance) / (
+                    self.initial_performance - self.min_performance)
             # safeopt update step
             self.update_params()
             # reset for new episode
@@ -143,7 +144,7 @@ class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
 
             gp = GPy.models.GPRegression(np.array([self.params[:]]),  # noqa
                                          np.array([[self.performance]]), self.kernel,
-                                         noise_var=self.noise_var)#, mean_function=mf)
+                                         noise_var=self.noise_var)  # , mean_function=mf)
             self.optimizer = SafeOptSwarm(gp, self.safe_threshold * self.performance, bounds=self.bounds,
                                           threshold=self.explore_threshold * self.performance)
 
@@ -176,13 +177,13 @@ class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
             # check if the dimensionality is less then 4 dimension
             logger.info('Plotting of GP landscape not possible for then 3 dimensions')
             return figure
-        self.optimizer.plot(1000, figure=figure, ms = 1)#, color = 'k')
+        self.optimizer.plot(1000, figure=figure, ms=1)  # , color = 'k')
 
         # mark best performance in green
         y, x = self.history.df.loc[self.best_episode, ['J', 'Params']]
 
         y0, x0 = self.history.df.loc[0, ['J', 'Params']]
-        #ax.scatter([x0], [y0], s=20, marker='x', linewidths=3, color='m')
+        # ax.scatter([x0], [y0], s=20, marker='x', linewidths=3, color='m')
 
         if len(x) == 1:
             ax.scatter([x], [y], s=20, marker='x', linewidths=3, color='g')
@@ -196,8 +197,8 @@ class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
         else:
             logger.warning('Choose appropriate number of control parameters')
 
-        plt.show()             # only comment for lengthscale sweep
-        #plt.close(figure)       # only needed for lengthscale sweep
+        plt.show()  # only comment for lengthscale sweep
+        # plt.close(figure)       # only needed for lengthscale sweep
         return figure
 
     def prepare_episode(self):
@@ -254,16 +255,16 @@ class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
 
         if self._performance is None:
             # Performance = inverse average return (return/iterations)^⁻1 normalized by initial performance
-            #self._performance = self._iterations / (self.episode_return * self.initial_performance)
-            self._performance = (self.episode_return - self._min_performance) / (self.initial_performance - self.min_performance)
+            # self._performance = self._iterations / (self.episode_return * self.initial_performance)
+            self._performance = (self.episode_return - self._min_performance) / (
+                    self.initial_performance - self.min_performance)
 
         return self._performance
-
 
     @performance.setter
     def performance(self, new_performance):
         self._performance = new_performance
-        #self.episode_return = self._iterations / (new_performance*self.initial_performance)
+        # self.episode_return = self._iterations / (new_performance*self.initial_performance)
 
     @property
     def min_performance(self):

@@ -25,8 +25,8 @@ from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, \
     MultiPhaseDQ0PIPIController
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.env.plotmanager import PlotManager
-from openmodelica_microgrid_gym.env.rewards import Reward
-from openmodelica_microgrid_gym.env.stochastic_components import Load
+from experiments.model_validation.env.rewards import Reward
+from experiments.model_validation.env.stochastic_components import Load
 from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import FullHistory
 
@@ -50,25 +50,25 @@ params = {'backend': 'ps',
 matplotlib.rcParams.update(params)
 
 include_simulate = True
-show_plots = False
+show_plots = True
 balanced_load = False
 do_measurement = False
 save_results = False
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
-save_folder = os.path.join(current_directory, r'MC_VSim_rebase')
+save_folder = os.path.join(current_directory, r'VSim_rebase')
 os.makedirs(save_folder, exist_ok=True)
 
 np.random.seed(1)
 
 # Simulation definitions
-net = Network.load('../net/net_single-inv-Paper_Loadstep.yaml')
+net = Network.load('../../net/net_single-inv-Paper_Loadstep.yaml')
 delta_t = 1e-4  # simulation time step size / s
 undersample = 1
 max_episode_steps = 2000  # number of simulation steps per episode
-num_episodes = 40  # number of simulation episodes (i.e. SafeOpt iterations)
-n_MC = 10  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
+num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
+n_MC = 1  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
 v_DC = 600  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 60  # nominal grid frequency / Hz
 nomVoltPeak = 169.7  # 230 * 1.414  # nominal grid voltage / V
@@ -158,7 +158,7 @@ def cal_J_min(phase_shift, amp_dev):
             dw2 = np.gradient(w2)
             SP_sattle = (amplitude > amplitudeSP * (1 - 0.12)).astype(int)
             error2 = -np.mean(abs(SP_sattle * dw2))
-            error_Jmin[p] += error2 / 2  # add gradient error
+            error_Jmin[p] += error2 * 5  # add gradient error
         return_Jmin[l] = np.sum(error_Jmin)  # Sum all 3 phases
 
     return max(return_Jmin)
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     # unsafe, if the new measured performance drops below 20 % of the initial performance of the initial safe (!)
     # parameter set
     safe_threshold = 0
-    j_min = cal_J_min(phase_shift, amp_dev)  # cal min allowed performance
+    j_min = -cal_J_min(phase_shift, amp_dev)  # cal min allowed performance
 
     # The algorithm will not try to expand any points that are below this threshold. This makes the algorithm stop
     # expanding points eventually.
@@ -206,6 +206,7 @@ if __name__ == '__main__':
     # Definition of the controllers
     # Choose Kp and Ki for the current and voltage controller as mutable parameters
     mutable_params = dict(voltageP=MutableFloat(0.0175), voltageI=MutableFloat(12))  # 300Hz
+    mutable_params = dict(voltageP=MutableFloat(0.2), voltageI=MutableFloat(550))  # 300Hz
     voltage_dqp_iparams = PI_params(kP=mutable_params['voltageP'], kI=mutable_params['voltageI'],
                                     limits=(-iLimit, iLimit))
 
@@ -242,15 +243,15 @@ if __name__ == '__main__':
     # History is used to store results
     agent = SafeOptAgent(mutable_params,
                          abort_reward,
+                         j_min,
                          kernel,
                          dict(bounds=bounds, noise_var=noise_var, prior_mean=prior_mean,
                               safe_threshold=safe_threshold, explore_threshold=explore_threshold),
                          [ctrl],
                          dict(master=[[f'lc.inductor{k}.i' for k in '123'],
-                                      [f'lc.capacitor{k}.v' for k in '123'],
-                                      [f'r_load.resistor{i}.i' for i in '123']
+                                      [f'lc.capacitor{k}.v' for k in '123']
                                       ]),
-                         history=FullHistory(), min_performance=j_min
+                         history=FullHistory(),
                          )
 
     if include_simulate:
@@ -288,7 +289,7 @@ if __name__ == '__main__':
             c_filt.reset()
 
 
-        plotter = PlotManager(agent, r_filt, l_filt, save_results=save_results, save_folder=save_folder,
+        plotter = PlotManager(agent, save_results=save_results, save_folder=save_folder,
                               show_plots=show_plots)
 
         env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
@@ -309,17 +310,17 @@ if __name__ == '__main__':
                                     color=[['b', 'r', 'g'], ['b', 'r', 'g']],
                                     style=[[None], ['--']]
                                     ),
-                           PlotTmpl([[f'master.I_hat{i}' for i in 'abc'], [f'r_load.resistor{i}.i' for i in '123'], ],
-                                    callback=lambda fig: plotter.update_axes(fig, title='Simulation',
-                                                                             ylabel='$i_{\mathrm{o estimate,abc}}\,/\,\mathrm{A}$'),
-                                    color=[['b', 'r', 'g'], ['b', 'r', 'g']],
-                                    style=[['-*'], ['--*']]
-                                    ),
-                           PlotTmpl([[f'master.m{i}' for i in 'dq0']],
-                                    callback=lambda fig: plotter.update_axes(fig, title='Simulation',
-                                                                             ylabel='$m_{\mathrm{dq0}}\,/\,\mathrm{}$',
-                                                                             filename='Sim_m_dq0')
-                                    ),
+                           # PlotTmpl([[f'master.I_hat{i}' for i in 'abc'], [f'r_load.resistor{i}.i' for i in '123'], ],
+                           #         callback=lambda fig: plotter.update_axes(fig, title='Simulation',
+                           #                                                  ylabel='$i_{\mathrm{o estimate,abc}}\,/\,\mathrm{A}$'),
+                           #         color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+                           #         style=[['-*'], ['--*']]
+                           #         ),
+                           # PlotTmpl([[f'master.m{i}' for i in 'dq0']],
+                           #         callback=lambda fig: plotter.update_axes(fig, title='Simulation',
+                           #                                                  ylabel='$m_{\mathrm{dq0}}\,/\,\mathrm{}$',
+                           #                                                  filename='Sim_m_dq0')
+                           #         ),
                            PlotTmpl([[f'master.CVi{i}' for i in 'dq0'], [f'master.SPI{i}' for i in 'dq0']],
                                     callback=plotter.xylables_i_dq0,
                                     color=[['b', 'r', 'g'], ['b', 'r', 'g']],
@@ -329,24 +330,25 @@ if __name__ == '__main__':
                        log_level=logging.INFO,
                        viz_mode='episode',
                        max_episode_steps=max_episode_steps,
-                       model_params={'lc.resistor1.R': partial(r_filt.load_step, n=0),
-                                     'lc.resistor2.R': partial(r_filt.load_step, n=1),
-                                     'lc.resistor3.R': partial(r_filt.load_step, n=2),
+                       model_params={'lc.resistor1.R': partial(r_filt.give_value, n=0),
+                                     'lc.resistor2.R': partial(r_filt.give_value, n=1),
+                                     'lc.resistor2.R': partial(r_filt.give_value, n=1),
+                                     'lc.resistor3.R': partial(r_filt.give_value, n=2),
                                      'lc.resistor4.R': 0.0000001,
                                      'lc.resistor5.R': 0.0000001,
                                      'lc.resistor6.R': 0.0000001,
-                                     'lc.inductor1.L': partial(l_filt.load_step, n=0),
-                                     'lc.inductor2.L': partial(l_filt.load_step, n=1),
-                                     'lc.inductor3.L': partial(l_filt.load_step, n=2),
-                                     'lc.capacitor1.C': partial(c_filt.load_step, n=0),
-                                     'lc.capacitor2.C': partial(c_filt.load_step, n=1),
-                                     'lc.capacitor3.C': partial(c_filt.load_step, n=2),
+                                     'lc.inductor1.L': partial(l_filt.give_value, n=0),
+                                     'lc.inductor2.L': partial(l_filt.give_value, n=1),
+                                     'lc.inductor3.L': partial(l_filt.give_value, n=2),
+                                     'lc.capacitor1.C': partial(c_filt.give_value, n=0),
+                                     'lc.capacitor2.C': partial(c_filt.give_value, n=1),
+                                     'lc.capacitor3.C': partial(c_filt.give_value, n=2),
                                      'r_load.resistor1.R': partial(r_load.load_step, n=0),
                                      'r_load.resistor2.R': partial(r_load.load_step, n=1),
                                      'r_load.resistor3.R': partial(r_load.load_step, n=2),
                                      },
                        net=net,
-                       model_path='../omg_grid/grid.paper_loadstep.fmu',
+                       model_path='../../omg_grid/grid.paper_loadstep.fmu',
                        history=FullHistory(),
                        action_time_delay=1 * undersample
                        )

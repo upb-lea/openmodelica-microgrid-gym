@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 from openmodelica_microgrid_gym.env.plotmanager import PlotManager
-from openmodelica_microgrid_gym.env.rewards import Reward
+from experiments.model_validation.env.rewards import Reward
 
 params = {'backend': 'ps',
           'text.latex.preamble': [r'\usepackage{gensymb}'
@@ -39,7 +39,7 @@ from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat
 from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQ0PIPIController
 from openmodelica_microgrid_gym.env import PlotTmpl
-from openmodelica_microgrid_gym.env.stochastic_components import Load, Noise
+from experiments.model_validation.env.stochastic_components import Load
 from experiments.model_validation.env.testbench_voltage_ctrl import TestbenchEnvVoltage
 from experiments.model_validation.execution.monte_carlo_runner import MonteCarloRunner
 from experiments.model_validation.execution.runner_hardware import RunnerHardware, RunnerHardwareGradient
@@ -59,7 +59,7 @@ os.makedirs(save_folder, exist_ok=True)
 np.random.seed(1)
 
 # Simulation definitions
-net = Network.load('../net/net_single-inv-Paper_Loadstep.yaml')
+net = Network.load('../../net/net_single-inv-Paper_Loadstep.yaml')
 delta_t = 1e-4  # simulation time step size / s
 undersample = 1
 max_episode_steps = 2000  # number of simulation steps per episode
@@ -194,15 +194,15 @@ if __name__ == '__main__':
     # History is used to store results
     agent = SafeOptAgent(mutable_params,
                          abort_reward,
+                         j_min,
                          kernel,
                          dict(bounds=bounds, noise_var=noise_var, prior_mean=prior_mean,
                               safe_threshold=safe_threshold, explore_threshold=explore_threshold),
                          [ctrl],
                          dict(master=[[f'lc.inductor{k}.i' for k in '123'],
-                                      [f'lc.capacitor{k}.v' for k in '123'],
-                                      [f'r_load.resistor{i}.i' for i in '123']
+                                      [f'lc.capacitor{k}.v' for k in '123']
                                       ]),
-                         history=FullHistory(), min_performance=j_min
+                         history=FullHistory()
                          )
 
     if include_simulate:
@@ -232,21 +232,19 @@ if __name__ == '__main__':
         l_filt = Load(L_filter, 0.1 * L_filter, balanced=balanced_load)
         c_filt = Load(C_filter, 0.1 * C_filter, balanced=balanced_load)
         r_load = Load(R, 0.1 * R, balanced=balanced_load)
-        meas_noise = Noise([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0.45, 0.39, 0.42, 0.0023, 0.0015, 0.0018, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0.0, 0.5)
 
 
-        # i_noise = Noise([0, 0, 0], [0.0023, 0.0015, 0.0018], 0.0005, 0.32)
+        # meas_noise = Noise([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        #                   [0.45, 0.39, 0.42, 0.0023, 0.0015, 0.0018, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0.0, 0.5)
 
         def reset_loads():
             r_load.reset()
             r_filt.reset()
             l_filt.reset()
             c_filt.reset()
-            meas_noise.reset()
 
 
-        plotter = PlotManager(agent, r_filt, l_filt, meas_noise, save_results=save_results, save_folder=save_folder,
+        plotter = PlotManager(agent, save_results=save_results, save_folder=save_folder,
                               show_plots=show_plots)
 
         env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
@@ -306,7 +304,6 @@ if __name__ == '__main__':
                        net=net,
                        model_path='../../omg_grid/grid.paper_loadstep.fmu',
                        history=FullHistory(),
-                       state_noise=meas_noise,
                        action_time_delay=1 * undersample
                        )
 

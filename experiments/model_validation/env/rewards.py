@@ -42,7 +42,7 @@ class Reward:
             # [f'lc.capacitor{k}.v' for k in '123'], [f'master.SPV{k}' for k in 'dq0'],
             # [f'master.CVV{k}' for k in 'dq0']])
 
-    def rew_fun_c(self, cols: List[str], data: np.ndarray) -> float:
+    def rew_fun_c(self, cols: List[str], data: np.ndarray, risk) -> float:
         """
         Defines the reward function for the environment. Uses the observations and setpoints to evaluate the quality of the
         used parameters.
@@ -111,7 +111,7 @@ class Reward:
 
         return -error.squeeze()
 
-    def rew_fun_vc(self, cols: List[str], data: np.ndarray) -> float:
+    def rew_fun_vc(self, cols: List[str], data: np.ndarray, risk) -> float:
         """
         Defines the reward function for the environment. Uses the observations and set-points to evaluate the quality of
         the used parameters.
@@ -151,7 +151,7 @@ class Reward:
 
         return -error.squeeze()
 
-    def rew_fun_funnel(self, cols: List[str], data: np.ndarray) -> float:
+    def rew_fun_funnel(self, cols: List[str], data: np.ndarray, risk) -> float:
         """
         Defines the reward function for the environment. Uses the observations and set-points to evaluate the quality of
         the used parameters.

@@ -23,7 +23,7 @@ import pandas as pd
 import seaborn as sns
 
 from openmodelica_microgrid_gym.env.plotmanager import PlotManager
-from openmodelica_microgrid_gym.env.rewards import Reward
+from experiments.model_validation.env.rewards import Reward
 from openmodelica_microgrid_gym.net import Network
 
 params = {'backend': 'ps',
@@ -45,7 +45,7 @@ from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat, MutableParams
 from openmodelica_microgrid_gym.aux_ctl import PI_params, MultiPhaseDQCurrentSourcingController
 from openmodelica_microgrid_gym.env import PlotTmpl
-from openmodelica_microgrid_gym.env.stochastic_components import Load, Noise
+from experiments.model_validation.env.stochastic_components import Load
 from experiments.model_validation.execution.monte_carlo_runner import MonteCarloRunner
 from openmodelica_microgrid_gym.util import FullHistory
 
@@ -76,7 +76,7 @@ os.makedirs(save_folder, exist_ok=True)
 np.random.seed(1)
 
 # Simulation definitions
-net = Network.load('../net/net_single-inv-curr_Paper_SC.yaml')
+net = Network.load('../../net/net_single-inv-curr_Paper_SC.yaml')
 delta_t = 1e-4  # simulation time step size / s
 undersample = 1  # undersampling of controller
 max_episode_steps = 1000  # number of simulation steps per episode
@@ -231,11 +231,11 @@ def run_experiment(len_kp, len_ki):
     # History is used to store results
     agent = SafeOptAgent(mutable_params,
                          abort_reward,
+                         j_min,
                          kernel,
                          dict(bounds=bounds, noise_var=noise_var, prior_mean=prior_mean, safe_threshold=safe_threshold,
                               explore_threshold=explore_threshold), [ctrl],
                          dict(master=[[f'lc.inductor{k}.i' for k in '123'], i_ref]), history=FullHistory(),
-                         min_performance=j_min
                          )
 
     #####################################
@@ -259,14 +259,12 @@ def run_experiment(len_kp, len_ki):
         # if no noise should be included:
         r_load = Load(R, 0 * R, balanced=balanced_load)
         l_load = Load(L, 0 * L, balanced=balanced_load)
-        i_noise = Noise([0, 0, 0], [0.0, 0.0, 0.0], 0.0, 0.0)
 
         def reset_loads():
             r_load.reset()
             l_load.reset()
-            i_noise.reset()
 
-        plotter = PlotManager(agent, r_load, l_load, i_noise, save_results=save_results, save_folder=save_folder,
+        plotter = PlotManager(agent, save_results=save_results, save_folder=save_folder,
                               show_plots=show_plots)
 
         def ugly_foo(t):
@@ -311,7 +309,6 @@ def run_experiment(len_kp, len_ki):
                        # model_path='../omg_grid/omg_grid.Grids.Paper_SC.fmu',
                        net=net,
                        history=FullHistory(),
-                       state_noise=i_noise,
                        action_time_delay=1 * undersample
                        )
 

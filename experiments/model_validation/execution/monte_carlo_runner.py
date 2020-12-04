@@ -97,7 +97,7 @@ class MonteCarloRunner:
                             dev_return = 0
                             print('NO DEV RETURN!!!!')
 
-                        dev_fac = 3
+                        dev_fac = 5  # 3
 
                         print(self.agent.episode_return)
                         print(dev_return)

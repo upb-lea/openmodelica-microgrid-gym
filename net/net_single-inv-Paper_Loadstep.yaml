@@ -34,9 +34,8 @@ components:
     # iref: [0,0,0]
     # vref: [1,0,0]
 
-  #load:
-  #  id: r_load
-  #  cls: Load
-  #  #resistor1.R: 10
-  #  out:
-  #    i: [ .resistor1.R, .resistor2.R, .resistor3.R, .resistor1.i, .resistor2.i, .resistor3.i ]
+  load:
+    id: r_load
+    cls: Load
+    out:
+      i: [ .resistor1.R, .resistor2.R, .resistor3.R, .resistor1.i, .resistor2.i, .resistor3.i ]
