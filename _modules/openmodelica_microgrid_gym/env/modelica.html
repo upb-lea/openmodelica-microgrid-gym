@@ -162,10 +162,8 @@
   <h1>Source code for openmodelica_microgrid_gym.env.modelica</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">fnmatch</span> <span class="kn">import</span> <span class="n">translate</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">basename</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
 
 <span class="kn">import</span> <span class="nn">gym</span>
@@ -177,8 +175,8 @@
 
 <span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.env.plot</span> <span class="kn">import</span> <span class="n">PlotTmpl</span>
 <span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.env.pyfmi</span> <span class="kn">import</span> <span class="n">PyFMI_Wrapper</span>
-<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.net.net</span> <span class="kn">import</span> <span class="n">Network</span>
-<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.util</span> <span class="kn">import</span> <span class="n">FullHistory</span><span class="p">,</span> <span class="n">EmptyHistory</span>
+<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.net.base</span> <span class="kn">import</span> <span class="n">Network</span>
+<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.util</span> <span class="kn">import</span> <span class="n">FullHistory</span><span class="p">,</span> <span class="n">EmptyHistory</span><span class="p">,</span> <span class="n">Fastqueue</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -191,23 +189,24 @@
     <span class="n">viz_modes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;episode&#39;</span><span class="p">,</span> <span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">}</span>
     <span class="sd">&quot;&quot;&quot;Set of all valid visualisation modes&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span> <span class="n">time_start</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-                 <span class="n">reward_fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">cols</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">net</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Network</span><span class="p">],</span> <span class="n">time_start</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                 <span class="n">reward_fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">cols</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">risk</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="n">is_normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">log_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="n">solver_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;LSODA&#39;</span><span class="p">,</span> <span class="n">max_episode_steps</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
                  <span class="n">model_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">model_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">model_output</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;../fmu/grid.network.fmu&#39;</span><span class="p">,</span>
+                 <span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;../omg_grid/grid.network.fmu&#39;</span><span class="p">,</span>
                  <span class="n">viz_mode</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;episode&#39;</span><span class="p">,</span> <span class="n">viz_cols</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PlotTmpl</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">history</span><span class="p">:</span> <span class="n">EmptyHistory</span> <span class="o">=</span> <span class="n">FullHistory</span><span class="p">()):</span>
+                 <span class="n">history</span><span class="p">:</span> <span class="n">EmptyHistory</span> <span class="o">=</span> <span class="n">FullHistory</span><span class="p">(),</span>
+                 <span class="n">action_time_delay</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the Environment.</span>
 <span class="sd">        The environment can only be used after reset() is called.</span>
 
-<span class="sd">        :param time_step: step size of the simulation in seconds</span>
 <span class="sd">        :param time_start: offset of the time in seconds</span>
 
 <span class="sd">        :param reward_fun:</span>
-<span class="sd">            The function receives as a list of variable names and a np.ndarray of the values of the current observation.</span>
+<span class="sd">            The function receives as a list of variable names and a np.ndarray of the values</span>
+<span class="sd">             of the current observation as well as a risk value between 0 and 1.</span>
 <span class="sd">            The separation is mainly for performance reasons, such that the resolution of data indices can be cached.</span>
 <span class="sd">            It must return the reward of this timestep as float.</span>
 <span class="sd">            It should return np.nan or -np.inf or None in case of a failiure.</span>
@@ -225,17 +224,7 @@
 <span class="sd">            dictionary of variable names and scalars or callables.</span>
 <span class="sd">            If a callable is provided it is called every time step with the current time.</span>
 <span class="sd">            This callable must return a float that is passed to the fmu.</span>
-<span class="sd">        :param model_input: list of strings. Each string representing a FMU input variable.</span>
-<span class="sd">        :param model_output: nested dictionaries containing nested lists of strings.</span>
-<span class="sd">         The keys of the nested dictionaries will be flattened down and appended to their children and finally prepended</span>
-<span class="sd">         to the strings in the nested lists. The strings final strings represent variables from the FMU and the nesting</span>
-<span class="sd">         of the lists conveys structure used in the visualisation</span>
-
-<span class="sd">         &gt;&gt;&gt; {&#39;inverter&#39;: {&#39;condensator&#39;: [&#39;i&#39;, &#39;v&#39;]}}</span>
-
-<span class="sd">         results in</span>
-
-<span class="sd">         &gt;&gt;&gt; [&#39;inverter.condensator.i&#39;, &#39;inverter.condensator.v&#39;]</span>
+<span class="sd">        :param net: Path to the network configuration file passed to the net.Network.load() function</span>
 <span class="sd">        :param model_path: Path to the FMU</span>
 <span class="sd">        :param viz_mode: specifies how and if to render</span>
 
@@ -249,15 +238,15 @@
 <span class="sd">                                to match all data series ending with &quot;.i&quot;.</span>
 <span class="sd">             - list of PlotTmpl: Each template will result in a plot</span>
 <span class="sd">        :param history: history to store observations and measurement (from the agent) after each step</span>
+
+<span class="sd">        :param action_time_delay: Defines how many time steps the controller needs before the action is applied; action</span>
+<span class="sd">         is buffered in an array</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">model_input</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Please specify model_input variables from your OM FMU.&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">model_output</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Please specify model_output variables from your OM FMU.&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">viz_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">viz_modes</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Please select one of the following viz_modes: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">viz_modes</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">viz_mode</span> <span class="o">=</span> <span class="n">viz_mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_register_render</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">log_level</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">solver_method</span> <span class="o">=</span> <span class="n">solver_method</span>
 
@@ -271,7 +260,11 @@
         <span class="c1"># Parameters required by this implementation</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_episode_steps</span> <span class="o">=</span> <span class="n">max_episode_steps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_start</span> <span class="o">=</span> <span class="n">time_start</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">time_step_size</span> <span class="o">=</span> <span class="n">time_step</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">Network</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">net</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_step_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">ts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_end</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">if</span> <span class="n">max_episode_steps</span> <span class="ow">is</span> <span class="kc">None</span> \
             <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_start</span> <span class="o">+</span> <span class="n">max_episode_steps</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step_size</span>
 
@@ -283,14 +276,16 @@
                                  <span class="n">model_params</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">sim_time_interval</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">measurement</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">measure</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">obs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># type : Callable([np.ndarray],np.ndarray)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">record_states</span> <span class="o">=</span> <span class="n">viz_mode</span> <span class="o">==</span> <span class="s1">&#39;episode&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">history</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="n">model_output</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_input_names</span> <span class="o">=</span> <span class="n">model_input</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_normalized</span> <span class="o">=</span> <span class="n">is_normalized</span>
+        <span class="c1"># also add the augmented values to the history</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">out_vars</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_input_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">in_vars</span><span class="p">()</span>
         <span class="c1"># variable names are flattened to a list if they have specified in the nested dict manner)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_output_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">cols</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_output_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">out_vars</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">viz_col_tmpls</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">viz_cols</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -319,9 +314,12 @@
                              <span class="sa">f</span><span class="s1">&#39;and not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">viz_cols</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
         <span class="c1"># OpenAI Gym requirements</span>
-        <span class="n">d_i</span><span class="p">,</span> <span class="n">d_o</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_input_names</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_output_names</span><span class="p">)</span>
+        <span class="n">d_i</span><span class="p">,</span> <span class="n">d_o</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_input_names</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">cols</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">d_i</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">high</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">d_i</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">observation_space</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">d_o</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span> <span class="n">high</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">d_o</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_time_delay</span> <span class="o">=</span> <span class="n">action_time_delay</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delay_buffer</span> <span class="o">=</span> <span class="n">Fastqueue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_time_delay</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="nf">_calc_jac</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>  <span class="c1"># noqa</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -379,9 +377,8 @@
 <span class="sd">        :return: True if simulation time exceeded</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_failed</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;reward was extreme, episode terminated&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;risk level exceeded&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
-        <span class="c1"># TODO allow for other stopping criteria</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;t: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sim_time_interval</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">, &#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim_time_interval</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_end</span>
 
@@ -392,20 +389,22 @@
 <span class="sd">            * resets model</span>
 <span class="sd">            * sets simulation start time to 0</span>
 <span class="sd">            * sets initial parameters of the model</span>
+<span class="sd">                - Using the parameters defined in self.model_parameters</span>
 <span class="sd">            * initializes the model</span>
 <span class="sd">        :return: state of the environment after resetting.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Experiment reset was called. Resetting the model.&quot;</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">sim_time_interval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">time_start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_start</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step_size</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_output_names</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_output_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simulate</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">measurement</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_failed</span> <span class="o">=</span> <span class="kc">False</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_register_render</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delay_buffer</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_state</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">outputs</span></div>
 
 <div class="viewcode-block" id="ModelicaEnv.step"><a class="viewcode-back" href="../../../api/omg.env.modelica.html#openmodelica_microgrid_gym.env.ModelicaEnv.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -439,18 +438,25 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
+        <span class="c1"># enqueue action and get delayed/last action</span>
+        <span class="n">delayed_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay_buffer</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
         <span class="c1"># Set input values of the model</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;model input: </span><span class="si">%s</span><span class="s1">, values: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_input_names</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_input_names</span><span class="p">,</span> <span class="n">action</span><span class="p">)))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;model input: </span><span class="si">%s</span><span class="s1">, values: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_input_names</span><span class="p">,</span> <span class="n">delayed_action</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_input_names</span><span class="p">,</span> <span class="n">delayed_action</span><span class="p">)))</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span><span class="p">:</span>
             <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim_time_interval</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-            <span class="c1"># list of keys and list of values</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="o">**</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">values</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="n">delayed_action</span><span class="p">)}</span>
+        <span class="k">if</span> <span class="n">params</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">risk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">risk</span><span class="p">()</span>
 
         <span class="c1"># Simulate and observe result state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simulate</span><span class="p">()</span>
-        <span class="n">obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurement</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_state</span><span class="p">()</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;model output: </span><span class="si">%s</span><span class="s2">, values: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_output_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">)</span>
 
@@ -462,11 +468,19 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Experiment step done, experiment done.&quot;</span><span class="p">)</span>
 
-        <span class="n">reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="n">obs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_failed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span> <span class="ow">and</span> <span class="n">reward</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">reward</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">risk</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_failed</span> <span class="o">=</span> <span class="n">risk</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span> <span class="ow">and</span> <span class="n">reward</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">reward</span> <span class="ow">is</span> <span class="kc">None</span>
 
         <span class="c1"># only return the state, the agent does not need the measurement</span>
-        <span class="k">return</span> <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_done</span><span class="p">,</span> <span class="p">{}</span></div>
+        <span class="k">return</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_done</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">risk</span><span class="o">=</span><span class="n">risk</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_create_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Simulate and observe result state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simulate</span><span class="p">()</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">augment</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_normalized</span><span class="p">)</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">outputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">outputs</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">outputs</span>
 
 <div class="viewcode-block" id="ModelicaEnv.render"><a class="viewcode-back" href="../../../api/omg.env.modelica.html#openmodelica_microgrid_gym.env.ModelicaEnv.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;human&#39;</span><span class="p">,</span> <span class="n">close</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Figure</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -479,11 +493,17 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">viz_mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
-        <span class="k">elif</span> <span class="n">close</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">viz_mode</span> <span class="o">==</span> <span class="s1">&#39;step&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">viz_mode</span> <span class="o">==</span> <span class="s1">&#39;step&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">close</span><span class="p">:</span>
                 <span class="c1"># TODO close plot</span>
                 <span class="k">pass</span>
-            <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">viz_mode</span> <span class="o">==</span> <span class="s1">&#39;episode&#39;</span><span class="p">:</span>
+            <span class="c1"># TODO update plot</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">close</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_register_render</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_register_render</span><span class="p">:</span>
                 <span class="n">figs</span> <span class="o">=</span> <span class="p">[]</span>
 
                 <span class="c1"># plot cols by theirs structure filtered by the vis_cols param</span>
@@ -512,11 +532,7 @@
                     <span class="n">tmpl</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
                     <span class="n">figs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
 
-                <span class="k">return</span> <span class="n">figs</span>
-
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">viz_mode</span> <span class="o">==</span> <span class="s1">&#39;step&#39;</span><span class="p">:</span>
-            <span class="c1"># TODO update plot</span>
-            <span class="k">pass</span></div>
+                <span class="k">return</span> <span class="n">figs</span></div>
 
 <div class="viewcode-block" id="ModelicaEnv.close"><a class="viewcode-back" href="../../../api/omg.env.modelica.html#openmodelica_microgrid_gym.env.ModelicaEnv.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -527,36 +543,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">figs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">close</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">figs</span></div></div>
-
-
-<div class="viewcode-block" id="NormalizedEnv"><a class="viewcode-back" href="../../../api/omg.env.modelica.html#openmodelica_microgrid_gym.env.NormalizedEnv">[docs]</a><span class="k">class</span> <span class="nc">NormalizedEnv</span><span class="p">(</span><span class="n">ModelicaEnv</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="n">is_normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">is_normalized</span> <span class="o">=</span> <span class="n">is_normalized</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">time_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">ts</span><span class="p">,</span> <span class="n">model_input</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">in_vars</span><span class="p">(),</span>
-                         <span class="n">model_output</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">out_vars</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
-                         <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
-        <span class="c1"># also add the augmented values to the history</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">out_vars</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-
-<div class="viewcode-block" id="NormalizedEnv.reset"><a class="viewcode-back" href="../../../api/omg.env.modelica.html#openmodelica_microgrid_gym.env.NormalizedEnv.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-        <span class="n">obs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-        <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">augment</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_normalized</span><span class="p">)</span>
-        <span class="n">outputs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">outputs</span><span class="p">,</span> <span class="n">obs</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">out_vars</span><span class="p">(</span><span class="kc">False</span><span class="p">)):]))</span>
-        <span class="k">return</span> <span class="n">outputs</span></div>
-
-<div class="viewcode-block" id="NormalizedEnv.step"><a class="viewcode-back" href="../../../api/omg.env.modelica.html#openmodelica_microgrid_gym.env.NormalizedEnv.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">]:</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">params</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
-        <span class="n">obs</span><span class="p">,</span> <span class="n">rew</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
-        <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">augment</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_normalized</span><span class="p">)</span>
-        <span class="n">outputs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">outputs</span><span class="p">,</span> <span class="n">obs</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">out_vars</span><span class="p">(</span><span class="kc">False</span><span class="p">)):]))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">rew</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span></div></div>
 </pre></div>
 
            </div>

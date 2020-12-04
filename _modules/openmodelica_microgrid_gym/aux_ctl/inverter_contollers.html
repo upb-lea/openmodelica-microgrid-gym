@@ -160,12 +160,15 @@
            <div itemprop="articleBody">
             
   <h1>Source code for openmodelica_microgrid_gym.aux_ctl.inverter_contollers</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.util</span> <span class="kn">import</span> <span class="n">SingleHistory</span><span class="p">,</span> <span class="n">EmptyHistory</span><span class="p">,</span> <span class="n">nested_map</span><span class="p">,</span> <span class="n">inst_power</span><span class="p">,</span> <span class="n">inst_reactive</span><span class="p">,</span> \
     <span class="n">dq0_to_abc</span><span class="p">,</span> <span class="n">abc_to_dq0</span><span class="p">,</span> <span class="n">abc_to_dq0_cos_sin</span><span class="p">,</span> <span class="n">inst_rms</span><span class="p">,</span> <span class="n">dq0_to_abc_cos_sin</span>
 <span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">DDS</span><span class="p">,</span> <span class="n">PLL</span>
 <span class="kn">from</span> <span class="nn">.droop_controllers</span> <span class="kn">import</span> <span class="n">DroopController</span><span class="p">,</span> <span class="n">InverseDroopController</span>
+<span class="kn">from</span> <span class="nn">.observers</span> <span class="kn">import</span> <span class="n">Observer</span>
 <span class="kn">from</span> <span class="nn">.params</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">.pi_controllers</span> <span class="kn">import</span> <span class="n">MultiPhasePIController</span>
 
@@ -189,6 +192,7 @@
 <span class="sd">        :param history: Dataframe to store internal data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">history</span> <span class="ow">or</span> <span class="n">SingleHistory</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_meas</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_ts</span> <span class="o">=</span> <span class="n">tau</span> <span class="o">*</span> <span class="n">undersampling</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_undersample</span> <span class="o">=</span> <span class="n">undersampling</span>
@@ -201,7 +205,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 
     <span class="k">def</span> <span class="nf">_set_hist_cols</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cols</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="n">nested_map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">col</span><span class="p">:</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">col</span><span class="p">]),</span> <span class="n">cols</span><span class="p">)</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        prefixes column names with controller name and append a entry for the clipped values</span>
+<span class="sd">        :param cols:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="n">nested_map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">col</span><span class="p">:</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">col</span><span class="p">]),</span> <span class="n">cols</span> <span class="o">+</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;m</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">_clipped&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;abc&#39;</span><span class="p">])</span>
 
 <div class="viewcode-block" id="Controller.reset"><a class="viewcode-back" href="../../../api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.Controller.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -209,29 +218,35 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
         <span class="c1"># enforce the first step call to calculate the set point</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_undersampling_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_undersample</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_undersampling_count</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_stored_control</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_PHASE</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_currentPI</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Controller.step"><a class="viewcode-back" href="../../../api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.Controller.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">currentCV</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">voltageCV</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Controller.step"><a class="viewcode-back" href="../../../api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.Controller.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Will call self.control() with the given \*args and \*\*kwargs and handle undersampling.</span>
+<span class="sd">        Will use precalculated action and handle undersampling.</span>
 <span class="sd">        The function will replay the last control action for the duration of the undersampling.</span>
-
-<span class="sd">        :param currentCV: 1d-array with 3 entries, one for each phase. The feedback values for current</span>
-<span class="sd">        :param voltageCV:  1d-array with 3 entries, one for each phase. The feedback values for voltage</span>
 
 <span class="sd">        :return: most up to date control action</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_undersampling_count</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_undersampling_count</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_undersample</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_undersampling_count</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_stored_control</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">control</span><span class="p">(</span><span class="n">currentCV</span><span class="p">,</span> <span class="n">voltageCV</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stored_control</span></div>
 
-<div class="viewcode-block" id="Controller.control"><a class="viewcode-back" href="../../../api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.Controller.control">[docs]</a>    <span class="k">def</span> <span class="nf">control</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">currentCV</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">voltageCV</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">idq0SP</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Controller.prepare"><a class="viewcode-back" href="../../../api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.Controller.prepare">[docs]</a>    <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs the calculations for a discrete step of the controller and stores control response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_undersampling_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">abc_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">control</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">abc_action</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">abc_action</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_last_meas</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">abc_action</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_meas</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stored_control</span> <span class="o">=</span> <span class="n">abc_action</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_undersampling_count</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_undersampling_count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_undersample</span></div>
+
+<div class="viewcode-block" id="Controller.control"><a class="viewcode-back" href="../../../api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.Controller.control">[docs]</a>    <span class="k">def</span> <span class="nf">control</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Performs the calculations for a discrete step of the controller</span>
 
@@ -239,8 +254,7 @@
 <span class="sd">        :param voltageCV:  1d-array with 3 entries, one for each phase. The feedback values for voltage</span>
 <span class="sd">        :param idq0SP:</span>
 
-<span class="sd">        :return: The controller output for the current calculation in the ABC</span>
-<span class="sd">                    frame</span>
+<span class="sd">        :return: The controller output for the current calculation in the ABC frame</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div></div>
 
@@ -349,7 +363,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">VPIParams</span><span class="p">:</span> <span class="n">PI_params</span><span class="p">,</span> <span class="n">IPIParams</span><span class="p">:</span> <span class="n">PI_params</span><span class="p">,</span> <span class="n">tau</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-                 <span class="n">Pdroop_param</span><span class="p">:</span> <span class="n">DroopParams</span><span class="p">,</span> <span class="n">Qdroop_param</span><span class="p">:</span> <span class="n">DroopParams</span><span class="p">,</span>
+                 <span class="n">Pdroop_param</span><span class="p">:</span> <span class="n">DroopParams</span><span class="p">,</span> <span class="n">Qdroop_param</span><span class="p">:</span> <span class="n">DroopParams</span><span class="p">,</span> <span class="n">observer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Observer</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">undersampling</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 
@@ -362,13 +376,22 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">VPIParams</span><span class="p">,</span> <span class="n">IPIParams</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">Pdroop_param</span><span class="p">,</span> <span class="n">Qdroop_param</span><span class="p">,</span> <span class="n">undersampling</span><span class="p">,</span>
                          <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_hist_cols</span><span class="p">([</span><span class="s1">&#39;phase&#39;</span><span class="p">,</span>
-                             <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;SPV</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;SPI</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span>
-                             <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;CVV</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;CVi</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span>
-                             <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;m</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span>
-                             <span class="s1">&#39;instPow&#39;</span><span class="p">,</span> <span class="s1">&#39;instQ&#39;</span><span class="p">,</span> <span class="s1">&#39;freq&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_hist_cols</span><span class="p">([</span><span class="s1">&#39;phase&#39;</span><span class="p">,</span> <span class="s1">&#39;instPow&#39;</span><span class="p">,</span> <span class="s1">&#39;instQ&#39;</span><span class="p">,</span> <span class="s1">&#39;freq&#39;</span><span class="p">,</span>
+                             <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;SPV</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;SPV</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;abc&#39;</span><span class="p">],</span>
+                             <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;SPI</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;SPI</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;abc&#39;</span><span class="p">],</span>
+                             <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;CVV</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span>
+                             <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;CVi</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span>
+                             <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;I_hat</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;I_hat</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;abc&#39;</span><span class="p">],</span>
+                             <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;m</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;m</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;abc&#39;</span><span class="p">]])</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_prev_CV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_PHASE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lastMabc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_PHASE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observer</span> <span class="o">=</span> <span class="n">observer</span>
+
+<div class="viewcode-block" id="MultiPhaseDQ0PIPIController.reset"><a class="viewcode-back" href="../../../api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.MultiPhaseDQ0PIPIController.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_CV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_PHASE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lastMabc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_PHASE</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="MultiPhaseDQ0PIPIController.control"><a class="viewcode-back" href="../../../api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.MultiPhaseDQ0PIPIController.control">[docs]</a>    <span class="k">def</span> <span class="nf">control</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">currentCV</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">voltageCV</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -383,7 +406,7 @@
         <span class="n">instPow</span> <span class="o">=</span> <span class="o">-</span><span class="n">inst_power</span><span class="p">(</span><span class="n">voltageCV</span><span class="p">,</span> <span class="n">currentCV</span><span class="p">)</span>
         <span class="n">freq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PdroopController</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">instPow</span><span class="p">)</span>
         <span class="c1"># Get the next phase rotation angle to implement</span>
-        <span class="n">phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phaseDDS</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase</span> <span class="o">=</span> <span class="n">phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phaseDDS</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
 
         <span class="n">instQ</span> <span class="o">=</span> <span class="o">-</span><span class="n">inst_reactive</span><span class="p">(</span><span class="n">voltageCV</span><span class="p">,</span> <span class="n">currentCV</span><span class="p">)</span>
         <span class="n">voltage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_QdroopController</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">instQ</span><span class="p">)</span>
@@ -392,20 +415,40 @@
         <span class="n">CVIdq0</span> <span class="o">=</span> <span class="n">abc_to_dq0</span><span class="p">(</span><span class="n">currentCV</span><span class="p">,</span> <span class="n">phase</span><span class="p">)</span>
         <span class="n">CVVdq0</span> <span class="o">=</span> <span class="n">abc_to_dq0</span><span class="p">(</span><span class="n">voltageCV</span><span class="p">,</span> <span class="n">phase</span><span class="p">)</span>
 
+        <span class="c1"># If available, calulate load current using observer</span>
+        <span class="n">iabc_out_etimate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">N_PHASE</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">iabc_out_etimate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_PHASE</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_PHASE</span><span class="p">):</span>
+                <span class="n">iabc_out_etimate</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observer</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">cal_estimate</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">currentCV</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">voltageCV</span><span class="p">[</span><span class="n">j</span><span class="p">]],</span>
+                                                                     <span class="n">u</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_lastMabc</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+
+        <span class="n">i_dq0_out_estimat</span> <span class="o">=</span> <span class="n">abc_to_dq0</span><span class="p">(</span><span class="n">iabc_out_etimate</span><span class="p">,</span> <span class="n">phase</span><span class="p">)</span>
+
         <span class="c1"># Voltage controller calculations</span>
         <span class="n">VSP</span> <span class="o">=</span> <span class="n">voltage</span>
         <span class="c1"># Voltage SP in dq0 (static for the moment)</span>
         <span class="n">SPVdq0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">VSP</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-        <span class="n">SPIdq0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_voltagePI</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">SPVdq0</span><span class="p">,</span> <span class="n">CVVdq0</span><span class="p">)</span>
+        <span class="n">SPVabc</span> <span class="o">=</span> <span class="n">dq0_to_abc</span><span class="p">(</span><span class="n">SPVdq0</span><span class="p">,</span> <span class="n">phase</span><span class="p">)</span>
+        <span class="n">SPIdq0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_voltagePI</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">SPVdq0</span><span class="p">,</span> <span class="n">CVVdq0</span><span class="p">,</span> <span class="n">i_dq0_out_estimat</span><span class="p">)</span>
+
+        <span class="n">SPIabc</span> <span class="o">=</span> <span class="n">dq0_to_abc</span><span class="p">(</span><span class="n">SPIdq0</span><span class="p">,</span> <span class="n">phase</span><span class="p">)</span>
 
         <span class="c1"># Current controller calculations</span>
         <span class="n">MVdq0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_currentPI</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">SPIdq0</span><span class="p">,</span> <span class="n">CVIdq0</span><span class="p">)</span>
-
+        <span class="n">MVabc</span> <span class="o">=</span> <span class="n">dq0_to_abc</span><span class="p">(</span><span class="n">MVdq0</span><span class="p">,</span> <span class="n">phase</span><span class="p">)</span>  <span class="c1"># Transform the MVs back to the abc frame</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lastMabc</span> <span class="o">=</span> <span class="n">MVabc</span>
         <span class="c1"># Add intern measurment</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">phase</span><span class="p">,</span> <span class="o">*</span><span class="n">SPVdq0</span><span class="p">,</span> <span class="o">*</span><span class="n">SPIdq0</span><span class="p">,</span> <span class="o">*</span><span class="n">CVVdq0</span><span class="p">,</span> <span class="o">*</span><span class="n">CVIdq0</span><span class="p">,</span> <span class="o">*</span><span class="n">MVdq0</span><span class="p">,</span> <span class="n">instPow</span><span class="p">,</span> <span class="n">instQ</span><span class="p">,</span> <span class="n">freq</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_meas</span> <span class="o">=</span> <span class="p">[</span><span class="n">phase</span><span class="p">,</span> <span class="n">instPow</span><span class="p">,</span> <span class="n">instQ</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span>
+                           <span class="o">*</span><span class="n">SPVdq0</span><span class="p">,</span> <span class="o">*</span><span class="n">SPVabc</span><span class="p">,</span>
+                           <span class="o">*</span><span class="n">SPIdq0</span><span class="p">,</span> <span class="o">*</span><span class="n">SPIabc</span><span class="p">,</span>
+                           <span class="o">*</span><span class="n">CVVdq0</span><span class="p">,</span>
+                           <span class="o">*</span><span class="n">CVIdq0</span><span class="p">,</span>
+                           <span class="o">*</span><span class="n">i_dq0_out_estimat</span><span class="p">,</span> <span class="o">*</span><span class="n">iabc_out_etimate</span><span class="p">,</span>
+                           <span class="o">*</span><span class="n">MVdq0</span><span class="p">,</span> <span class="o">*</span><span class="n">MVabc</span><span class="p">]</span>
 
-        <span class="c1"># Transform the MVs back to the abc frame</span>
-        <span class="k">return</span> <span class="n">dq0_to_abc</span><span class="p">(</span><span class="n">MVdq0</span><span class="p">,</span> <span class="n">phase</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">MVabc</span></div></div>
 
 
 <div class="viewcode-block" id="MultiPhaseDQCurrentController"><a class="viewcode-back" href="../../../api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.MultiPhaseDQCurrentController">[docs]</a><span class="k">class</span> <span class="nc">MultiPhaseDQCurrentController</span><span class="p">(</span><span class="n">CurrentCtl</span><span class="p">):</span>
@@ -438,10 +481,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">IPIParams</span><span class="p">,</span> <span class="n">pllPIParams</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">i_limit</span><span class="p">,</span> <span class="n">Pdroop_param</span><span class="p">,</span> <span class="n">Qdroop_param</span><span class="p">,</span> <span class="n">undersampling</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span>
                          <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_hist_cols</span><span class="p">([</span><span class="s1">&#39;instPow&#39;</span><span class="p">,</span> <span class="s1">&#39;instQ&#39;</span><span class="p">,</span> <span class="s1">&#39;freq&#39;</span><span class="p">,</span> <span class="s1">&#39;phase&#39;</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_hist_cols</span><span class="p">([</span><span class="s1">&#39;phase&#39;</span><span class="p">,</span> <span class="s1">&#39;instPow&#39;</span><span class="p">,</span> <span class="s1">&#39;instQ&#39;</span><span class="p">,</span> <span class="s1">&#39;freq&#39;</span><span class="p">,</span>
                              <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;CVI</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span>
                              <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;SPI</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span>
-                             <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;m</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">]])</span>
+                             <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;m</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;m</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;abc&#39;</span><span class="p">]])</span>
 
         <span class="c1"># Populate the previous values with 0&#39;s</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prev_cossine</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
@@ -494,74 +537,76 @@
         <span class="c1"># Transform the outputs from the controllers (dq0) to abc</span>
         <span class="c1"># also divide by SQRT(2) to ensure the transform is limited to [-1,1]</span>
 
-        <span class="n">control</span> <span class="o">=</span> <span class="n">dq0_to_abc_cos_sin</span><span class="p">(</span><span class="n">MVdq0</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_prev_cossine</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">instPow</span><span class="p">,</span> <span class="n">instQ</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_freq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_theta</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_lastIDQ</span><span class="p">,</span> <span class="o">*</span><span class="n">idq0SP</span><span class="p">,</span> <span class="o">*</span><span class="n">MVdq0</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">control</span></div></div>
+        <span class="n">MVabc</span> <span class="o">=</span> <span class="n">dq0_to_abc_cos_sin</span><span class="p">(</span><span class="n">MVdq0</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_prev_cossine</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_meas</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_prev_theta</span><span class="p">,</span> <span class="n">instPow</span><span class="p">,</span> <span class="n">instQ</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_freq</span><span class="p">,</span>
+                           <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_lastIDQ</span><span class="p">,</span>
+                           <span class="o">*</span><span class="n">idq0SP</span><span class="p">,</span>
+                           <span class="o">*</span><span class="n">MVdq0</span><span class="p">,</span> <span class="o">*</span><span class="n">MVabc</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">MVabc</span></div></div>
 
 
-<div class="viewcode-block" id="MultiPhaseDQCurrentSourcingController"><a class="viewcode-back" href="../../../api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.MultiPhaseDQCurrentSourcingController">[docs]</a><span class="k">class</span> <span class="nc">MultiPhaseDQCurrentSourcingController</span><span class="p">(</span><span class="n">VoltageCtl</span><span class="p">):</span>
+<div class="viewcode-block" id="MultiPhaseDQCurrentSourcingController"><a class="viewcode-back" href="../../../api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.MultiPhaseDQCurrentSourcingController">[docs]</a><span class="k">class</span> <span class="nc">MultiPhaseDQCurrentSourcingController</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Implements a discrete multiphase PI current controller to supply an amount of current to a load / the grid which can</span>
-<span class="sd">    be chosen via state&quot;extension&quot; using idq0SP</span>
+<span class="sd">    be chosen via state&quot;extension&quot; using idq0SP at a frequency of f_nom.</span>
 <span class="sd">    Has its own internal oscillator to keep track of the internal angle.</span>
-<span class="sd">    Due to it is the only inverter to supply the load, it inherits from the voltage controller but sets the parameters</span>
-<span class="sd">    of VPIParams to zero to not implement the voltage controller but uses the there defined (&quot;direct&quot;)Droop (e.g.</span>
-<span class="sd">    frequency drop due to loaded.</span>
 
 <span class="sd">    Controls each phase individually in the dq0 axis.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">IPIParams</span><span class="p">:</span> <span class="n">PI_params</span><span class="p">,</span> <span class="n">tau</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">PdroopParams</span><span class="p">:</span> <span class="n">DroopParams</span><span class="p">,</span> <span class="n">QdroopParams</span><span class="p">:</span> <span class="n">DroopParams</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">IPIParams</span><span class="p">:</span> <span class="n">PI_params</span><span class="p">,</span> <span class="n">tau</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">f_nom</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">,</span>
                  <span class="n">undersampling</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param IPIParams: PI_parameter for the current control loop</span>
 <span class="sd">        :param tau: sampling time</span>
-<span class="sd">        :param PdroopParams: Droop parameters for P-droop</span>
-<span class="sd">        :param QdroopParams: Droop parameters for Q-droop</span>
+<span class="sd">        :param f_nom: nominal frequency for current sourcing ctrl</span>
 <span class="sd">        :param undersampling: Control is applied every undersmpling* cycles</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">PI_params</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="n">IPIParams</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">PdroopParams</span><span class="p">,</span> <span class="n">QdroopParams</span><span class="p">,</span> <span class="n">undersampling</span><span class="p">,</span>
-                         <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">IPIParams</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">undersampling</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_phaseDDS</span> <span class="o">=</span> <span class="n">DDS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ts</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_nom</span> <span class="o">=</span> <span class="n">f_nom</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_hist_cols</span><span class="p">([</span><span class="s1">&#39;phase&#39;</span><span class="p">,</span>
-                             <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;CVV</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;CVI</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span>
-                             <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;SPI</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span>
-                             <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;m</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span> <span class="s1">&#39;instPow&#39;</span><span class="p">,</span> <span class="s1">&#39;instQ&#39;</span><span class="p">,</span>
-                             <span class="s1">&#39;freq&#39;</span><span class="p">])</span>
+                             <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;CVI</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span>
+                             <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;SPI</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;SPI</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;abc&#39;</span><span class="p">],</span>
+                             <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;m</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;dq0&#39;</span><span class="p">],</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;m</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;abc&#39;</span><span class="p">]])</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_prev_CV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_PHASE</span><span class="p">)</span>
 
-<div class="viewcode-block" id="MultiPhaseDQCurrentSourcingController.control"><a class="viewcode-back" href="../../../api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.MultiPhaseDQCurrentSourcingController.control">[docs]</a>    <span class="k">def</span> <span class="nf">control</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">currentCV</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">voltageCV</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">idq0SP</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="MultiPhaseDQCurrentSourcingController.reset"><a class="viewcode-back" href="../../../api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.MultiPhaseDQCurrentSourcingController.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_phaseDDS</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MultiPhaseDQCurrentSourcingController.control"><a class="viewcode-back" href="../../../api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.MultiPhaseDQCurrentSourcingController.control">[docs]</a>    <span class="k">def</span> <span class="nf">control</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">currentCV</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">idq0SP</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Performs the calculations for a discrete step of the controller</span>
 
 <span class="sd">        :param currentCV: 1d-array with 3 entries, one for each phase in abc. The feedback values for current</span>
-<span class="sd">        :param voltageCV:  1d-array with 3 entries, one for each phase in abc. The feedback values for voltage</span>
+<span class="sd">        :param idq0SP: 1d-array with 3 entries, one for each phase in dq0. Current set points for current sourcing ctrl</span>
 
 <span class="sd">        :return: Modulation index for the inverter in abc</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">instPow</span> <span class="o">=</span> <span class="o">-</span><span class="n">inst_power</span><span class="p">(</span><span class="n">voltageCV</span><span class="p">,</span> <span class="n">currentCV</span><span class="p">)</span>
-        <span class="n">freq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PdroopController</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">instPow</span><span class="p">)</span>
         <span class="c1"># Get the next phase rotation angle to implement</span>
-        <span class="n">phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phaseDDS</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
-
-        <span class="n">instQ</span> <span class="o">=</span> <span class="o">-</span><span class="n">inst_reactive</span><span class="p">(</span><span class="n">voltageCV</span><span class="p">,</span> <span class="n">currentCV</span><span class="p">)</span>
+        <span class="n">phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phaseDDS</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_nom</span><span class="p">)</span>
 
         <span class="c1"># Transform the feedback to the dq0 frame</span>
         <span class="n">CVIdq0</span> <span class="o">=</span> <span class="n">abc_to_dq0</span><span class="p">(</span><span class="n">currentCV</span><span class="p">,</span> <span class="n">phase</span><span class="p">)</span>
-        <span class="n">CVVdq0</span> <span class="o">=</span> <span class="n">abc_to_dq0</span><span class="p">(</span><span class="n">voltageCV</span><span class="p">,</span> <span class="n">phase</span><span class="p">)</span>
 
         <span class="c1"># current setpoint</span>
-        <span class="n">SPIdq0</span> <span class="o">=</span> <span class="n">idq0SP</span>
-
+        <span class="n">SPIdq0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">idq0SP</span><span class="p">[:])</span>
+        <span class="n">SPIabc</span> <span class="o">=</span> <span class="n">dq0_to_abc</span><span class="p">(</span><span class="n">SPIdq0</span><span class="p">,</span> <span class="n">phase</span><span class="p">)</span>
         <span class="c1"># Current controller calculations</span>
         <span class="n">MVdq0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_currentPI</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">SPIdq0</span><span class="p">,</span> <span class="n">CVIdq0</span><span class="p">)</span>
+        <span class="n">MVabc</span> <span class="o">=</span> <span class="n">dq0_to_abc</span><span class="p">(</span><span class="n">MVdq0</span><span class="p">,</span> <span class="n">phase</span><span class="p">)</span>
 
         <span class="c1"># Add intern measurment</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">phase</span><span class="p">,</span> <span class="o">*</span><span class="n">CVVdq0</span><span class="p">,</span> <span class="o">*</span><span class="n">CVIdq0</span><span class="p">,</span> <span class="o">*</span><span class="n">SPIdq0</span><span class="p">,</span> <span class="o">*</span><span class="n">MVdq0</span><span class="p">,</span> <span class="n">instPow</span><span class="p">,</span> <span class="n">instQ</span><span class="p">,</span> <span class="n">freq</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_meas</span> <span class="o">=</span> <span class="p">[</span><span class="n">phase</span><span class="p">,</span>
+                           <span class="o">*</span><span class="n">CVIdq0</span><span class="p">,</span>
+                           <span class="o">*</span><span class="n">SPIdq0</span><span class="p">,</span> <span class="o">*</span><span class="n">SPIabc</span><span class="p">,</span>
+                           <span class="o">*</span><span class="n">MVdq0</span><span class="p">,</span> <span class="o">*</span><span class="n">MVabc</span><span class="p">]</span>
 
         <span class="c1"># Transform the MVs back to the abc frame</span>
-        <span class="k">return</span> <span class="n">dq0_to_abc</span><span class="p">(</span><span class="n">MVdq0</span><span class="p">,</span> <span class="n">phase</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">MVabc</span></div></div>
 </pre></div>
 
            </div>

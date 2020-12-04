@@ -175,8 +175,8 @@
 <span id="omg-agents-safeopt"></span><h1>omg.agents.safeopt<a class="headerlink" href="#module-openmodelica_microgrid_gym.agents.safeopt" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.agents.safeopt.</code><code class="sig-name descname">SafeOptAgent</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mutable_params</span></em>, <em class="sig-param"><span class="n">abort_reward</span></em>, <em class="sig-param"><span class="n">kernel</span></em>, <em class="sig-param"><span class="n">gp_params</span></em>, <em class="sig-param"><span class="n">ctrls</span></em>, <em class="sig-param"><span class="n">obs_template</span></em>, <em class="sig-param"><span class="n">obs_varnames</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent" title="openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent</span></code></a></p>
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.agents.safeopt.</code><code class="sig-name descname">SafeOptAgent</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mutable_params</span></em>, <em class="sig-param"><span class="n">abort_reward</span></em>, <em class="sig-param"><span class="n">min_performance</span></em>, <em class="sig-param"><span class="n">kernel</span></em>, <em class="sig-param"><span class="n">gp_params</span></em>, <em class="sig-param"><span class="n">ctrls</span></em>, <em class="sig-param"><span class="n">obs_template</span></em>, <em class="sig-param"><span class="n">obs_varnames</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent" title="openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent</span></code></p>
 <p>Agent to execute safeopt algorithm (<a class="reference external" href="https://arxiv.org/abs/1509.01066">https://arxiv.org/abs/1509.01066</a>) to control the environment by using
 auxiliary controllers and Gaussian process to adopt the controller parameters (mutable_params) to safely
 increase the performance.</p>
@@ -211,7 +211,8 @@ The values are a list of:</p>
 <p>The values will be passed as parameters to the controllers step function.</p>
 </p></li>
 <li><p><strong>obs_varnames</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]) – list of variable names that match the values of the observations
-passed in the act function. Will be automatically set by the Runner class</p></li>
+passed in the act function. Will be automatically set by the Runner class
+:param min_performance: Minial allowed performance to define parameters as safe</p></li>
 </ul>
 </dd>
 </dl>
@@ -230,6 +231,25 @@ passed in the act function. Will be automatically set by the Runner class</p></l
 </dd></dl>
 
 <dl class="py method">
+<dt id="openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.has_worsened">
+<em class="property">property </em><code class="sig-name descname">has_worsened</code><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.has_worsened" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines if the performance increased or stays constant</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True, if performance was increased or equal, else False</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.min_performance">
+<em class="property">property </em><code class="sig-name descname">min_performance</code><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.min_performance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.observe">
 <code class="sig-name descname">observe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reward</span></em>, <em class="sig-param"><span class="n">terminated</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent.observe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.observe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Makes an observation of the enviroment.
@@ -246,6 +266,11 @@ If terminated, then caclulates the performance and the next values for the param
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.performance">
+<em class="property">property </em><code class="sig-name descname">performance</code><a class="headerlink" href="#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.performance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt id="openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.prepare_episode">

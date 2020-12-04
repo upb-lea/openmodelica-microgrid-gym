@@ -193,21 +193,29 @@ the setpoint every 10th controller call</p></li>
 </dl>
 <dl class="py method">
 <dt id="openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller.control">
-<code class="sig-name descname">control</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">currentCV</span></em>, <em class="sig-param"><span class="n">voltageCV</span></em>, <em class="sig-param"><span class="n">idq0SP</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/inverter_contollers.html#Controller.control"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller.control" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">control</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/inverter_contollers.html#Controller.control"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller.control" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs the calculations for a discrete step of the controller</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>currentCV</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – 1d-array with 3 entries, one for each phase. The feedback values for current</p></li>
-<li><p><strong>voltageCV</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – 1d-array with 3 entries, one for each phase. The feedback values for voltage</p></li>
-<li><p><strong>idq0SP</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]) – </p></li>
+<li><p><strong>currentCV</strong> – 1d-array with 3 entries, one for each phase. The feedback values for current</p></li>
+<li><p><strong>voltageCV</strong> – 1d-array with 3 entries, one for each phase. The feedback values for voltage</p></li>
+<li><p><strong>idq0SP</strong> – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The controller output for the current calculation in the ABC
-frame</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The controller output for the current calculation in the ABC frame</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller.prepare">
+<code class="sig-name descname">prepare</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/inverter_contollers.html#Controller.prepare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller.prepare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the calculations for a discrete step of the controller and stores control response</p>
 </dd></dl>
 
 <dl class="py method">
@@ -218,18 +226,12 @@ frame</p>
 
 <dl class="py method">
 <dt id="openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">currentCV</span></em>, <em class="sig-param"><span class="n">voltageCV</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/inverter_contollers.html#Controller.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller.step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Will call self.control() with the given *args and **kwargs and handle undersampling.
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/inverter_contollers.html#Controller.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will use precalculated action and handle undersampling.
 The function will replay the last control action for the duration of the undersampling.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>currentCV</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – 1d-array with 3 entries, one for each phase. The feedback values for current</p></li>
-<li><p><strong>voltageCV</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – 1d-array with 3 entries, one for each phase. The feedback values for voltage</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>most up to date control action</p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>most up to date control action</p>
 </dd>
 </dl>
 </dd></dl>
@@ -295,8 +297,7 @@ limiting in ABC. Has its own internal oscillator to keep track of the internal a
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The controller output for the current calculation in the ABC
-frame</p>
+<dd class="field-even"><p>The controller output for the current calculation in the ABC frame</p>
 </dd>
 </dl>
 </dd></dl>
@@ -305,7 +306,7 @@ frame</p>
 
 <dl class="py class">
 <dt id="openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQ0PIPIController">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.aux_ctl.inverter_contollers.</code><code class="sig-name descname">MultiPhaseDQ0PIPIController</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">VPIParams</span></em>, <em class="sig-param"><span class="n">IPIParams</span></em>, <em class="sig-param"><span class="n">tau</span></em>, <em class="sig-param"><span class="n">Pdroop_param</span></em>, <em class="sig-param"><span class="n">Qdroop_param</span></em>, <em class="sig-param"><span class="n">undersampling</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/inverter_contollers.html#MultiPhaseDQ0PIPIController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQ0PIPIController" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.aux_ctl.inverter_contollers.</code><code class="sig-name descname">MultiPhaseDQ0PIPIController</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">VPIParams</span></em>, <em class="sig-param"><span class="n">IPIParams</span></em>, <em class="sig-param"><span class="n">tau</span></em>, <em class="sig-param"><span class="n">Pdroop_param</span></em>, <em class="sig-param"><span class="n">Qdroop_param</span></em>, <em class="sig-param"><span class="n">observer</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">undersampling</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/inverter_contollers.html#MultiPhaseDQ0PIPIController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQ0PIPIController" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.VoltageCtl" title="openmodelica_microgrid_gym.aux_ctl.inverter_contollers.VoltageCtl"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.aux_ctl.inverter_contollers.VoltageCtl</span></code></a></p>
 <p>Implements a discrete multiphase PI-PI voltage forming control with current
 limiting. Has its own internal oscillator to keep track of the internal angle.</p>
@@ -337,6 +338,12 @@ limiting. Has its own internal oscillator to keep track of the internal angle.</
 <dd class="field-even"><p>Modulation index for the inverter in abc</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQ0PIPIController.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/inverter_contollers.html#MultiPhaseDQ0PIPIController.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQ0PIPIController.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the controller to initialization state. Must be called before usage.</p>
 </dd></dl>
 
 </dd></dl>
@@ -391,41 +398,43 @@ only droop is applied</p></li>
 
 <dl class="py class">
 <dt id="openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQCurrentSourcingController">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.aux_ctl.inverter_contollers.</code><code class="sig-name descname">MultiPhaseDQCurrentSourcingController</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">IPIParams</span></em>, <em class="sig-param"><span class="n">tau</span></em>, <em class="sig-param"><span class="n">PdroopParams</span></em>, <em class="sig-param"><span class="n">QdroopParams</span></em>, <em class="sig-param"><span class="n">undersampling</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/inverter_contollers.html#MultiPhaseDQCurrentSourcingController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQCurrentSourcingController" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.VoltageCtl" title="openmodelica_microgrid_gym.aux_ctl.inverter_contollers.VoltageCtl"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.aux_ctl.inverter_contollers.VoltageCtl</span></code></a></p>
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.aux_ctl.inverter_contollers.</code><code class="sig-name descname">MultiPhaseDQCurrentSourcingController</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">IPIParams</span></em>, <em class="sig-param"><span class="n">tau</span></em>, <em class="sig-param"><span class="n">f_nom</span><span class="o">=</span><span class="default_value">50.0</span></em>, <em class="sig-param"><span class="n">undersampling</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/inverter_contollers.html#MultiPhaseDQCurrentSourcingController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQCurrentSourcingController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller" title="openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller</span></code></a></p>
 <p>Implements a discrete multiphase PI current controller to supply an amount of current to a load / the grid which can
-be chosen via state”extension” using idq0SP
-Has its own internal oscillator to keep track of the internal angle.
-Due to it is the only inverter to supply the load, it inherits from the voltage controller but sets the parameters
-of VPIParams to zero to not implement the voltage controller but uses the there defined (“direct”)Droop (e.g.
-frequency drop due to loaded.</p>
+be chosen via state”extension” using idq0SP at a frequency of f_nom.
+Has its own internal oscillator to keep track of the internal angle.</p>
 <p>Controls each phase individually in the dq0 axis.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>IPIParams</strong> (<a class="reference internal" href="omg.aux_ctl.params.html#openmodelica_microgrid_gym.aux_ctl.params.PI_params" title="openmodelica_microgrid_gym.aux_ctl.params.PI_params"><code class="xref py py-class docutils literal notranslate"><span class="pre">PI_params</span></code></a>) – PI_parameter for the current control loop</p></li>
 <li><p><strong>tau</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – sampling time</p></li>
-<li><p><strong>PdroopParams</strong> (<a class="reference internal" href="omg.aux_ctl.params.html#openmodelica_microgrid_gym.aux_ctl.params.DroopParams" title="openmodelica_microgrid_gym.aux_ctl.params.DroopParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">DroopParams</span></code></a>) – Droop parameters for P-droop</p></li>
-<li><p><strong>QdroopParams</strong> (<a class="reference internal" href="omg.aux_ctl.params.html#openmodelica_microgrid_gym.aux_ctl.params.DroopParams" title="openmodelica_microgrid_gym.aux_ctl.params.DroopParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">DroopParams</span></code></a>) – Droop parameters for Q-droop</p></li>
+<li><p><strong>f_nom</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – nominal frequency for current sourcing ctrl</p></li>
 <li><p><strong>undersampling</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – Control is applied every undersmpling* cycles</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt id="openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQCurrentSourcingController.control">
-<code class="sig-name descname">control</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">currentCV</span></em>, <em class="sig-param"><span class="n">voltageCV</span></em>, <em class="sig-param"><span class="n">idq0SP</span><span class="o">=</span><span class="default_value">array([0.0, 0.0, 0.0])</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/inverter_contollers.html#MultiPhaseDQCurrentSourcingController.control"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQCurrentSourcingController.control" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">control</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">currentCV</span></em>, <em class="sig-param"><span class="n">idq0SP</span><span class="o">=</span><span class="default_value">array([0.0, 0.0, 0.0])</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/inverter_contollers.html#MultiPhaseDQCurrentSourcingController.control"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQCurrentSourcingController.control" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs the calculations for a discrete step of the controller</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>currentCV</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – 1d-array with 3 entries, one for each phase in abc. The feedback values for current</p></li>
-<li><p><strong>voltageCV</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – 1d-array with 3 entries, one for each phase in abc. The feedback values for voltage</p></li>
+<li><p><strong>idq0SP</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – 1d-array with 3 entries, one for each phase in dq0. Current set points for current sourcing ctrl</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Modulation index for the inverter in abc</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQCurrentSourcingController.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/inverter_contollers.html#MultiPhaseDQCurrentSourcingController.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQCurrentSourcingController.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the controller to initialization state. Must be called before usage.</p>
 </dd></dl>
 
 </dd></dl>

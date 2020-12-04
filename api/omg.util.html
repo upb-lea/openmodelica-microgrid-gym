@@ -210,9 +210,36 @@ This class will not actually store any data</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt id="openmodelica_microgrid_gym.util.EmptyHistory.pop">
+<code class="sig-name descname">pop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#EmptyHistory.pop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.EmptyHistory.pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>pop last item
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.util.EmptyHistory.reset">
 <code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#EmptyHistory.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.EmptyHistory.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes all data, but keeps the columns.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="openmodelica_microgrid_gym.util.Fastqueue">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">Fastqueue</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size</span></em>, <em class="sig-param"><span class="n">dim</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/fastqueue.html#Fastqueue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.Fastqueue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Efficient numpy implementation of constant sized queue
+:type size: <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>
+:param size: Size of queue</p>
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.util.Fastqueue.clear">
+<code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/fastqueue.html#Fastqueue.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.Fastqueue.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.util.Fastqueue.shift">
+<code class="sig-name descname">shift</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">val</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/fastqueue.html#Fastqueue.shift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.Fastqueue.shift" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pushes val into buffer and returns popped last element</p>
 </dd></dl>
 
 </dd></dl>
@@ -249,6 +276,13 @@ This class will not actually store any data</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt id="openmodelica_microgrid_gym.util.FullHistory.pop">
+<code class="sig-name descname">pop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#FullHistory.pop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.FullHistory.pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>pop last item
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="openmodelica_microgrid_gym.util.FullHistory.reset">
 <code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#FullHistory.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.FullHistory.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes all data, but keeps the columns.</p>
@@ -281,6 +315,13 @@ This class will not actually store any data</p>
 <dt id="openmodelica_microgrid_gym.util.SingleHistory.last">
 <code class="sig-name descname">last</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#SingleHistory.last"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.SingleHistory.last" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.util.SingleHistory.pop">
+<code class="sig-name descname">pop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#SingleHistory.pop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.SingleHistory.pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>pop last item
+:return:</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="openmodelica_microgrid_gym.util.SingleHistory.reset">

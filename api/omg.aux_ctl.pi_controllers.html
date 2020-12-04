@@ -197,7 +197,7 @@ proportional, integral and anti-windup part and the limits of the output)</p></l
 
 <dl class="py method">
 <dt id="openmodelica_microgrid_gym.aux_ctl.pi_controllers.MultiPhasePIController.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">SP</span></em>, <em class="sig-param"><span class="n">CV</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/pi_controllers.html#MultiPhasePIController.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.pi_controllers.MultiPhasePIController.step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">SP</span></em>, <em class="sig-param"><span class="n">CV</span></em>, <em class="sig-param"><span class="n">feedforward</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/pi_controllers.html#MultiPhasePIController.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.pi_controllers.MultiPhasePIController.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a controller step calculating the error itself using the array of
 Setpoints (SP) and Controlled Variables (CV, feedback)</p>
 <dl class="field-list simple">
@@ -241,11 +241,14 @@ proportional, integral and anti-windup part and the limits of the output)</p></l
 
 <dl class="py method">
 <dt id="openmodelica_microgrid_gym.aux_ctl.pi_controllers.PIController.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">error</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/pi_controllers.html#PIController.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.pi_controllers.PIController.step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">error</span></em>, <em class="sig-param"><span class="n">feedforward</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/pi_controllers.html#PIController.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.pi_controllers.PIController.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a step of a basic PI controller with anti-windup by back-calculation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>error</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – Control error to act on</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>error</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – Control error to act on</p></li>
+<li><p><strong>feedforward</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – feed forward term</p></li>
+</ul>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></p>

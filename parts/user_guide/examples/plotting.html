@@ -213,8 +213,7 @@ Ajdusting labels and saving the figure can be done via callable, like shown in t
 33
 34
 35
-36
-37</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gym</span>
+36</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gym</span>
 
 <span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.env</span> <span class="kn">import</span> <span class="n">PlotTmpl</span>
 
@@ -241,10 +240,9 @@ Ajdusting labels and saving the figure can be done via callable, like shown in t
                                 <span class="n">legend</span><span class="o">=</span><span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">],</span>
                                 <span class="n">label</span><span class="o">=</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;something&#39;</span><span class="p">])</span>
                    <span class="p">],</span>
-                   <span class="n">model_input</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;i1p1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1p2&#39;</span><span class="p">,</span> <span class="s1">&#39;i1p3&#39;</span><span class="p">],</span>
                    <span class="n">max_episode_steps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                   <span class="n">model_output</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">lc1</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;inductor1.i&#39;</span><span class="p">,</span> <span class="s1">&#39;inductor2.i&#39;</span><span class="p">,</span> <span class="s1">&#39;inductor3.i&#39;</span><span class="p">]),</span>
-                   <span class="n">model_path</span><span class="o">=</span><span class="s1">&#39;../fmu/grid.network.fmu&#39;</span><span class="p">)</span>
+                   <span class="n">net</span><span class="o">=</span><span class="s1">&#39;../net/net.yaml&#39;</span><span class="p">,</span>
+                   <span class="n">model_path</span><span class="o">=</span><span class="s1">&#39;../omg_grid/grid.network.fmu&#39;</span><span class="p">)</span>
 
     <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>

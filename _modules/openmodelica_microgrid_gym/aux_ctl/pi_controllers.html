@@ -161,6 +161,7 @@
             
   <h1>Source code for openmodelica_microgrid_gym.aux_ctl.pi_controllers</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -192,19 +193,20 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">integralSum</span> <span class="o">=</span> <span class="mi">0</span></div>
 
-<div class="viewcode-block" id="PIController.step"><a class="viewcode-back" href="../../../api/omg.aux_ctl.pi_controllers.html#openmodelica_microgrid_gym.aux_ctl.pi_controllers.PIController.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<div class="viewcode-block" id="PIController.step"><a class="viewcode-back" href="../../../api/omg.aux_ctl.pi_controllers.html#openmodelica_microgrid_gym.aux_ctl.pi_controllers.PIController.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">feedforward</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Implements a step of a basic PI controller with anti-windup by back-calculation</span>
 
 <span class="sd">        :param error: Control error to act on</span>
+<span class="sd">        :param feedforward: feed forward term</span>
 <span class="sd">        :return: The calculated PI controller response to the error, using the</span>
 <span class="sd">                PI_Parameters provided during initialisation, clipped due to the defined limits</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">integralSum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">integralSum</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="o">.</span><span class="n">kI</span> <span class="o">*</span> <span class="n">error</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">windup_compensation</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">integralSum</span> <span class="o">+=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="o">.</span><span class="n">kI</span> <span class="o">*</span> <span class="n">error</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">windup_compensation</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ts</span>
         <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="o">.</span><span class="n">kP</span> <span class="o">*</span> <span class="n">error</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">integralSum</span>
-        <span class="n">clipped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="o">.</span><span class="n">limits</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">windup_compensation</span> <span class="o">=</span> <span class="p">(</span><span class="n">output</span> <span class="o">-</span> <span class="n">clipped</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="o">.</span><span class="n">kB</span>
+        <span class="n">clipped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">output</span> <span class="o">+</span> <span class="n">feedforward</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="o">.</span><span class="n">limits</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">windup_compensation</span> <span class="o">=</span> <span class="p">(</span><span class="n">output</span> <span class="o">+</span> <span class="n">feedforward</span> <span class="o">-</span> <span class="n">clipped</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="o">.</span><span class="n">kB</span>
         <span class="k">return</span> <span class="n">clipped</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div></div>
 
 
@@ -230,7 +232,7 @@
         <span class="k">for</span> <span class="n">ctl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">controllers</span><span class="p">:</span>
             <span class="n">ctl</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="MultiPhasePIController.step"><a class="viewcode-back" href="../../../api/omg.aux_ctl.pi_controllers.html#openmodelica_microgrid_gym.aux_ctl.pi_controllers.MultiPhasePIController.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SP</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">CV</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="viewcode-block" id="MultiPhasePIController.step"><a class="viewcode-back" href="../../../api/omg.aux_ctl.pi_controllers.html#openmodelica_microgrid_gym.aux_ctl.pi_controllers.MultiPhasePIController.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SP</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">CV</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">feedforward</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Performs a controller step calculating the error itself using the array of</span>
 <span class="sd">        Setpoints (SP) and Controlled Variables (CV, feedback)</span>
@@ -240,6 +242,8 @@
 <span class="sd">        </span>
 <span class="sd">        :return output: An array of the controller outputs.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">feedforward</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">feedforward</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">SP</span><span class="p">))</span>
 
         <span class="n">error</span> <span class="o">=</span> <span class="n">SP</span> <span class="o">-</span> <span class="n">CV</span>
 
@@ -250,7 +254,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
         <span class="c1"># perform all the steps for each phase</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ctl</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ctl</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">controllers</span><span class="p">)])</span></div></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ctl</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">feedforward</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ctl</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">controllers</span><span class="p">)])</span></div></div>
 </pre></div>
 
            </div>

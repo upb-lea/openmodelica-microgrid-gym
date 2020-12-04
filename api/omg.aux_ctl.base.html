@@ -213,6 +213,37 @@ frequency.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt id="openmodelica_microgrid_gym.aux_ctl.base.LimitLoadIntegral">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.aux_ctl.base.</code><code class="sig-name descname">LimitLoadIntegral</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dt</span></em>, <em class="sig-param"><span class="n">freq</span></em>, <em class="sig-param"><span class="n">i_lim</span></em>, <em class="sig-param"><span class="n">i_nom</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/base.html#LimitLoadIntegral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.base.LimitLoadIntegral" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dt</strong> – time resolution in s</p></li>
+<li><p><strong>freq</strong> – nominal frequency, used to calculate timewindow of interest</p></li>
+<li><p><strong>i_lim</strong> – maximum energy allowed over one half frequency time in J</p></li>
+<li><p><strong>i_nom</strong> – nominal energy allowed over one half frequency time in J</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.aux_ctl.base.LimitLoadIntegral.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/base.html#LimitLoadIntegral.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.base.LimitLoadIntegral.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.aux_ctl.base.LimitLoadIntegral.risk">
+<code class="sig-name descname">risk</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/base.html#LimitLoadIntegral.risk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.base.LimitLoadIntegral.risk" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.aux_ctl.base.LimitLoadIntegral.step">
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/base.html#LimitLoadIntegral.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.base.LimitLoadIntegral.step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt id="openmodelica_microgrid_gym.aux_ctl.base.PLL">
 <em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.aux_ctl.base.</code><code class="sig-name descname">PLL</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span></em>, <em class="sig-param"><span class="n">ts</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/base.html#PLL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.base.PLL" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>

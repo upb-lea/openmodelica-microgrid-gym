@@ -166,7 +166,7 @@
 
 <span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.aux_ctl.params</span> <span class="kn">import</span> <span class="n">PLLParams</span>
 <span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.aux_ctl.pi_controllers</span> <span class="kn">import</span> <span class="n">PIController</span>
-<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.util</span> <span class="kn">import</span> <span class="n">abc_to_alpha_beta</span><span class="p">,</span> <span class="n">cos_sin</span><span class="p">,</span> <span class="n">normalise_abc</span>
+<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.util</span> <span class="kn">import</span> <span class="n">abc_to_alpha_beta</span><span class="p">,</span> <span class="n">cos_sin</span><span class="p">,</span> <span class="n">normalise_abc</span><span class="p">,</span> <span class="n">Fastqueue</span>
 
 
 <div class="viewcode-block" id="DDS"><a class="viewcode-back" href="../../../api/omg.aux_ctl.base.html#openmodelica_microgrid_gym.aux_ctl.base.DDS">[docs]</a><span class="k">class</span> <span class="nc">DDS</span><span class="p">:</span>
@@ -201,13 +201,43 @@
 
 <span class="sd">        :return theta: The angle in RADIANS [0:2pi]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_integralSum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_integralSum</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ts</span> <span class="o">*</span> <span class="n">freq</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_integralSum</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ts</span> <span class="o">*</span> <span class="n">freq</span>
 
-        <span class="c1"># Limit output to exactly the limit</span>
+        <span class="c1"># reset oscilator one phase</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_integralSum</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_integralSum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_integralSum</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_integralSum</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_integralSum</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span></div></div>
+
+
+<div class="viewcode-block" id="LimitLoadIntegral"><a class="viewcode-back" href="../../../api/omg.aux_ctl.base.html#openmodelica_microgrid_gym.aux_ctl.base.LimitLoadIntegral">[docs]</a><span class="k">class</span> <span class="nc">LimitLoadIntegral</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">i_lim</span><span class="p">,</span> <span class="n">i_nom</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param dt: time resolution in s</span>
+<span class="sd">        :param freq: nominal frequency, used to calculate timewindow of interest</span>
+<span class="sd">        :param i_lim: maximum energy allowed over one half frequency time in J</span>
+<span class="sd">        :param i_nom: nominal energy allowed over one half frequency time in J</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
+        <span class="c1"># number of samples for a half freq</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_buffer</span> <span class="o">=</span> <span class="n">Fastqueue</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">freq</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">dt</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">integral</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lim_integral</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_buffer</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="n">i_lim</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="k">if</span> <span class="n">i_nom</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nom_integral</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_buffer</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="n">i_nom</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nom_integral</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_buffer</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="n">i_lim</span> <span class="o">*</span> <span class="o">.</span><span class="mi">9</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+<div class="viewcode-block" id="LimitLoadIntegral.reset"><a class="viewcode-back" href="../../../api/omg.aux_ctl.base.html#openmodelica_microgrid_gym.aux_ctl.base.LimitLoadIntegral.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">integral</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_buffer</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="LimitLoadIntegral.step"><a class="viewcode-back" href="../../../api/omg.aux_ctl.base.html#openmodelica_microgrid_gym.aux_ctl.base.LimitLoadIntegral.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">integral</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="n">value</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buffer</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LimitLoadIntegral.risk"><a class="viewcode-back" href="../../../api/omg.aux_ctl.base.html#openmodelica_microgrid_gym.aux_ctl.base.LimitLoadIntegral.risk">[docs]</a>    <span class="k">def</span> <span class="nf">risk</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">integral</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">nom_integral</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lim_integral</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">nom_integral</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="PLL"><a class="viewcode-back" href="../../../api/omg.aux_ctl.base.html#openmodelica_microgrid_gym.aux_ctl.base.PLL">[docs]</a><span class="k">class</span> <span class="nc">PLL</span><span class="p">:</span>

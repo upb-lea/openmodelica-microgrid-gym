@@ -229,6 +229,13 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="p">[]</span></div>
 
+<div class="viewcode-block" id="EmptyHistory.pop"><a class="viewcode-back" href="../../../api/omg.util.recorder.html#openmodelica_microgrid_gym.util.EmptyHistory.pop">[docs]</a>    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        pop last item</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
 <div class="viewcode-block" id="EmptyHistory.append"><a class="viewcode-back" href="../../../api/omg.util.recorder.html#openmodelica_microgrid_gym.util.EmptyHistory.append">[docs]</a>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add new data sample to the history. The History class will determine how the data is updated</span>
@@ -252,6 +259,11 @@
 <div class="viewcode-block" id="SingleHistory.reset"><a class="viewcode-back" href="../../../api/omg.util.recorder.html#openmodelica_microgrid_gym.util.SingleHistory.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span></div>
 
+<div class="viewcode-block" id="SingleHistory.pop"><a class="viewcode-back" href="../../../api/omg.util.recorder.html#openmodelica_microgrid_gym.util.SingleHistory.pop">[docs]</a>    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">val</span></div>
+
 <div class="viewcode-block" id="SingleHistory.append"><a class="viewcode-back" href="../../../api/omg.util.recorder.html#openmodelica_microgrid_gym.util.SingleHistory.append">[docs]</a>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">values</span></div>
 
@@ -266,6 +278,9 @@
 
 <div class="viewcode-block" id="FullHistory.reset"><a class="viewcode-back" href="../../../api/omg.util.recorder.html#openmodelica_microgrid_gym.util.FullHistory.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="FullHistory.pop"><a class="viewcode-back" href="../../../api/omg.util.recorder.html#openmodelica_microgrid_gym.util.FullHistory.pop">[docs]</a>    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FullHistory.append"><a class="viewcode-back" href="../../../api/omg.util.recorder.html#openmodelica_microgrid_gym.util.FullHistory.append">[docs]</a>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">values</span><span class="p">))</span></div>

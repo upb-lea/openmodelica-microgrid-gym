@@ -20,7 +20,7 @@ Mac users are strongly encouraged to run OpenModelica as well as the OMG toolbox
 Creating Microgrids with OpenModelica
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The microgrids are created with a  user defined library. To start it, run the file *package.mo* directly in the folder *OpenModelica_Microgrids*.
+The microgrids are created with a  user defined library. To start it, run the file *package.mo* directly in the folder *omg_grid*.
 
 
 This package contains all components and required for
