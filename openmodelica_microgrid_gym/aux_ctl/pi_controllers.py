@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import numpy as np
 
@@ -30,19 +31,20 @@ class PIController:
         """
         self.integralSum = 0
 
-    def step(self, error: float) -> float:
+    def step(self, error: float, feedforward: float = 0) -> float:
         """
         Implements a step of a basic PI controller with anti-windup by back-calculation
 
         :param error: Control error to act on
+        :param feedforward: feed forward term
         :return: The calculated PI controller response to the error, using the
                 PI_Parameters provided during initialisation, clipped due to the defined limits
         """
 
         self.integralSum += (self._params.kI * error + self.windup_compensation) * self._ts
         output = self._params.kP * error + self.integralSum
-        clipped = np.clip(output, *self._params.limits)
-        self.windup_compensation = (output - clipped) * self._params.kB
+        clipped = np.clip(output + feedforward, *self._params.limits)
+        self.windup_compensation = (output + feedforward - clipped) * self._params.kB
         return clipped.squeeze()
 
 
@@ -68,7 +70,7 @@ class MultiPhasePIController:
         for ctl in self.controllers:
             ctl.reset()
 
-    def step(self, SP: np.ndarray, CV: np.ndarray) -> np.ndarray:
+    def step(self, SP: np.ndarray, CV: np.ndarray, feedforward: Optional[np.ndarray] = None) -> np.ndarray:
         """
         Performs a controller step calculating the error itself using the array of
         Setpoints (SP) and Controlled Variables (CV, feedback)
@@ -78,6 +80,8 @@ class MultiPhasePIController:
         
         :return output: An array of the controller outputs.
         """
+        if feedforward is None:
+            feedforward = np.zeros(len(SP))
 
         error = SP - CV
 
@@ -88,4 +92,4 @@ class MultiPhasePIController:
             raise ValueError(message)
 
         # perform all the steps for each phase
-        return np.array([ctl.step(error[i]) for i, ctl in enumerate(self.controllers)])
+        return np.array([ctl.step(error[i], feedforward[i]) for i, ctl in enumerate(self.controllers)])

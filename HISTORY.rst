@@ -2,7 +2,38 @@
 History
 =======
 
-pyfmi wrapper added
+0.3.0 (in progress)
+-------------------
+
+API
+^^^
+* ModelicaEnv:
+    - Delay buffer
+    - Uses Network
+* Network and Components:
+    - Specify class structure using config file corresponding to fmu (see net-folder)
+    - added noise
+* SafeoptAgent:
+    - __init__: Performance parameters and calculation
+* aux_ctl.Contoller:
+    - added output clipping
+* Plotmanager
+
+
+Examples
+^^^^^^^^
+* updated to changed API
+
+Experiments
+^^^^^^^^^^^
+* model validation:
+    - experiment files
+    - experiment environment managing testbench connection via SSH
+
+Dependencies
+^^^^^^^^^^^^
+* Decreased Language Level to Python 3.7
+
 
 
 

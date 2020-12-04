@@ -61,8 +61,9 @@ class Runner:
                     self.env.render()
                 if done:
                     break
-            self.agent.observe(r, done)
+            # close env before calling final agent observe to see plots even if agent crashes
             _, env_fig = self.env.close()
+            self.agent.observe(r, done)
 
             if visualise:
                 agent_fig = self.agent.render()
@@ -72,3 +73,7 @@ class Runner:
             if i == 0 or self.agent.has_improved:
                 self.run_data['best_env_plt'] = env_fig
                 self.run_data['best_episode_idx'] = i
+
+            if i == 0 or self.agent.has_worsened:
+                self.run_data['worst_env_plt'] = env_fig
+                self.run_data['worst_episode_idx'] = i

@@ -10,7 +10,7 @@ def test_limit_load_integral():
     i_lim = 5
     i2t = LimitLoadIntegral(dt, freq, i_lim=i_lim, i_nom=i_lim / 5)
     size = int(1 / freq / dt / 2)
-    assert i2t._buffer.size == size
+    assert len(i2t._buffer) == size
 
     i2t.reset()
     seq = [5, 4]

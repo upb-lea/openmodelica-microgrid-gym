@@ -1,6 +1,6 @@
 from importlib import import_module
 from itertools import chain
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 
 import numexpr as ne
 import numpy as np
@@ -12,11 +12,12 @@ class Component:
     def __init__(self, net: 'Network', id=None, in_vars=None, out_vars=None, out_calc=None):
         """
 
-        :param net:
-        :param id:
-        :param in_vars:
-        :param out_vars:
-        :param out_calc: mapping from attr name to
+
+        :param net: Network to which component belongs to
+        :param id: Component ID
+        :param in_vars: Input variables to component
+        :param out_vars: Output variables from component
+        :param out_calc: (mapping from attr name to dimension of data vector) Adds values (e.g. references,...) to output
         """
         self.net = net
         self.id = id
@@ -63,7 +64,7 @@ class Component:
             return r + [[self._prefix_var([self.id, attr, str(i)]) for i in range(n)] for attr, n in
                         self.out_calc.items()]
 
-    def fill_tmpl(self, state):
+    def fill_tmpl(self, state: np.ndarray):
         if self.out_idx is None:
             raise ValueError('call set_tmplidx before fill_tmpl. the keys must be converted to indices for efficiency')
         for attr, idxs in self.out_idx.items():
@@ -97,8 +98,11 @@ class Component:
 
     def calculate(self) -> Dict[str, np.ndarray]:
         """
-        will write internal variables it is called after all internal variables are set
-        The return value must be a dictionary whose keys match the keys of self.out_calc and whose values are of the length of outcalcs values
+        Will modify object variables (like current i of an inductor) it is called after all internal variables are set.
+        Therefore the function has side-effects.
+        The return value must be a dictionary whose keys match the keys of self.out_calc
+        and whose values are of the length of out_calcs values.
+        The returned values are hence additional values (like reference current i_ref).
 
         set(self.out_calc.keys()) == set(return)
         all([len(v) == self.out_calc[k] for k,v in return.items()])
@@ -107,9 +111,13 @@ class Component:
         pass
 
     def normalize(self, calc_data):
+        """
+        Will modify object variables it is called after all internal variables are set.
+        Therefore the function has side-effects, similarly to calculate().
+        """
         pass
 
-    def augment(self, state, normalize=True):
+    def augment(self, state: np.ndarray, normalize=True):
         self.fill_tmpl(state)
         calc_data = self.calculate()
 
@@ -130,7 +138,13 @@ class Component:
 
 
 class Network:
-    def __init__(self, ts, v_nom, freq_nom=50):
+    """
+    This class has two main functions:
+    - :code:`load()`: load yaml files to instantiate an object structure of electronic components
+    - :code:`augment()`: traverses all components and uses the data from the simulation and augments or modifies it.
+    """
+
+    def __init__(self, ts: float, v_nom: Union[int, str], freq_nom: float = 50):
         self.ts = float(ts)
         self.v_nom = ne.evaluate(str(v_nom))
         self.freq_nom = freq_nom
@@ -151,6 +165,25 @@ class Network:
     def load(cls, configurl='net.yaml'):
         """
         Initialize object from config file
+        Structure of yaml-file:
+        ::
+            conf::             *net_params* *components*
+            net_params::       <parameters passed to Network.__init__()>
+            components::       components:
+                                 *component*
+                                 ...
+                                 *component*
+            component::        <key; has no semantic meaning, but needs to be unique>:
+                                 *component_params*
+            component_params:: cls: <ComponentCls>
+                               in:
+                                  <ComponentCls attr name>: <list of variablenames, see augment>
+                               out:
+                                  <ComponentCls attr name>: <list of variablenames, see augment>
+                               <additional parameters passed to ComponentCls.__init__()>
+
+        All 'in' and 'out' variable names together define the interaction with the environment,
+        expected cardinality and order of the vector provided to the augment().
 
         :param configurl:
         :return:
@@ -175,7 +208,7 @@ class Network:
             if 'out' in component:
                 component['out_vars'] = component.pop('out')
 
-            # instanciate component class
+            # instantiate component class
             try:
                 components_obj.append(comp_cls(net=self, **component))
             except AttributeError as e:
@@ -232,3 +265,14 @@ class Network:
         keys = self.out_vars(with_aug=False, flattened=True)
         for comp in self.components:
             comp.set_outidx(keys)
+
+    def __getitem__(self, item):
+        """
+        get component by id
+        :param item: name of the component
+        :return:
+        """
+        for component in self.components:
+            if component.id == item:
+                return component
+        raise ValueError(f'no such component named "{item}"')

@@ -67,6 +67,13 @@ class EmptyHistory(StructuredMapping):
         """
         self._data = []
 
+    def pop(self):
+        """
+        pop last item
+        :return:
+        """
+        pass
+
     def append(self, values: Sequence):
         """
         Add new data sample to the history. The History class will determine how the data is updated
@@ -90,6 +97,11 @@ class SingleHistory(EmptyHistory):
     def reset(self):
         self._data = None
 
+    def pop(self):
+        val = self.last()
+        self.reset()
+        return val
+
     def append(self, values: Sequence):
         self._data = values
 
@@ -104,6 +116,9 @@ class FullHistory(EmptyHistory):
 
     def reset(self):
         self._data = []
+
+    def pop(self):
+        return self._data.pop(-1)
 
     def append(self, values: Sequence):
         self._data.append(list(values))
