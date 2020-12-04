@@ -1,28 +1,23 @@
-from os import path as p
+import os.path as p
 
 import matplotlib.pyplot as plt
 
 from openmodelica_microgrid_gym.agents import SafeOptAgent
-from openmodelica_microgrid_gym.env.stochastic_components import Load
 
 
 class PlotManager:
-    def __init__(self, used_agent: SafeOptAgent, used_r_load: Load, used_l_filt: Load,
+    def __init__(self, used_agent: SafeOptAgent,
                  save_results: bool = False, save_folder: str = 'test_folder', show_plots: bool = True):
         """
         Class for plot configuration, knows agent, so can include agent params to title (e.g. performance)
         If more plots should be stored in save_folder, extend the corresponding label function with save command
         :param used_agent: agent used for experiment
-        :param used_r_load: used resistor to plot R-value to title
-        :param used_l_filt: used inductance to plot L-value to title
         :param save_results: if True, saves results to save_folder
         :param save_folder: folder name
         :param show_plots: if True, shows plots after each run
         """
 
         self.agent = used_agent
-        self.r_load = used_r_load
-        self.l_filt = used_l_filt
         self.save_results = save_results
         self.save_folder = save_folder
         self.show_plots = show_plots
@@ -73,7 +68,7 @@ class PlotManager:
             if 'handle_slice' in legend:
                 _slice = legend['handle_slice']
                 del legend['handle_slice']
-                plt.legend(ax.lines[_slice], **legend)
+                plt.legend(handles=ax.lines[_slice], **legend)
             else:
                 plt.legend(**legend)
 

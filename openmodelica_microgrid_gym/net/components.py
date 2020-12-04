@@ -11,7 +11,8 @@ from openmodelica_microgrid_gym.util import dq0_to_abc, inst_power, inst_reactiv
 
 
 class Inverter(Component):
-    def __init__(self, u=None, i=None, i_noise=Optional[dict], v=None, v_noise=Optional[dict], i_nom=20, i_lim=30,
+    def __init__(self, u=None, i=None, i_noise: Optional[dict] = None, v=None, v_noise: Optional[dict] = None, i_nom=20,
+                 i_lim=30,
                  v_lim=600, v_DC=1000,
                  i_ref=(0, 0, 0),
                  out_vars=None, **kwargs):

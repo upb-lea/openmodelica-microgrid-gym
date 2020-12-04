@@ -18,7 +18,7 @@ class Fastqueue:
         Pushes val into buffer and returns popped last element
         """
         if self._buffer is None:
-            raise RuntimeError('please call reset() before using the object')
+            raise RuntimeError('please call clear() before using the object')
         last = self._buffer[np.ravel_multi_index([self._idx - 1], (len(self._buffer),), mode='wrap'), :]
         self._idx = np.ravel_multi_index([self._idx + 1], (len(self._buffer),), mode='wrap')
         self._buffer[self._idx, :] = val
