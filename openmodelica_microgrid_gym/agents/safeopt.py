@@ -177,7 +177,7 @@ class SafeOptAgent(StaticControlAgent, EpisodicLearnerAgent):
             # check if the dimensionality is less then 4 dimension
             logger.info('Plotting of GP landscape not possible for then 3 dimensions')
             return figure
-        self.optimizer.plot(1000, figure=figure, ms=1)  # , color = 'k')
+        self.optimizer.plot(1000, figure=figure, ms=1)
 
         # mark best performance in green
         y, x = self.history.df.loc[self.best_episode, ['J', 'Params']]
