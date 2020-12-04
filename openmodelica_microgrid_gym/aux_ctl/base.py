@@ -63,9 +63,9 @@ class LimitLoadIntegral:
         self.integral = 0
         self.lim_integral = len(self._buffer) * self.dt * i_lim ** 2
         if i_nom:
-            self.nom_integral = len(self._buffer) * self.dt * i_nom
+            self.nom_integral = len(self._buffer) * self.dt * i_nom ** 2
         else:
-            self.nom_integral = len(self._buffer) * self.dt * i_lim * .9
+            self.nom_integral = len(self._buffer) * self.dt * (i_lim * .9) ** 2
 
     def reset(self):
         self.integral = 0

@@ -84,7 +84,6 @@ class Inverter(Component):
         self.i = self.i + self.i_noise()
         self.v = self.v + self.v_noise()
         [integ.step(i) for i, integ in zip(self.i, self.limit_load_integrals)]
-        # self.i += self.noise(std_i)
 
 
 class SlaveInverter(Inverter):
