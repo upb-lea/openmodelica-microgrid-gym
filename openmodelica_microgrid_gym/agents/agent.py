@@ -90,3 +90,12 @@ class Agent:
 
         """
         return False
+
+    @property
+    def has_worsened(self) -> bool:
+        """
+        Defines if the performance decreased or stays constant
+        Does not learn, can never improve
+
+        """
+        return False

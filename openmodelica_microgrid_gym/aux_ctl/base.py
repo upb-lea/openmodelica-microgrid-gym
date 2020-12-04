@@ -4,7 +4,7 @@ import numpy as np
 
 from openmodelica_microgrid_gym.aux_ctl.params import PLLParams
 from openmodelica_microgrid_gym.aux_ctl.pi_controllers import PIController
-from openmodelica_microgrid_gym.util import abc_to_alpha_beta, cos_sin, normalise_abc
+from openmodelica_microgrid_gym.util import abc_to_alpha_beta, cos_sin, normalise_abc, Fastqueue
 
 
 class DDS:
@@ -59,26 +59,20 @@ class LimitLoadIntegral:
         """
         self.dt = dt
         # number of samples for a half freq
-        self._buffer = np.empty(int(1/freq / 2 / dt))  # type:np.ndarray
-        self._buff_idx = 0
+        self._buffer = Fastqueue(int(1 / freq / 2 / dt))
         self.integral = 0
-        self.lim_integral = self._buffer.size * self.dt * i_lim ** 2
+        self.lim_integral = len(self._buffer) * self.dt * i_lim ** 2
         if i_nom:
-            self.nom_integral = self._buffer.size * self.dt * i_nom
+            self.nom_integral = len(self._buffer) * self.dt * i_nom ** 2
         else:
-            self.nom_integral = self._buffer.size * self.dt * i_lim * .9
+            self.nom_integral = len(self._buffer) * self.dt * (i_lim * .9) ** 2
 
     def reset(self):
         self.integral = 0
-        self._buffer.fill(0)
-        self._buff_idx = 0
+        self._buffer.clear()
 
     def step(self, value):
-        self.integral += self.dt * value ** 2
-        last = self._buffer[np.ravel_multi_index([self._buff_idx - 1], self._buffer.size, mode='wrap')]
-        self.integral -= self.dt * last ** 2
-        self._buff_idx = np.ravel_multi_index([self._buff_idx + 1], self._buffer.size, mode='wrap')
-        self._buffer[self._buff_idx] = value
+        self.integral += self.dt * (value ** 2 - self._buffer.shift(value) ** 2)
 
     def risk(self):
         return np.clip((self.integral - self.nom_integral) / (self.lim_integral - self.nom_integral), 0, 1)

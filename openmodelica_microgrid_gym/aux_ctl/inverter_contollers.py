@@ -1,9 +1,12 @@
+from typing import List
+
 import numpy as np
 
 from openmodelica_microgrid_gym.util import SingleHistory, EmptyHistory, nested_map, inst_power, inst_reactive, \
     dq0_to_abc, abc_to_dq0, abc_to_dq0_cos_sin, inst_rms, dq0_to_abc_cos_sin
 from .base import DDS, PLL
 from .droop_controllers import DroopController, InverseDroopController
+from .observers import Observer
 from .params import *
 from .pi_controllers import MultiPhasePIController
 
@@ -27,6 +30,7 @@ class Controller:
         :param history: Dataframe to store internal data
         """
         self.history = history or SingleHistory()
+        self._last_meas = []
 
         self._ts = tau * undersampling
         self._undersample = undersampling
@@ -39,7 +43,12 @@ class Controller:
         self.name = name
 
     def _set_hist_cols(self, cols):
-        self.history.cols = nested_map(lambda col: '.'.join([self.name, col]), cols)
+        """
+        prefixes column names with controller name and append a entry for the clipped values
+        :param cols:
+        :return:
+        """
+        self.history.cols = nested_map(lambda col: '.'.join([self.name, col]), cols + [f'm{s}_clipped' for s in 'abc'])
 
     def reset(self):
         """
@@ -68,10 +77,14 @@ class Controller:
         """
 
         if self._undersampling_count == 0:
-            self._stored_control = self.control(*args, **kwargs)
+            abc_action = self.control(*args, **kwargs)
+            abc_action = np.clip(abc_action, -1, 1)
+            self._last_meas.extend(abc_action)
+            self.history.append(self._last_meas)
+            self._stored_control = abc_action
         self._undersampling_count = (self._undersampling_count + 1) % self._undersample
 
-    def control(self, *args, **kwargs):
+    def control(self, *args, **kwargs) -> np.ndarray:
         """
         Performs the calculations for a discrete step of the controller
 
@@ -188,7 +201,7 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
     """
 
     def __init__(self, VPIParams: PI_params, IPIParams: PI_params, tau: float,
-                 Pdroop_param: DroopParams, Qdroop_param: DroopParams,
+                 Pdroop_param: DroopParams, Qdroop_param: DroopParams, observer: Optional[List[Observer]] = None,
                  undersampling: int = 1, *args, **kwargs):
         """
 
@@ -201,13 +214,22 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
         """
         super().__init__(VPIParams, IPIParams, tau, Pdroop_param, Qdroop_param, undersampling,
                          *args, **kwargs)
-        self._set_hist_cols(['phase',
-                             [f'SPV{s}' for s in 'dq0'], [f'SPI{s}' for s in 'dq0'],
-                             [f'CVV{s}' for s in 'dq0'], [f'CVi{s}' for s in 'dq0'],
-                             [f'm{s}' for s in 'dq0'],
-                             'instPow', 'instQ', 'freq'])
+        self._set_hist_cols(['phase', 'instPow', 'instQ', 'freq',
+                             [f'SPV{s}' for s in 'dq0'], [f'SPV{s}' for s in 'abc'],
+                             [f'SPI{s}' for s in 'dq0'], [f'SPI{s}' for s in 'abc'],
+                             [f'CVV{s}' for s in 'dq0'],
+                             [f'CVi{s}' for s in 'dq0'],
+                             [f'I_hat{s}' for s in 'dq0'], [f'I_hat{s}' for s in 'abc'],
+                             [f'm{s}' for s in 'dq0'], [f'm{s}' for s in 'abc']])
 
         self._prev_CV = np.zeros(N_PHASE)
+        self._lastMabc = np.zeros(N_PHASE)
+        self._observer = observer
+
+    def reset(self):
+        self._prev_CV = np.zeros(N_PHASE)
+        self._lastMabc = np.zeros(N_PHASE)
+        super().reset()
 
     def control(self, currentCV: np.ndarray, voltageCV: np.ndarray, **kwargs):
         """
@@ -222,7 +244,7 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
         instPow = -inst_power(voltageCV, currentCV)
         freq = self._PdroopController.step(instPow)
         # Get the next phase rotation angle to implement
-        phase = self._phaseDDS.step(freq)
+        self.phase = phase = self._phaseDDS.step(freq)
 
         instQ = -inst_reactive(voltageCV, currentCV)
         voltage = self._QdroopController.step(instQ)
@@ -231,20 +253,40 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
         CVIdq0 = abc_to_dq0(currentCV, phase)
         CVVdq0 = abc_to_dq0(voltageCV, phase)
 
+        # If available, calulate load current using observer
+        iabc_out_etimate = np.empty(N_PHASE)
+        if self._observer is None:
+            iabc_out_etimate = np.zeros(N_PHASE)
+        else:
+            for j in range(N_PHASE):
+                iabc_out_etimate[j] = self._observer[j].cal_estimate(y=[currentCV[j], voltageCV[j]],
+                                                                     u=self._lastMabc[j])
+
+        i_dq0_out_estimat = abc_to_dq0(iabc_out_etimate, phase)
+
         # Voltage controller calculations
         VSP = voltage
         # Voltage SP in dq0 (static for the moment)
         SPVdq0 = np.array([VSP, 0, 0])
-        SPIdq0 = self._voltagePI.step(SPVdq0, CVVdq0)
+        SPVabc = dq0_to_abc(SPVdq0, phase)
+        SPIdq0 = self._voltagePI.step(SPVdq0, CVVdq0, i_dq0_out_estimat)
+
+        SPIabc = dq0_to_abc(SPIdq0, phase)
 
         # Current controller calculations
         MVdq0 = self._currentPI.step(SPIdq0, CVIdq0)
-
+        MVabc = dq0_to_abc(MVdq0, phase)  # Transform the MVs back to the abc frame
+        self._lastMabc = MVabc
         # Add intern measurment
-        self.history.append([phase, *SPVdq0, *SPIdq0, *CVVdq0, *CVIdq0, *MVdq0, instPow, instQ, freq])
+        self._last_meas = [phase, instPow, instQ, freq,
+                           *SPVdq0, *SPVabc,
+                           *SPIdq0, *SPIabc,
+                           *CVVdq0,
+                           *CVIdq0,
+                           *i_dq0_out_estimat, *iabc_out_etimate,
+                           *MVdq0, *MVabc]
 
-        # Transform the MVs back to the abc frame
-        return dq0_to_abc(MVdq0, phase)
+        return MVabc
 
 
 class MultiPhaseDQCurrentController(CurrentCtl):
@@ -277,10 +319,10 @@ class MultiPhaseDQCurrentController(CurrentCtl):
         """
         super().__init__(IPIParams, pllPIParams, tau, i_limit, Pdroop_param, Qdroop_param, undersampling, *args,
                          **kwargs)
-        self._set_hist_cols(['instPow', 'instQ', 'freq', 'phase',
+        self._set_hist_cols(['phase', 'instPow', 'instQ', 'freq',
                              [f'CVI{s}' for s in 'dq0'],
                              [f'SPI{s}' for s in 'dq0'],
-                             [f'm{s}' for s in 'dq0']])
+                             [f'm{s}' for s in 'dq0'], [f'm{s}' for s in 'abc']])
 
         # Populate the previous values with 0's
         self._prev_cossine = np.zeros(2)
@@ -333,9 +375,12 @@ class MultiPhaseDQCurrentController(CurrentCtl):
         # Transform the outputs from the controllers (dq0) to abc
         # also divide by SQRT(2) to ensure the transform is limited to [-1,1]
 
-        control = dq0_to_abc_cos_sin(MVdq0, *self._prev_cossine)
-        self.history.append([instPow, instQ, self._prev_freq, self._prev_theta, *self._lastIDQ, *idq0SP, *MVdq0])
-        return control
+        MVabc = dq0_to_abc_cos_sin(MVdq0, *self._prev_cossine)
+        self._last_meas = [self._prev_theta, instPow, instQ, self._prev_freq,
+                           *self._lastIDQ,
+                           *idq0SP,
+                           *MVdq0, *MVabc]
+        return MVabc
 
 
 class MultiPhaseDQCurrentSourcingController(Controller):
@@ -360,8 +405,8 @@ class MultiPhaseDQCurrentSourcingController(Controller):
         self.f_nom = f_nom
         self._set_hist_cols(['phase',
                              [f'CVI{s}' for s in 'dq0'],
-                             [f'SPI{s}' for s in 'dq0'],
-                             [f'm{s}' for s in 'dq0']])
+                             [f'SPI{s}' for s in 'dq0'], [f'SPI{s}' for s in 'abc'],
+                             [f'm{s}' for s in 'dq0'], [f'm{s}' for s in 'abc']])
 
         self._prev_CV = np.zeros(N_PHASE)
 
@@ -386,13 +431,17 @@ class MultiPhaseDQCurrentSourcingController(Controller):
         CVIdq0 = abc_to_dq0(currentCV, phase)
 
         # current setpoint
-        SPIdq0 = idq0SP
-
+        SPIdq0 = np.array(idq0SP[:])
+        SPIabc = dq0_to_abc(SPIdq0, phase)
         # Current controller calculations
         MVdq0 = self._currentPI.step(SPIdq0, CVIdq0)
+        MVabc = dq0_to_abc(MVdq0, phase)
 
         # Add intern measurment
-        self.history.append([phase, *CVIdq0, *SPIdq0, *MVdq0])
+        self._last_meas = [phase,
+                           *CVIdq0,
+                           *SPIdq0, *SPIabc,
+                           *MVdq0, *MVabc]
 
         # Transform the MVs back to the abc frame
-        return dq0_to_abc(MVdq0, phase)
+        return MVabc
