@@ -17,7 +17,7 @@ class Component:
         :param id: Component ID
         :param in_vars: Input variables to component
         :param out_vars: Output variables from component
-        :param out_calc: (mapping from attr name to...???) Adds values (e.g. references,...) to output
+        :param out_calc: (mapping from attr name to dimension of data vector) Adds values (e.g. references,...) to output
         """
         self.net = net
         self.id = id
