@@ -26,7 +26,7 @@ from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, \
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.env.plotmanager import PlotManager
 from openmodelica_microgrid_gym.env.rewards import Reward
-from openmodelica_microgrid_gym.env.stochastic_components import Load, Noise
+from openmodelica_microgrid_gym.env.stochastic_components import Load
 from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import FullHistory
 
@@ -276,19 +276,19 @@ if __name__ == '__main__':
         l_filt = Load(L_filter, 0.1 * L_filter, balanced=balanced_load)
         c_filt = Load(C_filter, 0.1 * C_filter, balanced=balanced_load)
         r_load = Load(R, 0.1 * R, balanced=balanced_load)
-        meas_noise = Noise([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0.45, 0.39, 0.42, 0.0023, 0.0015, 0.0018, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0.0, 0.5)
 
+
+        # meas_noise = Noise([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        #                   [0.45, 0.39, 0.42, 0.0023, 0.0015, 0.0018, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0.0, 0.5)
 
         def reset_loads():
             r_load.reset()
             r_filt.reset()
             l_filt.reset()
             c_filt.reset()
-            meas_noise.reset()
 
 
-        plotter = PlotManager(agent, r_filt, l_filt, meas_noise, save_results=save_results, save_folder=save_folder,
+        plotter = PlotManager(agent, r_filt, l_filt, save_results=save_results, save_folder=save_folder,
                               show_plots=show_plots)
 
         env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
@@ -348,7 +348,6 @@ if __name__ == '__main__':
                        net=net,
                        model_path='../omg_grid/grid.paper_loadstep.fmu',
                        history=FullHistory(),
-                       state_noise=meas_noise,
                        action_time_delay=1 * undersample
                        )
 

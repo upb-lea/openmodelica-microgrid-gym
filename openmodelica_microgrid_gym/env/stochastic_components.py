@@ -66,25 +66,3 @@ class Load:
             (self.load_mean + self.load_mean * self.tolerance)).tolist()
 
 
-class Noise:
-    def __init__(self, noise_mean, noise_std, std_min, std_max):
-        """
-        Load class which defines stochastic load. Samples load value from normal Gaussian distribution (GD) using given
-        mean and standard deviation
-        :param load_mean: Mean of the GD the load is sampled from
-        :param load_std: Standard deviation of the GD the load is sampled from
-        :param balanced: If True: all 3 phases are takes as equal; if False symmetrical load is applied
-        :param tolerance: Device manufacturing tolerance (with reference to the mean value)
-        """
-
-        self.noise_mean = noise_mean
-        self.std_min = std_min
-        self.std_max = std_max
-        self.noise_std = noise_std
-        self.reset()
-
-    def reset(self):
-        self.gains = np.clip(np.random.normal(self.noise_mean, self.noise_std), self.std_min, self.std_max)
-
-    def __len__(self):
-        return len(self.gains)

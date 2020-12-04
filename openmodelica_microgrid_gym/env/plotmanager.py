@@ -3,11 +3,11 @@ from os import path as p
 import matplotlib.pyplot as plt
 
 from openmodelica_microgrid_gym.agents import SafeOptAgent
-from openmodelica_microgrid_gym.env.stochastic_components import Load, Noise
+from openmodelica_microgrid_gym.env.stochastic_components import Load
 
 
 class PlotManager:
-    def __init__(self, used_agent: SafeOptAgent, used_r_load: Load, used_l_filt: Load, used_noise: Noise,
+    def __init__(self, used_agent: SafeOptAgent, used_r_load: Load, used_l_filt: Load,
                  save_results: bool = False, save_folder: str = 'test_folder', show_plots: bool = True):
         """
         Class for plot configuration, knows agent, so can include agent params to title (e.g. performance)
@@ -15,7 +15,6 @@ class PlotManager:
         :param used_agent: agent used for experiment
         :param used_r_load: used resistor to plot R-value to title
         :param used_l_filt: used inductance to plot L-value to title
-        :param used_noise: used noise to plot value to title
         :param save_results: if True, saves results to save_folder
         :param save_folder: folder name
         :param show_plots: if True, shows plots after each run
@@ -24,17 +23,9 @@ class PlotManager:
         self.agent = used_agent
         self.r_load = used_r_load
         self.l_filt = used_l_filt
-        self.noise = used_noise
         self.save_results = save_results
         self.save_folder = save_folder
         self.show_plots = show_plots
-
-    def set_title(self):
-        plt.title('Simulation: J = {:.2f}; R = {} \n L = {}; \n noise = {}'.format(
-            self.agent.performance,
-            [f'{elem:.4f}' for elem in self.r_load.gains],
-            [f'{elem:.6f}' for elem in self.l_filt.gains],
-            [f'{elem:.4f}' for elem in self.noise.gains]))
 
     def xylables_v_abc(self, fig):
         self.update_axes(fig,

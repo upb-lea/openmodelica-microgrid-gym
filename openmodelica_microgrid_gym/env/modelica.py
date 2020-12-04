@@ -13,7 +13,6 @@ from scipy import integrate
 
 from openmodelica_microgrid_gym.env.plot import PlotTmpl
 from openmodelica_microgrid_gym.env.pyfmi import PyFMI_Wrapper
-from openmodelica_microgrid_gym.env.stochastic_components import Noise
 from openmodelica_microgrid_gym.net.base import Network
 from openmodelica_microgrid_gym.util import FullHistory, EmptyHistory, Fastqueue
 
@@ -36,7 +35,6 @@ class ModelicaEnv(gym.Env):
                  model_path: str = '../omg_grid/grid.network.fmu',
                  viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[Union[str, PlotTmpl]]]] = None,
                  history: EmptyHistory = FullHistory(),
-                 state_noise: Optional[Noise] = None,
                  action_time_delay: int = 0):
         """
         Initialize the Environment.
@@ -79,7 +77,6 @@ class ModelicaEnv(gym.Env):
              - list of PlotTmpl: Each template will result in a plot
         :param history: history to store observations and measurement (from the agent) after each step
 
-        :param measurement_noise:
         :param action_time_delay: Defines how many time steps the controller needs before the action is applied; action
          is buffered in an array
         """
@@ -117,7 +114,7 @@ class ModelicaEnv(gym.Env):
                                  model_params.items()}
 
         self.sim_time_interval = None
-        self._state = []
+        self._state = np.empty(0)
         self.measure = lambda obs: np.empty(0)  # type : Callable([np.ndarray],np.ndarray)
         self.record_states = viz_mode == 'episode'
         self.history = history
@@ -127,13 +124,6 @@ class ModelicaEnv(gym.Env):
         self.model_input_names = self.net.in_vars()
         # variable names are flattened to a list if they have specified in the nested dict manner)
         self.model_output_names = self.net.out_vars(False, True)
-
-        if state_noise is None:
-            state_noise = Noise(np.zeros(len(self.model_output_names)), np.zeros(len(self.model_output_names)), 0.0,
-                                0.0)
-        if len(self.model_output_names) != len(state_noise):
-            raise ValueError('Number of model_outputs does not align with number of noise values!')
-        self.state_noise = state_noise
 
         self.viz_col_tmpls = []
         if viz_cols is None:
@@ -248,9 +238,6 @@ class ModelicaEnv(gym.Env):
         self.model.setup(self.time_start, self.model_output_names, self.model_parameters)
 
         self.history.reset()
-        self._state = self._simulate()
-        self._state += self.state_noise.gains
-        self.measurement = []
         self._failed = False
         self._register_render = False
         self.delay_buffer.clear()
@@ -307,8 +294,6 @@ class ModelicaEnv(gym.Env):
         risk = self.net.risk()
 
         # Simulate and observe result state
-        self._state = self._simulate()
-        self._state += self.state_noise.gains
         outputs = self._create_state()
 
         logger.debug("model output: %s, values: %s", self.model_output_names, self._state)
@@ -329,6 +314,7 @@ class ModelicaEnv(gym.Env):
 
     def _create_state(self):
         # Simulate and observe result state
+        self._state = self._simulate()
         outputs = self.net.augment(self._state, self.is_normalized)
         outputs = np.hstack([outputs, self.measure(outputs)])
         self.history.append(outputs)
