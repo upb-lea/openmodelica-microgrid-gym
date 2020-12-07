@@ -50,14 +50,14 @@ params = {'backend': 'ps',
 matplotlib.rcParams.update(params)
 
 include_simulate = True
-show_plots = True
+show_plots = False
 balanced_load = False
 do_measurement = False
-save_results = False
+save_results = True
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
-save_folder = os.path.join(current_directory, r'VSim_rebase')
+save_folder = os.path.join(current_directory, r'VSim_rebase2_MC3')
 os.makedirs(save_folder, exist_ok=True)
 
 np.random.seed(1)
@@ -67,8 +67,8 @@ net = Network.load('../../net/net_single-inv-Paper_Loadstep.yaml')
 delta_t = 1e-4  # simulation time step size / s
 undersample = 1
 max_episode_steps = 2000  # number of simulation steps per episode
-num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
-n_MC = 1  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
+num_episodes = 40  # number of simulation episodes (i.e. SafeOpt iterations)
+n_MC = 10  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
 v_DC = 600  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 60  # nominal grid frequency / Hz
 nomVoltPeak = 169.7  # 230 * 1.414  # nominal grid voltage / V
@@ -135,7 +135,7 @@ def cal_J_min(phase_shift, amp_dev):
     ph_shift = [0, 120, 240]
     t = np.linspace(0, max_episode_steps * delta_t, max_episode_steps)
 
-    grad = 0.34
+    grad = 0.3
     irefs = [0, nomVoltPeak, nomVoltPeak]
     ts = [0, max_episode_steps // 2, max_episode_steps]
 
@@ -158,7 +158,7 @@ def cal_J_min(phase_shift, amp_dev):
             dw2 = np.gradient(w2)
             SP_sattle = (amplitude > amplitudeSP * (1 - 0.12)).astype(int)
             error2 = -np.mean(abs(SP_sattle * dw2))
-            error_Jmin[p] += error2 * 5  # add gradient error
+            error_Jmin[p] += error2 * .5  # add gradient error
         return_Jmin[l] = np.sum(error_Jmin)  # Sum all 3 phases
 
     return max(return_Jmin)
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     # unsafe, if the new measured performance drops below 20 % of the initial performance of the initial safe (!)
     # parameter set
     safe_threshold = 0
-    j_min = -cal_J_min(phase_shift, amp_dev)  # cal min allowed performance
+    j_min = cal_J_min(phase_shift, amp_dev)  # cal min allowed performance
 
     # The algorithm will not try to expand any points that are below this threshold. This makes the algorithm stop
     # expanding points eventually.
@@ -206,7 +206,6 @@ if __name__ == '__main__':
     # Definition of the controllers
     # Choose Kp and Ki for the current and voltage controller as mutable parameters
     mutable_params = dict(voltageP=MutableFloat(0.0175), voltageI=MutableFloat(12))  # 300Hz
-    mutable_params = dict(voltageP=MutableFloat(0.2), voltageI=MutableFloat(550))  # 300Hz
     voltage_dqp_iparams = PI_params(kP=mutable_params['voltageP'], kI=mutable_params['voltageI'],
                                     limits=(-iLimit, iLimit))
 

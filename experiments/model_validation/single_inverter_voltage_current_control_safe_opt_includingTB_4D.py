@@ -63,8 +63,8 @@ net = Network.load('../../net/net_single-inv-Paper_Loadstep.yaml')
 delta_t = 1e-4  # simulation time step size / s
 undersample = 1
 max_episode_steps = 2000  # number of simulation steps per episode
-num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
-n_MC = 1  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
+num_episodes = 60  # number of simulation episodes (i.e. SafeOpt iterations)
+n_MC = 10  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
 v_DC = 600  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 60  # nominal grid frequency / Hz
 nomVoltPeak = 169.7  # 230 * 1.414  # nominal grid voltage / V
@@ -136,7 +136,7 @@ if __name__ == '__main__':
     # unsafe, if the new measured performance drops below 20 % of the initial performance of the initial safe (!)
     # parameter set
     safe_threshold = 0
-    j_min = -80
+    j_min = -10
 
     # The algorithm will not try to expand any points that are below this threshold. This makes the algorithm stop
     # expanding points eventually.
