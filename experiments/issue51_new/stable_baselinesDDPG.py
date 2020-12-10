@@ -4,7 +4,8 @@ from typing import List
 
 import gym
 import numpy as np
-from stable_baselines3 import PPO
+from stable_baselines3 import DDPG
+from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
 from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback, EveryNTimesteps
 from stable_baselines3.common.monitor import Monitor
 
@@ -58,8 +59,8 @@ class Reward:
         #  better, i.e. more significant,  gradients)
         # plus barrier penalty for violating the current constraint
         error = np.sum((np.abs((ISPabc_master - Iabc_master)) / iLimit) ** 0.5, axis=0) \
-            # + -np.sum(mu * np.log(1 - np.maximum(np.abs(Iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0)
-        error /= max_episode_steps
+                + -np.sum(mu * np.log(1 - np.maximum(np.abs(Iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0)
+        # error /= max_episode_steps
 
         return -np.clip(error.squeeze(), 0, 1e5)
 
@@ -84,7 +85,8 @@ env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                viz_mode='episode',
                max_episode_steps=max_episode_steps,
                net=net,
-               model_path='../../omg_grid/grid.network_singleInverter.fmu')
+               model_path='../../omg_grid/grid.network_singleInverter.fmu',
+               is_normalized=True)
 
 with open(f'{timestamp}/env.txt', 'w') as f:
     print(str(env), file=f)
@@ -105,8 +107,23 @@ class RecordEnvCallback(BaseCallback):
         return True
 
 
-model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=f'{timestamp}/')
+n_actions = env.action_space.shape[-1]
+action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
+
+model = DDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{timestamp}/')
 checkpoint_on_event = CheckpointCallback(save_freq=100000, save_path=f'{timestamp}/checkpoints/')
 record_env = RecordEnvCallback()
-plot_callback = EveryNTimesteps(n_steps=2000, callback=record_env)
-model.learn(total_timesteps=5000000, callback=[checkpoint_on_event, plot_callback])
+plot_callback = EveryNTimesteps(n_steps=50000, callback=record_env)
+model.learn(total_timesteps=500000, callback=[checkpoint_on_event, plot_callback])
+
+model.save('ddpg_CC')
+
+del model  # remove to demonstrate saving and loading
+
+model = DDPG.load("ddpg_CC")
+
+# obs = env.reset()
+# while True:
+#    action, _states = model.predict(obs)
+#    obs, rewards, dones, info = env.step(action)
+#    env.render()
