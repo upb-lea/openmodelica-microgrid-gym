@@ -40,6 +40,7 @@ class Component:
     def params(self, actions):
         """
         Calculate additional environment parameters
+
         :param actions:
         :return: mapping
         """
@@ -104,8 +105,10 @@ class Component:
         and whose values are of the length of out_calcs values.
         The returned values are hence additional values (like reference current i_ref).
 
-        set(self.out_calc.keys()) == set(return)
-        all([len(v) == self.out_calc[k] for k,v in return.items()])
+        ::
+            set(self.out_calc.keys()) == set(return)
+            all([len(v) == self.out_calc[k] for k,v in return.items()])
+
         :return:
         """
         pass
@@ -140,6 +143,7 @@ class Component:
 class Network:
     """
     This class has two main functions:
+
     - :code:`load()`: load yaml files to instantiate an object structure of electronic components
     - :code:`augment()`: traverses all components and uses the data from the simulation and augments or modifies it.
     """
@@ -166,7 +170,9 @@ class Network:
         """
         Initialize object from config file
         Structure of yaml-file:
-        ::
+
+        .. code-block:: text
+
             conf::             *net_params* *components*
             net_params::       <parameters passed to Network.__init__()>
             components::       components:
@@ -241,8 +247,10 @@ class Network:
         """
         Allows the network to provide additional output variables in order to provide measurements and reference
         information the RL agent needs to understand its rewards
-        :param state:
-        :return:
+
+        :param state: raw state as recieved form the environment. must match the expected shape specified by :code:`in_vars()`
+        :param normalize: boolean, specifying whether to normalize outputs
+        :return: augmented and normalized state
         """
         return np.hstack([comp.augment(state, normalize) for comp in self.components])
 
@@ -269,6 +277,7 @@ class Network:
     def __getitem__(self, item):
         """
         get component by id
+
         :param item: name of the component
         :return:
         """

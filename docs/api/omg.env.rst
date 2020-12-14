@@ -7,7 +7,9 @@ Submodules
 .. toctree::
 
    omg.env.modelica
+   omg.env.pyfmi
    omg.env.plot
+   omg.env.plotmanager
 
 Module contents
 ---------------

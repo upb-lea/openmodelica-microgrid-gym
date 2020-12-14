@@ -120,6 +120,7 @@ def abc_to_dq0_cos_sin(abc: np.ndarray, cos: float, sin: float) -> np.ndarray:
 def abc_to_alpha_beta(abc: np.ndarray) -> np.ndarray:
     """
     Transforms from abc frame to the alpha-beta frame
+
     :param abc: The values in the abc reference frame
     :return [alpha,beta]: The transformed alpha beta results
     """
@@ -132,16 +133,18 @@ def abc_to_alpha_beta(abc: np.ndarray) -> np.ndarray:
 
 def cos_sin(theta: float) -> np.ndarray:
     """
-    Transforms from provided angle to the relavent cossine values
+    Transforms from provided angle to the relevant cosine values
+
     :param theta: The angle [In RADIANS]
-    :return: [alpha,beta] The resultant cossine
+    :return: [alpha,beta] The resulting cosine
     """
     return np.array([np.cos(theta), np.sin(theta)])
 
 
 def inst_rms(arr: np.ndarray) -> float:
     """
-    Calculates the instantaneous RMS (root mean sqare) value of the input arr
+    Calculates the instantaneous RMS (root mean square) value of the input arr
+
     :param arr: Input
     :return: RMS value of the arr
     """
@@ -167,6 +170,7 @@ def normalise_abc(abc: np.ndarray) -> np.ndarray:
 def inst_power(varr: np.ndarray, iarr: np.ndarray) -> float:
     """
     Calculates the instantaneous power
+
     :param varr: voltage
     :param iarr: current
     :return: instantaneous power
@@ -177,6 +181,7 @@ def inst_power(varr: np.ndarray, iarr: np.ndarray) -> float:
 def inst_reactive(varr: np.ndarray, iarr: np.ndarray):
     """
     Calculates the instantaneous reactive power
+
     :param varr: voltage
     :param iarr: current
     :return: instantaneous reactive power

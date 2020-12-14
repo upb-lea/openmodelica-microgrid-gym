@@ -41,10 +41,9 @@ class ModelicaEnv(gym.Env):
         The environment can only be used after reset() is called.
 
         :param time_start: offset of the time in seconds
-
         :param reward_fun:
             The function receives as a list of variable names and a np.ndarray of the values
-             of the current observation as well as a risk value between 0 and 1.
+            of the current observation as well as a risk value between 0 and 1.
             The separation is mainly for performance reasons, such that the resolution of data indices can be cached.
             It must return the reward of this timestep as float.
             It should return np.nan or -np.inf or None in case of a failiure.
@@ -55,10 +54,8 @@ class ModelicaEnv(gym.Env):
             The end time of the episode is calculated by the time resolution and the number of steps.
 
             If set to None, the environment will never finish because of step sizes, but it might still stop because of
-            system failiure (-inf reward)
-
+            system failure (-inf reward)
         :param model_params: parameters of the FMU.
-
             dictionary of variable names and scalars or callables.
             If a callable is provided it is called every time step with the current time.
             This callable must return a float that is passed to the fmu.
@@ -70,15 +67,14 @@ class ModelicaEnv(gym.Env):
             - 'step': render after each time step
             - None: disable visualization
         :param viz_cols: enables specific columns while plotting
-             - None: all columns will be used for vizualization (default)
+
+             - None: all columns will be used for visualization (default)
              - string: will be interpret as regex. all fully matched columns names will be enabled
              - list of strings: Each string might be a unix-shell style wildcard like "*.i"
                                 to match all data series ending with ".i".
              - list of PlotTmpl: Each template will result in a plot
         :param history: history to store observations and measurement (from the agent) after each step
-
-        :param action_time_delay: Defines how many time steps the controller needs before the action is applied; action
-         is buffered in an array
+        :param action_time_delay: Defines how many time steps the controller needs before the action is applied; action is buffered in an array
         """
         if viz_mode not in self.viz_modes:
             raise ValueError(f'Please select one of the following viz_modes: {self.viz_modes}')
@@ -224,11 +220,13 @@ class ModelicaEnv(gym.Env):
         """
         OpenAI Gym API. Restarts environment and sets it ready for experiments.
         In particular, does the following:
+
             * resets model
             * sets simulation start time to 0
             * sets initial parameters of the model
                 - Using the parameters defined in self.model_parameters
             * initializes the model
+
         :return: state of the environment after resetting.
         """
         self.net.reset()
@@ -326,8 +324,7 @@ class ModelicaEnv(gym.Env):
         Does nothing at the moment
 
         :param mode: (ignored) rendering mode. Read more in Gym docs.
-        :param close: flag if rendering procedure should be finished and resources cleaned.
-        Used, when environment is closed.
+        :param close: flag if rendering procedure should be finished and resources cleaned. Used, when environment is closed.
         """
         if self.viz_mode is None:
             return []
