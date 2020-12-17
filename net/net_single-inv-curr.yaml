@@ -1,6 +1,6 @@
 v_nom: 230*sqrt(2)
-#freq_nom: 50
-ts: .5e-4
+freq_nom: 50
+ts: 0.5e-4
 
 components:
   inv1:
