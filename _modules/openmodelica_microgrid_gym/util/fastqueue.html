@@ -93,9 +93,10 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/omg.agents.html">omg.agents</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/omg.aux_ctl.html">omg.aux_ctl</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.util.html">omg.util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/omg.env.html">omg.env</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/omg.execution.html">omg.execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.net.html">omg.net</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.util.html">omg.util</a></li>
 </ul>
 
             
@@ -165,7 +166,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 
-<div class="viewcode-block" id="Fastqueue"><a class="viewcode-back" href="../../../api/omg.util.html#openmodelica_microgrid_gym.util.Fastqueue">[docs]</a><span class="k">class</span> <span class="nc">Fastqueue</span><span class="p">:</span>
+<div class="viewcode-block" id="Fastqueue"><a class="viewcode-back" href="../../../api/omg.util.fastqueue.html#openmodelica_microgrid_gym.util.Fastqueue">[docs]</a><span class="k">class</span> <span class="nc">Fastqueue</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Efficient numpy implementation of constant sized queue</span>
@@ -175,7 +176,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dim</span> <span class="o">=</span> <span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_idx</span> <span class="o">=</span> <span class="mi">0</span>
 
-<div class="viewcode-block" id="Fastqueue.shift"><a class="viewcode-back" href="../../../api/omg.util.html#openmodelica_microgrid_gym.util.Fastqueue.shift">[docs]</a>    <span class="k">def</span> <span class="nf">shift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<div class="viewcode-block" id="Fastqueue.shift"><a class="viewcode-back" href="../../../api/omg.util.fastqueue.html#openmodelica_microgrid_gym.util.Fastqueue.shift">[docs]</a>    <span class="k">def</span> <span class="nf">shift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Pushes val into buffer and returns popped last element</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -189,7 +190,7 @@
     <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_size</span>
 
-<div class="viewcode-block" id="Fastqueue.clear"><a class="viewcode-back" href="../../../api/omg.util.html#openmodelica_microgrid_gym.util.Fastqueue.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Fastqueue.clear"><a class="viewcode-back" href="../../../api/omg.util.fastqueue.html#openmodelica_microgrid_gym.util.Fastqueue.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_buffer</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dim</span><span class="p">))</span></div></div>
 </pre></div>
 

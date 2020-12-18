@@ -1,0 +1,301 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>openmodelica_microgrid_gym.env.pyfmi &mdash; OpenModelica Microgrid 2020 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/Pythoncode.html">Toolbox Installation and General Remarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.agents.html">omg.agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.aux_ctl.html">omg.aux_ctl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.env.html">omg.env</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.execution.html">omg.execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.net.html">omg.net</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.util.html">omg.util</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OpenModelica Microgrid</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>openmodelica_microgrid_gym.env.pyfmi</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for openmodelica_microgrid_gym.env.pyfmi</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">basename</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">pyfmi</span> <span class="kn">import</span> <span class="n">load_fmu</span>
+<span class="kn">from</span> <span class="nn">pyfmi.fmi</span> <span class="kn">import</span> <span class="n">FMUModelME2</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PyFMI_Wrapper"><a class="viewcode-back" href="../../../api/omg.env.pyfmi.html#openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper">[docs]</a><span class="k">class</span> <span class="nc">PyFMI_Wrapper</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; convenience class&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+
+<div class="viewcode-block" id="PyFMI_Wrapper.load"><a class="viewcode-back" href="../../../api/omg.env.pyfmi.html#openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper.load">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="n">model_name</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Loading model &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span><span class="p">,</span> <span class="n">model_name</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">load_fmu</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">log_file_name</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;%Y-%m-%d_</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s1">.txt&#39;</span><span class="p">)))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Successfully loaded model &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span><span class="p">,</span> <span class="n">model_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">model</span></div>
+
+<div class="viewcode-block" id="PyFMI_Wrapper.setup"><a class="viewcode-back" href="../../../api/omg.env.pyfmi.html#openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_start</span><span class="p">,</span> <span class="n">output_names</span><span class="p">,</span> <span class="n">model_params</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">setup_experiment</span><span class="p">(</span><span class="n">start_time</span><span class="o">=</span><span class="n">time_start</span><span class="p">)</span>
+
+        <span class="c1"># This is needed, because otherwise setting new values seems not to work</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">model_params</span><span class="p">:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="n">f</span><span class="p">(</span><span class="n">time_start</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">model_params</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+            <span class="c1"># list of keys and list of values</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="o">**</span><span class="n">values</span><span class="p">)</span>
+
+        <span class="n">e_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_event_info</span><span class="p">()</span>
+        <span class="n">e_info</span><span class="o">.</span><span class="n">newDiscreteStatesNeeded</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># Event iteration</span>
+        <span class="k">while</span> <span class="n">e_info</span><span class="o">.</span><span class="n">newDiscreteStatesNeeded</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">enter_event_mode</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">event_update</span><span class="p">()</span>
+            <span class="n">e_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_event_info</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">enter_continuous_time_mode</span><span class="p">()</span>
+
+        <span class="c1"># precalculating indices for more efficient lookup</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_output_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_variable_valueref</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">output_names</span><span class="p">])</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">obs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_output_idx</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">continuous_states</span>
+
+    <span class="nd">@states</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">continuous_states</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">deriv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_derivatives</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">time</span>
+
+    <span class="nd">@time</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="n">val</span>
+
+<div class="viewcode-block" id="PyFMI_Wrapper.jacc"><a class="viewcode-back" href="../../../api/omg.env.pyfmi.html#openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper.jacc">[docs]</a>    <span class="k">def</span> <span class="nf">jacc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># get state and derivative value reference lists</span>
+        <span class="n">refs</span> <span class="o">=</span> <span class="p">[[</span><span class="n">s</span><span class="o">.</span><span class="n">value_reference</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">)()</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+                <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span>
+                <span class="p">[</span><span class="s1">&#39;get_states_list&#39;</span><span class="p">,</span> <span class="s1">&#39;get_derivatives_list&#39;</span><span class="p">]]</span>
+        <span class="n">jacobian</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">refs</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="k">lambda</span> <span class="n">col</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_directional_derivative</span><span class="p">(</span><span class="o">*</span><span class="n">refs</span><span class="p">,</span> <span class="n">col</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">jacobian</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jacobian</span></div>
+
+<div class="viewcode-block" id="PyFMI_Wrapper.set"><a class="viewcode-back" href="../../../api/omg.env.pyfmi.html#openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper.set">[docs]</a>    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">*</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span></div>
+
+<div class="viewcode-block" id="PyFMI_Wrapper.set_params"><a class="viewcode-back" href="../../../api/omg.env.pyfmi.html#openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper.set_params">[docs]</a>    <span class="k">def</span> <span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># replacing enter and exit mode -&gt; works to set parameters during simulation AND model get outputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">*</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

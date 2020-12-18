@@ -93,9 +93,10 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/omg.agents.html">omg.agents</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/omg.aux_ctl.html">omg.aux_ctl</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.util.html">omg.util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/omg.env.html">omg.env</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/omg.execution.html">omg.execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.net.html">omg.net</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.util.html">omg.util</a></li>
 </ul>
 
             
@@ -203,10 +204,9 @@
 <span class="sd">        The environment can only be used after reset() is called.</span>
 
 <span class="sd">        :param time_start: offset of the time in seconds</span>
-
 <span class="sd">        :param reward_fun:</span>
 <span class="sd">            The function receives as a list of variable names and a np.ndarray of the values</span>
-<span class="sd">             of the current observation as well as a risk value between 0 and 1.</span>
+<span class="sd">            of the current observation as well as a risk value between 0 and 1.</span>
 <span class="sd">            The separation is mainly for performance reasons, such that the resolution of data indices can be cached.</span>
 <span class="sd">            It must return the reward of this timestep as float.</span>
 <span class="sd">            It should return np.nan or -np.inf or None in case of a failiure.</span>
@@ -217,10 +217,8 @@
 <span class="sd">            The end time of the episode is calculated by the time resolution and the number of steps.</span>
 
 <span class="sd">            If set to None, the environment will never finish because of step sizes, but it might still stop because of</span>
-<span class="sd">            system failiure (-inf reward)</span>
-
+<span class="sd">            system failure (-inf reward)</span>
 <span class="sd">        :param model_params: parameters of the FMU.</span>
-
 <span class="sd">            dictionary of variable names and scalars or callables.</span>
 <span class="sd">            If a callable is provided it is called every time step with the current time.</span>
 <span class="sd">            This callable must return a float that is passed to the fmu.</span>
@@ -232,15 +230,14 @@
 <span class="sd">            - &#39;step&#39;: render after each time step</span>
 <span class="sd">            - None: disable visualization</span>
 <span class="sd">        :param viz_cols: enables specific columns while plotting</span>
-<span class="sd">             - None: all columns will be used for vizualization (default)</span>
+
+<span class="sd">             - None: all columns will be used for visualization (default)</span>
 <span class="sd">             - string: will be interpret as regex. all fully matched columns names will be enabled</span>
 <span class="sd">             - list of strings: Each string might be a unix-shell style wildcard like &quot;*.i&quot;</span>
 <span class="sd">                                to match all data series ending with &quot;.i&quot;.</span>
 <span class="sd">             - list of PlotTmpl: Each template will result in a plot</span>
 <span class="sd">        :param history: history to store observations and measurement (from the agent) after each step</span>
-
-<span class="sd">        :param action_time_delay: Defines how many time steps the controller needs before the action is applied; action</span>
-<span class="sd">         is buffered in an array</span>
+<span class="sd">        :param action_time_delay: Defines how many time steps the controller needs before the action is applied; action is buffered in an array</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">viz_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">viz_modes</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Please select one of the following viz_modes: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">viz_modes</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -386,11 +383,13 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        OpenAI Gym API. Restarts environment and sets it ready for experiments.</span>
 <span class="sd">        In particular, does the following:</span>
+
 <span class="sd">            * resets model</span>
 <span class="sd">            * sets simulation start time to 0</span>
 <span class="sd">            * sets initial parameters of the model</span>
 <span class="sd">                - Using the parameters defined in self.model_parameters</span>
 <span class="sd">            * initializes the model</span>
+
 <span class="sd">        :return: state of the environment after resetting.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
@@ -477,9 +476,13 @@
     <span class="k">def</span> <span class="nf">_create_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Simulate and observe result state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simulate</span><span class="p">()</span>
-        <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">augment</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_normalized</span><span class="p">)</span>
-        <span class="n">outputs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">outputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">outputs</span><span class="p">)])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+        <span class="n">raw</span><span class="p">,</span> <span class="n">normalized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">augment</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">)</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">normalized</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_normalized</span> <span class="k">else</span> <span class="n">raw</span>
+        <span class="n">measurements</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">raw</span><span class="p">,</span> <span class="n">measurements</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">outputs</span><span class="p">,</span> <span class="n">measurements</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">outputs</span>
 
 <div class="viewcode-block" id="ModelicaEnv.render"><a class="viewcode-back" href="../../../api/omg.env.modelica.html#openmodelica_microgrid_gym.env.ModelicaEnv.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;human&#39;</span><span class="p">,</span> <span class="n">close</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Figure</span><span class="p">]:</span>
@@ -488,8 +491,7 @@
 <span class="sd">        Does nothing at the moment</span>
 
 <span class="sd">        :param mode: (ignored) rendering mode. Read more in Gym docs.</span>
-<span class="sd">        :param close: flag if rendering procedure should be finished and resources cleaned.</span>
-<span class="sd">        Used, when environment is closed.</span>
+<span class="sd">        :param close: flag if rendering procedure should be finished and resources cleaned. Used, when environment is closed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">viz_mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>

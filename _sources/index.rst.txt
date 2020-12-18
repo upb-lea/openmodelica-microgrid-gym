@@ -36,9 +36,10 @@ For the creation of additional grid constellations, Openmodelica (nightly build 
 
    api/omg.agents
    api/omg.aux_ctl
-   api/omg.util
    api/omg.env
    api/omg.execution
+   api/omg.net
+   api/omg.util
 
 
 .. GENERATE APIDOC

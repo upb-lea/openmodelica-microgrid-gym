@@ -6,6 +6,7 @@ Submodules
 
 .. toctree::
 
+   omg.util.fastqueue
    omg.util.itertools_
    omg.util.transforms
    omg.util.recorder

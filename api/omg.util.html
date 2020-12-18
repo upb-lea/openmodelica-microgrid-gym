@@ -36,8 +36,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="omg.util.itertools_" href="omg.util.itertools_.html" />
-    <link rel="prev" title="omg.aux_ctl.pi_controllers" href="omg.aux_ctl.pi_controllers.html" /> 
+    <link rel="next" title="omg.util.fastqueue" href="omg.util.fastqueue.html" />
+    <link rel="prev" title="omg.net.components" href="omg.net.components.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -95,14 +95,16 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="omg.agents.html">omg.agents</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omg.aux_ctl.html">omg.aux_ctl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.env.html">omg.env</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.execution.html">omg.execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.net.html">omg.net</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">omg.util</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="omg.util.fastqueue.html">omg.util.fastqueue</a></li>
 <li class="toctree-l2"><a class="reference internal" href="omg.util.itertools_.html">omg.util.itertools_</a></li>
 <li class="toctree-l2"><a class="reference internal" href="omg.util.transforms.html">omg.util.transforms</a></li>
 <li class="toctree-l2"><a class="reference internal" href="omg.util.recorder.html">omg.util.recorder</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="omg.env.html">omg.env</a></li>
-<li class="toctree-l1"><a class="reference internal" href="omg.execution.html">omg.execution</a></li>
 </ul>
 
             
@@ -174,6 +176,7 @@
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="omg.util.fastqueue.html">omg.util.fastqueue</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omg.util.itertools_.html">omg.util.itertools_</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omg.util.transforms.html">omg.util.transforms</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omg.util.recorder.html">omg.util.recorder</a></li>
@@ -334,11 +337,14 @@ This class will not actually store any data</p>
 <dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.abc_to_alpha_beta">
 <code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">abc_to_alpha_beta</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">abc</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#abc_to_alpha_beta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.abc_to_alpha_beta" title="Permalink to this definition">¶</a></dt>
-<dd><p>Transforms from abc frame to the alpha-beta frame
-:type abc: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
-:param abc: The values in the abc reference frame
-:return [alpha,beta]: The transformed alpha beta results</p>
+<dd><p>Transforms from abc frame to the alpha-beta frame</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>abc</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – The values in the abc reference frame</p>
+</dd>
+<dt class="field-even">Return [alpha,beta]</dt>
+<dd class="field-even"><p>The transformed alpha beta results</p>
+</dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
 </dd>
@@ -391,11 +397,18 @@ to minimise calls to calculate the cossine etc</p>
 <dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.cos_sin">
 <code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">cos_sin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">theta</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#cos_sin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.cos_sin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Transforms from provided angle to the relavent cossine values
-:type theta: <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>
-:param theta: The angle [In RADIANS]
-:rtype: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
-:return: [alpha,beta] The resultant cossine</p>
+<dd><p>Transforms from provided angle to the relevant cosine values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>theta</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – The angle [In RADIANS]</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>[alpha,beta] The resulting cosine</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -545,34 +558,55 @@ and return <code class="code docutils literal notranslate"><span class="pre">[0,
 <dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.inst_power">
 <code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">inst_power</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">varr</span></em>, <em class="sig-param"><span class="n">iarr</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#inst_power"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.inst_power" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates the instantaneous power
-:type varr: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
-:param varr: voltage
-:type iarr: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
-:param iarr: current
-:rtype: <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>
-:return: instantaneous power</p>
+<dd><p>Calculates the instantaneous power</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>varr</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – voltage</p></li>
+<li><p><strong>iarr</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – current</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>instantaneous power</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.inst_reactive">
 <code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">inst_reactive</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">varr</span></em>, <em class="sig-param"><span class="n">iarr</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#inst_reactive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.inst_reactive" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates the instantaneous reactive power
-:type varr: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
-:param varr: voltage
-:type iarr: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
-:param iarr: current
-:return: instantaneous reactive power</p>
+<dd><p>Calculates the instantaneous reactive power</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>varr</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – voltage</p></li>
+<li><p><strong>iarr</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – current</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>instantaneous reactive power</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="openmodelica_microgrid_gym.util.inst_rms">
 <code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">inst_rms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arr</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/transforms.html#inst_rms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.inst_rms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates the instantaneous RMS (root mean sqare) value of the input arr
-:type arr: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
-:param arr: Input
-:rtype: <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>
-:return: RMS value of the arr</p>
+<dd><p>Calculates the instantaneous RMS (root mean square) value of the input arr</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>arr</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – Input</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>RMS value of the arr</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -643,10 +677,10 @@ Determines the instantaneous RMS value of the 3 waveforms</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="omg.util.itertools_.html" class="btn btn-neutral float-right" title="omg.util.itertools_" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="omg.util.fastqueue.html" class="btn btn-neutral float-right" title="omg.util.fastqueue" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="omg.aux_ctl.pi_controllers.html" class="btn btn-neutral float-left" title="omg.aux_ctl.pi_controllers" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="omg.net.components.html" class="btn btn-neutral float-left" title="omg.net.components" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -1,0 +1,389 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>openmodelica_microgrid_gym.net.components &mdash; OpenModelica Microgrid 2020 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/Pythoncode.html">Toolbox Installation and General Remarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.agents.html">omg.agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.aux_ctl.html">omg.aux_ctl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.env.html">omg.env</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.execution.html">omg.execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.net.html">omg.net</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.util.html">omg.util</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OpenModelica Microgrid</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>openmodelica_microgrid_gym.net.components</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for openmodelica_microgrid_gym.net.components</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.aux_ctl</span> <span class="kn">import</span> <span class="n">DDS</span><span class="p">,</span> <span class="n">DroopController</span><span class="p">,</span> <span class="n">DroopParams</span><span class="p">,</span> <span class="n">InverseDroopController</span><span class="p">,</span> \
+    <span class="n">InverseDroopParams</span><span class="p">,</span> <span class="n">PLLParams</span><span class="p">,</span> <span class="n">PLL</span>
+<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.aux_ctl.base</span> <span class="kn">import</span> <span class="n">LimitLoadIntegral</span>
+<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.net.base</span> <span class="kn">import</span> <span class="n">Component</span>
+<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.util</span> <span class="kn">import</span> <span class="n">dq0_to_abc</span><span class="p">,</span> <span class="n">inst_power</span><span class="p">,</span> <span class="n">inst_reactive</span>
+
+
+<div class="viewcode-block" id="Inverter"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.Inverter">[docs]</a><span class="k">class</span> <span class="nc">Inverter</span><span class="p">(</span><span class="n">Component</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">i_noise</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">v_noise</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">i_nom</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                 <span class="n">i_lim</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+                 <span class="n">v_lim</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span> <span class="n">v_DC</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                 <span class="n">i_ref</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                 <span class="n">out_vars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param u:</span>
+<span class="sd">        :param i:</span>
+<span class="sd">        :param i_noise: structured like: must contain the key &#39;fun&#39;,</span>
+<span class="sd">        the key &#39;clip&#39; is optional and no clipping is applied if omited</span>
+<span class="sd">        ::</span>
+<span class="sd">            {</span>
+<span class="sd">            &#39;fun&#39;:</span>
+<span class="sd">               {&lt;np.random function name, e.g. &quot;normal&quot;&gt;: &lt;dict of kwargs to be passed to the func&gt;},</span>
+<span class="sd">            &#39;clip&#39;: &lt;kwargs passed to clip&gt;</span>
+<span class="sd">            }</span>
+
+<span class="sd">        :param v:</span>
+<span class="sd">        :param v_noise: similar to i_noise</span>
+<span class="sd">        :param i_nom:</span>
+<span class="sd">        :param i_lim:</span>
+<span class="sd">        :param v_lim:</span>
+<span class="sd">        :param v_DC:</span>
+<span class="sd">        :param i_ref:</span>
+<span class="sd">        :param out_vars: implicit parameter not to be passed in the net.yaml, but calculated dynamically in :code:`Network`</span>
+<span class="sd">        :param kwargs:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="n">u</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="c1"># to feed static code analyser; vars will be set dynamically in the following loop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i_noise</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_noise</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">]:</span>
+            <span class="c1"># gets vars with reflection to create self.i_noise, self.v_noise</span>
+            <span class="n">noise_var</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s1">_noise&#39;</span><span class="p">]</span>  <span class="c1"># type:dict</span>
+            <span class="k">if</span> <span class="n">noise_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">fun</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_vars</span><span class="p">[</span><span class="n">var</span><span class="p">]))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">noise_var</span><span class="p">[</span><span class="s1">&#39;fun&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">())]</span>
+                <span class="n">clip_kwargs</span> <span class="o">=</span> <span class="n">noise_var</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;clip&#39;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">a_min</span><span class="o">=-</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span> <span class="n">a_max</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)))</span>
+                <span class="n">fun</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(),</span> <span class="n">key</span><span class="p">)(</span><span class="o">**</span><span class="n">value</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">out_vars</span><span class="p">[</span><span class="n">var</span><span class="p">])),</span>
+                                      <span class="o">**</span><span class="n">clip_kwargs</span><span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s1">_noise&#39;</span><span class="p">,</span> <span class="n">fun</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">i_nom</span> <span class="o">=</span> <span class="n">i_nom</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i_lim</span> <span class="o">=</span> <span class="n">i_lim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_lim</span> <span class="o">=</span> <span class="n">v_lim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_DC</span> <span class="o">=</span> <span class="n">v_DC</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i_ref</span> <span class="o">=</span> <span class="n">i_ref</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="s1">&#39;out_calc&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">i_ref</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="s1">&#39;out_vars&#39;</span><span class="p">:</span> <span class="n">out_vars</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">limit_load_integrals</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">LimitLoadIntegral</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">ts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">freq_nom</span><span class="p">,</span> <span class="n">i_nom</span><span class="o">=</span><span class="n">i_nom</span><span class="p">,</span> <span class="n">i_lim</span><span class="o">=</span><span class="n">i_lim</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span>
+            <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+
+<div class="viewcode-block" id="Inverter.reset"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.Inverter.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="p">[</span><span class="n">integ</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span> <span class="k">for</span> <span class="n">integ</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">limit_load_integrals</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Inverter.normalize"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.Inverter.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calc_data</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">i_lim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_lim</span>
+        <span class="n">calc_data</span><span class="p">[</span><span class="s1">&#39;i_ref&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_data</span><span class="p">[</span><span class="s1">&#39;i_ref&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">i_lim</span></div>
+
+<div class="viewcode-block" id="Inverter.risk"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.Inverter.risk">[docs]</a>    <span class="k">def</span> <span class="nf">risk</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">([</span><span class="n">integ</span><span class="o">.</span><span class="n">risk</span><span class="p">()</span> <span class="k">for</span> <span class="n">integ</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">limit_load_integrals</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Inverter.params"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.Inverter.params">[docs]</a>    <span class="k">def</span> <span class="nf">params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="n">actions</span><span class="p">),</span> <span class="o">**</span><span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix_var</span><span class="p">([</span><span class="s1">&#39;.v_DC&#39;</span><span class="p">]):</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_DC</span><span class="p">}}</span></div>
+
+<div class="viewcode-block" id="Inverter.calculate"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.Inverter.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">i_noise</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_noise</span><span class="p">()</span>
+        <span class="p">[</span><span class="n">integ</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">integ</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">limit_load_integrals</span><span class="p">)]</span></div></div>
+
+
+<div class="viewcode-block" id="SlaveInverter"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.SlaveInverter">[docs]</a><span class="k">class</span> <span class="nc">SlaveInverter</span><span class="p">(</span><span class="n">Inverter</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pll</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pdroop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">qdroop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">pdroop</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">gain</span><span class="o">=</span><span class="mf">40000.0</span><span class="p">),</span> <span class="o">**</span><span class="p">(</span><span class="n">pdroop</span> <span class="ow">or</span> <span class="p">{})}</span>
+        <span class="n">qdroop</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">gain</span><span class="o">=</span><span class="mf">50.0</span><span class="p">),</span> <span class="o">**</span><span class="p">(</span><span class="n">qdroop</span> <span class="ow">or</span> <span class="p">{})}</span>
+        <span class="n">pll</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">kP</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">kI</span><span class="o">=</span><span class="mi">200</span><span class="p">),</span> <span class="o">**</span><span class="p">(</span><span class="n">pll</span> <span class="ow">or</span> <span class="p">{})}</span>
+
+        <span class="c1"># toDo: set time Constant for droop Filter correct</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pdroop_ctl</span> <span class="o">=</span> <span class="n">InverseDroopController</span><span class="p">(</span>
+            <span class="n">InverseDroopParams</span><span class="p">(</span><span class="n">tau</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">ts</span><span class="p">,</span> <span class="n">nom_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">freq_nom</span><span class="p">,</span> <span class="o">**</span><span class="n">pdroop</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">ts</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qdroop_ctl</span> <span class="o">=</span> <span class="n">InverseDroopController</span><span class="p">(</span>
+            <span class="n">InverseDroopParams</span><span class="p">(</span><span class="n">tau</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">ts</span><span class="p">,</span> <span class="n">nom_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">v_nom</span><span class="p">,</span> <span class="o">**</span><span class="n">qdroop</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">ts</span><span class="p">)</span>
+        <span class="c1"># default pll params and new ones</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pll</span> <span class="o">=</span> <span class="n">PLL</span><span class="p">(</span><span class="n">PLLParams</span><span class="p">(</span><span class="n">f_nom</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">freq_nom</span><span class="p">,</span> <span class="o">**</span><span class="n">pll</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">ts</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SlaveInverter.reset"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.SlaveInverter.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pdroop_ctl</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qdroop_ctl</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pll</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SlaveInverter.calculate"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.SlaveInverter.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">calculate</span><span class="p">()</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pll</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">i_ref</span><span class="o">=</span><span class="n">dq0_to_abc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i_ref</span><span class="p">,</span> <span class="n">phase</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="MasterInverter"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.MasterInverter">[docs]</a><span class="k">class</span> <span class="nc">MasterInverter</span><span class="p">(</span><span class="n">Inverter</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v_ref</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">pdroop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">qdroop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_ref</span> <span class="o">=</span> <span class="n">v_ref</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">out_calc</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">i_ref</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">v_ref</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">pdroop</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="p">(</span><span class="n">pdroop</span> <span class="ow">or</span> <span class="p">{}),</span> <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">gain</span><span class="o">=</span><span class="mf">40000.0</span><span class="p">,</span> <span class="n">tau</span><span class="o">=.</span><span class="mi">005</span><span class="p">)}</span>
+        <span class="n">qdroop</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="p">(</span><span class="n">qdroop</span> <span class="ow">or</span> <span class="p">{}),</span> <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">gain</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span> <span class="n">tau</span><span class="o">=.</span><span class="mi">002</span><span class="p">)}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pdroop_ctl</span> <span class="o">=</span> <span class="n">DroopController</span><span class="p">(</span><span class="n">DroopParams</span><span class="p">(</span><span class="n">nom_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">freq_nom</span><span class="p">,</span> <span class="o">**</span><span class="n">pdroop</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">ts</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qdroop_ctl</span> <span class="o">=</span> <span class="n">DroopController</span><span class="p">(</span><span class="n">DroopParams</span><span class="p">(</span><span class="n">nom_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">v_nom</span><span class="p">,</span> <span class="o">**</span><span class="n">qdroop</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">ts</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dds</span> <span class="o">=</span> <span class="n">DDS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">ts</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MasterInverter.reset"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.MasterInverter.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pdroop_ctl</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qdroop_ctl</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dds</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MasterInverter.calculate"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.MasterInverter.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">calculate</span><span class="p">()</span>
+        <span class="n">instPow</span> <span class="o">=</span> <span class="o">-</span><span class="n">inst_power</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">freq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdroop_ctl</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">instPow</span><span class="p">)</span>
+        <span class="c1"># Get the next phase rotation angle to implement</span>
+        <span class="n">phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dds</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+
+        <span class="n">instQ</span> <span class="o">=</span> <span class="o">-</span><span class="n">inst_reactive</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">v_refd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qdroop_ctl</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">instQ</span><span class="p">)</span>
+        <span class="n">v_refdq0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">v_refd</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_ref</span>
+
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">i_ref</span><span class="o">=</span><span class="n">dq0_to_abc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i_ref</span><span class="p">,</span> <span class="n">phase</span><span class="p">),</span> <span class="n">v_ref</span><span class="o">=</span><span class="n">dq0_to_abc</span><span class="p">(</span><span class="n">v_refdq0</span><span class="p">,</span> <span class="n">phase</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="MasterInverter.normalize"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.MasterInverter.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calc_data</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">calc_data</span><span class="p">),</span>
+        <span class="n">calc_data</span><span class="p">[</span><span class="s1">&#39;v_ref&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_lim</span></div></div>
+
+
+<div class="viewcode-block" id="MasterInverterCurrentSourcing"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.MasterInverterCurrentSourcing">[docs]</a><span class="k">class</span> <span class="nc">MasterInverterCurrentSourcing</span><span class="p">(</span><span class="n">Inverter</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f_nom</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">out_calc</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">i_ref</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dds</span> <span class="o">=</span> <span class="n">DDS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">ts</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_nom</span> <span class="o">=</span> <span class="n">f_nom</span>
+
+<div class="viewcode-block" id="MasterInverterCurrentSourcing.reset"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.MasterInverterCurrentSourcing.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dds</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MasterInverterCurrentSourcing.calculate"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.MasterInverterCurrentSourcing.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">calculate</span><span class="p">()</span>
+        <span class="c1"># Get the next phase rotation angle to implement</span>
+        <span class="n">phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dds</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_nom</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">i_ref</span><span class="o">=</span><span class="n">dq0_to_abc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i_ref</span><span class="p">,</span> <span class="n">phase</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="Load"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.Load">[docs]</a><span class="k">class</span> <span class="nc">Load</span><span class="p">(</span><span class="n">Component</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Load.params"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.Load.params">[docs]</a>    <span class="k">def</span> <span class="nf">params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="c1"># TODO: perhaps provide modelparams that set resistance value</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -95,15 +95,17 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">omg.agents</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="omg.agents.agent.html">omg.agents.agent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omg.agents.episodic.html">omg.agents.episodic</a></li>
 <li class="toctree-l2"><a class="reference internal" href="omg.agents.safeopt.html">omg.agents.safeopt</a></li>
 <li class="toctree-l2"><a class="reference internal" href="omg.agents.staticctrl.html">omg.agents.staticctrl</a></li>
 <li class="toctree-l2"><a class="reference internal" href="omg.agents.util.html">omg.agents.util</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="omg.aux_ctl.html">omg.aux_ctl</a></li>
-<li class="toctree-l1"><a class="reference internal" href="omg.util.html">omg.util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omg.env.html">omg.env</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omg.execution.html">omg.execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.net.html">omg.net</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.util.html">omg.util</a></li>
 </ul>
 
             
@@ -176,6 +178,7 @@
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="omg.agents.agent.html">omg.agents.agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.agents.episodic.html">omg.agents.episodic</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omg.agents.safeopt.html">omg.agents.safeopt</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omg.agents.staticctrl.html">omg.agents.staticctrl</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omg.agents.util.html">omg.agents.util</a></li>
@@ -316,7 +319,7 @@ It might trigger the learning in some implementations.</p>
 <dl class="py class">
 <dt id="openmodelica_microgrid_gym.agents.SafeOptAgent">
 <em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.agents.</code><code class="sig-name descname">SafeOptAgent</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mutable_params</span></em>, <em class="sig-param"><span class="n">abort_reward</span></em>, <em class="sig-param"><span class="n">min_performance</span></em>, <em class="sig-param"><span class="n">kernel</span></em>, <em class="sig-param"><span class="n">gp_params</span></em>, <em class="sig-param"><span class="n">ctrls</span></em>, <em class="sig-param"><span class="n">obs_template</span></em>, <em class="sig-param"><span class="n">obs_varnames</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/safeopt.html#SafeOptAgent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.SafeOptAgent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent" title="openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent" title="openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent</span></code></a>, <a class="reference internal" href="omg.agents.episodic.html#openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent" title="openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent</span></code></a></p>
 <p>Agent to execute safeopt algorithm (<a class="reference external" href="https://arxiv.org/abs/1509.01066">https://arxiv.org/abs/1509.01066</a>) to control the environment by using
 auxiliary controllers and Gaussian process to adopt the controller parameters (mutable_params) to safely
 increase the performance.</p>
@@ -328,7 +331,7 @@ increase the performance.</p>
 negative reward in case of limit exceeded</p></li>
 <li><p><strong>kernel</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Kern</span></code>) – kernel for the Gaussian process unsing GPy</p></li>
 <li><p><strong>gp_params</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]) – kernel parameters like bounds and lengthscale</p></li>
-<li><p><strong>ctrls</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller" title="openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller"><code class="xref py py-class docutils literal notranslate"><span class="pre">Controller</span></code></a>]) – Controllers that are feed with the observations and exert actions on the environment</p></li>
+<li><p><strong>ctrls</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.Controller" title="openmodelica_microgrid_gym.aux_ctl.inverter_controllers.Controller"><code class="xref py py-class docutils literal notranslate"><span class="pre">Controller</span></code></a>]) – Controllers that are feed with the observations and exert actions on the environment</p></li>
 <li><p><strong>obs_template</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]]]) – <p>Template describing how the observation array should be transformed and passed to the internal controllers.
 The key must match the name field of an internal controller.
 The values are a list of:</p>
@@ -452,7 +455,7 @@ The Agent does not learn anything.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ctrls</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller" title="openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller"><code class="xref py py-class docutils literal notranslate"><span class="pre">Controller</span></code></a>]) – Controllers that are feed with the observations and exert actions on the environment</p></li>
+<li><p><strong>ctrls</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.Controller" title="openmodelica_microgrid_gym.aux_ctl.inverter_controllers.Controller"><code class="xref py py-class docutils literal notranslate"><span class="pre">Controller</span></code></a>]) – Controllers that are feed with the observations and exert actions on the environment</p></li>
 <li><p><strong>obs_template</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]]]) – <p>Template describing how the observation array should be transformed and passed to the internal controllers.
 The key must match the name field of an internal controller.
 The values are a list of:</p>

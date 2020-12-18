@@ -1,0 +1,552 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>omg.net &mdash; OpenModelica Microgrid 2020 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="omg.net.base" href="omg.net.base.html" />
+    <link rel="prev" title="omg.execution.callbacks" href="omg.execution.callbacks.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/Pythoncode.html">Toolbox Installation and General Remarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="omg.agents.html">omg.agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.aux_ctl.html">omg.aux_ctl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.env.html">omg.env</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.execution.html">omg.execution</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">omg.net</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="omg.net.base.html">omg.net.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omg.net.components.html">omg.net.components</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="omg.util.html">omg.util</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OpenModelica Microgrid</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>omg.net</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/omg.net.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="omg-net">
+<h1>omg.net<a class="headerlink" href="#omg-net" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="omg.net.base.html">omg.net.base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.net.components.html">omg.net.components</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="module-openmodelica_microgrid_gym.net">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-openmodelica_microgrid_gym.net" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="openmodelica_microgrid_gym.net.MasterInverter">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.net.</code><code class="sig-name descname">MasterInverter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v_ref</span><span class="o">=</span><span class="default_value">1, 0, 0</span></em>, <em class="sig-param"><span class="n">pdroop</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">qdroop</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/components.html#MasterInverter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.MasterInverter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="omg.net.components.html#openmodelica_microgrid_gym.net.components.Inverter" title="openmodelica_microgrid_gym.net.components.Inverter"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.net.components.Inverter</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u</strong> – </p></li>
+<li><p><strong>i</strong> – </p></li>
+<li><p><strong>i_noise</strong> – structured like: must contain the key ‘fun’,</p></li>
+</ul>
+</dd>
+</dl>
+<p>the key ‘clip’ is optional and no clipping is applied if omited</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s1">&#39;fun&#39;</span><span class="p">:</span>
+   <span class="p">{</span><span class="o">&lt;</span><span class="n">np</span><span class="o">.</span><span class="n">random</span> <span class="n">function</span> <span class="n">name</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="s2">&quot;normal&quot;</span><span class="o">&gt;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">dict</span> <span class="n">of</span> <span class="n">kwargs</span> <span class="n">to</span> <span class="n">be</span> <span class="n">passed</span> <span class="n">to</span> <span class="n">the</span> <span class="n">func</span><span class="o">&gt;</span><span class="p">},</span>
+<span class="s1">&#39;clip&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">kwargs</span> <span class="n">passed</span> <span class="n">to</span> <span class="n">clip</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v</strong> – </p></li>
+<li><p><strong>v_noise</strong> – similar to i_noise</p></li>
+<li><p><strong>i_nom</strong> – </p></li>
+<li><p><strong>i_lim</strong> – </p></li>
+<li><p><strong>v_lim</strong> – </p></li>
+<li><p><strong>v_DC</strong> – </p></li>
+<li><p><strong>i_ref</strong> – </p></li>
+<li><p><strong>out_vars</strong> – implicit parameter not to be passed in the net.yaml, but calculated dynamically in <code class="code docutils literal notranslate"><span class="pre">Network</span></code></p></li>
+<li><p><strong>kwargs</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.net.MasterInverter.calculate">
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/components.html#MasterInverter.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.MasterInverter.calculate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will modify object variables (like current i of an inductor) it is called after all internal variables are set.
+Therefore the function has side-effects.
+The return value must be a dictionary whose keys match the keys of self.out_calc
+and whose values are of the length of out_calcs values.
+The returned values are hence additional values (like reference current i_ref).</p>
+<dl class="simple">
+<dt>::</dt><dd><p>set(self.out_calc.keys()) == set(return)
+all([len(v) == self.out_calc[k] for k,v in return.items()])</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.net.MasterInverter.normalize">
+<code class="sig-name descname">normalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">calc_data</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/components.html#MasterInverter.normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.MasterInverter.normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will modify object variables it is called after all internal variables are set.
+Therefore the function has side-effects, similarly to calculate().</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.net.MasterInverter.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/components.html#MasterInverter.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.MasterInverter.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="openmodelica_microgrid_gym.net.MasterInverterCurrentSourcing">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.net.</code><code class="sig-name descname">MasterInverterCurrentSourcing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f_nom</span><span class="o">=</span><span class="default_value">50</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/components.html#MasterInverterCurrentSourcing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.MasterInverterCurrentSourcing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="omg.net.components.html#openmodelica_microgrid_gym.net.components.Inverter" title="openmodelica_microgrid_gym.net.components.Inverter"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.net.components.Inverter</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u</strong> – </p></li>
+<li><p><strong>i</strong> – </p></li>
+<li><p><strong>i_noise</strong> – structured like: must contain the key ‘fun’,</p></li>
+</ul>
+</dd>
+</dl>
+<p>the key ‘clip’ is optional and no clipping is applied if omited</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s1">&#39;fun&#39;</span><span class="p">:</span>
+   <span class="p">{</span><span class="o">&lt;</span><span class="n">np</span><span class="o">.</span><span class="n">random</span> <span class="n">function</span> <span class="n">name</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="s2">&quot;normal&quot;</span><span class="o">&gt;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">dict</span> <span class="n">of</span> <span class="n">kwargs</span> <span class="n">to</span> <span class="n">be</span> <span class="n">passed</span> <span class="n">to</span> <span class="n">the</span> <span class="n">func</span><span class="o">&gt;</span><span class="p">},</span>
+<span class="s1">&#39;clip&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">kwargs</span> <span class="n">passed</span> <span class="n">to</span> <span class="n">clip</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v</strong> – </p></li>
+<li><p><strong>v_noise</strong> – similar to i_noise</p></li>
+<li><p><strong>i_nom</strong> – </p></li>
+<li><p><strong>i_lim</strong> – </p></li>
+<li><p><strong>v_lim</strong> – </p></li>
+<li><p><strong>v_DC</strong> – </p></li>
+<li><p><strong>i_ref</strong> – </p></li>
+<li><p><strong>out_vars</strong> – implicit parameter not to be passed in the net.yaml, but calculated dynamically in <code class="code docutils literal notranslate"><span class="pre">Network</span></code></p></li>
+<li><p><strong>kwargs</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.net.MasterInverterCurrentSourcing.calculate">
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/components.html#MasterInverterCurrentSourcing.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.MasterInverterCurrentSourcing.calculate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will modify object variables (like current i of an inductor) it is called after all internal variables are set.
+Therefore the function has side-effects.
+The return value must be a dictionary whose keys match the keys of self.out_calc
+and whose values are of the length of out_calcs values.
+The returned values are hence additional values (like reference current i_ref).</p>
+<dl class="simple">
+<dt>::</dt><dd><p>set(self.out_calc.keys()) == set(return)
+all([len(v) == self.out_calc[k] for k,v in return.items()])</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.net.MasterInverterCurrentSourcing.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/components.html#MasterInverterCurrentSourcing.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.MasterInverterCurrentSourcing.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="openmodelica_microgrid_gym.net.Network">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.net.</code><code class="sig-name descname">Network</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ts</span></em>, <em class="sig-param"><span class="n">v_nom</span></em>, <em class="sig-param"><span class="n">freq_nom</span><span class="o">=</span><span class="default_value">50</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/base.html#Network"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.Network" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class has two main functions:</p>
+<ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">load()</span></code>: load yaml files to instantiate an object structure of electronic components</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">augment()</span></code>: traverses all components and uses the data from the simulation and augments or modifies it.</p></li>
+</ul>
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.net.Network.augment">
+<code class="sig-name descname">augment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/base.html#Network.augment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.Network.augment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows the network to provide additional output variables in order to provide measurements and reference
+information the RL agent needs to understand its rewards.</p>
+<p>The function is stateful!</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>state</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – raw state as recieved form the environment. must match the expected shape specified by <code class="code docutils literal notranslate"><span class="pre">in_vars()</span></code></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>augmented state in raw and normalized</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.net.Network.components">
+<em class="property">property </em><code class="sig-name descname">components</code><a class="headerlink" href="#openmodelica_microgrid_gym.net.Network.components" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="omg.net.base.html#openmodelica_microgrid_gym.net.base.Component" title="openmodelica_microgrid_gym.net.base.Component"><code class="xref py py-class docutils literal notranslate"><span class="pre">Component</span></code></a>]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>rtype</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.net.Network.in_vars">
+<code class="sig-name descname">in_vars</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/base.html#Network.in_vars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.Network.in_vars" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.net.Network.load">
+<em class="property">classmethod </em><code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">configurl</span><span class="o">=</span><span class="default_value">'net.yaml'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/base.html#Network.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.Network.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize object from config file
+Structure of yaml-file:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>conf::             *net_params* *components*
+net_params::       &lt;parameters passed to Network.__init__()&gt;
+components::       components:
+                     *component*
+                     ...
+                     *component*
+component::        &lt;key; has no semantic meaning, but needs to be unique&gt;:
+                     *component_params*
+component_params:: cls: &lt;ComponentCls&gt;
+                   in:
+                      &lt;ComponentCls attr name&gt;: &lt;list of variablenames, see augment&gt;
+                   out:
+                      &lt;ComponentCls attr name&gt;: &lt;list of variablenames, see augment&gt;
+                   &lt;additional parameters passed to ComponentCls.__init__()&gt;
+</pre></div>
+</div>
+<p>All ‘in’ and ‘out’ variable names together define the interaction with the environment,
+expected cardinality and order of the vector provided to the augment().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>configurl</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.net.Network.out_vars">
+<code class="sig-name descname">out_vars</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">with_aug</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">flattened</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/base.html#Network.out_vars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.Network.out_vars" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.net.Network.params">
+<code class="sig-name descname">params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">actions</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/base.html#Network.params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.Network.params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows the network to add additional parameters like changing loads to the simulation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>actions</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>mapping of additional actions and list of actions.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.net.Network.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/base.html#Network.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.Network.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.net.Network.risk">
+<code class="sig-name descname">risk</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/base.html#Network.risk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.Network.risk" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="openmodelica_microgrid_gym.net.SlaveInverter">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.net.</code><code class="sig-name descname">SlaveInverter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pll</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pdroop</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">qdroop</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/components.html#SlaveInverter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.SlaveInverter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="omg.net.components.html#openmodelica_microgrid_gym.net.components.Inverter" title="openmodelica_microgrid_gym.net.components.Inverter"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.net.components.Inverter</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u</strong> – </p></li>
+<li><p><strong>i</strong> – </p></li>
+<li><p><strong>i_noise</strong> – structured like: must contain the key ‘fun’,</p></li>
+</ul>
+</dd>
+</dl>
+<p>the key ‘clip’ is optional and no clipping is applied if omited</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s1">&#39;fun&#39;</span><span class="p">:</span>
+   <span class="p">{</span><span class="o">&lt;</span><span class="n">np</span><span class="o">.</span><span class="n">random</span> <span class="n">function</span> <span class="n">name</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="s2">&quot;normal&quot;</span><span class="o">&gt;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">dict</span> <span class="n">of</span> <span class="n">kwargs</span> <span class="n">to</span> <span class="n">be</span> <span class="n">passed</span> <span class="n">to</span> <span class="n">the</span> <span class="n">func</span><span class="o">&gt;</span><span class="p">},</span>
+<span class="s1">&#39;clip&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">kwargs</span> <span class="n">passed</span> <span class="n">to</span> <span class="n">clip</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v</strong> – </p></li>
+<li><p><strong>v_noise</strong> – similar to i_noise</p></li>
+<li><p><strong>i_nom</strong> – </p></li>
+<li><p><strong>i_lim</strong> – </p></li>
+<li><p><strong>v_lim</strong> – </p></li>
+<li><p><strong>v_DC</strong> – </p></li>
+<li><p><strong>i_ref</strong> – </p></li>
+<li><p><strong>out_vars</strong> – implicit parameter not to be passed in the net.yaml, but calculated dynamically in <code class="code docutils literal notranslate"><span class="pre">Network</span></code></p></li>
+<li><p><strong>kwargs</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.net.SlaveInverter.calculate">
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/components.html#SlaveInverter.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.SlaveInverter.calculate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will modify object variables (like current i of an inductor) it is called after all internal variables are set.
+Therefore the function has side-effects.
+The return value must be a dictionary whose keys match the keys of self.out_calc
+and whose values are of the length of out_calcs values.
+The returned values are hence additional values (like reference current i_ref).</p>
+<dl class="simple">
+<dt>::</dt><dd><p>set(self.out_calc.keys()) == set(return)
+all([len(v) == self.out_calc[k] for k,v in return.items()])</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.net.SlaveInverter.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/net/components.html#SlaveInverter.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.net.SlaveInverter.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="omg.net.base.html" class="btn btn-neutral float-right" title="omg.net.base" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="omg.execution.callbacks.html" class="btn btn-neutral float-left" title="omg.execution.callbacks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

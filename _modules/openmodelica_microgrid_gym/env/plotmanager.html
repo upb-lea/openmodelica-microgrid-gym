@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>openmodelica_microgrid_gym.env.plotmanager &mdash; OpenModelica Microgrid 2020 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/Pythoncode.html">Toolbox Installation and General Remarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.agents.html">omg.agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.aux_ctl.html">omg.aux_ctl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.env.html">omg.env</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.execution.html">omg.execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.net.html">omg.net</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.util.html">omg.util</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OpenModelica Microgrid</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>openmodelica_microgrid_gym.env.plotmanager</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for openmodelica_microgrid_gym.env.plotmanager</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os.path</span> <span class="k">as</span> <span class="nn">p</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.agents</span> <span class="kn">import</span> <span class="n">SafeOptAgent</span>
+
+
+<div class="viewcode-block" id="PlotManager"><a class="viewcode-back" href="../../../api/omg.env.plotmanager.html#openmodelica_microgrid_gym.env.plotmanager.PlotManager">[docs]</a><span class="k">class</span> <span class="nc">PlotManager</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">used_agent</span><span class="p">:</span> <span class="n">SafeOptAgent</span><span class="p">,</span>
+                 <span class="n">save_results</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">save_folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;test_folder&#39;</span><span class="p">,</span> <span class="n">show_plots</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class for plot configuration, knows agent, so can include agent params to title (e.g. performance)</span>
+<span class="sd">        If more plots should be stored in save_folder, extend the corresponding label function with save command</span>
+<span class="sd">        :param used_agent: agent used for experiment</span>
+<span class="sd">        :param save_results: if True, saves results to save_folder</span>
+<span class="sd">        :param save_folder: folder name</span>
+<span class="sd">        :param show_plots: if True, shows plots after each run</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">agent</span> <span class="o">=</span> <span class="n">used_agent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span> <span class="o">=</span> <span class="n">save_results</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_folder</span> <span class="o">=</span> <span class="n">save_folder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_plots</span> <span class="o">=</span> <span class="n">show_plots</span>
+
+<div class="viewcode-block" id="PlotManager.xylables_v_abc"><a class="viewcode-back" href="../../../api/omg.env.plotmanager.html#openmodelica_microgrid_gym.env.plotmanager.PlotManager.xylables_v_abc">[docs]</a>    <span class="k">def</span> <span class="nf">xylables_v_abc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_axes</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span>
+                         <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;$v_{\mathrm</span><span class="si">{abc}</span><span class="s1">}\,/\,\mathrm</span><span class="si">{V}</span><span class="s1">$&#39;</span><span class="p">,</span>
+                         <span class="n">filename</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">_J_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">performance</span><span class="si">}</span><span class="s1">_v_abc0&#39;</span><span class="p">,</span>
+                         <span class="n">legend</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">handle_slice</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">labels</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Measurement&#39;</span><span class="p">,</span> <span class="s1">&#39;Setpoint&#39;</span><span class="p">),</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PlotManager.xylables_v_dq0"><a class="viewcode-back" href="../../../api/omg.env.plotmanager.html#openmodelica_microgrid_gym.env.plotmanager.PlotManager.xylables_v_dq0">[docs]</a>    <span class="k">def</span> <span class="nf">xylables_v_dq0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_axes</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span>
+                         <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;$v_{\mathrm</span><span class="si">{dq0}</span><span class="s1">}\,/\,\mathrm</span><span class="si">{V}</span><span class="s1">$&#39;</span><span class="p">,</span>
+                         <span class="n">filename</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">_J_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">performance</span><span class="si">}</span><span class="s1">_v_dq0&#39;</span><span class="p">,</span>
+                         <span class="n">legend</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">handle_slice</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">labels</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Measurement&#39;</span><span class="p">,</span> <span class="s1">&#39;Setpoint&#39;</span><span class="p">),</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PlotManager.xylables_i_abc"><a class="viewcode-back" href="../../../api/omg.env.plotmanager.html#openmodelica_microgrid_gym.env.plotmanager.PlotManager.xylables_i_abc">[docs]</a>    <span class="k">def</span> <span class="nf">xylables_i_abc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_axes</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span>
+                         <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;$i_{\mathrm</span><span class="si">{abc}</span><span class="s1">}\,/\,\mathrm</span><span class="si">{A}</span><span class="s1">$&#39;</span><span class="p">,</span>
+                         <span class="n">filename</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">_J_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">performance</span><span class="si">}</span><span class="s1">_i_abc&#39;</span><span class="p">,</span>
+                         <span class="n">legend</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">handle_slice</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">labels</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Measurement&#39;</span><span class="p">,</span> <span class="s1">&#39;Setpoint&#39;</span><span class="p">),</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PlotManager.xylables_i_dq0"><a class="viewcode-back" href="../../../api/omg.env.plotmanager.html#openmodelica_microgrid_gym.env.plotmanager.PlotManager.xylables_i_dq0">[docs]</a>    <span class="k">def</span> <span class="nf">xylables_i_dq0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_axes</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span>
+                         <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;$i_{\mathrm</span><span class="si">{dq0}</span><span class="s1">}\,/\,\mathrm</span><span class="si">{A}</span><span class="s1">$&#39;</span><span class="p">,</span>
+                         <span class="n">filename</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">_J_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">performance</span><span class="si">}</span><span class="s1">_i_dq0&#39;</span><span class="p">,</span>
+                         <span class="n">legend</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">handle_slice</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">labels</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Measurement&#39;</span><span class="p">,</span> <span class="s1">&#39;Setpoint&#39;</span><span class="p">),</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PlotManager.update_axes"><a class="viewcode-back" href="../../../api/omg.env.plotmanager.html#openmodelica_microgrid_gym.env.plotmanager.PlotManager.update_axes">[docs]</a>    <span class="k">def</span> <span class="nf">update_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$t\,/\,\mathrm</span><span class="si">{s}</span><span class="s1">$&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        General function to handle most of the standard modifications</span>
+<span class="sd">        :param fig: figure to change</span>
+<span class="sd">        :param title: optional title</span>
+<span class="sd">        :param xlabel: optional label, time in seconds is default</span>
+<span class="sd">        :param ylabel: optional ylabel</span>
+<span class="sd">        :param legend: optional legend, can have optional key &quot;handle_slice&quot; which is used to slice the line handles for legend and set labels accordingly.</span>
+<span class="sd">        :param filename: optional filename</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">xlabel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ylabel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">which</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">legend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;handle_slice&#39;</span> <span class="ow">in</span> <span class="n">legend</span><span class="p">:</span>
+                <span class="n">_slice</span> <span class="o">=</span> <span class="n">legend</span><span class="p">[</span><span class="s1">&#39;handle_slice&#39;</span><span class="p">]</span>
+                <span class="k">del</span> <span class="n">legend</span><span class="p">[</span><span class="s1">&#39;handle_slice&#39;</span><span class="p">]</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">lines</span><span class="p">[</span><span class="n">_slice</span><span class="p">],</span> <span class="o">**</span><span class="n">legend</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="o">**</span><span class="n">legend</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span> <span class="ow">and</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">filetype</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pgf&#39;</span><span class="p">,</span> <span class="s1">&#39;pdf&#39;</span><span class="p">]:</span>
+                <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_folder</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">filetype</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_plots</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

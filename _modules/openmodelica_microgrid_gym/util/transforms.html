@@ -93,9 +93,10 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/omg.agents.html">omg.agents</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/omg.aux_ctl.html">omg.aux_ctl</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.util.html">omg.util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/omg.env.html">omg.env</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/omg.execution.html">omg.execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.net.html">omg.net</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.util.html">omg.util</a></li>
 </ul>
 
             
@@ -282,6 +283,7 @@
 <div class="viewcode-block" id="abc_to_alpha_beta"><a class="viewcode-back" href="../../../api/omg.util.transforms.html#openmodelica_microgrid_gym.util.abc_to_alpha_beta">[docs]</a><span class="k">def</span> <span class="nf">abc_to_alpha_beta</span><span class="p">(</span><span class="n">abc</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transforms from abc frame to the alpha-beta frame</span>
+
 <span class="sd">    :param abc: The values in the abc reference frame</span>
 <span class="sd">    :return [alpha,beta]: The transformed alpha beta results</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -294,16 +296,18 @@
 
 <div class="viewcode-block" id="cos_sin"><a class="viewcode-back" href="../../../api/omg.util.transforms.html#openmodelica_microgrid_gym.util.cos_sin">[docs]</a><span class="k">def</span> <span class="nf">cos_sin</span><span class="p">(</span><span class="n">theta</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Transforms from provided angle to the relavent cossine values</span>
+<span class="sd">    Transforms from provided angle to the relevant cosine values</span>
+
 <span class="sd">    :param theta: The angle [In RADIANS]</span>
-<span class="sd">    :return: [alpha,beta] The resultant cossine</span>
+<span class="sd">    :return: [alpha,beta] The resulting cosine</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)])</span></div>
 
 
 <div class="viewcode-block" id="inst_rms"><a class="viewcode-back" href="../../../api/omg.util.transforms.html#openmodelica_microgrid_gym.util.inst_rms">[docs]</a><span class="k">def</span> <span class="nf">inst_rms</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculates the instantaneous RMS (root mean sqare) value of the input arr</span>
+<span class="sd">    Calculates the instantaneous RMS (root mean square) value of the input arr</span>
+
 <span class="sd">    :param arr: Input</span>
 <span class="sd">    :return: RMS value of the arr</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -329,6 +333,7 @@
 <div class="viewcode-block" id="inst_power"><a class="viewcode-back" href="../../../api/omg.util.transforms.html#openmodelica_microgrid_gym.util.inst_power">[docs]</a><span class="k">def</span> <span class="nf">inst_power</span><span class="p">(</span><span class="n">varr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">iarr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the instantaneous power</span>
+
 <span class="sd">    :param varr: voltage</span>
 <span class="sd">    :param iarr: current</span>
 <span class="sd">    :return: instantaneous power</span>
@@ -339,6 +344,7 @@
 <div class="viewcode-block" id="inst_reactive"><a class="viewcode-back" href="../../../api/omg.util.transforms.html#openmodelica_microgrid_gym.util.inst_reactive">[docs]</a><span class="k">def</span> <span class="nf">inst_reactive</span><span class="p">(</span><span class="n">varr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">iarr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the instantaneous reactive power</span>
+
 <span class="sd">    :param varr: voltage</span>
 <span class="sd">    :param iarr: current</span>
 <span class="sd">    :return: instantaneous reactive power</span>

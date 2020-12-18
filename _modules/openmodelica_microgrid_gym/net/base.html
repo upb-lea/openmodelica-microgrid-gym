@@ -1,0 +1,510 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>openmodelica_microgrid_gym.net.base &mdash; OpenModelica Microgrid 2020 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/OpenModelica.html">OpenModelica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/fmu.html">Functional Mock-up Unit (FMU)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/Pythoncode.html">Toolbox Installation and General Remarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parts/user_guide/controller_tuning.html">Controller Tuning Hints</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.agents.html">omg.agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.aux_ctl.html">omg.aux_ctl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.env.html">omg.env</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.execution.html">omg.execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.net.html">omg.net</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.util.html">omg.util</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OpenModelica Microgrid</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>openmodelica_microgrid_gym.net.base</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for openmodelica_microgrid_gym.net.base</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">importlib</span> <span class="kn">import</span> <span class="n">import_module</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">numexpr</span> <span class="k">as</span> <span class="nn">ne</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">from</span> <span class="nn">more_itertools</span> <span class="kn">import</span> <span class="n">collapse</span><span class="p">,</span> <span class="n">flatten</span>
+
+
+<div class="viewcode-block" id="Component"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Component">[docs]</a><span class="k">class</span> <span class="nc">Component</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">net</span><span class="p">:</span> <span class="s1">&#39;Network&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">in_vars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out_vars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out_calc</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="sd">        :param net: Network to which component belongs to</span>
+<span class="sd">        :param id: Component ID</span>
+<span class="sd">        :param in_vars: Input variables to component</span>
+<span class="sd">        :param out_vars: Output variables from component</span>
+<span class="sd">        :param out_calc: (mapping from attr name to dimension of data vector) Adds values (e.g. references,...) to output</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">net</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="nb">id</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">((</span><span class="n">f</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="p">(</span><span class="n">in_vars</span><span class="p">,</span> <span class="n">out_vars</span><span class="p">)))):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> no such attribute: </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_vars</span> <span class="o">=</span> <span class="n">in_vars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_idx</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: Optional[dict]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_calc</span> <span class="o">=</span> <span class="n">out_calc</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_vars</span> <span class="o">=</span> <span class="n">out_vars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_idx</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: Optional[dict]</span>
+
+<div class="viewcode-block" id="Component.reset"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Component.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Component.risk"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Component.risk">[docs]</a>    <span class="k">def</span> <span class="nf">risk</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="Component.params"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Component.params">[docs]</a>    <span class="k">def</span> <span class="nf">params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate additional environment parameters</span>
+
+<span class="sd">        :param actions:</span>
+<span class="sd">        :return: mapping</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="Component.get_in_vars"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Component.get_in_vars">[docs]</a>    <span class="k">def</span> <span class="nf">get_in_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        list of input variable names of this component</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_vars</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[[</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix_var</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">]</span> <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">vals</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="Component.get_out_vars"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Component.get_out_vars">[docs]</a>    <span class="k">def</span> <span class="nf">get_out_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">with_aug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_vars</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix_var</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">]</span> <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">vals</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">with_aug</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">r</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">r</span> <span class="o">+</span> <span class="p">[[</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix_var</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span> <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">out_calc</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span></div>
+
+<div class="viewcode-block" id="Component.fill_tmpl"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Component.fill_tmpl">[docs]</a>    <span class="k">def</span> <span class="nf">fill_tmpl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;call set_tmplidx before fill_tmpl. the keys must be converted to indices for efficiency&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">idxs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_idx</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># set object variables to the respective state variables</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">state</span><span class="p">[</span><span class="n">idxs</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> has no such attribute: </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Component.set_outidx"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Component.set_outidx">[docs]</a>    <span class="k">def</span> <span class="nf">set_outidx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+        <span class="c1"># This pre-calculation is done mainly for performance reasons</span>
+        <span class="n">keyidx</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">)}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_idx</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">keys</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="c1"># lookup index in the whole state keys</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">out_idx</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">keyidx</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix_var</span><span class="p">(</span><span class="n">key</span><span class="p">)]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;the output variable </span><span class="si">{</span><span class="n">e</span><span class="si">!s}</span><span class="s1"> is not provided by your state keys&#39;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_prefix_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">strs</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">strs</span> <span class="o">=</span> <span class="p">[</span><span class="n">strs</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">strs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+            <span class="c1"># first string minus its prefix &#39;.&#39; and the remaining strs</span>
+            <span class="n">strs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">strs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># this is a complete identifier like &#39;lc1.inductor1.i&#39; that should not be modified:</span>
+                <span class="n">strs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">+</span> <span class="n">strs</span>
+        <span class="k">return</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">strs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Component.calculate"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Component.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Will modify object variables (like current i of an inductor) it is called after all internal variables are set.</span>
+<span class="sd">        Therefore the function has side-effects.</span>
+<span class="sd">        The return value must be a dictionary whose keys match the keys of self.out_calc</span>
+<span class="sd">        and whose values are of the length of out_calcs values.</span>
+<span class="sd">        The returned values are hence additional values (like reference current i_ref).</span>
+
+<span class="sd">        ::</span>
+<span class="sd">            set(self.out_calc.keys()) == set(return)</span>
+<span class="sd">            all([len(v) == self.out_calc[k] for k,v in return.items()])</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Component.normalize"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Component.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calc_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Will modify object variables it is called after all internal variables are set.</span>
+<span class="sd">        Therefore the function has side-effects, similarly to calculate().</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Component.augment"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Component.augment">[docs]</a>    <span class="k">def</span> <span class="nf">augment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stateful function that calculates additional values given the state of the environment.</span>
+
+<span class="sd">        :param state:  state array to augment and normalize</span>
+<span class="sd">        :return: augmented state as tuple of raw and normalized</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fill_tmpl</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="n">calc_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span><span class="p">()</span>
+        <span class="n">raw_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_data</span><span class="p">(</span><span class="n">calc_data</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">calc_data</span><span class="p">)</span>
+        <span class="n">norm_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_data</span><span class="p">(</span><span class="n">calc_data</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">raw_data</span><span class="p">,</span> <span class="n">norm_data</span></div>
+
+<div class="viewcode-block" id="Component.extract_data"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Component.extract_data">[docs]</a>    <span class="k">def</span> <span class="nf">extract_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calc_data</span><span class="p">):</span>
+        <span class="n">attr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">new_vals</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_calc</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">new_vals</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">calc_data</span><span class="p">[</span><span class="n">attr</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)])</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_idx</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span> <span class="o">+</span> <span class="n">new_vals</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> missing return key: </span><span class="si">{</span><span class="n">e</span><span class="si">!s}</span><span class="s1">. did you forget to set it in the calculate method?&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1">.calculate()[</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s1">] has the wrong number of values&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Network"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Network">[docs]</a><span class="k">class</span> <span class="nc">Network</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class has two main functions:</span>
+
+<span class="sd">    - :code:`load()`: load yaml files to instantiate an object structure of electronic components</span>
+<span class="sd">    - :code:`augment()`: traverses all components and uses the data from the simulation and augments or modifies it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ts</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">v_nom</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">freq_nom</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">50</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ts</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_nom</span> <span class="o">=</span> <span class="n">ne</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">v_nom</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq_nom</span> <span class="o">=</span> <span class="n">freq_nom</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_validate_load_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="c1"># validate that inputs are disjoined</span>
+        <span class="n">components_with_inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">component</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;components&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span>
+                                  <span class="s1">&#39;in&#39;</span> <span class="ow">in</span> <span class="n">component</span><span class="p">]</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">flatten</span><span class="p">(</span><span class="n">components_with_inputs</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">len</span><span class="p">,</span> <span class="n">inputs</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">()</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="o">*</span><span class="n">inputs</span><span class="p">)):</span>
+            <span class="c1"># all inputs are pairwise disjoint if the total number of inputs is the same as the number of elements in the union</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The inputs of the components should be disjoined&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="Network.load"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Network.load">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">configurl</span><span class="o">=</span><span class="s1">&#39;net.yaml&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize object from config file</span>
+<span class="sd">        Structure of yaml-file:</span>
+
+<span class="sd">        .. code-block:: text</span>
+
+<span class="sd">            conf::             *net_params* *components*</span>
+<span class="sd">            net_params::       &lt;parameters passed to Network.__init__()&gt;</span>
+<span class="sd">            components::       components:</span>
+<span class="sd">                                 *component*</span>
+<span class="sd">                                 ...</span>
+<span class="sd">                                 *component*</span>
+<span class="sd">            component::        &lt;key; has no semantic meaning, but needs to be unique&gt;:</span>
+<span class="sd">                                 *component_params*</span>
+<span class="sd">            component_params:: cls: &lt;ComponentCls&gt;</span>
+<span class="sd">                               in:</span>
+<span class="sd">                                  &lt;ComponentCls attr name&gt;: &lt;list of variablenames, see augment&gt;</span>
+<span class="sd">                               out:</span>
+<span class="sd">                                  &lt;ComponentCls attr name&gt;: &lt;list of variablenames, see augment&gt;</span>
+<span class="sd">                               &lt;additional parameters passed to ComponentCls.__init__()&gt;</span>
+
+<span class="sd">        All &#39;in&#39; and &#39;out&#39; variable names together define the interaction with the environment,</span>
+<span class="sd">        expected cardinality and order of the vector provided to the augment().</span>
+
+<span class="sd">        :param configurl:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">configurl</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_validate_load_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;loading </span><span class="si">{</span><span class="n">configurl</span><span class="si">}</span><span class="s1"> failed due to validation&#39;</span><span class="p">)</span>
+        <span class="n">components</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;components&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;components&#39;</span><span class="p">]</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">components_obj</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">components</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># resolve class from &#39;cls&#39; argument</span>
+            <span class="n">comp_cls</span> <span class="o">=</span> <span class="n">component</span><span class="p">[</span><span class="s1">&#39;cls&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">component</span><span class="p">[</span><span class="s1">&#39;cls&#39;</span><span class="p">]</span>
+            <span class="n">comp_cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">import_module</span><span class="p">(</span><span class="s1">&#39;..components&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">),</span> <span class="n">comp_cls</span><span class="p">)</span>
+
+            <span class="c1"># rename keys (because &#39;in&#39; is a reserved keyword)</span>
+            <span class="k">if</span> <span class="s1">&#39;in&#39;</span> <span class="ow">in</span> <span class="n">component</span><span class="p">:</span>
+                <span class="n">component</span><span class="p">[</span><span class="s1">&#39;in_vars&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;in&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;out&#39;</span> <span class="ow">in</span> <span class="n">component</span><span class="p">:</span>
+                <span class="n">component</span><span class="p">[</span><span class="s1">&#39;out_vars&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;out&#39;</span><span class="p">)</span>
+
+            <span class="c1"># instantiate component class</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">components_obj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp_cls</span><span class="p">(</span><span class="n">net</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">component</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">e</span><span class="si">!s}</span><span class="s1">, please validate </span><span class="si">{</span><span class="n">configurl</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">components</span> <span class="o">=</span> <span class="n">components_obj</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="Network.risk"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Network.risk">[docs]</a>    <span class="k">def</span> <span class="nf">risk</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">comp</span><span class="o">.</span><span class="n">risk</span><span class="p">()</span> <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Network.reset"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Network.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">comp</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Network.params"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Network.params">[docs]</a>    <span class="k">def</span> <span class="nf">params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Allows the network to add additional parameters like changing loads to the simulation</span>
+
+<span class="sd">        :param actions:</span>
+<span class="sd">        :return: mapping of additional actions and list of actions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span>
+            <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">d</span></div>
+
+<div class="viewcode-block" id="Network.augment"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Network.augment">[docs]</a>    <span class="k">def</span> <span class="nf">augment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Allows the network to provide additional output variables in order to provide measurements and reference</span>
+<span class="sd">        information the RL agent needs to understand its rewards.</span>
+
+<span class="sd">        The function is stateful!</span>
+
+<span class="sd">        :param state: raw state as recieved form the environment. must match the expected shape specified by :code:`in_vars()`</span>
+<span class="sd">        :return: augmented state in raw and normalized</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">comp</span><span class="o">.</span><span class="n">augment</span><span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">])])</span></div>
+
+<div class="viewcode-block" id="Network.in_vars"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Network.in_vars">[docs]</a>    <span class="k">def</span> <span class="nf">in_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">collapse</span><span class="p">([</span><span class="n">comp</span><span class="o">.</span><span class="n">get_in_vars</span><span class="p">()</span> <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">]))</span></div>
+
+<div class="viewcode-block" id="Network.out_vars"><a class="viewcode-back" href="../../../api/omg.net.base.html#openmodelica_microgrid_gym.net.Network.out_vars">[docs]</a>    <span class="k">def</span> <span class="nf">out_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">with_aug</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">flattened</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="p">[</span><span class="n">comp</span><span class="o">.</span><span class="n">get_out_vars</span><span class="p">(</span><span class="n">with_aug</span><span class="p">)</span> <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">flattened</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">collapse</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">r</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">components</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Component</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_components</span>
+
+    <span class="nd">@components</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">components</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Component</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_components</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_vars</span><span class="p">(</span><span class="n">with_aug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">flattened</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">comp</span><span class="o">.</span><span class="n">set_outidx</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get component by id</span>
+
+<span class="sd">        :param item: name of the component</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">component</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">item</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">component</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;no such component named &quot;</span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -93,9 +93,10 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api/omg.agents.html">omg.agents</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/omg.aux_ctl.html">omg.aux_ctl</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/omg.util.html">omg.util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/omg.env.html">omg.env</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/omg.execution.html">omg.execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/omg.net.html">omg.net</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/omg.util.html">omg.util</a></li>
 </ul>
 
             
@@ -172,6 +173,7 @@
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#J"><strong>J</strong></a>
  | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
@@ -183,6 +185,7 @@
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
+ | <a href="#X"><strong>X</strong></a>
  
 </div>
 <h2 id="_">_</h2>
@@ -258,14 +261,50 @@
         <li><a href="api/omg.util.html#openmodelica_microgrid_gym.util.SingleHistory.append">(openmodelica_microgrid_gym.util.SingleHistory method)</a>
 </li>
       </ul></li>
+      <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Component.augment">augment() (openmodelica_microgrid_gym.net.base.Component method)</a>
+
+      <ul>
+        <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Network.augment">(openmodelica_microgrid_gym.net.base.Network method)</a>
+</li>
+        <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.Network.augment">(openmodelica_microgrid_gym.net.Network method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/omg.execution.html#openmodelica_microgrid_gym.execution.Callback">Callback (class in openmodelica_microgrid_gym.execution)</a>
+      <li><a href="api/omg.aux_ctl.observers.html#openmodelica_microgrid_gym.aux_ctl.observers.Lueneberger.cal_estimate">cal_estimate() (openmodelica_microgrid_gym.aux_ctl.observers.Lueneberger method)</a>
+
+      <ul>
+        <li><a href="api/omg.aux_ctl.observers.html#openmodelica_microgrid_gym.aux_ctl.observers.Observer.cal_estimate">(openmodelica_microgrid_gym.aux_ctl.observers.Observer method)</a>
 </li>
+      </ul></li>
+      <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Component.calculate">calculate() (openmodelica_microgrid_gym.net.base.Component method)</a>
+
+      <ul>
+        <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.Inverter.calculate">(openmodelica_microgrid_gym.net.components.Inverter method)</a>
+</li>
+        <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.MasterInverter.calculate">(openmodelica_microgrid_gym.net.components.MasterInverter method)</a>
+</li>
+        <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.MasterInverterCurrentSourcing.calculate">(openmodelica_microgrid_gym.net.components.MasterInverterCurrentSourcing method)</a>
+</li>
+        <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.SlaveInverter.calculate">(openmodelica_microgrid_gym.net.components.SlaveInverter method)</a>
+</li>
+        <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.MasterInverter.calculate">(openmodelica_microgrid_gym.net.MasterInverter method)</a>
+</li>
+        <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.MasterInverterCurrentSourcing.calculate">(openmodelica_microgrid_gym.net.MasterInverterCurrentSourcing method)</a>
+</li>
+        <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.SlaveInverter.calculate">(openmodelica_microgrid_gym.net.SlaveInverter method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/omg.execution.html#openmodelica_microgrid_gym.execution.Callback">Callback (class in openmodelica_microgrid_gym.execution)</a>
+
+      <ul>
+        <li><a href="api/omg.execution.callbacks.html#openmodelica_microgrid_gym.execution.callbacks.Callback">(class in openmodelica_microgrid_gym.execution.callbacks)</a>
+</li>
+      </ul></li>
       <li><a href="api/omg.execution.html#openmodelica_microgrid_gym.execution.Runner.callback">callback (openmodelica_microgrid_gym.execution.Runner attribute)</a>
 
       <ul>
@@ -279,27 +318,41 @@
 </li>
       </ul></li>
       <li><a href="api/omg.util.html#openmodelica_microgrid_gym.util.Fastqueue.clear">clear() (openmodelica_microgrid_gym.util.Fastqueue method)</a>
+
+      <ul>
+        <li><a href="api/omg.util.fastqueue.html#openmodelica_microgrid_gym.util.fastqueue.Fastqueue.clear">(openmodelica_microgrid_gym.util.fastqueue.Fastqueue method)</a>
 </li>
+      </ul></li>
       <li><a href="api/omg.env.modelica.html#openmodelica_microgrid_gym.env.modelica.ModelicaEnv.close">close() (openmodelica_microgrid_gym.env.modelica.ModelicaEnv method)</a>
 
       <ul>
         <li><a href="api/omg.env.html#openmodelica_microgrid_gym.env.ModelicaEnv.close">(openmodelica_microgrid_gym.env.ModelicaEnv method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/omg.util.recorder.html#openmodelica_microgrid_gym.util.recorder.StructuredMapping.cols">cols() (openmodelica_microgrid_gym.util.recorder.StructuredMapping property)</a>
 </li>
+      <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Component">Component (class in openmodelica_microgrid_gym.net.base)</a>
+</li>
+      <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Network.components">components() (openmodelica_microgrid_gym.net.base.Network property)</a>
+
+      <ul>
+        <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.Network.components">(openmodelica_microgrid_gym.net.Network property)</a>
+</li>
+      </ul></li>
       <li><a href="api/omg.aux_ctl.html#openmodelica_microgrid_gym.aux_ctl.Controller.control">control() (openmodelica_microgrid_gym.aux_ctl.Controller method)</a>
 
       <ul>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller.control">(openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller method)</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.Controller.control">(openmodelica_microgrid_gym.aux_ctl.inverter_controllers.Controller method)</a>
 </li>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseABCPIPIController.control">(openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseABCPIPIController method)</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.MultiPhaseABCPIPIController.control">(openmodelica_microgrid_gym.aux_ctl.inverter_controllers.MultiPhaseABCPIPIController method)</a>
 </li>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQ0PIPIController.control">(openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQ0PIPIController method)</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.MultiPhaseDQ0PIPIController.control">(openmodelica_microgrid_gym.aux_ctl.inverter_controllers.MultiPhaseDQ0PIPIController method)</a>
 </li>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQCurrentController.control">(openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQCurrentController method)</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.MultiPhaseDQCurrentController.control">(openmodelica_microgrid_gym.aux_ctl.inverter_controllers.MultiPhaseDQCurrentController method)</a>
 </li>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQCurrentSourcingController.control">(openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQCurrentSourcingController method)</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.MultiPhaseDQCurrentSourcingController.control">(openmodelica_microgrid_gym.aux_ctl.inverter_controllers.MultiPhaseDQCurrentSourcingController method)</a>
 </li>
         <li><a href="api/omg.aux_ctl.html#openmodelica_microgrid_gym.aux_ctl.MultiPhaseABCPIPIController.control">(openmodelica_microgrid_gym.aux_ctl.MultiPhaseABCPIPIController method)</a>
 </li>
@@ -310,12 +363,10 @@
         <li><a href="api/omg.aux_ctl.html#openmodelica_microgrid_gym.aux_ctl.MultiPhaseDQCurrentSourcingController.control">(openmodelica_microgrid_gym.aux_ctl.MultiPhaseDQCurrentSourcingController method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/omg.aux_ctl.html#openmodelica_microgrid_gym.aux_ctl.Controller">Controller (class in openmodelica_microgrid_gym.aux_ctl)</a>
 
       <ul>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller">(class in openmodelica_microgrid_gym.aux_ctl.inverter_contollers)</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.Controller">(class in openmodelica_microgrid_gym.aux_ctl.inverter_controllers)</a>
 </li>
       </ul></li>
       <li><a href="api/omg.util.html#openmodelica_microgrid_gym.util.cos_sin">cos_sin() (in module openmodelica_microgrid_gym.util)</a>
@@ -324,7 +375,7 @@
         <li><a href="api/omg.util.transforms.html#openmodelica_microgrid_gym.util.transforms.cos_sin">(in module openmodelica_microgrid_gym.util.transforms)</a>
 </li>
       </ul></li>
-      <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.CurrentCtl">CurrentCtl (class in openmodelica_microgrid_gym.aux_ctl.inverter_contollers)</a>
+      <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.CurrentCtl">CurrentCtl (class in openmodelica_microgrid_gym.aux_ctl.inverter_controllers)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -335,6 +386,8 @@
       <li><a href="api/omg.util.recorder.html#openmodelica_microgrid_gym.util.recorder.StructuredMapping.data">data() (openmodelica_microgrid_gym.util.recorder.StructuredMapping property)</a>
 </li>
       <li><a href="api/omg.aux_ctl.base.html#openmodelica_microgrid_gym.aux_ctl.base.DDS">DDS (class in openmodelica_microgrid_gym.aux_ctl.base)</a>
+</li>
+      <li><a href="api/omg.env.pyfmi.html#openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper.deriv">deriv() (openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper property)</a>
 </li>
       <li><a href="api/omg.util.html#openmodelica_microgrid_gym.util.FullHistory.df">df() (openmodelica_microgrid_gym.util.FullHistory property)</a>
 
@@ -364,6 +417,8 @@
         <li><a href="api/omg.util.transforms.html#openmodelica_microgrid_gym.util.transforms.dq0_to_abc_cos_sin_power_inv">(in module openmodelica_microgrid_gym.util.transforms)</a>
 </li>
       </ul></li>
+      <li><a href="api/omg.aux_ctl.droop_controllers.html#openmodelica_microgrid_gym.aux_ctl.droop_controllers.DroopController">DroopController (class in openmodelica_microgrid_gym.aux_ctl.droop_controllers)</a>
+</li>
       <li><a href="api/omg.aux_ctl.html#openmodelica_microgrid_gym.aux_ctl.DroopParams">DroopParams (class in openmodelica_microgrid_gym.aux_ctl)</a>
 
       <ul>
@@ -383,6 +438,12 @@
 </li>
       </ul></li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/omg.agents.episodic.html#openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent">EpisodicLearnerAgent (class in openmodelica_microgrid_gym.agents.episodic)</a>
+</li>
+      <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Component.extract_data">extract_data() (openmodelica_microgrid_gym.net.base.Component method)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="F">F</h2>
@@ -395,7 +456,11 @@
 </li>
       </ul></li>
       <li><a href="api/omg.util.html#openmodelica_microgrid_gym.util.Fastqueue">Fastqueue (class in openmodelica_microgrid_gym.util)</a>
+
+      <ul>
+        <li><a href="api/omg.util.fastqueue.html#openmodelica_microgrid_gym.util.fastqueue.Fastqueue">(class in openmodelica_microgrid_gym.util.fastqueue)</a>
 </li>
+      </ul></li>
       <li><a href="api/omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.staticctrl.ObsTempl.fill">fill() (openmodelica_microgrid_gym.agents.staticctrl.ObsTempl method)</a>
 </li>
       <li><a href="api/omg.util.html#openmodelica_microgrid_gym.util.fill_params">fill_params() (in module openmodelica_microgrid_gym.util)</a>
@@ -404,10 +469,12 @@
         <li><a href="api/omg.util.itertools_.html#openmodelica_microgrid_gym.util.itertools_.fill_params">(in module openmodelica_microgrid_gym.util.itertools_)</a>
 </li>
       </ul></li>
-      <li><a href="api/omg.aux_ctl.filter.html#openmodelica_microgrid_gym.aux_ctl.filter.Filter">Filter (class in openmodelica_microgrid_gym.aux_ctl.filter)</a>
+      <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Component.fill_tmpl">fill_tmpl() (openmodelica_microgrid_gym.net.base.Component method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/omg.aux_ctl.filter.html#openmodelica_microgrid_gym.aux_ctl.filter.Filter">Filter (class in openmodelica_microgrid_gym.aux_ctl.filter)</a>
+</li>
       <li><a href="api/omg.aux_ctl.params.html#openmodelica_microgrid_gym.aux_ctl.params.FilterParams">FilterParams (class in openmodelica_microgrid_gym.aux_ctl.params)</a>
 </li>
       <li><a href="api/omg.util.html#openmodelica_microgrid_gym.util.flatten">flatten() (in module openmodelica_microgrid_gym.util)</a>
@@ -442,6 +509,12 @@
         <li><a href="api/omg.aux_ctl.params.html#openmodelica_microgrid_gym.aux_ctl.params.FilterParams.gain">(openmodelica_microgrid_gym.aux_ctl.params.FilterParams property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Component.get_in_vars">get_in_vars() (openmodelica_microgrid_gym.net.base.Component method)</a>
+</li>
+      <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Component.get_out_vars">get_out_vars() (openmodelica_microgrid_gym.net.base.Component method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -480,6 +553,12 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Network.in_vars">in_vars() (openmodelica_microgrid_gym.net.base.Network method)</a>
+
+      <ul>
+        <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.Network.in_vars">(openmodelica_microgrid_gym.net.Network method)</a>
+</li>
+      </ul></li>
       <li><a href="api/omg.util.html#openmodelica_microgrid_gym.util.inst_power">inst_power() (in module openmodelica_microgrid_gym.util)</a>
 
       <ul>
@@ -500,18 +579,30 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/omg.aux_ctl.droop_controllers.html#openmodelica_microgrid_gym.aux_ctl.droop_controllers.InverseDroopController">InverseDroopController (class in openmodelica_microgrid_gym.aux_ctl.droop_controllers)</a>
+</li>
       <li><a href="api/omg.aux_ctl.html#openmodelica_microgrid_gym.aux_ctl.InverseDroopParams">InverseDroopParams (class in openmodelica_microgrid_gym.aux_ctl)</a>
 
       <ul>
         <li><a href="api/omg.aux_ctl.params.html#openmodelica_microgrid_gym.aux_ctl.params.InverseDroopParams">(class in openmodelica_microgrid_gym.aux_ctl.params)</a>
 </li>
       </ul></li>
+      <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.Inverter">Inverter (class in openmodelica_microgrid_gym.net.components)</a>
+</li>
       <li><a href="api/omg.env.modelica.html#openmodelica_microgrid_gym.env.modelica.ModelicaEnv.is_done">is_done() (openmodelica_microgrid_gym.env.modelica.ModelicaEnv property)</a>
 
       <ul>
         <li><a href="api/omg.env.html#openmodelica_microgrid_gym.env.ModelicaEnv.is_done">(openmodelica_microgrid_gym.env.ModelicaEnv property)</a>
 </li>
       </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="J">J</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/omg.env.pyfmi.html#openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper.jacc">jacc() (openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -558,22 +649,46 @@
         <li><a href="api/omg.util.html#openmodelica_microgrid_gym.util.SingleHistory.last">(openmodelica_microgrid_gym.util.SingleHistory method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/omg.aux_ctl.base.html#openmodelica_microgrid_gym.aux_ctl.base.LimitLoadIntegral">LimitLoadIntegral (class in openmodelica_microgrid_gym.aux_ctl.base)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/omg.aux_ctl.params.html#openmodelica_microgrid_gym.aux_ctl.params.PI_params.limits">limits() (openmodelica_microgrid_gym.aux_ctl.params.PI_params property)</a>
 
       <ul>
         <li><a href="api/omg.aux_ctl.html#openmodelica_microgrid_gym.aux_ctl.PI_params.limits">(openmodelica_microgrid_gym.aux_ctl.PI_params property)</a>
 </li>
       </ul></li>
+      <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.Load">Load (class in openmodelica_microgrid_gym.net.components)</a>
+</li>
+      <li><a href="api/omg.env.pyfmi.html#openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper.load">load() (openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper class method)</a>
+
+      <ul>
+        <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Network.load">(openmodelica_microgrid_gym.net.base.Network class method)</a>
+</li>
+        <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.Network.load">(openmodelica_microgrid_gym.net.Network class method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/omg.aux_ctl.observers.html#openmodelica_microgrid_gym.aux_ctl.observers.Lueneberger">Lueneberger (class in openmodelica_microgrid_gym.aux_ctl.observers)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.MasterInverter">MasterInverter (class in openmodelica_microgrid_gym.net)</a>
+
+      <ul>
+        <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.MasterInverter">(class in openmodelica_microgrid_gym.net.components)</a>
+</li>
+      </ul></li>
+      <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.MasterInverterCurrentSourcing">MasterInverterCurrentSourcing (class in openmodelica_microgrid_gym.net)</a>
+
+      <ul>
+        <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.MasterInverterCurrentSourcing">(class in openmodelica_microgrid_gym.net.components)</a>
+</li>
+      </ul></li>
       <li><a href="api/omg.agents.html#openmodelica_microgrid_gym.agents.Agent.measure">measure() (openmodelica_microgrid_gym.agents.Agent method)</a>
 
       <ul>
@@ -614,6 +729,8 @@
 </li>
         <li><a href="api/omg.agents.agent.html#module-openmodelica_microgrid_gym.agents.agent">openmodelica_microgrid_gym.agents.agent</a>
 </li>
+        <li><a href="api/omg.agents.episodic.html#module-openmodelica_microgrid_gym.agents.episodic">openmodelica_microgrid_gym.agents.episodic</a>
+</li>
         <li><a href="api/omg.agents.safeopt.html#module-openmodelica_microgrid_gym.agents.safeopt">openmodelica_microgrid_gym.agents.safeopt</a>
 </li>
         <li><a href="api/omg.agents.staticctrl.html#module-openmodelica_microgrid_gym.agents.staticctrl">openmodelica_microgrid_gym.agents.staticctrl</a>
@@ -624,9 +741,13 @@
 </li>
         <li><a href="api/omg.aux_ctl.base.html#module-openmodelica_microgrid_gym.aux_ctl.base">openmodelica_microgrid_gym.aux_ctl.base</a>
 </li>
+        <li><a href="api/omg.aux_ctl.droop_controllers.html#module-openmodelica_microgrid_gym.aux_ctl.droop_controllers">openmodelica_microgrid_gym.aux_ctl.droop_controllers</a>
+</li>
         <li><a href="api/omg.aux_ctl.filter.html#module-openmodelica_microgrid_gym.aux_ctl.filter">openmodelica_microgrid_gym.aux_ctl.filter</a>
 </li>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#module-openmodelica_microgrid_gym.aux_ctl.inverter_contollers">openmodelica_microgrid_gym.aux_ctl.inverter_contollers</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#module-openmodelica_microgrid_gym.aux_ctl.inverter_controllers">openmodelica_microgrid_gym.aux_ctl.inverter_controllers</a>
+</li>
+        <li><a href="api/omg.aux_ctl.observers.html#module-openmodelica_microgrid_gym.aux_ctl.observers">openmodelica_microgrid_gym.aux_ctl.observers</a>
 </li>
         <li><a href="api/omg.aux_ctl.params.html#module-openmodelica_microgrid_gym.aux_ctl.params">openmodelica_microgrid_gym.aux_ctl.params</a>
 </li>
@@ -638,11 +759,25 @@
 </li>
         <li><a href="api/omg.env.plot.html#module-openmodelica_microgrid_gym.env.plot">openmodelica_microgrid_gym.env.plot</a>
 </li>
+        <li><a href="api/omg.env.plotmanager.html#module-openmodelica_microgrid_gym.env.plotmanager">openmodelica_microgrid_gym.env.plotmanager</a>
+</li>
+        <li><a href="api/omg.env.pyfmi.html#module-openmodelica_microgrid_gym.env.pyfmi">openmodelica_microgrid_gym.env.pyfmi</a>
+</li>
         <li><a href="api/omg.execution.html#module-openmodelica_microgrid_gym.execution">openmodelica_microgrid_gym.execution</a>
+</li>
+        <li><a href="api/omg.execution.callbacks.html#module-openmodelica_microgrid_gym.execution.callbacks">openmodelica_microgrid_gym.execution.callbacks</a>
 </li>
         <li><a href="api/omg.execution.runner.html#module-openmodelica_microgrid_gym.execution.runner">openmodelica_microgrid_gym.execution.runner</a>
 </li>
+        <li><a href="api/omg.net.html#module-openmodelica_microgrid_gym.net">openmodelica_microgrid_gym.net</a>
+</li>
+        <li><a href="api/omg.net.base.html#module-openmodelica_microgrid_gym.net.base">openmodelica_microgrid_gym.net.base</a>
+</li>
+        <li><a href="api/omg.net.components.html#module-openmodelica_microgrid_gym.net.components">openmodelica_microgrid_gym.net.components</a>
+</li>
         <li><a href="api/omg.util.html#module-openmodelica_microgrid_gym.util">openmodelica_microgrid_gym.util</a>
+</li>
+        <li><a href="api/omg.util.fastqueue.html#module-openmodelica_microgrid_gym.util.fastqueue">openmodelica_microgrid_gym.util.fastqueue</a>
 </li>
         <li><a href="api/omg.util.itertools_.html#module-openmodelica_microgrid_gym.util.itertools_">openmodelica_microgrid_gym.util.itertools_</a>
 </li>
@@ -656,25 +791,25 @@
       <li><a href="api/omg.aux_ctl.html#openmodelica_microgrid_gym.aux_ctl.MultiPhaseABCPIPIController">MultiPhaseABCPIPIController (class in openmodelica_microgrid_gym.aux_ctl)</a>
 
       <ul>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseABCPIPIController">(class in openmodelica_microgrid_gym.aux_ctl.inverter_contollers)</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.MultiPhaseABCPIPIController">(class in openmodelica_microgrid_gym.aux_ctl.inverter_controllers)</a>
 </li>
       </ul></li>
       <li><a href="api/omg.aux_ctl.html#openmodelica_microgrid_gym.aux_ctl.MultiPhaseDQ0PIPIController">MultiPhaseDQ0PIPIController (class in openmodelica_microgrid_gym.aux_ctl)</a>
 
       <ul>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQ0PIPIController">(class in openmodelica_microgrid_gym.aux_ctl.inverter_contollers)</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.MultiPhaseDQ0PIPIController">(class in openmodelica_microgrid_gym.aux_ctl.inverter_controllers)</a>
 </li>
       </ul></li>
       <li><a href="api/omg.aux_ctl.html#openmodelica_microgrid_gym.aux_ctl.MultiPhaseDQCurrentController">MultiPhaseDQCurrentController (class in openmodelica_microgrid_gym.aux_ctl)</a>
 
       <ul>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQCurrentController">(class in openmodelica_microgrid_gym.aux_ctl.inverter_contollers)</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.MultiPhaseDQCurrentController">(class in openmodelica_microgrid_gym.aux_ctl.inverter_controllers)</a>
 </li>
       </ul></li>
       <li><a href="api/omg.aux_ctl.html#openmodelica_microgrid_gym.aux_ctl.MultiPhaseDQCurrentSourcingController">MultiPhaseDQCurrentSourcingController (class in openmodelica_microgrid_gym.aux_ctl)</a>
 
       <ul>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQCurrentSourcingController">(class in openmodelica_microgrid_gym.aux_ctl.inverter_contollers)</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.MultiPhaseDQCurrentSourcingController">(class in openmodelica_microgrid_gym.aux_ctl.inverter_controllers)</a>
 </li>
       </ul></li>
       <li><a href="api/omg.aux_ctl.pi_controllers.html#openmodelica_microgrid_gym.aux_ctl.pi_controllers.MultiPhasePIController">MultiPhasePIController (class in openmodelica_microgrid_gym.aux_ctl.pi_controllers)</a>
@@ -701,6 +836,12 @@
         <li><a href="api/omg.util.itertools_.html#openmodelica_microgrid_gym.util.itertools_.nested_map">(in module openmodelica_microgrid_gym.util.itertools_)</a>
 </li>
       </ul></li>
+      <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.Network">Network (class in openmodelica_microgrid_gym.net)</a>
+
+      <ul>
+        <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Network">(class in openmodelica_microgrid_gym.net.base)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/omg.util.html#openmodelica_microgrid_gym.util.normalise_abc">normalise_abc() (in module openmodelica_microgrid_gym.util)</a>
@@ -709,12 +850,24 @@
         <li><a href="api/omg.util.transforms.html#openmodelica_microgrid_gym.util.transforms.normalise_abc">(in module openmodelica_microgrid_gym.util.transforms)</a>
 </li>
       </ul></li>
+      <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Component.normalize">normalize() (openmodelica_microgrid_gym.net.base.Component method)</a>
+
+      <ul>
+        <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.Inverter.normalize">(openmodelica_microgrid_gym.net.components.Inverter method)</a>
+</li>
+        <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.MasterInverter.normalize">(openmodelica_microgrid_gym.net.components.MasterInverter method)</a>
+</li>
+        <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.MasterInverter.normalize">(openmodelica_microgrid_gym.net.MasterInverter method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/omg.env.pyfmi.html#openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper.obs">obs() (openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper property)</a>
+</li>
       <li><a href="api/omg.agents.html#openmodelica_microgrid_gym.agents.StaticControlAgent.obs_template">obs_template() (openmodelica_microgrid_gym.agents.StaticControlAgent property)</a>
 
       <ul>
@@ -726,6 +879,8 @@
       <ul>
         <li><a href="api/omg.agents.agent.html#openmodelica_microgrid_gym.agents.agent.Agent.observe">(openmodelica_microgrid_gym.agents.agent.Agent method)</a>
 </li>
+        <li><a href="api/omg.agents.episodic.html#openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent.observe">(openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent method)</a>
+</li>
         <li><a href="api/omg.agents.safeopt.html#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.observe">(openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent method)</a>
 </li>
         <li><a href="api/omg.agents.html#openmodelica_microgrid_gym.agents.SafeOptAgent.observe">(openmodelica_microgrid_gym.agents.SafeOptAgent method)</a>
@@ -735,6 +890,8 @@
         <li><a href="api/omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent.observe">(openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent method)</a>
 </li>
       </ul></li>
+      <li><a href="api/omg.aux_ctl.observers.html#openmodelica_microgrid_gym.aux_ctl.observers.Observer">Observer (class in openmodelica_microgrid_gym.aux_ctl.observers)</a>
+</li>
       <li><a href="api/omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.staticctrl.ObsTempl">ObsTempl (class in openmodelica_microgrid_gym.agents.staticctrl)</a>
 </li>
       <li>
@@ -749,6 +906,13 @@
 
       <ul>
         <li><a href="api/omg.agents.agent.html#module-openmodelica_microgrid_gym.agents.agent">module</a>
+</li>
+      </ul></li>
+      <li>
+    openmodelica_microgrid_gym.agents.episodic
+
+      <ul>
+        <li><a href="api/omg.agents.episodic.html#module-openmodelica_microgrid_gym.agents.episodic">module</a>
 </li>
       </ul></li>
       <li>
@@ -787,19 +951,31 @@
 </li>
       </ul></li>
       <li>
+    openmodelica_microgrid_gym.aux_ctl.droop_controllers
+
+      <ul>
+        <li><a href="api/omg.aux_ctl.droop_controllers.html#module-openmodelica_microgrid_gym.aux_ctl.droop_controllers">module</a>
+</li>
+      </ul></li>
+      <li>
     openmodelica_microgrid_gym.aux_ctl.filter
 
       <ul>
         <li><a href="api/omg.aux_ctl.filter.html#module-openmodelica_microgrid_gym.aux_ctl.filter">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
-    openmodelica_microgrid_gym.aux_ctl.inverter_contollers
+    openmodelica_microgrid_gym.aux_ctl.inverter_controllers
 
       <ul>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#module-openmodelica_microgrid_gym.aux_ctl.inverter_contollers">module</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#module-openmodelica_microgrid_gym.aux_ctl.inverter_controllers">module</a>
+</li>
+      </ul></li>
+      <li>
+    openmodelica_microgrid_gym.aux_ctl.observers
+
+      <ul>
+        <li><a href="api/omg.aux_ctl.observers.html#module-openmodelica_microgrid_gym.aux_ctl.observers">module</a>
 </li>
       </ul></li>
       <li>
@@ -809,6 +985,8 @@
         <li><a href="api/omg.aux_ctl.params.html#module-openmodelica_microgrid_gym.aux_ctl.params">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     openmodelica_microgrid_gym.aux_ctl.pi_controllers
 
@@ -838,10 +1016,31 @@
 </li>
       </ul></li>
       <li>
+    openmodelica_microgrid_gym.env.plotmanager
+
+      <ul>
+        <li><a href="api/omg.env.plotmanager.html#module-openmodelica_microgrid_gym.env.plotmanager">module</a>
+</li>
+      </ul></li>
+      <li>
+    openmodelica_microgrid_gym.env.pyfmi
+
+      <ul>
+        <li><a href="api/omg.env.pyfmi.html#module-openmodelica_microgrid_gym.env.pyfmi">module</a>
+</li>
+      </ul></li>
+      <li>
     openmodelica_microgrid_gym.execution
 
       <ul>
         <li><a href="api/omg.execution.html#module-openmodelica_microgrid_gym.execution">module</a>
+</li>
+      </ul></li>
+      <li>
+    openmodelica_microgrid_gym.execution.callbacks
+
+      <ul>
+        <li><a href="api/omg.execution.callbacks.html#module-openmodelica_microgrid_gym.execution.callbacks">module</a>
 </li>
       </ul></li>
       <li>
@@ -852,10 +1051,38 @@
 </li>
       </ul></li>
       <li>
+    openmodelica_microgrid_gym.net
+
+      <ul>
+        <li><a href="api/omg.net.html#module-openmodelica_microgrid_gym.net">module</a>
+</li>
+      </ul></li>
+      <li>
+    openmodelica_microgrid_gym.net.base
+
+      <ul>
+        <li><a href="api/omg.net.base.html#module-openmodelica_microgrid_gym.net.base">module</a>
+</li>
+      </ul></li>
+      <li>
+    openmodelica_microgrid_gym.net.components
+
+      <ul>
+        <li><a href="api/omg.net.components.html#module-openmodelica_microgrid_gym.net.components">module</a>
+</li>
+      </ul></li>
+      <li>
     openmodelica_microgrid_gym.util
 
       <ul>
         <li><a href="api/omg.util.html#module-openmodelica_microgrid_gym.util">module</a>
+</li>
+      </ul></li>
+      <li>
+    openmodelica_microgrid_gym.util.fastqueue
+
+      <ul>
+        <li><a href="api/omg.util.fastqueue.html#module-openmodelica_microgrid_gym.util.fastqueue">module</a>
 </li>
       </ul></li>
       <li>
@@ -879,15 +1106,35 @@
         <li><a href="api/omg.util.transforms.html#module-openmodelica_microgrid_gym.util.transforms">module</a>
 </li>
       </ul></li>
+      <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Network.out_vars">out_vars() (openmodelica_microgrid_gym.net.base.Network method)</a>
+
+      <ul>
+        <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.Network.out_vars">(openmodelica_microgrid_gym.net.Network method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/omg.agents.safeopt.html#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.performance">performance() (openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent property)</a>
+      <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Component.params">params() (openmodelica_microgrid_gym.net.base.Component method)</a>
 
       <ul>
+        <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Network.params">(openmodelica_microgrid_gym.net.base.Network method)</a>
+</li>
+        <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.Inverter.params">(openmodelica_microgrid_gym.net.components.Inverter method)</a>
+</li>
+        <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.Load.params">(openmodelica_microgrid_gym.net.components.Load method)</a>
+</li>
+        <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.Network.params">(openmodelica_microgrid_gym.net.Network method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/omg.agents.episodic.html#openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent.performance">performance() (openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent property)</a>
+
+      <ul>
+        <li><a href="api/omg.agents.safeopt.html#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.performance">(openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent property)</a>
+</li>
         <li><a href="api/omg.agents.html#openmodelica_microgrid_gym.agents.SafeOptAgent.performance">(openmodelica_microgrid_gym.agents.SafeOptAgent property)</a>
 </li>
       </ul></li>
@@ -907,12 +1154,16 @@
         <li><a href="api/omg.aux_ctl.params.html#openmodelica_microgrid_gym.aux_ctl.params.PLLParams">(class in openmodelica_microgrid_gym.aux_ctl.params)</a>
 </li>
       </ul></li>
+      <li><a href="api/omg.env.plotmanager.html#openmodelica_microgrid_gym.env.plotmanager.PlotManager">PlotManager (class in openmodelica_microgrid_gym.env.plotmanager)</a>
+</li>
       <li><a href="api/omg.env.html#openmodelica_microgrid_gym.env.PlotTmpl">PlotTmpl (class in openmodelica_microgrid_gym.env)</a>
 
       <ul>
         <li><a href="api/omg.env.plot.html#openmodelica_microgrid_gym.env.plot.PlotTmpl">(class in openmodelica_microgrid_gym.env.plot)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/omg.util.html#openmodelica_microgrid_gym.util.EmptyHistory.pop">pop() (openmodelica_microgrid_gym.util.EmptyHistory method)</a>
 
       <ul>
@@ -927,12 +1178,10 @@
         <li><a href="api/omg.util.html#openmodelica_microgrid_gym.util.SingleHistory.pop">(openmodelica_microgrid_gym.util.SingleHistory method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/omg.aux_ctl.html#openmodelica_microgrid_gym.aux_ctl.Controller.prepare">prepare() (openmodelica_microgrid_gym.aux_ctl.Controller method)</a>
 
       <ul>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller.prepare">(openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller method)</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.Controller.prepare">(openmodelica_microgrid_gym.aux_ctl.inverter_controllers.Controller method)</a>
 </li>
       </ul></li>
       <li><a href="api/omg.agents.html#openmodelica_microgrid_gym.agents.Agent.prepare_episode">prepare_episode() (openmodelica_microgrid_gym.agents.Agent method)</a>
@@ -950,6 +1199,8 @@
 </li>
       </ul></li>
       <li><a href="api/omg.aux_ctl.filter.html#openmodelica_microgrid_gym.aux_ctl.filter.PT1Filter">PT1Filter (class in openmodelica_microgrid_gym.aux_ctl.filter)</a>
+</li>
+      <li><a href="api/omg.env.pyfmi.html#openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper">PyFMI_Wrapper (class in openmodelica_microgrid_gym.env.pyfmi)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -992,15 +1243,15 @@
 </li>
         <li><a href="api/omg.aux_ctl.filter.html#openmodelica_microgrid_gym.aux_ctl.filter.PT1Filter.reset">(openmodelica_microgrid_gym.aux_ctl.filter.PT1Filter method)</a>
 </li>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller.reset">(openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller method)</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.Controller.reset">(openmodelica_microgrid_gym.aux_ctl.inverter_controllers.Controller method)</a>
 </li>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.CurrentCtl.reset">(openmodelica_microgrid_gym.aux_ctl.inverter_contollers.CurrentCtl method)</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.CurrentCtl.reset">(openmodelica_microgrid_gym.aux_ctl.inverter_controllers.CurrentCtl method)</a>
 </li>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQ0PIPIController.reset">(openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQ0PIPIController method)</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.MultiPhaseDQ0PIPIController.reset">(openmodelica_microgrid_gym.aux_ctl.inverter_controllers.MultiPhaseDQ0PIPIController method)</a>
 </li>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQCurrentSourcingController.reset">(openmodelica_microgrid_gym.aux_ctl.inverter_contollers.MultiPhaseDQCurrentSourcingController method)</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.MultiPhaseDQCurrentSourcingController.reset">(openmodelica_microgrid_gym.aux_ctl.inverter_controllers.MultiPhaseDQCurrentSourcingController method)</a>
 </li>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.VoltageCtl.reset">(openmodelica_microgrid_gym.aux_ctl.inverter_contollers.VoltageCtl method)</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.VoltageCtl.reset">(openmodelica_microgrid_gym.aux_ctl.inverter_controllers.VoltageCtl method)</a>
 </li>
         <li><a href="api/omg.aux_ctl.html#openmodelica_microgrid_gym.aux_ctl.MultiPhaseDQ0PIPIController.reset">(openmodelica_microgrid_gym.aux_ctl.MultiPhaseDQ0PIPIController method)</a>
 </li>
@@ -1015,6 +1266,28 @@
         <li><a href="api/omg.env.html#openmodelica_microgrid_gym.env.ModelicaEnv.reset">(openmodelica_microgrid_gym.env.ModelicaEnv method)</a>
 </li>
         <li><a href="api/omg.execution.html#openmodelica_microgrid_gym.execution.Callback.reset">(openmodelica_microgrid_gym.execution.Callback method)</a>
+</li>
+        <li><a href="api/omg.execution.callbacks.html#openmodelica_microgrid_gym.execution.callbacks.Callback.reset">(openmodelica_microgrid_gym.execution.callbacks.Callback method)</a>
+</li>
+        <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Component.reset">(openmodelica_microgrid_gym.net.base.Component method)</a>
+</li>
+        <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Network.reset">(openmodelica_microgrid_gym.net.base.Network method)</a>
+</li>
+        <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.Inverter.reset">(openmodelica_microgrid_gym.net.components.Inverter method)</a>
+</li>
+        <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.MasterInverter.reset">(openmodelica_microgrid_gym.net.components.MasterInverter method)</a>
+</li>
+        <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.MasterInverterCurrentSourcing.reset">(openmodelica_microgrid_gym.net.components.MasterInverterCurrentSourcing method)</a>
+</li>
+        <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.SlaveInverter.reset">(openmodelica_microgrid_gym.net.components.SlaveInverter method)</a>
+</li>
+        <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.MasterInverter.reset">(openmodelica_microgrid_gym.net.MasterInverter method)</a>
+</li>
+        <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.MasterInverterCurrentSourcing.reset">(openmodelica_microgrid_gym.net.MasterInverterCurrentSourcing method)</a>
+</li>
+        <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.Network.reset">(openmodelica_microgrid_gym.net.Network method)</a>
+</li>
+        <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.SlaveInverter.reset">(openmodelica_microgrid_gym.net.SlaveInverter method)</a>
 </li>
         <li><a href="api/omg.util.html#openmodelica_microgrid_gym.util.EmptyHistory.reset">(openmodelica_microgrid_gym.util.EmptyHistory method)</a>
 </li>
@@ -1032,7 +1305,17 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/omg.aux_ctl.base.html#openmodelica_microgrid_gym.aux_ctl.base.LimitLoadIntegral.risk">risk() (openmodelica_microgrid_gym.aux_ctl.base.LimitLoadIntegral method)</a>
+
+      <ul>
+        <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Component.risk">(openmodelica_microgrid_gym.net.base.Component method)</a>
 </li>
+        <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Network.risk">(openmodelica_microgrid_gym.net.base.Network method)</a>
+</li>
+        <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.Inverter.risk">(openmodelica_microgrid_gym.net.components.Inverter method)</a>
+</li>
+        <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.Network.risk">(openmodelica_microgrid_gym.net.Network method)</a>
+</li>
+      </ul></li>
       <li><a href="api/omg.execution.html#openmodelica_microgrid_gym.execution.Runner.run">run() (openmodelica_microgrid_gym.execution.Runner method)</a>
 
       <ul>
@@ -1057,20 +1340,42 @@
         <li><a href="api/omg.agents.safeopt.html#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent">(class in openmodelica_microgrid_gym.agents.safeopt)</a>
 </li>
       </ul></li>
-      <li><a href="api/omg.util.html#openmodelica_microgrid_gym.util.Fastqueue.shift">shift() (openmodelica_microgrid_gym.util.Fastqueue method)</a>
+      <li><a href="api/omg.env.pyfmi.html#openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper.set">set() (openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper method)</a>
 </li>
+      <li><a href="api/omg.net.base.html#openmodelica_microgrid_gym.net.base.Component.set_outidx">set_outidx() (openmodelica_microgrid_gym.net.base.Component method)</a>
+</li>
+      <li><a href="api/omg.env.pyfmi.html#openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper.set_params">set_params() (openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper method)</a>
+</li>
+      <li><a href="api/omg.env.pyfmi.html#openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper.setup">setup() (openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper method)</a>
+</li>
+      <li><a href="api/omg.util.html#openmodelica_microgrid_gym.util.Fastqueue.shift">shift() (openmodelica_microgrid_gym.util.Fastqueue method)</a>
+
+      <ul>
+        <li><a href="api/omg.util.fastqueue.html#openmodelica_microgrid_gym.util.fastqueue.Fastqueue.shift">(openmodelica_microgrid_gym.util.fastqueue.Fastqueue method)</a>
+</li>
+      </ul></li>
       <li><a href="api/omg.util.html#openmodelica_microgrid_gym.util.SingleHistory">SingleHistory (class in openmodelica_microgrid_gym.util)</a>
 
       <ul>
         <li><a href="api/omg.util.recorder.html#openmodelica_microgrid_gym.util.recorder.SingleHistory">(class in openmodelica_microgrid_gym.util.recorder)</a>
 </li>
       </ul></li>
+      <li><a href="api/omg.net.html#openmodelica_microgrid_gym.net.SlaveInverter">SlaveInverter (class in openmodelica_microgrid_gym.net)</a>
+
+      <ul>
+        <li><a href="api/omg.net.components.html#openmodelica_microgrid_gym.net.components.SlaveInverter">(class in openmodelica_microgrid_gym.net.components)</a>
+</li>
+      </ul></li>
+      <li><a href="api/omg.env.pyfmi.html#openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper.states">states() (openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper property)</a>
+</li>
       <li><a href="api/omg.agents.html#openmodelica_microgrid_gym.agents.StaticControlAgent">StaticControlAgent (class in openmodelica_microgrid_gym.agents)</a>
 
       <ul>
         <li><a href="api/omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.staticctrl.StaticControlAgent">(class in openmodelica_microgrid_gym.agents.staticctrl)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/omg.aux_ctl.base.html#openmodelica_microgrid_gym.aux_ctl.base.DDS.step">step() (openmodelica_microgrid_gym.aux_ctl.base.DDS method)</a>
 
       <ul>
@@ -1080,11 +1385,15 @@
 </li>
         <li><a href="api/omg.aux_ctl.html#openmodelica_microgrid_gym.aux_ctl.Controller.step">(openmodelica_microgrid_gym.aux_ctl.Controller method)</a>
 </li>
+        <li><a href="api/omg.aux_ctl.droop_controllers.html#openmodelica_microgrid_gym.aux_ctl.droop_controllers.DroopController.step">(openmodelica_microgrid_gym.aux_ctl.droop_controllers.DroopController method)</a>
+</li>
+        <li><a href="api/omg.aux_ctl.droop_controllers.html#openmodelica_microgrid_gym.aux_ctl.droop_controllers.InverseDroopController.step">(openmodelica_microgrid_gym.aux_ctl.droop_controllers.InverseDroopController method)</a>
+</li>
         <li><a href="api/omg.aux_ctl.filter.html#openmodelica_microgrid_gym.aux_ctl.filter.Filter.step">(openmodelica_microgrid_gym.aux_ctl.filter.Filter method)</a>
 </li>
         <li><a href="api/omg.aux_ctl.filter.html#openmodelica_microgrid_gym.aux_ctl.filter.PT1Filter.step">(openmodelica_microgrid_gym.aux_ctl.filter.PT1Filter method)</a>
 </li>
-        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller.step">(openmodelica_microgrid_gym.aux_ctl.inverter_contollers.Controller method)</a>
+        <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.Controller.step">(openmodelica_microgrid_gym.aux_ctl.inverter_controllers.Controller method)</a>
 </li>
         <li><a href="api/omg.aux_ctl.pi_controllers.html#openmodelica_microgrid_gym.aux_ctl.pi_controllers.MultiPhasePIController.step">(openmodelica_microgrid_gym.aux_ctl.pi_controllers.MultiPhasePIController method)</a>
 </li>
@@ -1095,8 +1404,6 @@
         <li><a href="api/omg.env.html#openmodelica_microgrid_gym.env.ModelicaEnv.step">(openmodelica_microgrid_gym.env.ModelicaEnv method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/omg.util.recorder.html#openmodelica_microgrid_gym.util.recorder.StructuredMapping.structured_cols">structured_cols() (openmodelica_microgrid_gym.util.recorder.StructuredMapping method)</a>
 </li>
       <li><a href="api/omg.util.recorder.html#openmodelica_microgrid_gym.util.recorder.StructuredMapping">StructuredMapping (class in openmodelica_microgrid_gym.util.recorder)</a>
@@ -1109,8 +1416,6 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/omg.aux_ctl.params.html#openmodelica_microgrid_gym.aux_ctl.params.FilterParams.tau">tau() (openmodelica_microgrid_gym.aux_ctl.params.FilterParams property)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/omg.aux_ctl.params.html#openmodelica_microgrid_gym.aux_ctl.params.PLLParams.theta_0">theta_0() (openmodelica_microgrid_gym.aux_ctl.params.PLLParams property)</a>
 
       <ul>
@@ -1118,14 +1423,22 @@
 </li>
       </ul></li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/omg.env.pyfmi.html#openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper.time">time() (openmodelica_microgrid_gym.env.pyfmi.PyFMI_Wrapper property)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/omg.agents.safeopt.html#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.update_params">update_params() (openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent method)</a>
+      <li><a href="api/omg.env.plotmanager.html#openmodelica_microgrid_gym.env.plotmanager.PlotManager.update_axes">update_axes() (openmodelica_microgrid_gym.env.plotmanager.PlotManager method)</a>
+</li>
+      <li><a href="api/omg.agents.episodic.html#openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent.update_params">update_params() (openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent method)</a>
 
       <ul>
+        <li><a href="api/omg.agents.safeopt.html#openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent.update_params">(openmodelica_microgrid_gym.agents.safeopt.SafeOptAgent method)</a>
+</li>
         <li><a href="api/omg.agents.html#openmodelica_microgrid_gym.agents.SafeOptAgent.update_params">(openmodelica_microgrid_gym.agents.SafeOptAgent method)</a>
 </li>
       </ul></li>
@@ -1145,7 +1458,23 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_contollers.VoltageCtl">VoltageCtl (class in openmodelica_microgrid_gym.aux_ctl.inverter_contollers)</a>
+      <li><a href="api/omg.aux_ctl.inverter_controllers.html#openmodelica_microgrid_gym.aux_ctl.inverter_controllers.VoltageCtl">VoltageCtl (class in openmodelica_microgrid_gym.aux_ctl.inverter_controllers)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="X">X</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/omg.env.plotmanager.html#openmodelica_microgrid_gym.env.plotmanager.PlotManager.xylables_i_abc">xylables_i_abc() (openmodelica_microgrid_gym.env.plotmanager.PlotManager method)</a>
+</li>
+      <li><a href="api/omg.env.plotmanager.html#openmodelica_microgrid_gym.env.plotmanager.PlotManager.xylables_i_dq0">xylables_i_dq0() (openmodelica_microgrid_gym.env.plotmanager.PlotManager method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/omg.env.plotmanager.html#openmodelica_microgrid_gym.env.plotmanager.PlotManager.xylables_v_abc">xylables_v_abc() (openmodelica_microgrid_gym.env.plotmanager.PlotManager method)</a>
+</li>
+      <li><a href="api/omg.env.plotmanager.html#openmodelica_microgrid_gym.env.plotmanager.PlotManager.xylables_v_dq0">xylables_v_dq0() (openmodelica_microgrid_gym.env.plotmanager.PlotManager method)</a>
 </li>
   </ul></td>
 </tr></table>

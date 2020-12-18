@@ -93,9 +93,10 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/omg.agents.html">omg.agents</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/omg.aux_ctl.html">omg.aux_ctl</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.util.html">omg.util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/omg.env.html">omg.env</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/omg.execution.html">omg.execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.net.html">omg.net</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/omg.util.html">omg.util</a></li>
 </ul>
 
             
@@ -163,8 +164,8 @@
 <span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span>
 
 
-<div class="viewcode-block" id="Callback"><a class="viewcode-back" href="../../../api/omg.execution.html#openmodelica_microgrid_gym.execution.Callback">[docs]</a><span class="k">class</span> <span class="nc">Callback</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<div class="viewcode-block" id="Callback.reset"><a class="viewcode-back" href="../../../api/omg.execution.html#openmodelica_microgrid_gym.execution.Callback.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Callback"><a class="viewcode-back" href="../../../api/omg.execution.callbacks.html#openmodelica_microgrid_gym.execution.Callback">[docs]</a><span class="k">class</span> <span class="nc">Callback</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="Callback.reset"><a class="viewcode-back" href="../../../api/omg.execution.callbacks.html#openmodelica_microgrid_gym.execution.Callback.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span></div>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
