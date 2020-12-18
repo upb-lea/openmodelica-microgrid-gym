@@ -21,14 +21,14 @@ def pll_par():
 
 
 def test_step(seed, pll_par, droop_par):
-    ctl = MultiPhaseABCPIPIController(pll_par, pll_par, 1, droop_par, droop_par)
+    ctl = MultiPhaseABCPIPIController(pll_par, pll_par, droop_par, droop_par, ts_sim=1)
     ctl.reset()
     ctl.prepare(np.random.random(3), np.random.random(3))
     assert ctl.step() == approx([-1.0, -1.0, -1.0])
 
 
 def test_step2(seed, droop_par, pll_par):
-    ctl = MultiPhaseDQCurrentController(pll_par, pll_par, 1, 1, droop_par, droop_par)
+    ctl = MultiPhaseDQCurrentController(pll_par, pll_par, 1, droop_par, droop_par, ts_sim=1)
     ctl.reset()
     ctl.prepare(np.random.random(3), np.random.random(3), np.random.random(3))
     mv = ctl.step()
@@ -36,7 +36,7 @@ def test_step2(seed, droop_par, pll_par):
 
 
 def test_step3(seed, droop_par, pll_par):
-    ctl = MultiPhaseDQ0PIPIController(pll_par, pll_par, 3, droop_par, droop_par)
+    ctl = MultiPhaseDQ0PIPIController(pll_par, pll_par, droop_par, droop_par, ts_sim=3)
     ctl.reset()
     ctl.prepare(np.random.random(3), np.random.random(3))
     mv = ctl.step()

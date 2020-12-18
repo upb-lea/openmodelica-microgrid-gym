@@ -149,18 +149,16 @@ if __name__ == '__main__':
         current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
 
     # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
-    ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, net.ts, f_nom=net.freq_nom,
-                                                 undersampling=2, name='master')
+    ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, ts_sim=net.ts, f_nom=net.freq_nom,
+                                                 ts_ctrl=1e-4, name='master')
 
     #####################################
     # Definition of the optimization agent
     # The agent is using the SafeOpt algorithm by F. Berkenkamp (https://arxiv.org/abs/1509.01066) in this example
     # Arguments described above
     # History is used to store results
-    agent = SafeOptAgent(mutable_params,
-                         abort_reward,
-                         j_min,
-                         kernel,
+    agent = SafeOptAgent(mutable_params, abort_reward,
+                         j_min, kernel,
                          dict(bounds=bounds, noise_var=noise_var, prior_mean=prior_mean,
                               safe_threshold=safe_threshold, explore_threshold=explore_threshold),
                          [ctrl],

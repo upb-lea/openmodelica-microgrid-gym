@@ -60,8 +60,8 @@ if __name__ == '__main__':
     # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
     qdroop_param = DroopParams(QDroopGain, 0.002, v_nom)
     # Add to dict
-    ctrl.append(MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param,
-                                            qdroop_param, name='master'))
+    ctrl.append(MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, droop_param,
+                                            qdroop_param, ts_sim=delta_t, name='master'))
 
     #####################################
     # Define the current sourcing inverter as slave
@@ -74,8 +74,8 @@ if __name__ == '__main__':
     # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
     qdroop_param = InverseDroopParams(50, delta_t, v_nom, tau_filt=0.01)
     # Add to dict
-    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, i_lim,
-                                              droop_param, qdroop_param, name='slave'))
+    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, i_lim,
+                                              droop_param, qdroop_param, ts_sim=delta_t, name='slave'))
 
     # Define the agent as StaticControlAgent which performs the basic controller steps for every environment set
     agent = StaticControlAgent(ctrl, {'master': [[f'lc1.inductor{k}.i' for k in '123'],
