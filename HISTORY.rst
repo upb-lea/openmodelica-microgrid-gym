@@ -2,14 +2,17 @@
 History
 =======
 
-0.3.0 (in progress)
+0.3.0
 -------------------
 
 API
 ^^^
 * ModelicaEnv:
-    - Delay buffer
     - Uses Network
+    - __init__:
+      - removed: timestep, model_output, model_input
+      - added: network
+    - Delay buffer
 * Network and Components:
     - Specify class structure using config file corresponding to fmu (see net-folder)
     - added noise
