@@ -16,6 +16,7 @@ API
 * SafeoptAgent:
     - __init__: Performance parameters and calculation
 * aux_ctl.Contoller:
+    - __init__: timestep and undersampling changed
     - added output clipping
 * Plotmanager
 
