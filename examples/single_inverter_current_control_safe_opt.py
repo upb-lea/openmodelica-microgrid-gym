@@ -32,13 +32,13 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
     raise ValueError("Please set 'adjust' to one of the following values: 'Kp', 'Ki', 'Kpi'")
 
 # Simulation definitions
-net = Network.load('../net/net_single-inv-curr.yaml')
 max_episode_steps = 300  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
-iLimit = 30  # inverter current limit / A
-iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
-i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
+net = Network.load('../net/net_single-inv-curr.yaml')
+i_lim = net['inverter1'].i_lim  # inverter current limit / A
+i_nom = net['inverter1'].i_nom  # nominal inverter current / A
+i_ref = np.array(net['inverter1'].i_ref)  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
 
 
 class Reward:
@@ -76,8 +76,8 @@ class Reward:
         # (due to normalization the control error is often around zero -> compared to MSE metric, the MRE provides
         #  better, i.e. more significant,  gradients)
         # plus barrier penalty for violating the current constraint
-        error = np.sum((np.abs((ISPabc_master - Iabc_master)) / iLimit) ** 0.5, axis=0) \
-                + -np.sum(mu * np.log(1 - np.maximum(np.abs(Iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0) \
+        error = np.sum((np.abs((ISPabc_master - Iabc_master)) / i_lim) ** 0.5, axis=0) \
+                + -np.sum(mu * np.log(1 - np.maximum(np.abs(Iabc_master) - i_nom, 0) / (i_lim - i_nom)), axis=0) \
                 * max_episode_steps
 
         return -error.squeeze()

@@ -101,17 +101,17 @@ The environment is initialized and run like any other OpenAI Gym
     import gym
 
     if __name__ == '__main__':
-        env = gym.make('openmodelica_microgrid_gym:ModelicaEnv-v1',
-                       max_episode_steps=None,
-                       model_input=['i1p1', 'i1p2', 'i1p3'],
-                       model_output=dict(lc1=['inductor1.i', 'inductor2.i', 'inductor3.i']),
-                       model_path='grid.network.fmu')
+    env = gym.make('openmodelica_microgrid_gym:ModelicaEnv-v1',
+                   max_episode_steps=None,
+                   net='../net/net.yaml',
+                   model_path='../omg_grid/grid.network.fmu')
 
-        env.reset()
-        for _ in range(1000):
-            env.render()
-            env.step(env.action_space.sample())  # pick three continous control actions randomly
-        env.close()
+    env.reset()
+    for _ in range(1000):
+        env.render()
+        env.step(env.action_space.sample())  # take a random action
+    env.close()
+
 
 
 
