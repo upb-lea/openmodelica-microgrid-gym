@@ -20,20 +20,22 @@ from openmodelica_microgrid_gym.agents.util import MutableFloat
 from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, \
     MultiPhaseDQ0PIPIController, PLLParams, InverseDroopParams, MultiPhaseDQCurrentController
 from openmodelica_microgrid_gym.env import PlotTmpl
+from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import nested_map, FullHistory
 
 # Simulation definitions
-delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 6000  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
-v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
-nomFreq = 50  # nominal grid frequency / Hz
-nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
-iLimit = 30  # inverter current limit / A
-iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VA/V
+net = Network.load('../net/net.yaml')
+delta_t = net.ts  # simulation time step size / s
+freq_nom = net.freq_nom  # nominal grid frequency / Hz
+v_nom = net.v_nom  # nominal grid voltage / V
+v_DC = net['inverter1'].v_DC  # DC-link voltage / V; will be set as model parameter in the FMU
+i_lim = net['inverter1'].i_lim  # inverter current limit / A
+i_nom = net['inverter1'].i_nom  # nominal inverter current / A
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
@@ -82,8 +84,8 @@ class Reward:
         # control error = mean-root-error (MRE) of reference minus measurement
         # (due to normalization the control error is often around zero -> compared to MSE metric, the MRE provides
         #  better, i.e. more significant,  gradients)
-        error = np.sum((np.abs((nomFreq - freq)) / nomFreq) ** 0.5, axis=0) + \
-                np.sum((np.abs(([nomVoltPeak, 0, 0] - vdq0_master)) / nomVoltPeak) ** 0.5, axis=0)
+        error = np.sum((np.abs((freq_nom - freq)) / freq_nom) ** 0.5, axis=0) + \
+                np.sum((np.abs(([v_nom, 0, 0] - vdq0_master)) / v_nom) ** 0.5, axis=0)
 
         return -error.squeeze()
 
@@ -131,18 +133,18 @@ if __name__ == '__main__':
     # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for
     # the filter and the nominal frequency
     # Droop controller used to calculate the virtual frequency drop due to load changes
-    droop_param_master = DroopParams(mutable_params['pDroop_master'], 0.005, nomFreq)
+    droop_param_master = DroopParams(mutable_params['pDroop_master'], 0.005, freq_nom)
     # droop parameter used to react on frequency drop
-    droop_param_slave = InverseDroopParams(mutable_params['pDroop_slave'], delta_t, nomFreq, tau_filt=0.04)
+    droop_param_slave = InverseDroopParams(mutable_params['pDroop_slave'], delta_t, freq_nom, tau_filt=0.04)
     # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
     # qDroop parameter used for virtual voltage drop
-    qdroop_param_master = DroopParams(mutable_params['qDroop_master'], 0.002, nomVoltPeak)
+    qdroop_param_master = DroopParams(mutable_params['qDroop_master'], 0.002, v_nom)
     # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
-    qdroop_param_slave = InverseDroopParams(mutable_params['qDroop_slave'], delta_t, nomVoltPeak, tau_filt=0.01)
+    qdroop_param_slave = InverseDroopParams(mutable_params['qDroop_slave'], delta_t, v_nom, tau_filt=0.01)
 
     ###############
     # define Master
-    voltage_dqp_iparams = PI_params(kP=0.025, kI=60, limits=(-iLimit, iLimit))
+    voltage_dqp_iparams = PI_params(kP=0.025, kI=60, limits=(-i_lim, i_lim))
     # Current control PI gain parameters for the voltage sourcing inverter
     current_dqp_iparams = PI_params(kP=0.012, kI=90, limits=(-1, 1))
 
@@ -155,11 +157,11 @@ if __name__ == '__main__':
     # define slave
     current_dqp_iparams = PI_params(kP=0.005, kI=200, limits=(-1, 1))
     # PI gain parameters for the PLL in the current forming inverter
-    pll_params = PLLParams(kP=10, kI=200, limits=(-10000, 10000), f_nom=nomFreq)
+    pll_params = PLLParams(kP=10, kI=200, limits=(-10000, 10000), f_nom=freq_nom)
     # Droop characteristic for the active power Watts/Hz, W.s/Hz
 
     # Add to dict
-    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, iLimit, droop_param_slave,
+    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, i_lim, droop_param_slave,
                                               qdroop_param_slave, name='slave'))
 
     #####################################
@@ -283,7 +285,7 @@ if __name__ == '__main__':
                                  'rl1.inductor3.L': partial(load_step, gain=0.001)  # 0.001
                                  },
                    model_path='../omg_grid/grid.network.fmu',
-                   net='../net/net.yaml',
+                   net=net,
                    )
 
     #####################################

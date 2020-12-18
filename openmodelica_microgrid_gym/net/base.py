@@ -1,6 +1,6 @@
 from importlib import import_module
 from itertools import chain
-from typing import List, Dict, Optional, Union
+from typing import List, Dict, Optional, Union, Tuple
 
 import numexpr as ne
 import numpy as np
@@ -40,6 +40,7 @@ class Component:
     def params(self, actions):
         """
         Calculate additional environment parameters
+
         :param actions:
         :return: mapping
         """
@@ -104,8 +105,10 @@ class Component:
         and whose values are of the length of out_calcs values.
         The returned values are hence additional values (like reference current i_ref).
 
-        set(self.out_calc.keys()) == set(return)
-        all([len(v) == self.out_calc[k] for k,v in return.items()])
+        ::
+            set(self.out_calc.keys()) == set(return)
+            all([len(v) == self.out_calc[k] for k,v in return.items()])
+
         :return:
         """
         pass
@@ -117,18 +120,28 @@ class Component:
         """
         pass
 
-    def augment(self, state: np.ndarray, normalize=True):
+    def augment(self, state: np.ndarray):
+        """
+        Stateful function that calculates additional values given the state of the environment.
+
+        :param state:  state array to augment and normalize
+        :return: augmented state as tuple of raw and normalized
+        """
         self.fill_tmpl(state)
         calc_data = self.calculate()
+        raw_data = self.extract_data(calc_data)
 
-        if normalize:
-            self.normalize(calc_data)
+        self.normalize(calc_data)
+        norm_data = self.extract_data(calc_data)
+
+        return raw_data, norm_data
+
+    def extract_data(self, calc_data):
         attr = ''
         try:
             new_vals = []
             for attr, n in self.out_calc.items():
-                for i in range(n):
-                    new_vals.append(calc_data[attr][i])
+                new_vals.extend([calc_data[attr][i] for i in range(n)])
             return np.hstack([getattr(self, attr) for attr in self.out_idx.keys()] + new_vals)
         except KeyError as e:
             raise ValueError(
@@ -140,6 +153,7 @@ class Component:
 class Network:
     """
     This class has two main functions:
+
     - :code:`load()`: load yaml files to instantiate an object structure of electronic components
     - :code:`augment()`: traverses all components and uses the data from the simulation and augments or modifies it.
     """
@@ -166,7 +180,9 @@ class Network:
         """
         Initialize object from config file
         Structure of yaml-file:
-        ::
+
+        .. code-block:: text
+
             conf::             *net_params* *components*
             net_params::       <parameters passed to Network.__init__()>
             components::       components:
@@ -237,14 +253,17 @@ class Network:
             d.update(params)
         return d
 
-    def augment(self, state: np.ndarray, normalize=True) -> np.ndarray:
+    def augment(self, state: np.ndarray) -> Tuple[np.ndarray]:
         """
         Allows the network to provide additional output variables in order to provide measurements and reference
-        information the RL agent needs to understand its rewards
-        :param state:
-        :return:
+        information the RL agent needs to understand its rewards.
+
+        The function is stateful!
+
+        :param state: raw state as recieved form the environment. must match the expected shape specified by :code:`in_vars()`
+        :return: augmented state in raw and normalized
         """
-        return np.hstack([comp.augment(state, normalize) for comp in self.components])
+        return tuple([np.hstack(data) for data in zip(*[comp.augment(state) for comp in self.components])])
 
     def in_vars(self):
         return list(collapse([comp.get_in_vars() for comp in self.components]))
@@ -269,6 +288,7 @@ class Network:
     def __getitem__(self, item):
         """
         get component by id
+
         :param item: name of the component
         :return:
         """

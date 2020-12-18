@@ -12,9 +12,9 @@ components:
       fun:
         normal: # np.random.*
           loc: 0
-          scale: 0.42
+          scale: 0.4
         clip:
-          a_min: 0
+          a_min: 0.3
           a_max: 0.5
       i_noise:
         fun:

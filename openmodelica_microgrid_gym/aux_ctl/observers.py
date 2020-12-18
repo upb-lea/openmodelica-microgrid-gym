@@ -7,6 +7,17 @@ class Observer():
     def __init__(self):
         pass
 
+    def cal_estimate(self, y, u):
+        """
+        Estimtates output values depending on measured outputs y and intputs u
+
+        Our exemplary application:
+        x_hat = [iL_abc, vC_abc, iLoad_abc]
+        y = [iL_abc_mess, vC_abc_mess, 0]
+        C = [[1, 0, 0], [0, 1, 0], [0, 0, 0]] -> y_hat = [iL_hat, vC_hat, 0]
+        """
+        pass
+
 
 class Lueneberger(Observer):
 

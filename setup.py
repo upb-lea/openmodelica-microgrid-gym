@@ -51,6 +51,6 @@ setup(
         "Documentation": "https://upb-lea.github.io/openmodelica-microgrid-gym/",
         "Source Code": "https://github.com/upb-lea/openmodelica-microgrid-gym",
     },
-    version='0.2.0',
+    version='0.3.0',
     zip_safe=False,
 )

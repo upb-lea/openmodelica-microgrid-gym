@@ -19,18 +19,18 @@ from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhas
 from openmodelica_microgrid_gym.net import Network
 
 # Simulation definitions
-net = Network.load('../net/net.yaml')
-delta_t = 0.5e-4  # simulation time step size / s
 max_episode_steps = 6000  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes
 # (here, only 1 episode makes sense since simulation conditions don't change in this example)
-v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the fmu
-nomFreq = 50  # grid frequency / Hz
-nomVoltPeak = 230 * 1.414  # nominal grid voltage / V
-iLimit = 30  # current limit / A
-iNominal = 20  # nominal current / A
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
+net = Network.load('../net/net.yaml')
+delta_t = net.ts  # simulation time step size / s
+freq_nom = net.freq_nom  # nominal grid frequency / Hz
+v_nom = net.v_nom  # nominal grid voltage / V
+v_DC = net['inverter1'].v_DC  # DC-link voltage / V; will be set as model parameter in the FMU
+i_lim = net['inverter1'].i_lim  # inverter current limit / A
+i_nom = net['inverter1'].i_nom  # nominal inverter current / A
 
 logging.basicConfig()
 
@@ -52,30 +52,30 @@ if __name__ == '__main__':
     #####################################
     # Define the voltage forming inverter as master
     # Voltage control PI gain parameters for the voltage sourcing inverter
-    voltage_dqp_iparams = PI_params(kP=0.025, kI=60, limits=(-iLimit, iLimit))
+    voltage_dqp_iparams = PI_params(kP=0.025, kI=60, limits=(-i_lim, i_lim))
     # Current control PI gain parameters for the voltage sourcing inverter
     current_dqp_iparams = PI_params(kP=0.012, kI=90, limits=(-1, 1))
     # Droop characteristic for the active power Watt/Hz, delta_t
-    droop_param = DroopParams(DroopGain, 0.005, nomFreq)
+    droop_param = DroopParams(DroopGain, 0.005, freq_nom)
     # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
-    qdroop_param = DroopParams(QDroopGain, 0.002, nomVoltPeak)
+    qdroop_param = DroopParams(QDroopGain, 0.002, v_nom)
     # Add to dict
-    ctrl.append(MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param,
-                                            qdroop_param, name='master'))
+    ctrl.append(MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, droop_param,
+                                            qdroop_param, ts_sim=delta_t, name='master'))
 
     #####################################
     # Define the current sourcing inverter as slave
     # Current control PI gain parameters for the current sourcing inverter
     current_dqp_iparams = PI_params(kP=0.005, kI=200, limits=(-1, 1))
     # PI gain parameters for the PLL in the current forming inverter
-    pll_params = PLLParams(kP=10, kI=200, limits=None, f_nom=nomFreq)
+    pll_params = PLLParams(kP=10, kI=200, limits=None, f_nom=freq_nom)
     # Droop characteristic for the active power Watts/Hz, W.s/Hz
-    droop_param = InverseDroopParams(DroopGain, delta_t, nomFreq, tau_filt=0.04)
+    droop_param = InverseDroopParams(DroopGain, delta_t, freq_nom, tau_filt=0.04)
     # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
-    qdroop_param = InverseDroopParams(50, delta_t, nomVoltPeak, tau_filt=0.01)
+    qdroop_param = InverseDroopParams(50, delta_t, v_nom, tau_filt=0.01)
     # Add to dict
-    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, iLimit,
-                                              droop_param, qdroop_param, name='slave'))
+    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, i_lim,
+                                              droop_param, qdroop_param, ts_sim=delta_t, name='slave'))
 
     # Define the agent as StaticControlAgent which performs the basic controller steps for every environment set
     agent = StaticControlAgent(ctrl, {'master': [[f'lc1.inductor{k}.i' for k in '123'],

@@ -18,17 +18,17 @@ class Inverter(Component):
                  out_vars=None, **kwargs):
         """
 
-
         :param u:
         :param i:
         :param i_noise: structured like: must contain the key 'fun',
-        the key 'clip' is optional and no clipping is applied if ommited
+        the key 'clip' is optional and no clipping is applied if omited
         ::
             {
             'fun':
                {<np.random function name, e.g. "normal">: <dict of kwargs to be passed to the func>},
             'clip': <kwargs passed to clip>
             }
+
         :param v:
         :param v_noise: similar to i_noise
         :param i_nom:

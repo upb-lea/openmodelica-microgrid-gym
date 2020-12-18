@@ -7,6 +7,7 @@ Submodules
 .. toctree::
 
    omg.execution.runner
+   omg.execution.callbacks
 
 Module contents
 ---------------

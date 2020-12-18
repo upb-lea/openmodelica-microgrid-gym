@@ -22,14 +22,14 @@ from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 
 # Simulation definitions
-net = Network.load('../net/net_single-inv-curr.yaml')
 max_episode_steps = 300  # number of simulation steps per episode
-num_episodes = 30  # number of simulation episodes (i.e. SafeOpt iterations)
-iLimit = 30  # inverter current limit / A
-iNominal = 20  # nominal inverter current / A
+num_episodes = 2  # number of simulation episodes (i.e. SafeOpt iterations)
 mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
+net = Network.load('../net/net_single-inv-volt.yaml')
+i_lim = net['inverter1'].i_lim  # inverter current limit / A
+i_nom = net['inverter1'].i_nom  # nominal inverter current / A
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
@@ -77,8 +77,8 @@ class Reward:
         # (due to normalization the control error is often around zero -> compared to MSE metric, the MRE provides
         #  better, i.e. more significant,  gradients)
         # plus barrier penalty for violating the current constraint
-        error = np.sum((np.abs((isp_abc_master - iabc_master)) / iLimit) ** 0.5, axis=0) \
-                + -np.sum(mu * np.log(1 - np.maximum(np.abs(iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0) \
+        error = np.sum((np.abs((isp_abc_master - iabc_master)) / i_lim) ** 0.5, axis=0) \
+                + -np.sum(mu * np.log(1 - np.maximum(np.abs(iabc_master) - i_nom, 0) / (i_lim - i_nom)), axis=0) \
                 + np.sum((np.abs((vsp_abc_master - vabc_master)) / net.v_nom) ** 0.5, axis=0)
 
         return -error.squeeze()
@@ -87,7 +87,7 @@ class Reward:
 if __name__ == '__main__':
     #####################################
     # Definitions for the GP
-    prior_mean = 0#2  # mean factor of the GP prior mean which is multiplied with the first performance of the initial set
+    prior_mean = 0  # 2  # mean factor of the GP prior mean which is multiplied with the first performance of the initial set
     noise_var = 0.001 ** 2  # measurement noise sigma_omega
     prior_var = 2  # prior variance of the GP
 
@@ -125,7 +125,7 @@ if __name__ == '__main__':
                           voltageI=MutableFloat(60))
 
     voltage_dqp_iparams = PI_params(kP=mutable_params['voltageP'], kI=mutable_params['voltageI'],
-                                    limits=(-iLimit, iLimit))
+                                    limits=(-i_lim, i_lim))
     current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
 
     # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
@@ -148,13 +148,14 @@ if __name__ == '__main__':
     # History is used to store results
     agent = SafeOptAgent(mutable_params,
                          abort_reward,
+                         j_min,
                          kernel,
                          dict(bounds=bounds, noise_var=noise_var, prior_mean=prior_mean,
                               safe_threshold=safe_threshold, explore_threshold=explore_threshold),
-                         [ctrl],
-                         dict(master=[[f'lc1.inductor{k}.i' for k in '123'],
-                                      [f'lc1.capacitor{k}.v' for k in '123'],
-                                      ]),
+                         ctrls=[ctrl],
+                         obs_template=dict(master=[[f'lc1.inductor{k}.i' for k in '123'],
+                                                   [f'lc1.capacitor{k}.v' for k in '123'],
+                                                   ]),
                          history=FullHistory()
                          )
 

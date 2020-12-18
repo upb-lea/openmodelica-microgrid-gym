@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 import numpy as np
@@ -12,28 +13,41 @@ from .pi_controllers import MultiPhasePIController
 
 N_PHASE = 3
 
+logger = logging.getLogger(__name__)
+
 
 class Controller:
     """
     Base class for all voltage and current controllers
     """
 
-    def __init__(self, IPIParams: PI_params, tau: float, undersampling: int = 1,
+    def __init__(self, IPIParams: PI_params, ts_sim: float, ts_ctrl: Optional[float] = None,
                  history: EmptyHistory = None, name=''):
         """
 
         :param IPIParams: PI parameters for the current control loop
-        :param tau: positive float. absolute sampling time for the controller
-        :param undersampling: reduces the actual sampling time of the controller,
-                    for example if set to 10, the controller will only calculate
-                    the setpoint every 10th controller call
+        :param ts_sim: positive float. absolute time resolution of the env
+        :param ts_ctrl: positive float. absolute sampling time for the controller
         :param history: Dataframe to store internal data
         """
         self.history = history or SingleHistory()
         self._last_meas = []
 
-        self._ts = tau * undersampling
-        self._undersample = undersampling
+        self._ts = ts_ctrl
+
+        if ts_ctrl is None:
+            self._ts = ts_sim
+            self._undersample = 1
+        else:
+            self._ts = ts_ctrl
+            self._undersample = ts_ctrl / ts_sim
+            if abs(self._undersample - round(self._undersample)) > 1e-6 or self._undersample < 1:
+                raise ValueError('Controller time resolution must be a integer multiple of simulation time resolution')
+            elif abs(self._undersample - round(self._undersample)) > 0:
+                logger.warning('Controller time resolution is almost a integer multiple of simulation time resolution,'
+                               f' rounded undersampling is of {int(round(self._undersample))} is used.'
+                               ' The timeresolution will be undersampling wrt. to simulation time.')
+            self._undersample = int(round(self._undersample))
 
         self._currentPI = MultiPhasePIController(IPIParams, self._ts)
 
@@ -98,20 +112,19 @@ class Controller:
 
 
 class VoltageCtl(Controller):
-    def __init__(self, VPIParams: PI_params, IPIParams: PI_params, tau: float,
-                 Pdroop_param: DroopParams, Qdroop_param: DroopParams,
-                 undersampling: int = 1, *args, **kwargs):
+    def __init__(self, VPIParams: PI_params, IPIParams: PI_params, Pdroop_param: DroopParams, Qdroop_param: DroopParams,
+                 ts_sim: float, ts_ctrl: Optional[float] = None, *args, **kwargs):
         """
         Defines the controller for a voltage forming inverter (Master)
 
         :param VPIParams: PI parameters for the voltage control loop
         :param IPIParams: PI_parameter for the current control loop
-        :param tau: sampling time
         :param Pdroop_param: Droop parameters for P-droop
         :param Qdroop_param: Droop parameters for Q-droop
-        :param undersampling: Control is applied every undersampling-th cycle
+        :param ts_sim: positive float. absolute time resolution of the env
+        :param ts_ctrl: positive float. absolute sampling time for the controller
         """
-        super().__init__(IPIParams, tau, undersampling, *args, **kwargs)
+        super().__init__(IPIParams, ts_sim=ts_sim, ts_ctrl=ts_ctrl, *args, **kwargs)
         self._integralSum = 0
 
         self._PdroopController = DroopController(Pdroop_param, self._ts)
@@ -129,21 +142,21 @@ class VoltageCtl(Controller):
 
 
 class CurrentCtl(Controller):
-    def __init__(self, IPIParams: PI_params, pllPIParams: PLLParams, tau: float, i_limit: float,
+    def __init__(self, IPIParams: PI_params, pllPIParams: PLLParams, i_limit: float,
                  Pdroop_param: InverseDroopParams, Qdroop_param: InverseDroopParams,
-                 undersampling: int = 1, *args, **kwargs):
+                 ts_sim: float, ts_ctrl: Optional[float] = None, *args, **kwargs):
         """
         Defines the controller for a current sourcing inverter (Slave)
 
         :param IPIParams: PI_parameter for the current control loop
         :param pllPIParams: PI parameters for the PLL controller
-        :param tau: sampling time
         :param i_limit: Current limit
         :param Pdroop_param: Droop parameters for P-droop
         :param Qdroop_param: Droop parameters for Q-droop
-        :param undersampling: Control is applied every undersampling-th cycle
+        :param ts_sim: positive float. absolute time resolution of the env
+        :param ts_ctrl: positive float. absolute sampling time for the controller
         """
-        super().__init__(IPIParams, tau, undersampling, *args, **kwargs)
+        super().__init__(IPIParams, ts_sim=ts_sim, ts_ctrl=ts_ctrl, *args, **kwargs)
 
         self._i_limit = i_limit
 
@@ -200,20 +213,22 @@ class MultiPhaseDQ0PIPIController(VoltageCtl):
     Controls each phase individualy in the dq0 axis.
     """
 
-    def __init__(self, VPIParams: PI_params, IPIParams: PI_params, tau: float,
-                 Pdroop_param: DroopParams, Qdroop_param: DroopParams, observer: Optional[List[Observer]] = None,
-                 undersampling: int = 1, *args, **kwargs):
+    def __init__(self, VPIParams: PI_params, IPIParams: PI_params,
+                 Pdroop_param: DroopParams, Qdroop_param: DroopParams,
+                 ts_sim: float, ts_ctrl: Optional[float] = None, observer: Optional[List[Observer]] = None,
+                 *args, **kwargs):
         """
 
         :param VPIParams: PI parameters for the voltage control loop
         :param IPIParams: PI_parameter for the current control loop
-        :param tau: sampling time
         :param Pdroop_param: Droop parameters for P-droop
         :param Qdroop_param: Droop parameters for Q-droop
-        :param undersampling: Control is applied every undersampling-th cycle
+        :param ts_sim: positive float. absolute time resolution of the env
+        :param ts_ctrl: positive float. absolute sampling time for the controller
+        :param observer: list of Observers
         """
-        super().__init__(VPIParams, IPIParams, tau, Pdroop_param, Qdroop_param, undersampling,
-                         *args, **kwargs)
+        super().__init__(VPIParams, IPIParams, ts_sim=ts_sim, ts_ctrl=ts_ctrl, Pdroop_param=Pdroop_param,
+                         Qdroop_param=Qdroop_param, *args, **kwargs)
         self._set_hist_cols(['phase', 'instPow', 'instQ', 'freq',
                              [f'SPV{s}' for s in 'dq0'], [f'SPV{s}' for s in 'abc'],
                              [f'SPI{s}' for s in 'dq0'], [f'SPI{s}' for s in 'abc'],
@@ -301,24 +316,24 @@ class MultiPhaseDQCurrentController(CurrentCtl):
     DOES NOT wait for PLL lock before activating
     """
 
-    def __init__(self, IPIParams: PI_params, pllPIParams: PLLParams, tau: float, i_limit: float,
+    def __init__(self, IPIParams: PI_params, pllPIParams: PLLParams, i_limit: float,
                  Pdroop_param: InverseDroopParams, Qdroop_param: InverseDroopParams,
-                 lower_droop_voltage_threshold: float = 150., undersampling: int = 1,
-                 *args, **kwargs):
+                 ts_sim: float, ts_ctrl: Optional[float] = None,
+                 lower_droop_voltage_threshold: float = 150., *args, **kwargs):
         """
         :param IPIParams: PI_parameter for the current control loop
         :param pllPIParams: PI parameters for the PLL controller
-        :param tau: sampling time
         :param i_limit: Current limit
         :param Pdroop_param: Droop parameters for P-droop
         :param Qdroop_param: Droop parameters for Q-droop
         :param lower_droop_voltage_threshold: Grid voltage threshold from where the controller starts to react on the
                voltage and frequency in the grid
-        :param undersampling: Control is applied every undersmpling* cycles
-                :param history: Dataframe to store internal data
+        :param ts_sim: positive float. absolute time resolution of the env
+        :param ts_ctrl: positive float. absolute sampling time for the controller
+        :param history: Dataframe to store internal data
         """
-        super().__init__(IPIParams, pllPIParams, tau, i_limit, Pdroop_param, Qdroop_param, undersampling, *args,
-                         **kwargs)
+        super().__init__(IPIParams, pllPIParams, ts_sim=ts_sim, ts_ctrl=ts_ctrl, i_limit=i_limit,
+                         Pdroop_param=Pdroop_param, Qdroop_param=Qdroop_param, *args, **kwargs)
         self._set_hist_cols(['phase', 'instPow', 'instQ', 'freq',
                              [f'CVI{s}' for s in 'dq0'],
                              [f'SPI{s}' for s in 'dq0'],
@@ -392,15 +407,15 @@ class MultiPhaseDQCurrentSourcingController(Controller):
     Controls each phase individually in the dq0 axis.
     """
 
-    def __init__(self, IPIParams: PI_params, tau: float, f_nom: float = 50.0,
-                 undersampling: int = 1, *args, **kwargs):
+    def __init__(self, IPIParams: PI_params, ts_sim: float, ts_ctrl: Optional[float] = None, f_nom: float = 50.0,
+                 *args, **kwargs):
         """
         :param IPIParams: PI_parameter for the current control loop
-        :param tau: sampling time
+        :param ts_sim: positive float. absolute time resolution of the env
+        :param ts_ctrl: positive float. absolute sampling time for the controller
         :param f_nom: nominal frequency for current sourcing ctrl
-        :param undersampling: Control is applied every undersmpling* cycles
         """
-        super().__init__(IPIParams, tau, undersampling, *args, **kwargs)
+        super().__init__(IPIParams, ts_sim=ts_sim, ts_ctrl=ts_ctrl, *args, **kwargs)
         self._phaseDDS = DDS(self._ts)
         self.f_nom = f_nom
         self._set_hist_cols(['phase',

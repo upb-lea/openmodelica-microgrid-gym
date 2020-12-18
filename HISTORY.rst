@@ -2,20 +2,24 @@
 History
 =======
 
-0.3.0 (in progress)
--------------------
+0.3.0 (2020-12-18)
+------------------
 
 API
 ^^^
 * ModelicaEnv:
-    - Delay buffer
     - Uses Network
+    - __init__:
+      - removed: timestep, model_output, model_input
+      - added: network
+    - Delay buffer
 * Network and Components:
     - Specify class structure using config file corresponding to fmu (see net-folder)
     - added noise
 * SafeoptAgent:
     - __init__: Performance parameters and calculation
 * aux_ctl.Contoller:
+    - __init__: timestep and undersampling changed
     - added output clipping
 * Plotmanager
 
