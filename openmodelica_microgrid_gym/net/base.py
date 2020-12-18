@@ -1,6 +1,6 @@
 from importlib import import_module
 from itertools import chain
-from typing import List, Dict, Optional, Union
+from typing import List, Dict, Optional, Union, Tuple
 
 import numexpr as ne
 import numpy as np
@@ -120,18 +120,28 @@ class Component:
         """
         pass
 
-    def augment(self, state: np.ndarray, normalize=True):
+    def augment(self, state: np.ndarray):
+        """
+        Stateful function that calculates additional values given the state of the environment.
+
+        :param state:  state array to augment and normalize
+        :return: augmented state as tuple of raw and normalized
+        """
         self.fill_tmpl(state)
         calc_data = self.calculate()
+        raw_data = self.extract_data(calc_data)
 
-        if normalize:
-            self.normalize(calc_data)
+        self.normalize(calc_data)
+        norm_data = self.extract_data(calc_data)
+
+        return raw_data, norm_data
+
+    def extract_data(self, calc_data):
         attr = ''
         try:
             new_vals = []
             for attr, n in self.out_calc.items():
-                for i in range(n):
-                    new_vals.append(calc_data[attr][i])
+                new_vals.extend([calc_data[attr][i] for i in range(n)])
             return np.hstack([getattr(self, attr) for attr in self.out_idx.keys()] + new_vals)
         except KeyError as e:
             raise ValueError(
@@ -243,16 +253,17 @@ class Network:
             d.update(params)
         return d
 
-    def augment(self, state: np.ndarray, normalize=True) -> np.ndarray:
+    def augment(self, state: np.ndarray) -> Tuple[np.ndarray]:
         """
         Allows the network to provide additional output variables in order to provide measurements and reference
-        information the RL agent needs to understand its rewards
+        information the RL agent needs to understand its rewards.
+
+        The function is stateful!
 
         :param state: raw state as recieved form the environment. must match the expected shape specified by :code:`in_vars()`
-        :param normalize: boolean, specifying whether to normalize outputs
-        :return: augmented and normalized state
+        :return: augmented state in raw and normalized
         """
-        return np.hstack([comp.augment(state, normalize) for comp in self.components])
+        return tuple([np.hstack(data) for data in zip(*[comp.augment(state) for comp in self.components])])
 
     def in_vars(self):
         return list(collapse([comp.get_in_vars() for comp in self.components]))

@@ -313,9 +313,13 @@ class ModelicaEnv(gym.Env):
     def _create_state(self):
         # Simulate and observe result state
         self._state = self._simulate()
-        outputs = self.net.augment(self._state, self.is_normalized)
-        outputs = np.hstack([outputs, self.measure(outputs)])
-        self.history.append(outputs)
+        raw, normalized = self.net.augment(self._state)
+        outputs = normalized if self.is_normalized else raw
+        measurements = self.measure(outputs)
+
+        raw = np.hstack([raw, measurements])
+        self.history.append(raw)
+        outputs = np.hstack([outputs, measurements])
         return outputs
 
     def render(self, mode: str = 'human', close: bool = False) -> List[Figure]:
