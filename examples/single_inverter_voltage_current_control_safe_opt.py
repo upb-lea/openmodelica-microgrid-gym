@@ -15,6 +15,7 @@ import GPy
 import gym
 import numpy as np
 import pandas as pd
+pd.options.mode.chained_assignment = None  # default='warn'
 import scipy
 from gym.envs.tests.test_envs_semantics import steps
 from sklearn.metrics import mean_squared_error
@@ -47,6 +48,7 @@ v_ref = np.array([325, 0, 0])
 movement_1 = load_jump if random() < 0.5 else -1 * load_jump # randomly chosen first load jump
 movement_2 = (load_jump if random() < 0.5 else -1 * load_jump) + movement_1 # randomly chosen load jump
 position_settling_time=0
+position_steady_state=0
 
 
 # The starting value of the the resistance is 20 Ohm.
@@ -156,6 +158,9 @@ class LoadstepCallback(Callback):
                 self.counter2 = +1
             if self.databuffer.std() < 0.1:  # i_ref[0]= 15 A
                 self.steady_state_reached=True
+                if self.counter1<1:
+                    global position_steady_state
+                    position_steady_state=len(self.list_data)
         # if the ten values in the databuffer fulfill the conditions (std <0.1 and
             # rounded mean == 325 V), the the steady state is reached
 
@@ -385,19 +390,21 @@ class Metrics:
     def __init__(self, quantity):
         self.quantity = quantity  # here the class is given any quantity to calculate the metrics
         self.test=None
-
+        self.interval_before_load_steps = self.quantity.iloc[0:position_steady_state]
 
     def overshoot(self):
-        self.quantity['max']=self.quantity.iloc[argrelextrema(self.quantity['master.CVVd'].values, np.greater_equal, order=self.n)[0]]['master.CVVd']
-        index_first_max = self.quantity['max'].first_valid_index()
-        self.quantity.drop(columns=['max'])
-        self.max_quantity=self.quantity.iloc[index_first_max][0]
+        self.interval_before_load_steps['max'] = \
+            self.interval_before_load_steps.iloc[
+                argrelextrema(self.interval_before_load_steps['master.CVVd'].values, np.greater_equal, order=self.n)[
+                    0]][
+                'master.CVVd']
+        self.max_quantity = self.interval_before_load_steps['max'].max()
         overshoot = (self.max_quantity / self.ref_value) - 1
-        if self.max_quantity>self.ref_value:
-            return round(overshoot,4)
+        if self.max_quantity > self.ref_value:
+            return round(overshoot, 4)
         else:
-            self.overshoot_available=False
-            sentence_error1="No overshoot"
+            self.overshoot_available = False
+            sentence_error1 = "No overshoot"
             return sentence_error1
 
     def rise_time(self):
@@ -483,7 +490,7 @@ plt.text(0.01,130,'Rise Time')
 ax.arrow(0.06, 150,-0.045,162, head_width=0.005, head_length=7, fc='r', ec='r')
 plt.text(0.05,130,'Settling Time')
 ax.arrow(0.06, 350,0,-17, head_width=0.005, head_length=7, fc='black', ec='black')
-plt.text(0.057,360,'$V_{\mathrm{dq0}}^*$')
+plt.text(0.057,360,'$V_{\mathrm{d0}}^*$')
 
 plt.text(-0.002, 360, 'Overshoot')
 #plt.arrow(0.06,7.5,-(0.06-0.02),14.3-7.5,color='red',arrowprops={'arrowstyle': '->'})

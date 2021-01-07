@@ -12,6 +12,7 @@ from functools import partial
 import gym
 import numpy as np
 
+from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import StaticControlAgent
@@ -88,7 +89,10 @@ if __name__ == '__main__':
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode='episode',
                    # viz_cols=['*.m[dq0]', 'slave.freq', 'lcl1.*'],
-                   viz_cols=['master.inst*', 'slave.inst*', 'lcl1.*', 'lc1.*', 'slave.freq'],
+                   viz_cols=['master.inst*', 'slave.inst*', 'lcl1.*', 'lc1.*', 'slave.freq',
+                             PlotTmpl([f'rl1.resistor{i}.R' for i in '123'],  # Plot Widerstand RL
+                                      callback=xylables_R
+                             ],
                    log_level=logging.INFO,
                    # max_episode_steps=max_episode_steps,
                    model_params={'rl1.resistor1.R': partial(load_step,gain=20),
@@ -105,3 +109,7 @@ if __name__ == '__main__':
     # User runner to execute num_episodes-times episodes of the env controlled by the agent
     runner = Runner(agent, env)
     runner.run(num_episodes, visualise=True)
+
+
+
+print('nana')

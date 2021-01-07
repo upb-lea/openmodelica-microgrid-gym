@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
 import pandas as pd
+pd.options.mode.chained_assignment = None  # default='warn'
 import scipy
 from gym.envs.tests.test_envs_semantics import steps
 from sklearn.metrics import mean_squared_error
@@ -57,6 +58,7 @@ R=20  #sets the resistance value of RL
 load_jump=5 #defines the load jump that is implemented at every quarter of the simulation time
 ts= 1e-4
 position_settling_time=0
+position_steady_state=0
 movement_1 = load_jump if random() < 0.5 else -1 * load_jump # randomly chosen first load jump
 movement_2 = (load_jump if random() < 0.5 else -1 * load_jump) + movement_1 #randomly chosen load jump
 
@@ -163,6 +165,9 @@ class LoadstepCallback(Callback):
                 self.counter2 = +1
             if self.databuffer.std() < 0.05:  #i_ref[0]= 15 A
                 self.steady_state_reached=True
+                if self.counter1<1:
+                    global position_steady_state
+                    position_steady_state=len(self.list_data)
             #if the ten values in the databuffer fulfill the conditions (std <0.1 and
             # rounded mean == 15 A), then the steady state is reached
 
@@ -388,19 +393,22 @@ class Metrics:
     def __init__(self, quantity):
         self.quantity = quantity  # here the class is given any quantity to calculate the metrics
         self.test=None
+        self.interval_before_load_steps=self.quantity.iloc[0:position_steady_state]
 
 
     def overshoot(self):
-        self.quantity['max']=self.quantity.iloc[argrelextrema(self.quantity['master.CVId'].values, np.greater_equal, order=self.n)[0]]['master.CVId'] #looks for first maximum that is above the reference value
-        index_first_max = self.quantity['max'].first_valid_index() # returns the index
-        self.quantity.drop(columns=['max'])
-        self.max_quantity=self.quantity.iloc[index_first_max][0] # returns the value
-        overshoot = (self.max_quantity / self.ref_value) - 1 # calculation of overshoot
-        if self.max_quantity>self.ref_value:
-            return round(overshoot,4)
+        self.interval_before_load_steps['max'] = \
+            self.interval_before_load_steps.iloc[
+                argrelextrema(self.interval_before_load_steps['master.CVId'].values, np.greater_equal, order=self.n)[
+                    0]][
+                'master.CVId']
+        self.max_quantity = self.interval_before_load_steps['max'].max()
+        overshoot = (self.max_quantity / self.ref_value) - 1
+        if self.max_quantity > self.ref_value:
+            return round(overshoot, 4)
         else:
-            self.overshoot_available=False
-            sentence_error1="No overshoot"
+            self.overshoot_available = False
+            sentence_error1 = "No overshoot"
             return sentence_error1
 
     def rise_time(self):  # it's an underdamped system, that's why it's 0% to 100% of its value
