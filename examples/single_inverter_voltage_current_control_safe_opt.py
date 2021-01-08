@@ -138,8 +138,9 @@ if __name__ == '__main__':
     qdroop_param = DroopParams(QDroopGain, 0.002, net.v_nom)
 
     # Define a voltage forming inverter using the PIPI and droop parameters from above
-    ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, net.ts, droop_param, qdroop_param,
-                                       undersampling=2, name='master')
+    ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, droop_param, qdroop_param,
+                                       ts_sim=net.ts,
+                                       ts_ctrl=2 * net.ts, name='master')
 
     #####################################
     # Definition of the optimization agent
