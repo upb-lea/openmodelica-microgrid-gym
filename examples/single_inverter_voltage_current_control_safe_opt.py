@@ -44,9 +44,11 @@ QDroopGain = 0  # virtual droop gain for reactive power / VAR/V 1000
 R = 20  # sets the resistance value of RL
 load_jump = 5  # defines the load jump that is implemented at every quarter of the simulation time
 ts = 1e-4
-v_ref = np.array([325, 0, 0])
-movement_1 = load_jump if random() < 0.5 else -1 * load_jump # randomly chosen first load jump
+v_ref_d = np.array([325, 0, 0])
+v_ref_q=np.array([0, 0, 0])
+movement_1 = load_jump
 movement_2 = (load_jump if random() < 0.5 else -1 * load_jump) + movement_1 # randomly chosen load jump
+movement_2=10
 position_settling_time=0
 position_steady_state=0
 
@@ -133,8 +135,8 @@ class LoadstepCallback(Callback):
         self.counter2 = 0
         self.counter1 = 0
         self.list_data = []
-        self.upper_bound = 1.02 * v_ref[0]
-        self.lower_bound = 0.98 * v_ref[0]
+        self.upper_bound = 1.02 * v_ref_d[0]
+        self.lower_bound = 0.98 * v_ref_d[0]
 
     def set_idx(self, obs):  # [f'lc1.inductor{k}.i' for k in '123']
         if self._idx is None:
@@ -151,16 +153,20 @@ class LoadstepCallback(Callback):
         self.databuffer[-1]=obs[self._idx[5][0]] # the last element of the array is replaced with the current value of the inverter's voltage
         self.databuffer=np.roll(self.databuffer, -1) # all values are shifted to the left by one
         self.list_data.append(obs[self._idx[5][0]])
-        if obs[self._idx[5][0]]>self.lower_bound and obs[self._idx[5][0]]<self.upper_bound and np.round(self.databuffer.mean())==v_ref[0]:
+        if (obs[self._idx[5][0]] < self.lower_bound or obs[self._idx[5][0]] > self.upper_bound) and self.steady_state_reached == False:
+            self.counter2 = 0
+
+        if obs[self._idx[5][0]]>self.lower_bound and obs[self._idx[5][0]]<self.upper_bound:
             if self.counter2 <1:
                 global position_settling_time
                 position_settling_time=len(self.list_data)
                 self.counter2 = +1
-            if self.databuffer.std() < 0.1:  # i_ref[0]= 15 A
+            if self.databuffer.std() < 0.1 and np.round(self.databuffer.mean())==v_ref_d[0]:  # i_ref[0]= 15 A
                 self.steady_state_reached=True
                 if self.counter1<1:
                     global position_steady_state
                     position_steady_state=len(self.list_data)
+                    self.counter1=+1
         # if the ten values in the databuffer fulfill the conditions (std <0.1 and
             # rounded mean == 325 V), the the steady state is reached
 
@@ -372,7 +378,7 @@ if __name__ == '__main__':
 
 df_inductor_i = env.history.df[['lc1.inductor1.i', 'lc1.inductor2.i', 'lc1.inductor3.i']]
 pd.set_option('display.max_rows', None)
-df_master_CVV = env.history.df[
+df_master_CVVd = env.history.df[
     ['master.CVVd']]  # voltage for the Controller, it is the measurement of the Master-Inverter's Voltage7
 
 
@@ -380,7 +386,7 @@ df_master_CVV = env.history.df[
 # Implementation of the class Metrics
 
 class Metrics:
-    ref_value = v_ref[0]  # set value of inverter that serves as a set value for the outer voltage controller
+    ref_value = v_ref_d[0]  # set value of inverter that serves as a set value for the outer voltage controller
     ts = 1e-4  # duration of the episodes in seconds
     n=5 # number of points to be checked before and after
     overshoot_available=True
@@ -459,18 +465,64 @@ class Metrics:
         return round(steady_state_error, 4)
 
 
-voltage_controller_metrics = Metrics(df_master_CVV)
+voltage_controller_metrics_vd0 = Metrics(df_master_CVVd)
 
 
-d = {'Overshoot': [voltage_controller_metrics.overshoot()],
-     'Rise Time/s ': [voltage_controller_metrics.rise_time()],
-     'Settling Time/s ': [voltage_controller_metrics.settling_time()],
-     'Root Mean Squared Error/V': [voltage_controller_metrics.RMSE()],
-     'Steady State Error/V': [voltage_controller_metrics.steady_state_error()]}
+d = {'Overshoot': [voltage_controller_metrics_vd0.overshoot()],
+     'Rise Time/s ': [voltage_controller_metrics_vd0.rise_time()],
+     'Settling Time/s ': [voltage_controller_metrics_vd0.settling_time()],
+     'Root Mean Squared Error/V': [voltage_controller_metrics_vd0.RMSE()],
+     'Steady State Error/V': [voltage_controller_metrics_vd0.steady_state_error()]}
 
 df_metrics = pd.DataFrame(data=d).T
 df_metrics.columns = ['Value']
 print(df_metrics)
+################################################################################
+###q-component of vdq0
+
+df_master_CVVq = env.history.df[['master.CVVq']]
+class Metrics_Master_Vq0:
+    ref_value = v_ref_q[0]  # set value of inverter that serves as a set value for the outer voltage controller
+    ts = .5e-4  # duration of the episodes in seconds
+    n = 5  # number of points to be checked before and after
+
+    def __init__(self, quantity):
+        self.quantity = quantity  # here the class is given any quantity to calculate the metrics
+        self.test = None
+
+
+    def RMSE(self):
+        Y_true = self.quantity.to_numpy().reshape(
+            -1)  # converts and reshapes it into an array with size [max_epsiodes,]
+        Y_true = Y_true[~np.isnan(Y_true)]  # drops nan
+        Y_pred = [self.ref_value] * (len(
+            Y_true))  # creates an list with the set value of the voltage and the length of the real voltages (Y_true)
+        Y_pred = np.array(Y_pred)  # converts this list into an array
+        return round(sqrt(mean_squared_error(Y_true, Y_pred)), 4)  # returns the MSE from sklearn
+
+    def steady_state_error(self):  # for a Controller with an integral part, steady_state_error is almost equal to zero
+        last_value_quantity = self.quantity.iloc[max_episode_steps - 1]  # the last value of the quantity is stored
+        steady_state_error = np.abs(self.ref_value - last_value_quantity[0])  # calculation of the steady-state-error
+        return round(steady_state_error, 4)
+
+    def peak(self):
+        max_quantity=self.quantity.abs().max()
+        return round(max_quantity[0],4)
+
+
+voltage_controller_metrics_vq0 = Metrics_Master_Vq0(df_master_CVVq)
+
+d = {'Root Mean Squared Error/V': [voltage_controller_metrics_vq0.RMSE()],
+     'Steady State Error/V': [voltage_controller_metrics_vq0.steady_state_error()],
+     'Peak Value/V': [voltage_controller_metrics_vq0.peak()]}
+
+print("\n")
+print()
+df_metrics_vq0 = pd.DataFrame(data=d).T
+df_metrics_vq0.columns = ['Value']
+print('Metrics of Vq0')
+print(df_metrics_vq0)
+
 
 #####################################
 # Creation of plots for documentation
@@ -481,18 +533,21 @@ ax = plt.axes()
 #ax.arrow(0.00, 16.6,0,-0.5, head_width=0.005, head_length=0.5, fc='r', ec='r')
 #ax.arrow(0.06, 17.5,0,-1.9, head_width=0.005, head_length=0.5, fc='black', ec='black')
 #plt.arrow(0.06, 7.5,-0.04,6.8, color='r', length_includes_head=True)
-plt.plot(plot_quantities.test(df_master_CVV['master.CVVd'],ts)[0],plot_quantities.test(df_master_CVV['master.CVVd'], ts)[1])
-plt.axhline(y=v_ref[0], color='black', linestyle='-')
+plt.plot(plot_quantities.test(df_master_CVVd['master.CVVd'], ts)[0], plot_quantities.test(df_master_CVVd['master.CVVd'], ts)[1], label='$V_{\mathrm{d0}}$')
+plt.plot(plot_quantities.test(df_master_CVVq['master.CVVq'], ts)[0], plot_quantities.test(df_master_CVVq['master.CVVq'], ts)[1], label='$V_{\mathrm{q0}}$')
+plt.axhline(y=v_ref_d[0], color='black', linestyle='-')
 plt.xlabel(r'$t\,/\,\mathrm{s}$')
-plt.ylabel('$V_{\mathrm{d0}}\,/\,\mathrm{V}$')
-ax.arrow(0.02, 150,-0.015,160, head_width=0.005, head_length=5, fc='r', ec='r')
+plt.ylabel('$V_{\mathrm{dq0}}\,/\,\mathrm{V}$')
+ax.arrow(0.02, 150,-0.015,170, head_width=0.005, head_length=5, fc='r', ec='r')
 plt.text(0.01,130,'Rise Time')
-ax.arrow(0.06, 150,-0.045,162, head_width=0.005, head_length=7, fc='r', ec='r')
+ax.arrow(0.06, 150,-0.043,162, head_width=0.005, head_length=7, fc='r', ec='r')
 plt.text(0.05,130,'Settling Time')
 ax.arrow(0.06, 350,0,-17, head_width=0.005, head_length=7, fc='black', ec='black')
 plt.text(0.057,360,'$V_{\mathrm{d0}}^*$')
+plt.text(0.057,5,'$V_{\mathrm{q0}}^*$')
 
 plt.text(-0.002, 360, 'Overshoot')
+ax.legend()
 #plt.arrow(0.06,7.5,-(0.06-0.02),14.3-7.5,color='red',arrowprops={'arrowstyle': '->'})
 #
 #plt.grid()

@@ -572,7 +572,7 @@ class Metrics_Master_Vq0:
         return round(steady_state_error, 4)
 
     def peak(self):
-        max_quantity=self.quantity.max()
+        max_quantity=self.quantity.abs().max()
         return round(max_quantity[0],4)
 
 

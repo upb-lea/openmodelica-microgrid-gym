@@ -1,20 +1,21 @@
 import pandas as pd
 import numpy as np
 exec(open("Controller1_two_inverter_droop_safe_opt.py").read())
+exec(open("Controller2_two_inverter_droop_safe_opt.py").read())
 
-df_vd0_controller1= pd.read_pickle("./df_metrics_vd0_controller1.pkl")
+df_vd0_controller1= pd.read_pickle("./df_metrics_vd0_controller1_droop.pkl")
 df_vd0_controller1['Value'].round(decimals=4)
-df_vq0_controller1=pd.read_pickle("./df_metrics_vq0_controller1.pkl")
+df_vq0_controller1=pd.read_pickle("./df_metrics_vq0_controller1_droop.pkl")
 df_vq0_controller1['Value'].round(decimals=4)
-df_slave_frequency_controller1=pd.read_pickle("./df_metrics_slave_f_controller1.pkl")
+df_slave_frequency_controller1=pd.read_pickle("./df_metrics_slave_f_controller1_droop.pkl")
 df_slave_frequency_controller1['Value'].round(decimals=4)
 
 
 ###########################################################
 
-df_vd0_controller2= pd.read_pickle("./df_metrics_vd0_controller2.pkl")
-df_vq0_controller2=pd.read_pickle("./df_metrics_vq0_controller2.pkl")
-df_slave_frequency_controller2=pd.read_pickle("./df_metrics_slave_f_controller2.pkl")
+df_vd0_controller2= pd.read_pickle("./df_metrics_vd0_controller2_droop.pkl")
+df_vq0_controller2=pd.read_pickle("./df_metrics_vq0_controller2_droop.pkl")
+df_slave_frequency_controller2=pd.read_pickle("./df_metrics_slave_f_controller2_droop.pkl")
 
 #########################################################
 

@@ -11,6 +11,7 @@ from random import random
 
 import GPy
 import gym
+import sys
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
@@ -53,14 +54,16 @@ num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 iLimit = 30  # inverter current limit / A
 iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
-i_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
+id_ref = np.array([15, 0, 0])  # exemplary set point i.e. id = 15, iq = 0, i0 = 0 / A
+iq_ref=np.array([0, 0, 0])
 R=20  #sets the resistance value of RL
 load_jump=5 #defines the load jump that is implemented at every quarter of the simulation time
 ts= 1e-4
 position_settling_time=0
 position_steady_state=0
-movement_1 = load_jump if random() < 0.5 else -1 * load_jump # randomly chosen first load jump
+movement_1 = -load_jump
 movement_2 = (load_jump if random() < 0.5 else -1 * load_jump) + movement_1 #randomly chosen load jump
+movement_2=-10
 
 
 # The starting value of the the resistance is 20 Ohm.
@@ -139,8 +142,8 @@ class LoadstepCallback(Callback):
         self.counter2=0
         self.counter1=0
         self.list_data=[]
-        self.upper_bound=1.02*i_ref[0]
-        self.lower_bound=0.98*i_ref[0]
+        self.upper_bound= 1.02 * id_ref[0]
+        self.lower_bound= 0.98 * id_ref[0]
         self.databuffer_settling_time=[]
 
     def set_idx(self, obs):  # [f'lc1.inductor{k}.i' for k in '123']
@@ -156,18 +159,20 @@ class LoadstepCallback(Callback):
         self.set_idx(cols) #all values are shifted to the left by one
         self.databuffer[-1]=obs[self._idx[3][0]]
         self.list_data.append(obs[self._idx[3][0]]) #the last element of the array is replaced with the current value of the inverter's current
-
         self.databuffer = np.roll(self.databuffer, -1)
-        if obs[self._idx[3][0]]>self.lower_bound and obs[self._idx[3][0]]<self.upper_bound and np.round(self.databuffer.mean(),decimals=1)==i_ref[0]:  #checks if oservation is within the specified bound
+        if (obs[self._idx[3][0]] < self.lower_bound or obs[self._idx[3][0]] > self.upper_bound) and self.steady_state_reached == False:
+            self.counter2 = 0
+        if obs[self._idx[3][0]]>self.lower_bound and obs[self._idx[3][0]]<self.upper_bound:  #checks if oservation is within the specified bound
             if self.counter2 <1:
                 global position_settling_time
                 position_settling_time=len(self.list_data)
                 self.counter2 = +1
-            if self.databuffer.std() < 0.05:  #i_ref[0]= 15 A
+            if self.databuffer.std() < 0.05 and np.round(self.databuffer.mean(),decimals=1)==id_ref[0]:  #i_ref[0]= 15 A
                 self.steady_state_reached=True
                 if self.counter1<1:
                     global position_steady_state
                     position_steady_state=len(self.list_data)
+                    self.counter1=+1
             #if the ten values in the databuffer fulfill the conditions (std <0.1 and
             # rounded mean == 15 A), then the steady state is reached
 
@@ -264,7 +269,7 @@ if __name__ == '__main__':
                               safe_threshold=safe_threshold, explore_threshold=explore_threshold),
                          [ctrl],
                          dict(master=[[f'lc1.inductor{k}.i' for k in '123'],
-                                      i_ref]),
+                                      id_ref]),
                          history=FullHistory()
                          )
 
@@ -378,14 +383,14 @@ if __name__ == '__main__':
         best_agent_plt.show()
         best_agent_plt.savefig('agent_plt.png')
 
-df_master_CVI=env.history.df[['master.CVId']]
+df_master_CVId=env.history.df[['master.CVId']]
 
 ##############################################
-# Implementation of the class metrics
+# Implementation of the class metrics for the d-term of idq0
 class Metrics:
-    ref_value = i_ref[0]  # set value of inverter that serves as a set value for the inner current controller
+    ref_value = id_ref[0]  # set value of inverter that serves as a set value for the inner current controller
     ts = 1e-4  # duration of the episodes in seconds
-    n=2 # number of points to be checked before and after n=2
+    n=5 # number of points to be checked before and after n=2
     overshoot_available=True
 
 
@@ -426,6 +431,8 @@ class Metrics:
         return round(rise_time_in_seconds, 4)
 
     def settling_time(self):
+        if position_settling_time == 0:
+            sys.exit("Steady State could not be reached. The controller need to be improved. PROGRAM EXECUTION STOP")
         settling_time_value=position_settling_time*ts # the settling is calculated in the class LoadstepCallback
         return settling_time_value
         # if self.overshoot_available:
@@ -463,19 +470,67 @@ class Metrics:
         return round(steady_state_error, 4)
 
 
-current_controller_metrics = Metrics(df_master_CVI)
+current_controller_metrics_id = Metrics(df_master_CVId)
 
 
-d = {'Overshoot': [current_controller_metrics.overshoot()],
-     'Rise Time/s ': [current_controller_metrics.rise_time()],
-     'Settling Time/s ': [current_controller_metrics.settling_time()],
-     'Root Mean Squared Error/A': [current_controller_metrics.RMSE()],
-     'Steady State Error/A': [current_controller_metrics.steady_state_error()]}
+d = {'Overshoot': [current_controller_metrics_id.overshoot()],
+     'Rise Time/s ': [current_controller_metrics_id.rise_time()],
+     'Settling Time/s ': [current_controller_metrics_id.settling_time()],
+     'Root Mean Squared Error/A': [current_controller_metrics_id.RMSE()],
+     'Steady State Error/A': [current_controller_metrics_id.steady_state_error()]}
 
-df_metrics = pd.DataFrame(data=d).T
-df_metrics.columns = ['Value']
-print(df_metrics)
+df_metrics_id0 = pd.DataFrame(data=d).T
+df_metrics_id0.columns = ['Value']
+print()
+print('Metrics of id0')
+print(df_metrics_id0)
+#df_metrics_id0.to_pickle("./df_metrics_id0.pkl")
 print('\n')
+
+######################################################
+#2: Calculation of the Metrics of q-component of Idq0
+
+df_master_CVIq = env.history.df[['master.CVIq']]
+class Metrics_Master_Vq0:
+    ref_value = iq_ref[0]  # set value of inverter that serves as a set value for the outer voltage controller
+    ts = .1e-4  # duration of the episodes in seconds
+    n = 5  # number of points to be checked before and after
+
+    def __init__(self, quantity):
+        self.quantity = quantity  # here the class is given any quantity to calculate the metrics
+        self.test = None
+
+
+    def RMSE(self):
+        Y_true = self.quantity.to_numpy().reshape(
+            -1)  # converts and reshapes it into an array with size [max_epsiodes,]
+        Y_true = Y_true[~np.isnan(Y_true)]  # drops nan
+        Y_pred = [self.ref_value] * (len(
+            Y_true))  # creates an list with the set value of the voltage and the length of the real voltages (Y_true)
+        Y_pred = np.array(Y_pred)  # converts this list into an array
+        return round(sqrt(mean_squared_error(Y_true, Y_pred)), 4)  # returns the MSE from sklearn
+
+    def steady_state_error(self):  # for a Controller with an integral part, steady_state_error is almost equal to zero
+        last_value_quantity = self.quantity.iloc[max_episode_steps - 1]  # the last value of the quantity is stored
+        steady_state_error = np.abs(self.ref_value - last_value_quantity[0])  # calculation of the steady-state-error
+        return round(steady_state_error, 4)
+
+    def peak(self):
+        max_quantity=self.quantity.abs().max()
+        return round(max_quantity[0],4)
+
+
+current_controller_metrics_id = Metrics_Master_Vq0(df_master_CVIq)
+
+d = {'Root Mean Squared Error/A': [current_controller_metrics_id.RMSE()],
+     'Steady State Error/A': [current_controller_metrics_id.steady_state_error()],
+     'Peak Value/A': [current_controller_metrics_id.peak()]}
+
+df_metrics_iq0 = pd.DataFrame(data=d).T
+df_metrics_iq0.columns = ['Value']
+print()
+print('Metrics of iq0')
+print(df_metrics_iq0)
 
 #####################################
 # Creation of plots for documentation
@@ -483,14 +538,16 @@ print('\n')
 import plot_quantities
 import matplotlib.pyplot as plt
 
+print()
+print("Hallo")
 ax = plt.axes()
-ax.arrow(0.06, 7.5,-0.04,6.8, head_width=0.005, head_length=0.5, fc='r', ec='r')
+ax.arrow(0.06, 7.5,-0.033,6.8, head_width=0.005, head_length=0.5, fc='r', ec='r')
 ax.arrow(0.06, 17.5,0,-1.9, head_width=0.005, head_length=0.5, fc='black', ec='black')
 #plt.arrow(0.06, 7.5,-0.04,6.8, color='r', length_includes_head=True)
-plt.plot(plot_quantities.test(df_master_CVI['master.CVId'],ts)[0],plot_quantities.test(df_master_CVI['master.CVId'], ts)[1])
-plt.axhline(y=i_ref[0], color='black', linestyle='-')
+plt.plot(plot_quantities.test(df_master_CVId['master.CVId'], ts)[0], plot_quantities.test(df_master_CVId['master.CVId'], ts)[1])
+plt.axhline(y=id_ref[0], color='black', linestyle='-')
 plt.xlabel(r'$t\,/\,\mathrm{s}$')
-plt.ylabel('$i_{\mathrm{d0}}\,/\,\mathrm{A}$')
+plt.ylabel('$i_{\mathrm{dq0}}\,/\,\mathrm{A}$')
 plt.text(0.045,6.5,'Steady State reached')
 plt.text(0.057,18.0,'$i_{\mathrm{d0}}^*$')
 #plt.arrow(0.06,7.5,-(0.06-0.02),14.3-7.5,color='red',arrowprops={'arrowstyle': '->'})
@@ -504,15 +561,18 @@ ax = plt.axes()
 ax.arrow(0.06, 7.5,-0.04,6.8, head_width=0.005, head_length=0.5, fc='r', ec='r')
 #ax.arrow(0.00, 16.6,0,-0.5, head_width=0.005, head_length=0.5, fc='r', ec='r')
 ax.arrow(0.06, 17.5,0,-1.9, head_width=0.005, head_length=0.5, fc='black', ec='black')
-ax.arrow(0.02, 5,-(0.02-0.0082),(13.47-5), head_width=0.005, head_length=0.5, fc='red', ec='red')
+ax.arrow(0.02, 5,-(0.009),(13.47-5.6), head_width=0.005, head_length=0.5, fc='red', ec='red')
 #plt.arrow(0.06, 7.5,-0.04,6.8, color='r', length_includes_head=True)
-plt.plot(plot_quantities.test(df_master_CVI['master.CVId'],ts)[0],plot_quantities.test(df_master_CVI['master.CVId'], ts)[1])
-plt.axhline(y=i_ref[0], color='black', linestyle='-')
+plt.plot(plot_quantities.test(df_master_CVId['master.CVId'], ts)[0], plot_quantities.test(df_master_CVId['master.CVId'], ts)[1], label='$i_{\mathrm{d0}}$')
+plt.axhline(y=id_ref[0], color='black', linestyle='-')
 plt.xlabel(r'$t\,/\,\mathrm{s}$')
-plt.ylabel('$i_{\mathrm{d0}}\,/\,\mathrm{A}$')
+plt.ylabel('$i_{\mathrm{dq0}}\,/\,\mathrm{A}$')
 plt.text(0.045,6.7,'Settling Time')
 plt.text(0.057,18.0,'$i_{\mathrm{d0}}^*$')
 plt.text(0.011,4.2,'Rise Time')
+plt.text(0.057, 0.2, '$i_{\mathrm{q0}}^*$')
+plt.plot(plot_quantities.test(df_master_CVIq['master.CVIq'], ts)[0], plot_quantities.test(df_master_CVIq['master.CVIq'], ts)[1], label='$i_{\mathrm{q0}}$')
+ax.legend()
 #plt.text(-0.006, 17.1, 'Overshoot')
 #plt.arrow(0.06,7.5,-(0.06-0.02),14.3-7.5,color='red',arrowprops={'arrowstyle': '->'})
 #
