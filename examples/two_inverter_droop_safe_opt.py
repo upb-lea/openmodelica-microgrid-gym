@@ -35,7 +35,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 
 # Simulation definitions
 ts = .5e-4  # simulation time step size / s
-max_episode_steps = 1400 # number of simulation steps per episode
+max_episode_steps = 10000 # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
@@ -169,17 +169,20 @@ class LoadstepCallback(Callback):
             self.slope_info=linregress(self.list_abcissa, self.databuffer_droop)
         self.databuffer_droop = np.roll(self.databuffer_droop, -1)
 
+        if (obs[self._idx[0][0]] < self.lower_bound or obs[self._idx[0][0]] > self.upper_bound) and self.steady_state_reached == False:
+            self.counter2 = 0
 
-        if obs[self._idx[0][0]]>self.lower_bound and obs[self._idx[0][0]]<self.upper_bound and np.round(self.databuffer_droop.mean())==nomFreq: #checks if oservation is within the specified bound
+        if obs[self._idx[0][0]]>self.lower_bound and obs[self._idx[0][0]]<self.upper_bound: #checks if oservation is within the specified bound
             if self.counter2 <1:
                 global position_settling_time
                 position_settling_time=len(self.list_data)
                 self.counter2 = +1
-            if self.databuffer_droop.std() < 0.003 and np.abs(self.slope_info[0])<0.00001:
+            if self.databuffer_droop.std() < 0.003 and np.abs(self.slope_info[0])<0.00001 and np.round(self.databuffer_droop.mean())==nomFreq:
                 self.steady_state_reached=True
                 if self.counter1<1:
                     global position_steady_state
                     position_steady_state=len(self.list_data)
+                    self.counter1=+1
 
             #if the ten values in the databuffer fulfill the conditions (std <0.1 and
             # rounded mean == 15 A), then the steady state is reached
@@ -466,10 +469,13 @@ if __name__ == '__main__':
 df_master_CVVd = env.history.df[['master.CVVd']]
 class Metrics_Master_Vd0:
     ref_value = v_ref_d[0]  # set value of inverter that serves as a set value for the outer voltage controller
+    upper_bound=1.02*ref_value
+    lower_bound=0.98*ref_value
     ts = .5e-4  # duration of the episodes in seconds
     n = 5  # number of points to be checked before and after
     overshoot_available = True
-
+    position_settling_time_CVVd=0
+    settling_time_check=False
     def __init__(self, quantity):
         self.quantity = quantity  # here the class is given any quantity to calculate the metrics
         self.interval_before_load_steps=self.quantity.iloc[0:position_steady_state]
@@ -503,9 +509,17 @@ class Metrics_Master_Vd0:
         return round(rise_time_in_seconds, 4)
 
     def settling_time(self):
-        if position_settling_time==0:
+        interval_before_steady_state=self.quantity['master.CVVd'].iloc[0:position_steady_state]
+        for index,row in interval_before_steady_state.iteritems():
+            if row>self.lower_bound and row<self.upper_bound and self.settling_time_check==False:
+                self.settling_time_check=True
+                self.position_settling_time_CVVd=index
+            if row<self.lower_bound or row>self.upper_bound:
+                self.settling_time_check=False
+
+        if self.position_settling_time_CVVd==0:
             sys.exit("Steady State could not be reached. The controller need to be improved. PROGRAM EXECUTION STOP")
-        settling_time_value = position_settling_time * ts
+        settling_time_value=self.position_settling_time_CVVd*self.ts
         return settling_time_value
 
 
@@ -586,8 +600,8 @@ print("\n")
 print()
 df_metrics_vq0 = pd.DataFrame(data=d).T
 df_metrics_vq0.columns = ['Value']
-#print('Metrics of Vq0')
-#print(df_metrics_vq0)
+print('Metrics of Vq0')
+print(df_metrics_vq0)
 df_metrics_vq0.to_pickle("./df_metrics_vq0_controller1.pkl")
 
 
@@ -666,8 +680,8 @@ print("\n")
 print()
 df_metrics_slave_f = pd.DataFrame(data=d).T
 df_metrics_slave_f.columns = ['Value']
-#print('Metrics of Slave Frequency')
-#print(df_metrics_slave_f)
+print('Metrics of Slave Frequency')
+print(df_metrics_slave_f)
 df_metrics_slave_f.to_pickle("./df_metrics_slave_f_controller1.pkl")
 
 import plot_quantities
@@ -687,9 +701,9 @@ plt.text(0.151,50.18,'Settling Time',fontsize=8)
 
 
 
-# plt.plot(plot_quantities.test(df_master_CVVd['master.CVVd'],ts)[0],plot_quantities.test(df_master_CVVd['master.CVVd'], ts)[1], color='royalblue')
+# plt.plot(plot_quantities.test(df_master_CVVd['master.CVVd'],ts)[0],plot_quantities.test(df_master_CVVd['master.CVVd'], ts)[1], color='royalblue',label='$V_{\mathrm{d0}}$')
 # plt.axhline(y=v_ref_d[0], color='black', linestyle='-')
-# plt.plot(plot_quantities.test(df_master_CVVq['master.CVVq'],ts)[0],plot_quantities.test(df_master_CVVq['master.CVVq'], ts)[1],color='darkorange' )
+# plt.plot(plot_quantities.test(df_master_CVVq['master.CVVq'],ts)[0],plot_quantities.test(df_master_CVVq['master.CVVq'], ts)[1],color='darkorange', label='$V_{\mathrm{q0}}$')
 # plt.axhline(y=v_ref_d[0], color='black', linestyle='-')
 # plt.xlabel(r'$t\,/\,\mathrm{s}$')
 # plt.ylabel('$V_{\mathrm{dq0}}\,/\,\mathrm{V}$')
@@ -700,8 +714,9 @@ plt.text(0.151,50.18,'Settling Time',fontsize=8)
 # ax.arrow(0.2, 350,0,-17, head_width=0.005, head_length=7, fc='black', ec='black')
 # plt.text(0.196,360,'$V_{\mathrm{d0}}^*$')
 # ax.arrow(0.0487, 41,0,-17, head_width=0.005, head_length=7, fc='black', ec='black')
-# plt.text(0.0463,51,'Peak')
+# plt.text(0.047,51,'Peak')
 # plt.text(-0.002, 360, 'Overshoot')
+# ax.legend()
 
 
 # ax.arrow(0.06, 150,-0.045,162, head_width=0.005, head_length=7, fc='r', ec='r')

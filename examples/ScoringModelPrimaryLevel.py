@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-exec(open("Controller1_two_inverter_droop_safe_opt.py").read())
-exec(open("Controller2_two_inverter_droop_safe_opt.py").read())
+#exec(open("Controller1_two_inverter_droop_safe_opt.py").read())
+#exec(open("Controller2_two_inverter_droop_safe_opt.py").read())
 
 df_vd0_controller1= pd.read_pickle("./df_metrics_vd0_controller1_droop.pkl")
 df_vd0_controller1['Value'].round(decimals=4)
