@@ -31,6 +31,7 @@ iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
 
 
+
 class Reward:
     def __init__(self):
         self._idx = None
@@ -145,10 +146,46 @@ policy_kwargs = dict(
     features_extractor_class=CustomMPL,
     features_extractor_kwargs=dict(features_dim=128, net_arch=[32, 32]),
 )
+# DDPG learning parameters
+gamma = 0.9  # discount factor
+batch_size = 128
+memory_interval = 1
+alpha_actor = 5e-6
+alpha_critic = 5e-4
+noise_var = 0.2
+noise_theta = 5  # stiffness of OU
+alpha_lRelu = 0.1
+weigth_regularizer = 0.01
 
-# policy_kwargs = dict(net_arch=dict(pi=[5, 5], qf=[10, 10]))
-# policy_kwargs = dict( activation_fn=th.nn.LeakyReLU, net_arch=[32, 32])
-model = DDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{timestamp}/', policy_kwargs=policy_kwargs)
+memory_lim = 5000  # = buffersize?
+warm_up_steps_actor = 2048
+warm_up_steps_critic = 1024
+target_model_update = 1000
+
+# NN architecture
+actor_hidden_size = 100  # Using LeakyReLU
+# output linear
+critic_hidden_size_1 = 75  # Using LeakyReLU
+critic_hidden_size_2 = 75  # Using LeakyReLU
+critic_hidden_size_3 = 75  # Using LeakyReLU
+# output linear
+
+n_actions = env.action_space.shape[-1]
+action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
+                                            sigma=noise_var * np.ones(n_actions), dt=net.ts)
+
+policy_kwargs = dict(activation_fn=th.nn.LeakyReLU, net_arch=dict(pi=[actor_hidden_size], qf=[critic_hidden_size_1,
+                                                                                              critic_hidden_size_2,
+                                                                                              critic_hidden_size_3]))
+# policy_kwargs = dict( activation_fn=th.nn.LeakyReLU(negative_slope=alpha_lRelu), net_arch=dict(pi=[actor_hidden_size], qf=[critic_hidden_size_1,
+#                                                                                               critic_hidden_size_2,
+#                                                                                               critic_hidden_size_3]))
+model = DDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{timestamp}/', policy_kwargs=policy_kwargs,
+             learning_rate=alpha_critic, buffer_size=memory_lim, learning_starts=warm_up_steps_critic,
+             batch_size=batch_size, tau=0.005, gamma=gamma, action_noise=action_noise,
+             train_freq=- 1, gradient_steps=- 1, n_episodes_rollout=1, optimize_memory_usage=False,
+             create_eval_env=False, seed=None, device='auto', _init_setup_model=True)
+
 checkpoint_on_event = CheckpointCallback(save_freq=10000, save_path=f'{timestamp}/checkpoints/')
 record_env = RecordEnvCallback()
 plot_callback = EveryNTimesteps(n_steps=10000, callback=record_env)
