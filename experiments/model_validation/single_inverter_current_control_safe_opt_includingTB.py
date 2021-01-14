@@ -18,6 +18,8 @@ import numpy as np
 import pandas as pd
 
 from experiments.model_validation.env.physical_testbench import TestbenchEnv
+from experiments.model_validation.env.rewards import Reward
+from experiments.model_validation.env.stochastic_components import Load
 from experiments.model_validation.execution.monte_carlo_runner import MonteCarloRunner
 from experiments.model_validation.execution.runner_hardware import RunnerHardware
 from openmodelica_microgrid_gym.agents import SafeOptAgent
@@ -25,8 +27,6 @@ from openmodelica_microgrid_gym.agents.util import MutableFloat, MutableParams
 from openmodelica_microgrid_gym.aux_ctl import PI_params, MultiPhaseDQCurrentSourcingController
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.env.plotmanager import PlotManager
-from experiments.model_validation.env.rewards import Reward
-from experiments.model_validation.env.stochastic_components import Load
 from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import FullHistory
 
@@ -214,8 +214,8 @@ if __name__ == '__main__':
                                         limits=(-1, 1))
 
     # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
-    ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, delta_t,
-                                                 undersampling=undersample, name='master', f_nom=net.freq_nom)
+    ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, ts_sim=delta_t,
+                                                 ts_ctrl=undersample * delta_t, name='master', f_nom=net.freq_nom)
 
     i_ref = MutableParams([MutableFloat(f) for f in i_ref1])
     #####################################
@@ -256,7 +256,6 @@ if __name__ == '__main__':
 
 
         # i_noise = Noise([0, 0, 0], [0.0, 0.0, 0.0], 0.0, 0.0)
-
 
         def reset_loads():
             r_load.reset()
