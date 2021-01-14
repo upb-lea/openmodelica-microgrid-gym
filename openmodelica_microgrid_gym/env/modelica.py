@@ -274,6 +274,8 @@ class ModelicaEnv(gym.Env):
             logger.error(message)
             raise ValueError(message)
 
+        action = np.clip(action, self.action_space.low, self.action_space.high)
+
         # enqueue action and get delayed/last action
         delayed_action = self.delay_buffer.shift(action)
 

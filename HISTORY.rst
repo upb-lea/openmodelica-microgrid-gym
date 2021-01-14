@@ -2,6 +2,16 @@
 History
 =======
 
+Next
+-------
+
+Changes
+^^^^^^^
+* ModelicaEnv:
+    - Introduced action clipping
+
+
+
 0.3.0 (2020-12-18)
 ------------------
 
