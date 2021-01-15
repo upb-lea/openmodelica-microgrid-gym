@@ -289,6 +289,8 @@ class ModelicaEnv(gym.Env):
             values = {}
 
         params = {**values, **self.net.params(delayed_action)}
+        # delete None values to make model initialization possible (take care in model_params definition!)
+        params = {k: v for k, v in params.items() if v is not None}
         if params:
             self.model.set_params(**params)
         risk = self.net.risk()
