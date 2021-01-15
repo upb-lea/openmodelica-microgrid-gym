@@ -9,6 +9,7 @@ Changes
 ^^^^^^^
 * ModelicaEnv:
     - Introduced action clipping
+    - model_params: None values are not passed to the OpenModelica env to allow initialization
 
 
 
