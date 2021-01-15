@@ -13,6 +13,7 @@ from typing import List
 import GPy
 import gym
 import numpy as np
+from stochastic.processes import WienerProcess
 
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
@@ -21,7 +22,7 @@ from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, \
     MultiPhaseDQ0PIPIController, PLLParams, InverseDroopParams, MultiPhaseDQCurrentController
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.net import Network
-from openmodelica_microgrid_gym.util import nested_map, FullHistory
+from openmodelica_microgrid_gym.util import nested_map, FullHistory, RandProcess
 
 # Simulation definitions
 max_episode_steps = 6000  # number of simulation steps per episode
@@ -251,6 +252,9 @@ if __name__ == '__main__':
         fig.savefig(save_folder + '/f_slave' + time + '.pdf')
 
 
+    gen = RandProcess(WienerProcess)
+    gen2 = RandProcess(WienerProcess)
+
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=Reward().rew_fun,
                    viz_cols=[
@@ -276,10 +280,10 @@ if __name__ == '__main__':
                    log_level=logging.INFO,
                    viz_mode='episode',
                    max_episode_steps=max_episode_steps,
-                   model_params={'rl1.resistor1.R': partial(load_step, gain=20),
-                                 'rl1.resistor2.R': partial(load_step, gain=20),
-                                 'rl1.resistor3.R': partial(load_step, gain=20),
-                                 'rl1.inductor1.L': partial(load_step, gain=0.001),  # 0.001,
+                   model_params={'rl1.resistor1.R': gen.sample,
+                                 'rl1.resistor2.R': gen.sample,
+                                 'rl1.resistor3.R': gen.sample,
+                                 'rl1.inductor1.L': gen2.sample,  # 0.001,
                                  'rl1.inductor2.L': partial(load_step, gain=0.001),  # 0.001,
                                  'rl1.inductor3.L': partial(load_step, gain=0.001)  # 0.001
                                  },

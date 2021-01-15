@@ -1,4 +1,16 @@
 import gym
+from stochastic.processes import OrnsteinUhlenbeckProcess
+
+from stochastic.processes.continuous import BrownianMotion
+import matplotlib.pyplot as plt
+from stochastic.processes.continuous import WienerProcess
+
+proc = OrnsteinUhlenbeckProcess()
+s = proc.sample(32)
+times = proc.times(32)
+
+plt.plot(times, s)
+plt.show()
 
 if __name__ == '__main__':
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
