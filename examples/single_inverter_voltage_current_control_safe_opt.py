@@ -410,7 +410,7 @@ class Metrics:
             return round(overshoot, 4)
         else:
             self.overshoot_available = False
-            sentence_error1 = "No overshoot"
+            sentence_error1 = "No"
             return sentence_error1
 
     def rise_time(self):
@@ -474,9 +474,11 @@ d = {'Overshoot': [voltage_controller_metrics_vd0.overshoot()],
      'Root Mean Squared Error/V': [voltage_controller_metrics_vd0.RMSE()],
      'Steady State Error/V': [voltage_controller_metrics_vd0.steady_state_error()]}
 
-df_metrics = pd.DataFrame(data=d).T
-df_metrics.columns = ['Value']
-print(df_metrics)
+print()
+df_metrics_vd0 = pd.DataFrame(data=d).T
+df_metrics_vd0.columns = ['Value']
+print('Metrics of Vd0')
+print(df_metrics_vd0)
 ################################################################################
 ###q-component of vdq0
 
@@ -516,7 +518,6 @@ d = {'Root Mean Squared Error/V': [voltage_controller_metrics_vq0.RMSE()],
      'Steady State Error/V': [voltage_controller_metrics_vq0.steady_state_error()],
      'Peak Value/V': [voltage_controller_metrics_vq0.peak()]}
 
-print("\n")
 print()
 df_metrics_vq0 = pd.DataFrame(data=d).T
 df_metrics_vq0.columns = ['Value']

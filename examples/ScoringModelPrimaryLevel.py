@@ -33,9 +33,9 @@ Controller_1_points_Vd0=comparison_vd0.loc[comparison_vd0['Better Performer'] ==
 Controller_2_points_Vd0=comparison_vd0.loc[comparison_vd0['Better Performer'] == 'Controller_2'].shape[0]
 
 print()
-print("###############")
-print("Results for Vd0")
-print("###############")
+print("###############################")
+print("Results for Vd0 - Primary level")
+print("###############################")
 print(comparison_vd0)
 print()
 print("Controller1_Vd0_Points: ",Controller_1_points_Vd0)
@@ -56,9 +56,9 @@ Controller_1_points_Vq0=comparison_vq0.loc[comparison_vq0['Better Performer'] ==
 Controller_2_points_Vq0=comparison_vq0.loc[comparison_vq0['Better Performer'] == 'Controller_2'].shape[0]
 
 print()
-print("###############")
-print("Results for Vq0")
-print("###############")
+print("###############################")
+print("Results for Vq0 - Primary level")
+print("###############################")
 print(comparison_vq0)
 print()
 print("Controller1_Vq0_Points: ",Controller_1_points_Vq0)
@@ -83,19 +83,19 @@ print()
 print("###########################")
 print("Results for Slave Frequency")
 print("###########################")
-print(comparison_vq0)
+print(comparison_slave_frequency)
 print()
-print("Controller1_SlaveFrequency_Points: ",Controller_1_points_Vq0)
-print("Controller2_SlaveFrequency_Points: ",Controller_2_points_Vq0)
+print("Controller1_SlaveFrequency_Points: ",Controller_1_points_slave_frequency)
+print("Controller2_SlaveFrequency_Points: ",Controller_2_points_slave_frequency)
 
 ######Overall Results######
 
 overall_Controller_1_points=Controller_1_points_Vd0+Controller_1_points_Vq0
 overall_Controller_2_points=Controller_2_points_Vd0+Controller_2_points_Vq0
 print()
-print("###########################")
+print("###############")
 print("Overall Results")
-print("###########################")
+print("################")
 print()
 print("Note: If the scores of Controller 1 and 2 are equal, the scores of the slave frequency comparison are added to the scores,")
 print("although the frequency does not physically exist and is therefore a poor indicator for performance. Further details can be")

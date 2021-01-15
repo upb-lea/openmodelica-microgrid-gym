@@ -413,7 +413,7 @@ class Metrics:
             return round(overshoot, 4)
         else:
             self.overshoot_available = False
-            sentence_error1 = "No overshoot"
+            sentence_error1 = "No"
             return sentence_error1
 
     def rise_time(self):  # it's an underdamped system, that's why it's 0% to 100% of its value
@@ -485,7 +485,7 @@ print()
 print('Metrics of id0')
 print(df_metrics_id0)
 #df_metrics_id0.to_pickle("./df_metrics_id0.pkl")
-print('\n')
+#print('\n')
 
 ######################################################
 #2: Calculation of the Metrics of q-component of Idq0
