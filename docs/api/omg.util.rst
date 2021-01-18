@@ -9,6 +9,7 @@ Submodules
    omg.util.fastqueue
    omg.util.itertools_
    omg.util.transforms
+   omg.util.randproc
    omg.util.recorder
 
 Module contents
