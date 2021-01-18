@@ -11,6 +11,11 @@ Changes
     - Introduced action clipping
     - model_params: None values are not passed to the OpenModelica env to allow initialization
 
+Add
+^^^
+* Random Process wrapper
+
+
 
 
 0.3.0 (2020-12-18)
