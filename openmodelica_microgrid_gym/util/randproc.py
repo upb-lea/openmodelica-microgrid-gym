@@ -27,14 +27,16 @@ class RandProcess:
     def sample(self, t):
         """
         calculates time differential and calculates the change in the outputs of the process
-
         :param t: timestep
         :return: value at the timestep
         """
-        self.proc.t = t - self.last_t
-        self.last_t = t
-        if isinstance(self.proc, DiffusionProcess):
-            self.last = np.clip(self.proc.sample(1, initial=self.last)[-1], *self.bounds).squeeze()
-        else:
-            self.last = np.clip(self.last + self.proc.sample(1)[-1], *self.bounds).squeeze()
+        if t != self.last_t:
+            # if not initial actually sample from processes otherwise return initial value
+            self.proc.t = t - self.last_t
+            self.last_t = t
+            if isinstance(self.proc, DiffusionProcess):
+                self.last = np.clip(self.proc.sample(1, initial=self.last)[-1], *self.bounds).squeeze()
+            else:
+                self.last = np.clip(self.last + self.proc.sample(1)[-1], *self.bounds).squeeze()
+
         return self.last * self.gain
