@@ -31,7 +31,7 @@ class ModelicaEnv(gym.Env):
                  reward_fun: Callable[[List[str], np.ndarray, float], float] = lambda cols, obs, risk: 1,
                  is_normalized=True,
                  log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: Optional[int] = 200,
-                 model_params: Optional[Dict[str, Union[Callable[[float], float], float]]] = None,
+                 model_params: Optional[Dict[str, Union[Callable[[float], Optional[float]], float]]] = None,
                  model_path: str = '../omg_grid/grid.network.fmu',
                  viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[Union[str, PlotTmpl]]]] = None,
                  history: EmptyHistory = FullHistory(),
@@ -58,7 +58,11 @@ class ModelicaEnv(gym.Env):
         :param model_params: parameters of the FMU.
             dictionary of variable names and scalars or callables.
             If a callable is provided it is called every time step with the current time.
-            This callable must return a float that is passed to the fmu.
+            This callable must return a float or None
+            The float is passed to the fmu, None values are discarded.
+            This allows setting initial values using like::
+
+                model_params={'lc1.capacitor1.v': lambda t: -10 if t==0 else None}
         :param net: Path to the network configuration file passed to the net.Network.load() function
         :param model_path: Path to the FMU
         :param viz_mode: specifies how and if to render
@@ -289,6 +293,8 @@ class ModelicaEnv(gym.Env):
             values = {}
 
         params = {**values, **self.net.params(delayed_action)}
+        # delete None values to make model initialization possible (take care in model_params definition!)
+        params = {k: v for k, v in params.items() if v is not None}
         if params:
             self.model.set_params(**params)
         risk = self.net.risk()
