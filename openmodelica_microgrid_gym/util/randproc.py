@@ -23,8 +23,9 @@ class RandProcess:
             self.bounds = bounds
 
         # will contain the previous value, hence initialized accordingly
-        self.last = initial
-        self.last_t = 0
+        self._last = initial
+        self._last_t = 0
+        self._reserve = None
 
     def sample(self, t):
         """
@@ -32,13 +33,27 @@ class RandProcess:
         :param t: timestep
         :return: value at the timestep
         """
-        if t != self.last_t:
-            # if not initial actually sample from processes otherwise return initial value
-            self.proc.t = t - self.last_t
-            self.last_t = t
+        # if not initial actually sample from processes otherwise return initial value
+        if t != self._last_t:
+            if self.reserve is not None:
+                self._last = self.reserve
+                self.reserve = None
+            self.proc.t = t - self._last_t
+            self._last_t = t
             if isinstance(self.proc, DiffusionProcess):
-                self.last = np.clip(self.proc.sample(1, initial=self.last)[-1], *self.bounds).squeeze()
+                self._last = np.clip(self.proc.sample(1, initial=self._last)[-1], *self.bounds).squeeze()
             else:
-                self.last = np.clip(self.last + self.proc.sample(1)[-1], *self.bounds).squeeze()
+                self._last = np.clip(self._last + self.proc.sample(1)[-1], *self.bounds).squeeze()
 
-        return self.last
+        return self._last
+
+    @property
+    def reserve(self):
+        """
+        This variable is used to prepare for external loadsteps or other abrupt changes in the process' variables.
+        """
+        return self._reserve
+
+    @reserve.setter
+    def reserve(self, v):
+        self._reserve = v

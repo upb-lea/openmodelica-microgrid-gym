@@ -21,9 +21,6 @@ class Component:
         """
         self.net = net
         self.id = id
-        for attr in chain.from_iterable((f.keys() for f in filter(None, (in_vars, out_vars)))):
-            if not hasattr(self, attr):
-                raise AttributeError(f'{self.__class__} no such attribute: {attr}')
         self.in_vars = in_vars
         self.in_idx = None  # type: Optional[dict]
 
@@ -70,10 +67,7 @@ class Component:
             raise ValueError('call set_tmplidx before fill_tmpl. the keys must be converted to indices for efficiency')
         for attr, idxs in self.out_idx.items():
             # set object variables to the respective state variables
-            if hasattr(self, attr):
-                setattr(self, attr, state[idxs])
-            else:
-                raise AttributeError(f'{self.__class__} has no such attribute: {attr}')
+            setattr(self, attr, state[idxs])
 
     def set_outidx(self, keys):
         # This pre-calculation is done mainly for performance reasons
