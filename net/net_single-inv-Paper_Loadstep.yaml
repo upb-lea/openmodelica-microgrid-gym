@@ -1,4 +1,4 @@
-#v_nom: 169.7
+v_nom: 190
 freq_nom: 60
 ts: 1e-4
 
@@ -7,7 +7,7 @@ components:
     id: inverter1
     i_nom: 12
     i_lim: 16
-    v_nom: 190
+    #v_nom: 190
     v_lim: 285
     v_DC: 600
     v_noise:
