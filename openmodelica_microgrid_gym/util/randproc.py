@@ -6,7 +6,7 @@ from stochastic.processes.base import BaseProcess
 
 
 class RandProcess:
-    def __init__(self, process_cls=Type[BaseProcess], proc_kwargs=None, bounds=(0, 1), initial=0, gain=1):
+    def __init__(self, process_cls: Type[BaseProcess], proc_kwargs=None, bounds=None, initial=0):
         """
         wrapper around stochastic processes to allow easier integration
 
@@ -17,8 +17,10 @@ class RandProcess:
         :param gain: scale of the process output (of not set, results are between the clipped bounds)
         """
         self.proc = process_cls(**(proc_kwargs or {}))
-        self.bounds = bounds
-        self.gain = gain
+        if bounds is None:
+            self.bounds = (-np.inf, np.inf)
+        else:
+            self.bounds = bounds
 
         # will contain the previous value, hence initialized accordingly
         self.last = initial
@@ -39,4 +41,4 @@ class RandProcess:
             else:
                 self.last = np.clip(self.last + self.proc.sample(1)[-1], *self.bounds).squeeze()
 
-        return self.last * self.gain
+        return self.last
