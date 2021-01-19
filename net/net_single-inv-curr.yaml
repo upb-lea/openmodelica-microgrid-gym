@@ -20,6 +20,6 @@ components:
     id: rl1
     cls: Load
     out:
-      i: [.resistor1.R, .resistor2.R, .resistor3.R]
+      i: [.resistor1.R, .resistor2.R, .resistor3.R, .inductor1.L, .inductor2.L, .inductor3.L]
       #R: [ .resistor1.R, .resistor2.R, .resistor3.R ]
 

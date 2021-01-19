@@ -42,13 +42,16 @@ mu = 2  # factor for barrier function (see below)
 DroopGain = 0  # virtual droop gain for active power / W/Hz 40000
 QDroopGain = 0  # virtual droop gain for reactive power / VAR/V 1000
 R = 20  # sets the resistance value of RL
+L=0.001
 load_jump = 5  # defines the load jump that is implemented at every quarter of the simulation time
 ts = 1e-4
 v_ref_d = np.array([325, 0, 0])
 v_ref_q=np.array([0, 0, 0])
-movement_1 = load_jump
-movement_2 = (load_jump if random() < 0.5 else -1 * load_jump) + movement_1 # randomly chosen load jump
-movement_2=10
+movement_1_resistor = load_jump
+movement_2_resistor = (load_jump if random() < 0.5 else -1 * load_jump) + movement_1_resistor #randomly chosen load jump
+movement_2_resistor=10
+movement_1_inductance=0.0004
+movement_2_inductance= 0.0008
 position_settling_time=0
 position_steady_state=0
 
@@ -57,7 +60,7 @@ position_steady_state=0
 # Every step and therefore the whole simulation time, it randomly changes +/- 0.01 Ohm to generate noise.
 
 
-def load_step_random_walk():
+def load_step_random_walk_resistor():
     random_walk = []
     random_walk.append(R)  # R=20 Ohm
     for i in range(1, max_episode_steps):
@@ -68,8 +71,20 @@ def load_step_random_walk():
         random_walk.append(value)
     return random_walk
 
+def load_step_random_walk_inductor():
+    random_walk_inductance = []
+    random_walk_inductance.append(L)  # L=0.001 H
+    for i in range(1, max_episode_steps):
+        movement = -0.000001 if random() < 0.5 else 0.000001  # constant slight and random fluctuation of load
+        value = random_walk_inductance[i - 1] + movement
+        random_walk_inductance.append(value)
+    return random_walk_inductance
 
-list_resistor = load_step_random_walk()
+list_resistor = load_step_random_walk_resistor()
+list_inductance=load_step_random_walk_inductor()
+
+
+
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
@@ -172,15 +187,31 @@ class LoadstepCallback(Callback):
 
     # After steady state is reached, a bigger random load jump of +/- 5 Ohm is implemented
     # After 3/4 of the simulation time, another random load jump of +/- 5 Ohm is implemented
-    def load_step(self, t):
+    def load_step_resistance(self, t):
         for i in range(1, len(list_resistor)):
             if self.steady_state_reached==False and t <= ts * i + ts: # while steady state is not reached, no load jump
                 return list_resistor[i] # contains for every step values that fluctuate a little bit
             elif self.steady_state_reached==True and t<=ts*i+ts and i<=max_episode_steps*0.75:
-                return list_resistor[i] + movement_1 # when steady state reached, a load jump of +5/-5 Ohm is implemented (movement 1)
+                return list_resistor[i] + movement_1_resistor # when steady state reached, a load jump of +5/-5 Ohm is implemented (movement 1)
             elif self.steady_state_reached==True and t<=ts * i+ts and i>max_episode_steps*0.75:
                # after 75% of the simulation time, another load jump is implemented
-                return list_resistor[i] + movement_2 # the load jump of +/- 5 Ohm is stored in movement_2
+                return list_resistor[i] + movement_2_resistor # the load jump of +/- 5 Ohm is stored in movement_2
+
+    def load_step_inductance(self, t):
+        # for i in range(1, len(list_inductance)):
+        #     if self.steady_state_reached == False and t <= ts * i + ts:  # while steady state is not reached, no load jump
+        #         return list_inductance[i]  # contains for every step values that fluctuate a little bit
+        #     elif self.signal_inductor_load_step1==True and t>self.t_signal_inductor_load_step1+0.015 and t<=self.t_signal_inductor_load_step1+0.03:
+        #         return list_inductance[i] + movement_1_inductance  # when signal is given, defined above
+        #     elif t>=self.t_signal_inductor_load_step1+0.03: #when signal is given, defined above
+        #         return list_inductance[i] + movement_2_inductance  # the load jump of +/- 0.001 H is stored in movement_2
+        for i in range(1, len(list_inductance)):
+            if self.steady_state_reached == False and t <= ts * i + ts:  # while steady state is not reached, no load jump
+                return list_inductance[i]  # contains for every step values that fluctuate a little bit
+            elif self.steady_state_reached == True and t <= ts * i + ts and i <= max_episode_steps * 0.75:
+                return list_inductance[i] + movement_1_inductance  # when signal is given, defined above
+            elif self.steady_state_reached == True and t <= ts * i + ts and i > max_episode_steps * 0.75:  # when signal is given, defined above
+                return list_inductance[i] + movement_2_inductance  # the load jump of +/- 0.001 H is stored in movement_2
 
 
 if __name__ == '__main__':
@@ -312,6 +343,13 @@ if __name__ == '__main__':
         fig.savefig(save_folder + '/dq0_voltage' + time + '.pdf')
 
 
+    def xylables_L(fig):
+        ax = fig.gca()
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')  # zeit
+        ax.set_ylabel('$L_{\mathrm{123}}\,/\,\mathrm{H}$')  # widerstände definieren , ohm angucken backslash omega
+        ax.grid(which='both')
+
+
     callback = LoadstepCallback()
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
@@ -331,16 +369,19 @@ if __name__ == '__main__':
                                 ),
                        PlotTmpl([f'master.CVV{i}' for i in 'dq0'],
                                 callback=xylables_v_dq0
+                                ),
+                       PlotTmpl([f'rl1.inductor{i}.L' for i in '123'],  # Plot Widerstand RL
+                                callback=xylables_L
                                 )
                    ],
                    log_level=logging.INFO,
                    viz_mode='episode',
-                   model_params={'rl1.resistor1.R': callback.load_step,
-                                 'rl1.resistor2.R': callback.load_step,
-                                 'rl1.resistor3.R': callback.load_step,
-                                 'rl1.inductor1.L': 0.001,
-                                 'rl1.inductor2.L': 0.001,
-                                 'rl1.inductor3.L': 0.001
+                   model_params={'rl1.resistor1.R': callback.load_step_resistance,
+                                 'rl1.resistor2.R': callback.load_step_resistance,
+                                 'rl1.resistor3.R': callback.load_step_resistance,
+                                 'rl1.inductor1.L': callback.load_step_inductance,
+                                 'rl1.inductor2.L': callback.load_step_inductance,
+                                 'rl1.inductor3.L': callback.load_step_inductance
                                  },
                    max_episode_steps=max_episode_steps,
                    net=net,
@@ -414,17 +455,11 @@ class Metrics:
             return sentence_error1
 
     def rise_time(self):
-        if self.overshoot_available: # if overdamped system
-            position_rise_time = self.quantity[self.quantity['master.CVVd'] >= self.ref_value].index[0]  # the number of episode steps where the real value = set_value is stored
-            rise_time_in_seconds = position_rise_time * ts
-        else: #if underdamped/critically damped
             position_start_rise_time=self.quantity[self.quantity['master.CVVd'] >= 0.1*self.ref_value].index[0] # 5% of its final value
-            position_end_rise_time= self.quantity[self.quantity['master.CVVd'] <= 0.9*self.ref_value].index[0] # 95% of its final value
+            position_end_rise_time= self.quantity[self.quantity['master.CVVd'] >= 0.9*self.ref_value].index[0] # 95% of its final value
             position_rise_time=position_end_rise_time-position_start_rise_time
             rise_time_in_seconds=position_rise_time *ts
-
-
-        return round(rise_time_in_seconds, 4)
+            return round(rise_time_in_seconds, 4)
 
     def settling_time(self):
         settling_time_value = position_settling_time * ts
@@ -477,7 +512,7 @@ d = {'Overshoot': [voltage_controller_metrics_vd0.overshoot()],
 print()
 df_metrics_vd0 = pd.DataFrame(data=d).T
 df_metrics_vd0.columns = ['Value']
-print('Metrics of Vd0')
+print('Metrics of Vd')
 print(df_metrics_vd0)
 ################################################################################
 ###q-component of vdq0
@@ -516,12 +551,12 @@ voltage_controller_metrics_vq0 = Metrics_Master_Vq0(df_master_CVVq)
 
 d = {'Root Mean Squared Error/V': [voltage_controller_metrics_vq0.RMSE()],
      'Steady State Error/V': [voltage_controller_metrics_vq0.steady_state_error()],
-     'Peak Value/V': [voltage_controller_metrics_vq0.peak()]}
+     'absolute Peak Value/V': [voltage_controller_metrics_vq0.peak()]}
 
 print()
 df_metrics_vq0 = pd.DataFrame(data=d).T
 df_metrics_vq0.columns = ['Value']
-print('Metrics of Vq0')
+print('Metrics of Vq')
 print(df_metrics_vq0)
 
 
@@ -534,18 +569,18 @@ ax = plt.axes()
 #ax.arrow(0.00, 16.6,0,-0.5, head_width=0.005, head_length=0.5, fc='r', ec='r')
 #ax.arrow(0.06, 17.5,0,-1.9, head_width=0.005, head_length=0.5, fc='black', ec='black')
 #plt.arrow(0.06, 7.5,-0.04,6.8, color='r', length_includes_head=True)
-plt.plot(plot_quantities.test(df_master_CVVd['master.CVVd'], ts)[0], plot_quantities.test(df_master_CVVd['master.CVVd'], ts)[1], label='$V_{\mathrm{d0}}$')
-plt.plot(plot_quantities.test(df_master_CVVq['master.CVVq'], ts)[0], plot_quantities.test(df_master_CVVq['master.CVVq'], ts)[1], label='$V_{\mathrm{q0}}$')
+plt.plot(plot_quantities.test(df_master_CVVd['master.CVVd'], ts)[0], plot_quantities.test(df_master_CVVd['master.CVVd'], ts)[1], label='$V_{\mathrm{d}}$')
+plt.plot(plot_quantities.test(df_master_CVVq['master.CVVq'], ts)[0], plot_quantities.test(df_master_CVVq['master.CVVq'], ts)[1], label='$V_{\mathrm{q}}$')
 plt.axhline(y=v_ref_d[0], color='black', linestyle='-')
 plt.xlabel(r'$t\,/\,\mathrm{s}$')
-plt.ylabel('$V_{\mathrm{dq0}}\,/\,\mathrm{V}$')
-ax.arrow(0.02, 150,-0.015,170, head_width=0.005, head_length=5, fc='r', ec='r')
+plt.ylabel('$V_{\mathrm{dq}}\,/\,\mathrm{V}$')
+ax.arrow(0.02, 150,-0.0156,145, head_width=0.005, head_length=5, fc='r', ec='r')
 plt.text(0.01,130,'Rise Time')
 ax.arrow(0.06, 150,-0.043,162, head_width=0.005, head_length=7, fc='r', ec='r')
 plt.text(0.05,130,'Settling Time')
 ax.arrow(0.06, 350,0,-17, head_width=0.005, head_length=7, fc='black', ec='black')
-plt.text(0.057,360,'$V_{\mathrm{d0}}^*$')
-plt.text(0.057,5,'$V_{\mathrm{q0}}^*$')
+plt.text(0.057,360,'$V_{\mathrm{d}}^*$')
+plt.text(0.057,5,'$V_{\mathrm{q}}^*$')
 
 plt.text(-0.002, 360, 'Overshoot')
 ax.legend()
