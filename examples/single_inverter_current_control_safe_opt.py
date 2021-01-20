@@ -32,8 +32,8 @@ if adjust not in {'Kp', 'Ki', 'Kpi'}:
     raise ValueError("Please set 'adjust' to one of the following values: 'Kp', 'Ki', 'Kpi'")
 
 # Simulation definitions
-max_episode_steps = 300  # number of simulation steps per episode
-num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
+max_episode_steps = 600  # number of simulation steps per episode
+num_episodes = 10  # number of simulation episodes (i.e. SafeOpt iterations)
 mu = 2  # factor for barrier function (see below)
 net = Network.load('../net/net_single-inv-curr.yaml')
 i_lim = net['inverter1'].i_lim  # inverter current limit / A
@@ -76,9 +76,9 @@ class Reward:
         # (due to normalization the control error is often around zero -> compared to MSE metric, the MRE provides
         #  better, i.e. more significant,  gradients)
         # plus barrier penalty for violating the current constraint
-        error = np.sum((np.abs((ISPabc_master - Iabc_master)) / i_lim) ** 0.5, axis=0) \
-                + -np.sum(mu * np.log(1 - np.maximum(np.abs(Iabc_master) - i_nom, 0) / (i_lim - i_nom)), axis=0) \
-                * max_episode_steps
+        error = (np.sum((np.abs((ISPabc_master - Iabc_master)) / i_lim) ** 0.5, axis=0) \
+                 + -np.sum(mu * np.log(1 - np.maximum(np.abs(Iabc_master) - i_nom, 0) / (i_lim - i_nom)), axis=0)) \
+                / max_episode_steps
 
         return -error.squeeze()
 
@@ -86,9 +86,9 @@ class Reward:
 if __name__ == '__main__':
     #####################################
     # Definitions for the GP
-    prior_mean = 2  # mean factor of the GP prior mean which is multiplied with the first performance of the initial set
-    noise_var = 0.001 ** 2  # measurement noise sigma_omega
-    prior_var = 0.1  # prior variance of the GP
+    prior_mean = 0  # mean factor of the GP prior mean which is multiplied with the first performance of the initial set
+    noise_var = 0.001  # measurement noise sigma_omega
+    prior_var = 2  # prior variance of the GP
 
     bounds = None
     lengthscale = None
@@ -103,8 +103,8 @@ if __name__ == '__main__':
 
     # For 2D example, choose Kp and Ki as mutable parameters (below) and define bounds and lengthscale for both of them
     if adjust == 'Kpi':
-        bounds = [(0.0, 0.03), (0, 300)]
-        lengthscale = [.01, 50.]
+        bounds = [(0.0, 0.07), (0, 300)]
+        lengthscale = [.02, 50.]
 
     # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
     # the initial performance: safe_threshold = 1.2 means. Performance measurement for optimization are seen as
@@ -121,7 +121,7 @@ if __name__ == '__main__':
 
     # Factor to multiply with the initial reward to give back an abort_reward-times higher negative reward in case of
     # limit exceeded
-    abort_reward = -10 * j_min
+    abort_reward = 10 * j_min
 
     # Definition of the kernel
     kernel = GPy.kern.Matern32(input_dim=len(bounds), variance=prior_var, lengthscale=lengthscale, ARD=True)
@@ -145,7 +145,7 @@ if __name__ == '__main__':
 
     # For 2D example, choose Kp and Ki as mutable parameters
     elif adjust == 'Kpi':
-        mutable_params = dict(currentP=MutableFloat(10e-3), currentI=MutableFloat(10))
+        mutable_params = dict(currentP=MutableFloat(40e-3), currentI=MutableFloat(10))
         current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'], limits=(-1, 1))
 
     # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
@@ -184,6 +184,7 @@ if __name__ == '__main__':
         ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
+        fig.show()
         # fig.savefig('Inductor_currents.pdf')
 
 
