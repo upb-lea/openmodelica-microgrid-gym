@@ -2,13 +2,14 @@
 # Example using a FMU by OpenModelica and SafeOpt algorithm to find optimal controller parameters
 # Simulation setup: Single inverter supplying 15 A d-current to an RL-load via a LC filter
 # Controller: PI current controller gain parameters are optimized by SafeOpt
+# Testing Framework for current control
+# Definition of Benchmark, Implementation of load steps, Measurement of control metrics
 
 
 import logging
 from typing import List
 from math import sqrt
 from random import random
-
 import GPy
 import gym
 import sys
@@ -21,7 +22,7 @@ import scipy
 from gym.envs.tests.test_envs_semantics import steps
 from sklearn.metrics import mean_squared_error
 from scipy.signal import argrelextrema
-from statistics import mean
+from statistics import mea
 
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent

@@ -3,66 +3,66 @@ import numpy as np
 #exec(open("Controller1_two_inverter_droop_safe_opt.py").read())
 #exec(open("Controller2_two_inverter_droop_safe_opt.py").read())
 
-df_vd0_controller1= pd.read_pickle("./df_metrics_vd0_controller1_droop.pkl")
-df_vd0_controller1['Value'].round(decimals=4)
-df_vq0_controller1=pd.read_pickle("./df_metrics_vq0_controller1_droop.pkl")
-df_vq0_controller1['Value'].round(decimals=4)
+df_vd_controller1= pd.read_pickle("./df_metrics_vd_controller1_droop.pkl")
+df_vd_controller1['Value'].round(decimals=4)
+df_vq_controller1=pd.read_pickle("./df_metrics_vq_controller1_droop.pkl")
+df_vq_controller1['Value'].round(decimals=4)
 df_slave_frequency_controller1=pd.read_pickle("./df_metrics_slave_f_controller1_droop.pkl")
 df_slave_frequency_controller1['Value'].round(decimals=4)
 
 
 ###########################################################
 
-df_vd0_controller2= pd.read_pickle("./df_metrics_vd0_controller2_droop.pkl")
-df_vq0_controller2=pd.read_pickle("./df_metrics_vq0_controller2_droop.pkl")
+df_vd_controller2= pd.read_pickle("./df_metrics_vd_controller2_droop.pkl")
+df_vq_controller2=pd.read_pickle("./df_metrics_vq_controller2_droop.pkl")
 df_slave_frequency_controller2=pd.read_pickle("./df_metrics_slave_f_controller2_droop.pkl")
 
 #########################################################
 
 ########Vd0########
 
-comparison_vd0=pd.concat([df_vd0_controller1, df_vd0_controller2], axis=1)
-comparison_vd0.columns=['Controller_1', 'Controller_2']
-comparison_vd0= comparison_vd0.drop(comparison_vd0[(comparison_vd0=='No overshoot').any(1)].index)
-comparison_vd0['Controller_1'] = comparison_vd0['Controller_1'].astype(float).round(4)
-comparison_vd0['Controller_2'] = comparison_vd0['Controller_2'].astype(float).round(4)
-comparison_vd0['Better Performer'] = np.where(comparison_vd0['Controller_1'] > comparison_vd0['Controller_2'], 'Controller_2',
-                                              (np.where(comparison_vd0['Controller_1']==comparison_vd0['Controller_2'],
+comparison_vd=pd.concat([df_vd_controller1, df_vd_controller2], axis=1)
+comparison_vd.columns=['Controller_1', 'Controller_2']
+comparison_vd= comparison_vd.drop(comparison_vd[(comparison_vd == 'No overshoot').any(1)].index)
+comparison_vd['Controller_1'] = comparison_vd['Controller_1'].astype(float).round(4)
+comparison_vd['Controller_2'] = comparison_vd['Controller_2'].astype(float).round(4)
+comparison_vd['Better Performer'] = np.where(comparison_vd['Controller_1'] > comparison_vd['Controller_2'], 'Controller_2',
+                                             (np.where(comparison_vd['Controller_1'] == comparison_vd['Controller_2'],
                                                         'equal', 'Controller_1')))
-Controller_1_points_Vd0=comparison_vd0.loc[comparison_vd0['Better Performer'] == 'Controller_1'].shape[0]
-Controller_2_points_Vd0=comparison_vd0.loc[comparison_vd0['Better Performer'] == 'Controller_2'].shape[0]
+Controller_1_points_Vd=comparison_vd.loc[comparison_vd['Better Performer'] == 'Controller_1'].shape[0]
+Controller_2_points_Vd=comparison_vd.loc[comparison_vd['Better Performer'] == 'Controller_2'].shape[0]
 
 print()
 print("###############################")
-print("Results for Vd0 - Primary level")
+print("Results for Vd - Primary level")
 print("###############################")
-print(comparison_vd0)
+print(comparison_vd)
 print()
-print("Controller1_Vd0_Points: ",Controller_1_points_Vd0)
-print("Controller2_Vd0_Points: ",Controller_2_points_Vd0)
+print("Controller1_Vd_Points: ", Controller_1_points_Vd)
+print("Controller2_Vd_Points: ", Controller_2_points_Vd)
 
 
 ########Vq0#########
 
-comparison_vq0=pd.concat([df_vq0_controller1, df_vq0_controller2], axis=1)
-comparison_vq0.columns=['Controller_1', 'Controller_2']
-comparison_vq0= comparison_vq0.drop(comparison_vq0[(comparison_vq0=='No overshoot').any(1)].index)
-comparison_vq0['Controller_1'] = comparison_vq0['Controller_1'].astype(float).round(4)
-comparison_vq0['Controller_2'] = comparison_vq0['Controller_2'].astype(float).round(4)
-comparison_vq0['Better Performer'] = np.where(comparison_vq0['Controller_1'] > comparison_vq0['Controller_2'], 'Controller_2',
-                                              (np.where(comparison_vq0['Controller_1']==comparison_vq0['Controller_2'],
+comparison_vq=pd.concat([df_vq_controller1, df_vq_controller2], axis=1)
+comparison_vq.columns=['Controller_1', 'Controller_2']
+comparison_vq= comparison_vq.drop(comparison_vq[(comparison_vq == 'No overshoot').any(1)].index)
+comparison_vq['Controller_1'] = comparison_vq['Controller_1'].astype(float).round(4)
+comparison_vq['Controller_2'] = comparison_vq['Controller_2'].astype(float).round(4)
+comparison_vq['Better Performer'] = np.where(comparison_vq['Controller_1'] > comparison_vq['Controller_2'], 'Controller_2',
+                                             (np.where(comparison_vq['Controller_1'] == comparison_vq['Controller_2'],
                                                         'equal', 'Controller_1')))
-Controller_1_points_Vq0=comparison_vq0.loc[comparison_vq0['Better Performer'] == 'Controller_1'].shape[0]
-Controller_2_points_Vq0=comparison_vq0.loc[comparison_vq0['Better Performer'] == 'Controller_2'].shape[0]
+Controller_1_points_Vq=comparison_vq.loc[comparison_vq['Better Performer'] == 'Controller_1'].shape[0]
+Controller_2_points_Vq=comparison_vq.loc[comparison_vq['Better Performer'] == 'Controller_2'].shape[0]
 
 print()
 print("###############################")
-print("Results for Vq0 - Primary level")
+print("Results for Vq - Primary level")
 print("###############################")
-print(comparison_vq0)
+print(comparison_vq)
 print()
-print("Controller1_Vq0_Points: ",Controller_1_points_Vq0)
-print("Controller2_Vq0_Points: ",Controller_2_points_Vq0)
+print("Controller1_Vq_Points: ", Controller_1_points_Vq)
+print("Controller2_Vq_Points: ", Controller_2_points_Vq)
 
 
 
@@ -90,16 +90,17 @@ print("Controller2_SlaveFrequency_Points: ",Controller_2_points_slave_frequency)
 
 ######Overall Results######
 
-overall_Controller_1_points=Controller_1_points_Vd0+Controller_1_points_Vq0
-overall_Controller_2_points=Controller_2_points_Vd0+Controller_2_points_Vq0
+overall_Controller_1_points= Controller_1_points_Vd + Controller_1_points_Vq + Controller_1_points_slave_frequency
+overall_Controller_2_points= Controller_2_points_Vd + Controller_2_points_Vq + Controller_2_points_slave_frequency
 print()
-print("###############")
-print("Overall Results")
-print("################")
 print()
-print("Note: If the scores of Controller 1 and 2 are equal, the scores of the slave frequency comparison are added to the scores,")
-print("although the frequency does not physically exist and is therefore a poor indicator for performance. Further details can be")
-print("found in the related paper 'Development of a Testing Framework for Intelligent Microgrid Control'.")
+print()
+print("Summary")
+print("#################################")
+print("Overall Results for Primary level")
+print("#################################")
+print()
+
 print()
 print("Controller_1_Points_overall: ",overall_Controller_1_points)
 print("Controller_2_Points_overall: ", overall_Controller_2_points)
@@ -109,21 +110,9 @@ if overall_Controller_2_points<overall_Controller_1_points:
     print("because depending on the purpose of the controller in the microgrid, ")
     print("individual metrics may be more important than others. ")
 elif overall_Controller_2_points==overall_Controller_1_points:
-    overall_Controller_1_points=overall_Controller_1_points+Controller_1_points_slave_frequency
-    overall_Controller_2_points=overall_Controller_2_points+Controller_2_points_slave_frequency
-    print("The scores of the slave frequency comparison are added to the scores.")
-    if overall_Controller_2_points<overall_Controller_1_points:
-        print("Controller_1_Points (Points for Slave Frequency included): ", overall_Controller_1_points)
-        print("Controller_2_Points (Points for Slave Frequency included): ", overall_Controller_2_points)
-        print("Controller 1 is the better performer.The results still need to be treated with caution,")
-        print("because depending on the purpose of the controller in the microgrid,")
-        print("individual metrics may be more important than others." )
-    elif overall_Controller_2_points==overall_Controller_1_points:
-        print("No controller is better than the other")
-    else:
-        print("Controller 2 is the better performer.The results still need to be treated with caution,")
-        print("because depending on the purpose of the controller in the microgrid,")
-        print("individual metrics may be more important than others.")
+    print("No controller is better than the other.The results still need to be treated with caution,")
+    print("because depending on the purpose of the controller in the microgrid,")
+    print("individual metrics may be more important than others.")
 else:
     print("Controller 2 is the better performer.The results still need to be treated with caution,")
     print("because depending on the purpose of the controller in the microgrid,")

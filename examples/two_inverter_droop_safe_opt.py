@@ -494,17 +494,14 @@ class Metrics_Master_Vd0:
             return sentence_error1
 
     def rise_time(self):
-        if self.overshoot_available:  # if overdamped system
-            position_rise_time = self.quantity[self.quantity['master.CVVd'] >= self.ref_value].index[
-                0]  # the number of episode steps where the real value = set_value is stored
-            rise_time_in_seconds = position_rise_time * ts
-        else:  # if underdamped/critically damped
-            position_start_rise_time = self.quantity[self.quantity['master.CVVd'] >= 0.1 * self.ref_value].index[
+
+
+        position_start_rise_time = self.quantity[self.quantity['master.CVVd'] >= 0.1 * self.ref_value].index[
                 0]  # 5% of its final value
-            position_end_rise_time = self.quantity[self.quantity['master.CVVd'] <= 0.9 * self.ref_value].index[
+        position_end_rise_time = self.quantity[self.quantity['master.CVVd'] >= 0.9 * self.ref_value].index[
                 0]  # 95% of its final value
-            position_rise_time = position_end_rise_time - position_start_rise_time
-            rise_time_in_seconds = position_rise_time * ts
+        position_rise_time = position_end_rise_time - position_start_rise_time
+        rise_time_in_seconds = position_rise_time * ts
 
         return round(rise_time_in_seconds, 4)
 
@@ -550,7 +547,7 @@ print("\n")
 print()
 df_metrics_vd0 = pd.DataFrame(data=d).T
 df_metrics_vd0.columns = ['Value']
-print('Metrics of Vd0')
+print('Metrics of Vd')
 print(df_metrics_vd0)
 df_metrics_vd0.to_pickle("./df_metrics_vd0_controller1.pkl")
 
@@ -600,7 +597,7 @@ print("\n")
 print()
 df_metrics_vq0 = pd.DataFrame(data=d).T
 df_metrics_vq0.columns = ['Value']
-print('Metrics of Vq0')
+print('Metrics of Vq')
 print(df_metrics_vq0)
 df_metrics_vq0.to_pickle("./df_metrics_vq0_controller1.pkl")
 
@@ -632,18 +629,12 @@ class Metrics_Master_Vd0:
             return sentence_error1
 
     def rise_time(self):
-        if self.overshoot_available:  # if overdamped system
-            position_rise_time = self.quantity[self.quantity['slave.freq'] >= self.ref_value].index[
-                0]  # the number of episode steps where the real value = set_value is stored
-            rise_time_in_seconds = position_rise_time * ts
-        else:  # if underdamped/critically damped
-            position_start_rise_time = self.quantity[self.quantity['slave.freq'] >= 0.1 * self.ref_value].index[
+        position_start_rise_time = self.quantity[self.quantity['slave.freq'] >= 0.1 * self.ref_value].index[
                 0]  # 5% of its final value
-            position_end_rise_time = self.quantity[self.quantity['slave.freq'] <= 0.9 * self.ref_value].index[
+        position_end_rise_time = self.quantity[self.quantity['slave.freq'] >= 0.9 * self.ref_value].index[
                 0]  # 95% of its final value
-            position_rise_time = position_end_rise_time - position_start_rise_time
-            rise_time_in_seconds = position_rise_time * ts
-
+        position_rise_time = position_end_rise_time - position_start_rise_time
+        rise_time_in_seconds = position_rise_time * ts
         return round(rise_time_in_seconds, 4)
 
     def settling_time(self):
@@ -690,33 +681,33 @@ ax = plt.axes()
 # ax.arrow(0.00, 16.6,0,-0.5, head_width=0.005, head_length=0.5, fc='r', ec='r')
 # ax.arrow(0.06, 17.5,0,-1.9, head_width=0.005, head_length=0.5, fc='black', ec='black')
 # plt.arrow(0.06, 7.5,-0.04,6.8, color='r', length_includes_head=True)
-plt.figure(1)
-plt.plot(plot_quantities.test(df_slave_frequency['slave.freq'],ts)[0],plot_quantities.test(df_slave_frequency['slave.freq'], ts)[1])
-plt.axhline(y=nomFreq, color='black', linestyle='dotted')
-plt.xlabel(r'$t\,/\,\mathrm{s}$')
-plt.ylabel('$f_{\mathrm{Slave}}\,/\,\mathrm{Hz}$')
-plt.text(0.0, 50.48, 'Overshoot', fontsize=8)
-ax.arrow(0.15, 50.2,-0.14,-0.02, head_width=0.0, head_length=0.000, fc='r', ec='r')
-plt.text(0.151,50.18,'Settling Time',fontsize=8)
-
-
-
-# plt.plot(plot_quantities.test(df_master_CVVd['master.CVVd'],ts)[0],plot_quantities.test(df_master_CVVd['master.CVVd'], ts)[1], color='royalblue',label='$V_{\mathrm{d0}}$')
-# plt.axhline(y=v_ref_d[0], color='black', linestyle='-')
-# plt.plot(plot_quantities.test(df_master_CVVq['master.CVVq'],ts)[0],plot_quantities.test(df_master_CVVq['master.CVVq'], ts)[1],color='darkorange', label='$V_{\mathrm{q0}}$')
-# plt.axhline(y=v_ref_d[0], color='black', linestyle='-')
+# plt.figure(1)
+# plt.plot(plot_quantities.test(df_slave_frequency['slave.freq'],ts)[0],plot_quantities.test(df_slave_frequency['slave.freq'], ts)[1])
+# plt.axhline(y=nomFreq, color='black', linestyle='dotted')
 # plt.xlabel(r'$t\,/\,\mathrm{s}$')
-# plt.ylabel('$V_{\mathrm{dq0}}\,/\,\mathrm{V}$')
-# ax.arrow(0.02, 150,-0.015,160, head_width=0.005, head_length=5, fc='r', ec='r')
-# plt.text(0.01,130,'RT')
-# ax.arrow(0.06, 150,-0.045,162, head_width=0.005, head_length=7, fc='r', ec='r')
-# plt.text(0.05,130,'ST')
-# ax.arrow(0.2, 350,0,-17, head_width=0.005, head_length=7, fc='black', ec='black')
-# plt.text(0.196,360,'$V_{\mathrm{d0}}^*$')
-# ax.arrow(0.0487, 41,0,-17, head_width=0.005, head_length=7, fc='black', ec='black')
-# plt.text(0.047,51,'Peak')
-# plt.text(-0.002, 360, 'Overshoot')
-# ax.legend()
+# plt.ylabel('$f_{\mathrm{Slave}}\,/\,\mathrm{Hz}$')
+# plt.text(0.0, 50.48, 'Overshoot', fontsize=8)
+# ax.arrow(0.15, 50.2,-0.14,-0.02, head_width=0.0, head_length=0.000, fc='r', ec='r')
+# plt.text(0.151,50.18,'Settling Time',fontsize=8)
+
+
+
+plt.plot(plot_quantities.test(df_master_CVVd['master.CVVd'],ts)[0],plot_quantities.test(df_master_CVVd['master.CVVd'], ts)[1], color='royalblue',label='$V_{\mathrm{d}}$')
+plt.axhline(y=v_ref_d[0], color='black', linestyle='-')
+plt.plot(plot_quantities.test(df_master_CVVq['master.CVVq'],ts)[0],plot_quantities.test(df_master_CVVq['master.CVVq'], ts)[1],color='darkorange', label='$V_{\mathrm{q}}$')
+plt.axhline(y=v_ref_d[0], color='black', linestyle='-')
+plt.xlabel(r'$t\,/\,\mathrm{s}$')
+plt.ylabel('$V_{\mathrm{dq}}\,/\,\mathrm{V}$')
+ax.arrow(0.02, 150,-0.015,160, head_width=0.005, head_length=5, fc='r', ec='r')
+plt.text(0.01,130,'RT')
+ax.arrow(0.06, 150,-0.045,162, head_width=0.005, head_length=7, fc='r', ec='r')
+plt.text(0.05,130,'ST')
+ax.arrow(0.2, 350,0,-17, head_width=0.005, head_length=7, fc='black', ec='black')
+plt.text(0.196,360,'$V_{\mathrm{d}}^*$')
+ax.arrow(0.0487, 41,0,-17, head_width=0.005, head_length=7, fc='black', ec='black')
+plt.text(0.047,51,'Peak')
+plt.text(-0.002, 360, 'Overshoot')
+ax.legend()
 
 
 # ax.arrow(0.06, 150,-0.045,162, head_width=0.005, head_length=7, fc='r', ec='r')
