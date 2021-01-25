@@ -1,7 +1,9 @@
 #####################################
 # Example using an FMU by OpenModelica and SafeOpt algorithm to find optimal controller parameters
-# Simulation setup: Two inverters (one voltage forming, one current sourcing) supplying an RL-load via an LC-filter
-# Controller: droop controller gains are optimized by SafeOpt
+# Simulation setup: Single voltage forming inverter supplying an RL-load via an LC-filter
+# Controller: Cascaded PI-PI voltage and current controller gain parameters are optimized by SafeOpt
+# Testing Framework for primary level (Frequency, Voltage)
+# Definition of Benchmark, Implementation of load steps, Measurement of control metrics
 
 
 import logging
@@ -31,11 +33,12 @@ from scipy.stats import linregress
 from sklearn.metrics import mean_squared_error
 from scipy.signal import argrelextrema
 import pandas as pd
+
 pd.options.mode.chained_assignment = None  # default='warn'
 
 # Simulation definitions
 ts = .5e-4  # simulation time step size / s
-max_episode_steps = 10000 # number of simulation steps per episode
+max_episode_steps = 10000  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
@@ -45,50 +48,55 @@ iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VA/V
-R= 20 # value of the load in Ohm
-L=0.001 #value of the load in Henry
-position_settling_time=0
-position_steady_state=0
-load_jump=7.5 #sets the resistive load jump
-load_jump_inductance=0.015 #sets the inductive load_jump
-v_ref_d = np.array([325, 0, 0]) #reference value voltage d-term
-v_ref_q= np.array([0, 0, 0]) #reference value voltage q-term
-
-
-movement_1_resistor=load_jump #first resistive load jump is positive
-movement_2_resistor_load_jump=7.5
-#movement_2_resistor_load_jump = (load_jump if random() < 0.5 else -1 * load_jump) #second load jump is randomly chosen
-movement_2_resistor=movement_2_resistor_load_jump+movement_1_resistor
-movement_1_inductance=load_jump_inductance
-movement_2_inductance= 0.03
-#movement_2_inductance = (load_jump_inductance if movement_2_resistor_load_jump >=0 else -1 * load_jump_inductance) + movement_1_inductance
-# depending on the load jump of the resistor, the load jump of the inductor will be chosen
+v_d_ref = np.array([325, 0, 0])  # exemplary set point i.e. vd = 325, vq = 0, v0 = 0 / A
+v_q_ref = 0  # vq = 0
+R = 20  # resistance value / Ohm
+L = 0.001  # resistance value / Henry
+ts = 0.5e-4  # duration of episode / s
+position_settling_time = 0  # initial value
+position_steady_state = 0  # initial value
+load_step_resistance = 7.5  # load step / Ohm
+load_step_inductance = 0.015  # sets the inductive load step / H
+movement_1_resistor = load_step_resistance  # first load step is negative
+movement_2_resistor = (load_step_resistance if random() < 0.5
+                       else -1 * load_step_resistance) + movement_1_resistor  # randomly chosen load step
+movement_1_inductance = load_step_inductance  # first load step is negative
+movement_2_inductance = (load_step_inductance if movement_2_resistor >= 0
+else -load_step_inductance) + movement_1_inductance  # same sign as resistive load step
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
 save_folder = os.path.join(current_directory, r'saves_droop_control_safeopt')
 os.makedirs(save_folder, exist_ok=True)
 
+
+#####################################
+# Definition of Random Walk
+# Starting Value: R = 20 Ohm, L= 1 mH
+# Constant noise is created
+
 def load_step_random_walk_resistor():
-    random_walk_resistor = []
-    random_walk_resistor.append(R)  # R=20 Ohm
+    random_walk = []
+    random_walk.append(R)  # R = 20 Ohm
     for i in range(1, max_episode_steps):
         movement = -0.01 if random() < 0.5 else 0.01  # constant slight and random fluctuation of load
-        value = random_walk_resistor[i - 1] + movement
-        random_walk_resistor.append(value)
-    return random_walk_resistor
+        value = random_walk[i - 1] + movement
+        random_walk.append(value)
+    return random_walk
+
 
 def load_step_inductance_random_walk():
     random_walk_inductance = []
-    random_walk_inductance.append(L)  # L=0.001 H
+    random_walk_inductance.append(L)  # L = 1 mH
     for i in range(1, max_episode_steps):
         movement = -0.000001 if random() < 0.5 else 0.000001  # constant slight and random fluctuation of load
         value = random_walk_inductance[i - 1] + movement
         random_walk_inductance.append(value)
     return random_walk_inductance
 
+
 list_resistor = load_step_random_walk_resistor()
-list_inductance=load_step_inductance_random_walk()
+list_inductance = load_step_inductance_random_walk()
 
 
 class Reward:
@@ -126,104 +134,101 @@ class Reward:
 
         return -error.squeeze()
 
+
+#########################################################################################
+# Implementation of Load Steps
+# It is checked, if quantity reaches steady state
+# Values are stored in a databuffer
+# If the databuffer fulfills several conditions, the first load steps will be implemented
+# Programming 'on the fly'
+
 class LoadstepCallback(Callback):
     def __init__(self):
-        self.steady_state_reached=False
-        self.settling_time=None
+        self.steady_state_reached = False
+        self.settling_time = None
         self.databuffer_droop = None
         self._idx = None
-        self.counter2=0
-        self.counter1=0
-        self.list_data=[]
-        self.list_abcissa=[]
-        self.upper_bound=1.02*nomFreq
-        self.lower_bound=0.98*nomFreq
-        self.databuffer_settling_time=[]
-        self.slope_info=None
-        self.counter3=0
+        self.interval_check = False
+        self.steady_state_check = False
+        self.list_data = []
+        self.list_abcissa = []
+        self.upper_bound = 1.02 * nomFreq
+        self.lower_bound = 0.98 * nomFreq
+        self.databuffer_settling_time = 0
         self.databuffer_length=150
-        self.signal_inductor_load_step1=False
-        self.t_signal_inductor_load_step1=0
-        self.signal_inductor_load_step2 = False
-        self.t_signal_inductor_load_step2=0
+        self.slope_info = None
 
-    def set_idx(self, obs):  # [f'lc1.inductor{k}.i' for k in '123']
+    def set_idx(self, obs):
         if self._idx is None:
             self._idx = nested_map(
                 lambda n: obs.index(n),
                 [[f'slave.freq'],
-                [f'master.CVV{s}' for s in 'dq0']])
+                 [f'master.CVV{s}' for s in 'dq0']])
 
     def reset(self):
-        self.databuffer_droop = np.empty(self.databuffer_length)
+        self.databuffer_droop = np.empty(self.databuffer_length)  # creates a databuffer with a length of ten
 
     def __call__(self, cols, obs):
-        self.set_idx(cols) #all values are shifted to the left by one
-        self.databuffer_droop[-1]=obs[self._idx[0][0]]
+        self.set_idx(cols)
+        self.databuffer_droop[-1] = obs[self._idx[0][0]]
         self.list_abcissa.append(len(self.list_data))
-        self.list_data.append(obs[self._idx[0][0]])
+        self.list_data.append(obs[self._idx[0][0]]) # the current value is appended to the list
 
-        #the last element of the array is replaced with the current value of the slave inverter's frequency
-        if len(self.list_data)>self.databuffer_length:
+        # only when a certain number of values is available, slopeinfo is created --> used for conditions below
+        if len(self.list_data) > self.databuffer_length:
             del self.list_abcissa[0]
-            self.slope_info=linregress(self.list_abcissa, self.databuffer_droop)
-        self.databuffer_droop = np.roll(self.databuffer_droop, -1)
+            self.slope_info = linregress(self.list_abcissa, self.databuffer_droop)
 
-        if (obs[self._idx[0][0]] < self.lower_bound or obs[self._idx[0][0]] > self.upper_bound) and self.steady_state_reached == False:
-            self.counter2 = 0
+        self.databuffer_droop = np.roll(self.databuffer_droop, -1)  # all values are shifted to the left by one
 
-        if obs[self._idx[0][0]]>self.lower_bound and obs[self._idx[0][0]]<self.upper_bound: #checks if oservation is within the specified bound
-            if self.counter2 <1:
+        # condition: it is checked whether the current is outside of the interval --> settling time may not be reached
+        if (obs[self._idx[0][0]] < self.lower_bound or obs[
+            self._idx[0][0]] > self.upper_bound) and not self.steady_state_reached:
+            self.interval_check = False
+
+        # pre-condition: checks if observation is within the specified interval --> settling time may be reached
+        if self.lower_bound < obs[self._idx[0][0]] < self.upper_bound:
+            if not self.interval_check:
                 global position_settling_time
-                position_settling_time=len(self.list_data)
-                self.counter2 = +1
-            if self.databuffer_droop.std() < 0.003 and np.abs(self.slope_info[0])<0.00001 and np.round(self.databuffer_droop.mean())==nomFreq:
-                self.steady_state_reached=True
-                if self.counter1<1:
+                position_settling_time = len(self.list_data)
+                self.interval_check = True
+            if self.databuffer_droop.std() < 0.003 and np.abs(self.slope_info[0]) < 0.00001 and np.round(
+                    self.databuffer_droop.mean()) == nomFreq: # if databuffer fulfills the conditions-->steady state
+                self.steady_state_reached = True
+                if not self.steady_state_check:
                     global position_steady_state
-                    position_steady_state=len(self.list_data)
-                    self.counter1=+1
+                    position_steady_state = len(self.list_data)  # stores the steady state position
+                    self.steady_state_check = True
 
-            #if the ten values in the databuffer fulfill the conditions (std <0.1 and
-            # rounded mean == 15 A), then the steady state is reached
-
-    # After steady state is reached, a bigger random load jump of +/- 5 Ohm is implemented
-    # After 3/4 of the simulation time, another random load jump of +/- 5 Ohm is implemented
-    def load_step_resistor(self, t):
+    # After steady state is reached, a fixed load step of + 7.5 Ohm is implemented
+    # After 3/4 of the simulation time, another random load step of +/- 7.5 Ohm is implemented
+    def load_step_resistance(self, t):
         for i in range(1, len(list_resistor)):
-            if self.steady_state_reached==False and t <= ts * i + ts: # while steady state is not reached, no load jump
-                return list_resistor[i] # contains for every step values that fluctuate a little bit
-            elif self.steady_state_reached==True and t<=ts*i+ts and i<=max_episode_steps*0.6:
-                self.t_signal_inductor_load_step1 = t
-                self.signal_inductor_load_step1=True
-                return list_resistor[i] + movement_1_resistor # when steady state reached, a load jump of +5/-5 Ohm is implemented (movement 1)
-            elif self.steady_state_reached==True and t<=ts * i+ts and i>max_episode_steps*0.6: #after 60% of the simulation time, another load jump is implemented
-                self.t_signal_inductor_load_step2=t
-                self.signal_inductor_load_step2=True
-                return list_resistor[i] + movement_2_resistor #the load jump of +/- 5 Ohm is stored in movement_2
+            if self.steady_state_reached == False and t <= ts * i + ts:  # no steady state, no load step
+                return list_resistor[i]  # for every step, it contains values that fluctuate a little bit
+            elif self.steady_state_reached == True and t <= ts * i + ts and i <= max_episode_steps * 0.75:
+                return list_resistor[i] + movement_1_resistor  # when steady state reached, first load step
+            elif self.steady_state_reached == True and t <= ts * i + ts and i > max_episode_steps * 0.75:  # 75 % ts
+                return list_resistor[i] + movement_2_resistor
 
-    def load_step_inductance(self,t):
-        # for i in range(1, len(list_inductance)):
-        #     if self.steady_state_reached == False and t <= ts * i + ts:  # while steady state is not reached, no load jump
-        #         return list_inductance[i]  # contains for every step values that fluctuate a little bit
-        #     elif self.signal_inductor_load_step1==True and t>self.t_signal_inductor_load_step1+0.015 and t<=self.t_signal_inductor_load_step1+0.03:
-        #         return list_inductance[i] + movement_1_inductance  # when signal is given, defined above
-        #     elif t>=self.t_signal_inductor_load_step1+0.03: #when signal is given, defined above
-        #         return list_inductance[i] + movement_2_inductance  # the load jump of +/- 0.001 H is stored in movement_2
+    # After steady state is reached, a fixed load step of + 150 mH is implemented
+    # After 3/4 of the simulation time, another random load step of +/- 150 mH is implemented
+    def load_step_inductance(self, t):
         for i in range(1, len(list_inductance)):
-            if self.steady_state_reached == False and t <= ts * i + ts:  # while steady state is not reached, no load jump
-                return list_inductance[i]  # contains for every step values that fluctuate a little bit
-            elif self.steady_state_reached==True and t<=ts*i+ts and i<=max_episode_steps*0.6:
-                return list_inductance[i] + movement_1_inductance  # when signal is given, defined above
-            elif self.steady_state_reached==True and t<=ts * i+ts and i>max_episode_steps*0.6:#when signal is given, defined above
-                return list_inductance[i] + movement_2_inductance  # the load jump of +/- 0.001 H is stored in movement_2
+            if self.steady_state_reached == False and t <= ts * i + ts:  # no load step, no steady state
+                return list_inductance[i]  # for every step, it contains values that fluctuate a little bit
+            elif self.steady_state_reached == True and t <= ts * i + ts and i <= max_episode_steps * 0.75:
+                return list_inductance[i] + movement_1_inductance  # when steady state reached, first load step
+            elif self.steady_state_reached == True and t <= ts * i + ts and i > max_episode_steps * 0.75:  # 75 % ts
+                return list_inductance[i] + movement_2_inductance
+
 
 if __name__ == '__main__':
     ctrl = []  # Empty dict which shall include all controllers
 
     #####################################
     # Definitions for the GP
-    prior_mean = 2  # mean factor of the GP prior mean which is multiplied with the first performance of the initial set
+    prior_mean = 2  # mean factor of the GP prior mean which is multiplied with the first performance of the init set
     noise_var = 0.001 ** 2  # measurement noise sigma_omega
     prior_var = 0.2  # prior variance of the GP
 
@@ -270,9 +275,9 @@ if __name__ == '__main__':
 
     ###############
     # define Master
-    voltage_dqp_iparams = PI_params(kP=0.025, kI=60, limits=(-iLimit, iLimit)) #kp=0.025
+    voltage_dqp_iparams = PI_params(kP=0.025, kI=60, limits=(-iLimit, iLimit))  # kp=0.025
     # Current control PI gain parameters for the voltage sourcing inverter
-    current_dqp_iparams = PI_params(kP=0.012, kI=90, limits=(-1, 1)) #kp=0.012
+    current_dqp_iparams = PI_params(kP=0.012, kI=90, limits=(-1, 1))  # kp=0.012
 
     # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
     ctrl.append(MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, ts, droop_param_master,
@@ -281,7 +286,7 @@ if __name__ == '__main__':
 
     ###############
     # define slave
-    current_dqp_iparams = PI_params(kP=0.005, kI=200, limits=(-1, 1)) #kp=0.005
+    current_dqp_iparams = PI_params(kP=0.005, kI=200, limits=(-1, 1))  # kp=0.005
     # PI gain parameters for the PLL in the current forming inverter
     pll_params = PLLParams(kP=10, kI=200, limits=(-10000, 10000), f_nom=nomFreq)
     # Droop characteristic for the active power Watts/Hz, W.s/Hz
@@ -379,19 +384,17 @@ if __name__ == '__main__':
 
     def xylables_R(fig):
         ax = fig.gca()
-        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')  # zeit
-        ax.set_ylabel('$R_{\mathrm{123}}\,/\,\mathrm{\u03A9}$')  # widerstände definieren , ohm angucken backslash omega
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
+        ax.set_ylabel('$R_{\mathrm{123}}\,/\,\mathrm{\u03A9}$')
         ax.grid(which='both')
 
 
     def xylables_L(fig):
         ax = fig.gca()
         ax.set_xlabel(r'$t\,/\,\mathrm{s}$')  # zeit
-        ax.set_ylabel('$L_{\mathrm{123}}\,/\,\mathrm{H}$')  # widerstände definieren , ohm angucken backslash omega
+        ax.set_ylabel('$L_{\mathrm{123}}\,/\,\mathrm{H}$')
         ax.grid(which='both')
-     
-       # widerstände definieren , ohm angucken backslash omega             
-     
+
 
 
     callback = LoadstepCallback()
@@ -399,18 +402,6 @@ if __name__ == '__main__':
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=Reward().rew_fun,
                    viz_cols=[
-                       # PlotTmpl([f'lc1.inductor{i}.i' for i in '123'],
-                       #          callback=xylables_i
-                       #          ),
-                       # PlotTmpl([f'lc1.capacitor{i}.v' for i in '123'],
-                       #          callback=xylables_v_abc
-                       #          ),
-                       # PlotTmpl([f'master.instPow'],
-                       #          callback=xylables_P_master
-                       #          ),
-                       # PlotTmpl([f'slave.instPow'],
-                       #          callback=xylables_P_slave
-                       #          ),
                        PlotTmpl([f'slave.freq'],
                                 callback=xylables_freq
                                 ),
@@ -423,20 +414,16 @@ if __name__ == '__main__':
                        PlotTmpl([f'rl1.inductor{i}.L' for i in '123'],  # Plot Widerstand RL
                                 callback=xylables_L
                                 ),
-                       # PlotTmpl([f'lc1.capacitor{i}.v' for i in '123'],  # 123
-                       #          callback=xylables_v_abc
-                       #          ),
-
                    ],
                    log_level=logging.INFO,
                    viz_mode='episode',
                    max_episode_steps=max_episode_steps,
-                   model_params={'rl1.resistor1.R':callback.load_step_resistor,
-                                 'rl1.resistor2.R':callback.load_step_resistor,
-                                 'rl1.resistor3.R':callback.load_step_resistor,
-                                 'rl1.inductor1.L':callback.load_step_inductance,
-                                 'rl1.inductor2.L':callback.load_step_inductance,
-                                 'rl1.inductor3.L':callback.load_step_inductance
+                   model_params={'rl1.resistor1.R': callback.load_step_resistance,
+                                 'rl1.resistor2.R': callback.load_step_resistance,
+                                 'rl1.resistor3.R': callback.load_step_resistance,
+                                 'rl1.inductor1.L': callback.load_step_inductance,
+                                 'rl1.inductor2.L': callback.load_step_inductance,
+                                 'rl1.inductor3.L': callback.load_step_inductance
                                  },
                    model_path='../omg_grid/grid.network.fmu',
                    net='../net/net.yaml',
@@ -462,28 +449,34 @@ if __name__ == '__main__':
     print('\n\nBest experiment results are plotted in the following:')
     print()
 
-##############################################
-# Implementation of the class Metrics
 
-#1: Calculation of the Metrics of d-component of VDdq0 (Voltage of Master-Inverter)
 df_master_CVVd = env.history.df[['master.CVVd']]
-class Metrics_Master_Vd0:
-    ref_value = v_ref_d[0]  # set value of inverter that serves as a set value for the outer voltage controller
-    upper_bound=1.02*ref_value
-    lower_bound=0.98*ref_value
+
+
+#####################################
+# Calculation of Metrics
+# Here, the d- term of vd is analysed
+
+class Metrics_vd:
+    ref_value = v_d_ref[0]
+    upper_bound = 1.02 * ref_value
+    lower_bound = 0.98 * ref_value
     ts = .5e-4  # duration of the episodes in seconds
     n = 5  # number of points to be checked before and after
     overshoot_available = True
-    position_settling_time_CVVd=0
-    settling_time_check=False
+    position_settling_time_CVVd = 0
+    settling_time_check = False
+
     def __init__(self, quantity):
         self.quantity = quantity  # here the class is given any quantity to calculate the metrics
-        self.interval_before_load_steps=self.quantity.iloc[0:position_steady_state]
+        self.interval_before_load_steps = self.quantity.iloc[0:position_steady_state]
 
-    def overshoot(self):
+    def overshoot(self):  # calculation of overshoots
         self.interval_before_load_steps['max'] = \
-        self.interval_before_load_steps.iloc[argrelextrema(self.interval_before_load_steps['master.CVVd'].values, np.greater_equal, order=self.n)[0]][
-            'master.CVVd']
+            self.interval_before_load_steps.iloc[
+                argrelextrema(self.interval_before_load_steps['master.CVVd'].values, np.greater_equal, order=self.n)[
+                    0]][
+                'master.CVVd']
         self.max_quantity = self.interval_before_load_steps['max'].max()
         overshoot = (self.max_quantity / self.ref_value) - 1
         if self.max_quantity > self.ref_value:
@@ -493,73 +486,73 @@ class Metrics_Master_Vd0:
             sentence_error1 = "No overshoot"
             return sentence_error1
 
-    def rise_time(self):
-
-
+    def rise_time(self):  # calculation of rise time
         position_start_rise_time = self.quantity[self.quantity['master.CVVd'] >= 0.1 * self.ref_value].index[
-                0]  # 5% of its final value
+            0]  # 10% of its final value
         position_end_rise_time = self.quantity[self.quantity['master.CVVd'] >= 0.9 * self.ref_value].index[
-                0]  # 95% of its final value
+            0]  # 90% of its final value
         position_rise_time = position_end_rise_time - position_start_rise_time
         rise_time_in_seconds = position_rise_time * ts
-
         return round(rise_time_in_seconds, 4)
 
-    def settling_time(self):
-        interval_before_steady_state=self.quantity['master.CVVd'].iloc[0:position_steady_state]
-        for index,row in interval_before_steady_state.iteritems():
-            if row>self.lower_bound and row<self.upper_bound and self.settling_time_check==False:
-                self.settling_time_check=True
-                self.position_settling_time_CVVd=index
-            if row<self.lower_bound or row>self.upper_bound:
-                self.settling_time_check=False
+    def settling_time(self):  # identification of settling time
+        interval_before_steady_state = self.quantity['master.CVVd'].iloc[0:position_steady_state]
+        for index, row in interval_before_steady_state.iteritems():  # iteration
+            if row > self.lower_bound and row < self.upper_bound and self.settling_time_check == False:
+                self.settling_time_check = True
+                self.position_settling_time_CVVd = index
+            if row < self.lower_bound or row > self.upper_bound:
+                self.settling_time_check = False
 
-        if self.position_settling_time_CVVd==0:
+        if self.position_settling_time_CVVd == 0:
             sys.exit("Steady State could not be reached. The controller need to be improved. PROGRAM EXECUTION STOP")
-        settling_time_value=self.position_settling_time_CVVd*self.ts
+        settling_time_value = self.position_settling_time_CVVd * self.ts
         return settling_time_value
-
 
     def RMSE(self):
         Y_true = self.quantity.to_numpy().reshape(
-            -1)  # converts and reshapes it into an array with size [max_epsiodes,]
+            -1)  # converts and reshapes it into an array
         Y_true = Y_true[~np.isnan(Y_true)]  # drops nan
         Y_pred = [self.ref_value] * (len(
             Y_true))  # creates an list with the set value of the voltage and the length of the real voltages (Y_true)
         Y_pred = np.array(Y_pred)  # converts this list into an array
-        return round(sqrt(mean_squared_error(Y_true, Y_pred)), 4)  # returns the MSE from sklearn
+        return round(sqrt(mean_squared_error(Y_true, Y_pred)), 4)  # returns the RMSE from sklearn
 
-    def steady_state_error(self):  # for a Controller with an integral part, steady_state_error is almost equal to zero
+    def steady_state_error(self):  # for a controller with an integral part, steady_state_error may be zero
         last_value_quantity = self.quantity.iloc[max_episode_steps - 1]  # the last value of the quantity is stored
         steady_state_error = np.abs(self.ref_value - last_value_quantity[0])  # calculation of the steady-state-error
         return round(steady_state_error, 4)
 
 
-voltage_controller_metrics = Metrics_Master_Vd0(df_master_CVVd)
+voltage_controller_metrics_vd = Metrics_vd(df_master_CVVd)
 
-d = {'Overshoot': [voltage_controller_metrics.overshoot()],
-     'Rise Time/s ': [voltage_controller_metrics.rise_time()],
-     'Settling Time/s ': [voltage_controller_metrics.settling_time()],
-     'Root Mean Squared Error/V': [voltage_controller_metrics.RMSE()],
-     'Steady State Error/V': [voltage_controller_metrics.steady_state_error()]}
+d = {'Overshoot': [voltage_controller_metrics_vd.overshoot()],
+     'Rise Time/s ': [voltage_controller_metrics_vd.rise_time()],
+     'Settling Time/s ': [voltage_controller_metrics_vd.settling_time()],
+     'Root Mean Squared Error/V': [voltage_controller_metrics_vd.RMSE()],
+     'Steady State Error/V': [voltage_controller_metrics_vd.steady_state_error()]}
 
 print("\n")
 print()
-df_metrics_vd0 = pd.DataFrame(data=d).T
-df_metrics_vd0.columns = ['Value']
+df_metrics_vd = pd.DataFrame(data=d).T
+df_metrics_vd.columns = ['Value']
 print('Metrics of Vd')
-print(df_metrics_vd0)
-df_metrics_vd0.to_pickle("./df_metrics_vd0_controller1.pkl")
+print(df_metrics_vd)
+
+######IMPORTANT FOR THE SCORING MODEL PRIMARY LEVEL##############################
+# Use the following code, to create a pkl-File in which the Dataframe is stored
+# df_metrics_vd.to_pickle("./df_metrics_vd_controller1_droop.pkl")
+# Maybe you need to replace 'controller1_droop.pkl' with 'controller2_droop.pkl'
 
 
-
-
-##########################
-#2: Calculation of the Metrics of q-component of VDdq0 (Voltage of Master-Inverter)
+#####################################
+# Calculation of Metrics
+# Here, the q-term of vdq is analysed
 
 df_master_CVVq = env.history.df[['master.CVVq']]
-class Metrics_Master_Vq0:
-    ref_value = v_ref_q[0]  # set value of inverter that serves as a set value for the outer voltage controller
+
+class Metrics_vq:
+    ref_value = v_q_ref
     ts = .5e-4  # duration of the episodes in seconds
     n = 5  # number of points to be checked before and after
 
@@ -567,45 +560,51 @@ class Metrics_Master_Vq0:
         self.quantity = quantity  # here the class is given any quantity to calculate the metrics
         self.test = None
 
-
     def RMSE(self):
         Y_true = self.quantity.to_numpy().reshape(
-            -1)  # converts and reshapes it into an array with size [max_epsiodes,]
+            -1)  # converts and reshapes it into an array with size
         Y_true = Y_true[~np.isnan(Y_true)]  # drops nan
         Y_pred = [self.ref_value] * (len(
             Y_true))  # creates an list with the set value of the voltage and the length of the real voltages (Y_true)
         Y_pred = np.array(Y_pred)  # converts this list into an array
-        return round(sqrt(mean_squared_error(Y_true, Y_pred)), 4)  # returns the MSE from sklearn
+        return round(sqrt(mean_squared_error(Y_true, Y_pred)), 4)  # returns the RMSE from sklearn
 
-    def steady_state_error(self):  # for a Controller with an integral part, steady_state_error is almost equal to zero
+    def steady_state_error(self):
         last_value_quantity = self.quantity.iloc[max_episode_steps - 1]  # the last value of the quantity is stored
         steady_state_error = np.abs(self.ref_value - last_value_quantity[0])  # calculation of the steady-state-error
         return round(steady_state_error, 4)
 
     def peak(self):
-        max_quantity=self.quantity.abs().max()
-        return round(max_quantity[0],4)
+        max_quantity = self.quantity.abs().max()
+        return round(max_quantity[0], 4)
 
 
-voltage_controller_metrics = Metrics_Master_Vq0(df_master_CVVq)
+voltage_controller_metrics_vd = Metrics_vq(df_master_CVVq)
 
-d = {'Root Mean Squared Error/V': [voltage_controller_metrics.RMSE()],
-     'Steady State Error/V': [voltage_controller_metrics.steady_state_error()],
-     'Peak Value/V': [voltage_controller_metrics.peak()]}
+d = {'Root Mean Squared Error/V': [voltage_controller_metrics_vd.RMSE()],
+     'Steady State Error/V': [voltage_controller_metrics_vd.steady_state_error()],
+     'Peak Value/V': [voltage_controller_metrics_vd.peak()]}
 
 print("\n")
 print()
-df_metrics_vq0 = pd.DataFrame(data=d).T
-df_metrics_vq0.columns = ['Value']
+df_metrics_vq = pd.DataFrame(data=d).T
+df_metrics_vq.columns = ['Value']
 print('Metrics of Vq')
-print(df_metrics_vq0)
-df_metrics_vq0.to_pickle("./df_metrics_vq0_controller1.pkl")
+print(df_metrics_vq)
 
 
+######IMPORTANT FOR THE SCORING MODEL PRIMARY LEVEL##############################
+# Use the following code, to create a pkl-File in which the Dataframe is stored
+# df_metrics_vq.to_pickle("./df_metrics_vq_controller1_droop.pkl")
+# Maybe you need to replace 'controller1_droop.pkl' with 'controller2_droop.pkl'
 
-#3: Calculation of the Metrics of Slave Frequency
+
+#####################################
+# Calculation of Metrics
+# Here, the q-term of vdq is analysed
+
 df_slave_frequency = env.history.df[['slave.freq']]
-class Metrics_Master_Vd0:
+class Metrics_slave_frequency:
     ref_value = nomFreq
     ts = .5e-4  # duration of the episodes in seconds
     n = 1  # number of points to be checked before and after
@@ -613,12 +612,13 @@ class Metrics_Master_Vd0:
 
     def __init__(self, quantity):
         self.quantity = quantity  # here the class is given any quantity to calculate the metrics
-        self.interval_before_load_steps=self.quantity.iloc[0:position_steady_state]
+        self.interval_before_load_steps = self.quantity.iloc[0:position_steady_state]
 
     def overshoot(self):
         self.interval_before_load_steps['max'] = \
-        self.interval_before_load_steps.iloc[argrelextrema(self.interval_before_load_steps['slave.freq'].values, np.greater_equal, order=self.n)[0]][
-            'slave.freq']
+            self.interval_before_load_steps.iloc[
+                argrelextrema(self.interval_before_load_steps['slave.freq'].values, np.greater_equal, order=self.n)
+                [0]]['slave.freq']
         self.max_quantity = self.interval_before_load_steps['max'].max()
         overshoot = (self.max_quantity / self.ref_value) - 1
         if self.max_quantity > self.ref_value:
@@ -630,36 +630,35 @@ class Metrics_Master_Vd0:
 
     def rise_time(self):
         position_start_rise_time = self.quantity[self.quantity['slave.freq'] >= 0.1 * self.ref_value].index[
-                0]  # 5% of its final value
+            0]  # 5% of its final value
         position_end_rise_time = self.quantity[self.quantity['slave.freq'] >= 0.9 * self.ref_value].index[
-                0]  # 95% of its final value
+            0]  # 90% of its final value
         position_rise_time = position_end_rise_time - position_start_rise_time
         rise_time_in_seconds = position_rise_time * ts
         return round(rise_time_in_seconds, 4)
 
     def settling_time(self):
-        if position_settling_time==0:
+        if position_settling_time == 0:
             sys.exit("Steady State could not be reached. The controller need to be improved. PROGRAM EXECUTION STOP")
         settling_time_value = position_settling_time * ts
         return settling_time_value
 
-
     def RMSE(self):
         Y_true = self.quantity.to_numpy().reshape(
-            -1)  # converts and reshapes it into an array with size [max_epsiodes,]
+            -1)  # converts and reshapes it into an array
         Y_true = Y_true[~np.isnan(Y_true)]  # drops nan
         Y_pred = [self.ref_value] * (len(
             Y_true))  # creates an list with the set value of the voltage and the length of the real voltages (Y_true)
         Y_pred = np.array(Y_pred)  # converts this list into an array
-        return round(sqrt(mean_squared_error(Y_true, Y_pred)), 4)  # returns the MSE from sklearn
+        return round(sqrt(mean_squared_error(Y_true, Y_pred)), 4)  # returns the RMSE from sklearn
 
-    def steady_state_error(self):  # for a Controller with an integral part, steady_state_error is almost equal to zero
+    def steady_state_error(self):  # for a controller with an integral part, steady_state_error may be zero
         last_value_quantity = self.quantity.iloc[max_episode_steps - 1]  # the last value of the quantity is stored
         steady_state_error = np.abs(self.ref_value - last_value_quantity[0])  # calculation of the steady-state-error
         return round(steady_state_error, 4)
 
 
-frequency_controller_metrics = Metrics_Master_Vd0(df_slave_frequency)
+frequency_controller_metrics = Metrics_slave_frequency(df_slave_frequency)
 
 d = {'Overshoot': [frequency_controller_metrics.overshoot()],
      'Rise Time/s ': [frequency_controller_metrics.rise_time()],
@@ -675,50 +674,60 @@ print('Metrics of Slave Frequency')
 print(df_metrics_slave_f)
 df_metrics_slave_f.to_pickle("./df_metrics_slave_f_controller1.pkl")
 
-import plot_quantities
-import matplotlib.pyplot as plt
-ax = plt.axes()
-# ax.arrow(0.00, 16.6,0,-0.5, head_width=0.005, head_length=0.5, fc='r', ec='r')
-# ax.arrow(0.06, 17.5,0,-1.9, head_width=0.005, head_length=0.5, fc='black', ec='black')
-# plt.arrow(0.06, 7.5,-0.04,6.8, color='r', length_includes_head=True)
-# plt.figure(1)
-# plt.plot(plot_quantities.test(df_slave_frequency['slave.freq'],ts)[0],plot_quantities.test(df_slave_frequency['slave.freq'], ts)[1])
-# plt.axhline(y=nomFreq, color='black', linestyle='dotted')
+
+######IMPORTANT FOR THE SCORING MODEL INNER LEVEL##############################
+# Use the following code, to create a pkl-File in which the Dataframe is stored
+# df_metrics_slave_f.to_pickle("./df_metrics_slave_f_controller1.pkl")
+# Maybe you need to replace 'controller1.pkl' with 'controller2.pkl'
+
+
+
+###################################################################
+# import plot_quantities
+# import matplotlib.pyplot as plt
+#
+# ax = plt.axes()
+# # ax.arrow(0.00, 16.6,0,-0.5, head_width=0.005, head_length=0.5, fc='r', ec='r')
+# # ax.arrow(0.06, 17.5,0,-1.9, head_width=0.005, head_length=0.5, fc='black', ec='black')
+# # plt.arrow(0.06, 7.5,-0.04,6.8, color='r', length_includes_head=True)
+# # plt.figure(1)
+# # plt.plot(plot_quantities.test(df_slave_frequency['slave.freq'],ts)[0],plot_quantities.test(df_slave_frequency['slave.freq'], ts)[1])
+# # plt.axhline(y=nomFreq, color='black', linestyle='dotted')
+# # plt.xlabel(r'$t\,/\,\mathrm{s}$')
+# # plt.ylabel('$f_{\mathrm{Slave}}\,/\,\mathrm{Hz}$')
+# # plt.text(0.0, 50.48, 'Overshoot', fontsize=8)
+# # ax.arrow(0.15, 50.2,-0.14,-0.02, head_width=0.0, head_length=0.000, fc='r', ec='r')
+# # plt.text(0.151,50.18,'Settling Time',fontsize=8)
+#
+#
+# plt.plot(plot_quantities.test(df_master_CVVd['master.CVVd'], ts)[0],
+#          plot_quantities.test(df_master_CVVd['master.CVVd'], ts)[1], color='royalblue', label='$V_{\mathrm{d}}$')
+# plt.axhline(y=v_ref_d[0], color='black', linestyle='-')
+# plt.plot(plot_quantities.test(df_master_CVVq['master.CVVq'], ts)[0],
+#          plot_quantities.test(df_master_CVVq['master.CVVq'], ts)[1], color='darkorange', label='$V_{\mathrm{q}}$')
+# plt.axhline(y=v_ref_d[0], color='black', linestyle='-')
 # plt.xlabel(r'$t\,/\,\mathrm{s}$')
-# plt.ylabel('$f_{\mathrm{Slave}}\,/\,\mathrm{Hz}$')
-# plt.text(0.0, 50.48, 'Overshoot', fontsize=8)
-# ax.arrow(0.15, 50.2,-0.14,-0.02, head_width=0.0, head_length=0.000, fc='r', ec='r')
-# plt.text(0.151,50.18,'Settling Time',fontsize=8)
-
-
-
-plt.plot(plot_quantities.test(df_master_CVVd['master.CVVd'],ts)[0],plot_quantities.test(df_master_CVVd['master.CVVd'], ts)[1], color='royalblue',label='$V_{\mathrm{d}}$')
-plt.axhline(y=v_ref_d[0], color='black', linestyle='-')
-plt.plot(plot_quantities.test(df_master_CVVq['master.CVVq'],ts)[0],plot_quantities.test(df_master_CVVq['master.CVVq'], ts)[1],color='darkorange', label='$V_{\mathrm{q}}$')
-plt.axhline(y=v_ref_d[0], color='black', linestyle='-')
-plt.xlabel(r'$t\,/\,\mathrm{s}$')
-plt.ylabel('$V_{\mathrm{dq}}\,/\,\mathrm{V}$')
-ax.arrow(0.02, 150,-0.015,160, head_width=0.005, head_length=5, fc='r', ec='r')
-plt.text(0.01,130,'RT')
-ax.arrow(0.06, 150,-0.045,162, head_width=0.005, head_length=7, fc='r', ec='r')
-plt.text(0.05,130,'ST')
-ax.arrow(0.2, 350,0,-17, head_width=0.005, head_length=7, fc='black', ec='black')
-plt.text(0.196,360,'$V_{\mathrm{d}}^*$')
-ax.arrow(0.0487, 41,0,-17, head_width=0.005, head_length=7, fc='black', ec='black')
-plt.text(0.047,51,'Peak')
-plt.text(-0.002, 360, 'Overshoot')
-ax.legend()
-
-
-# ax.arrow(0.06, 150,-0.045,162, head_width=0.005, head_length=7, fc='r', ec='r')
-# plt.text(0.05,130,'Settling Time')
-# ax.arrow(0.06, 350,0,-17, head_width=0.005, head_length=7, fc='black', ec='black')
-# plt.text(0.057,360,'$V_{\mathrm{d0}}^*$')
-#
+# plt.ylabel('$V_{\mathrm{dq}}\,/\,\mathrm{V}$')
+# ax.arrow(0.02, 150, -0.015, 160, head_width=0.005, head_length=5, fc='r', ec='r')
+# plt.text(0.01, 130, 'RT')
+# ax.arrow(0.06, 150, -0.045, 162, head_width=0.005, head_length=7, fc='r', ec='r')
+# plt.text(0.05, 130, 'ST')
+# ax.arrow(0.2, 350, 0, -17, head_width=0.005, head_length=7, fc='black', ec='black')
+# plt.text(0.196, 360, '$V_{\mathrm{d}}^*$')
+# ax.arrow(0.0487, 41, 0, -17, head_width=0.005, head_length=7, fc='black', ec='black')
+# plt.text(0.047, 51, 'Peak')
 # plt.text(-0.002, 360, 'Overshoot')
-#plt.arrow(0.06,7.5,-(0.06-0.02),14.3-7.5,color='red',arrowprops={'arrowstyle': '->'})
+# ax.legend()
 #
-#plt.grid()
-#plt.arrow(0.06, 7.5,-0.04,6.8,  head_width=0.05, head_length=0.03, linewidth=4, color='r', length_includes_head=False)
-#p1 = patches.FancyArrowPatch((0.06, 7.5), (0.02, 14.3), arrowstyle='->', mutation_scale=20)
-plt.show()
+# # ax.arrow(0.06, 150,-0.045,162, head_width=0.005, head_length=7, fc='r', ec='r')
+# # plt.text(0.05,130,'Settling Time')
+# # ax.arrow(0.06, 350,0,-17, head_width=0.005, head_length=7, fc='black', ec='black')
+# # plt.text(0.057,360,'$V_{\mathrm{d0}}^*$')
+# #
+# # plt.text(-0.002, 360, 'Overshoot')
+# # plt.arrow(0.06,7.5,-(0.06-0.02),14.3-7.5,color='red',arrowprops={'arrowstyle': '->'})
+# #
+# # plt.grid()
+# # plt.arrow(0.06, 7.5,-0.04,6.8,  head_width=0.05, head_length=0.03, linewidth=4, color='r', length_includes_head=False)
+# # p1 = patches.FancyArrowPatch((0.06, 7.5), (0.02, 14.3), arrowstyle='->', mutation_scale=20)
+# plt.show()
