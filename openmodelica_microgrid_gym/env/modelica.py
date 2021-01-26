@@ -35,7 +35,8 @@ class ModelicaEnv(gym.Env):
                  model_path: str = '../omg_grid/grid.network.fmu',
                  viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[Union[str, PlotTmpl]]]] = None,
                  history: EmptyHistory = FullHistory(),
-                 action_time_delay: int = 0):
+                 action_time_delay: int = 0,
+                 on_episode_reset_callback: Optional[Callable[[], None]] = None):
         """
         Initialize the Environment.
         The environment can only be used after reset() is called.
@@ -78,7 +79,11 @@ class ModelicaEnv(gym.Env):
                                 to match all data series ending with ".i".
              - list of PlotTmpl: Each template will result in a plot
         :param history: history to store observations and measurement (from the agent) after each step
-        :param action_time_delay: Defines how many time steps the controller needs before the action is applied; action is buffered in an array
+        :param action_time_delay: Defines how many time steps the controller needs before the action is applied; action
+            is buffered in an array
+        :param on_episode_reset_callback: Callable which is executed during the environment reset. Can be used for
+            example to reset external processes like random process used in model params and to synchronize their reset
+            to the env reset
         """
         if viz_mode not in self.viz_modes:
             raise ValueError(f'Please select one of the following viz_modes: {self.viz_modes}')
@@ -159,6 +164,11 @@ class ModelicaEnv(gym.Env):
         self.action_time_delay = action_time_delay
         self.delay_buffer = Fastqueue(self.action_time_delay + 1, self.action_space.shape[0])
 
+        if on_episode_reset_callback is None:
+            self.on_episode_reset_callback = lambda: None
+        else:
+            self.on_episode_reset_callback = on_episode_reset_callback
+
     def _calc_jac(self, t, x) -> np.ndarray:  # noqa
         """
         Compose Jacobian matrix from the directional derivatives of the FMU model.
@@ -235,6 +245,7 @@ class ModelicaEnv(gym.Env):
         """
         self.net.reset()
         logger.debug("Experiment reset was called. Resetting the model.")
+        self.on_episode_reset_callback()
 
         self.sim_time_interval = np.array([self.time_start, self.time_start + self.time_step_size])
         self.model.setup(self.time_start, self.model_output_names, self.model_parameters)

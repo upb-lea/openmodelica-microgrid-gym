@@ -27,6 +27,10 @@ class RandProcess:
         self._last_t = 0
         self._reserve = None
 
+    def reset(self, initial):
+        self._last_t = 0
+        self._last = initial
+
     def sample(self, t):
         """
         calculates time differential and calculates the change in the outputs of the process
