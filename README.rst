@@ -57,11 +57,11 @@ learning algorithms to train agents controlling power electronic converters in m
 Video Tutorial
 --------------
 
-Following picture links to a short youtube video introduction, to get a fist impression how to use OMG.
+Following is a short YouTube video introduction, to get a fist impression how to use OMG.
 
 
-.. image:: https://img.youtube.com/vi/rwBNFvCi_dY/maxresdefault.jpg
-   :target: https://www.youtube.com/watch?v=rwBNFvCi_dY
+
+- https://www.youtube.com/watch?v=rwBNFvCi_dY
 
 Installation
 ------------
