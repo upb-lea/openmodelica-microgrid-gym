@@ -115,9 +115,11 @@ class TestbenchEnv(gym.Env):
         if count_retries == 10:
             print('SSH connection not possible!')
 
-        str_command = './{} {} {} {} {} {} {}'.format(self.executable_script_name, self.max_episode_steps, self.kP,
-                                                      self.kI,
-                                                      self.ref, self.ref2, self.f_nom)
+        str_command = './{} -u 100 -n {} -i {} -f {} -1 {} -2 {} -E'.format(self.executable_script_name,
+                                                                            self.max_episode_steps, self.ref,
+                                                                            self.f_nom, self.kP,
+                                                                            self.kI
+                                                                            )
 
         ssh_stdin, ssh_stdout, ssh_stderr = self.ssh.exec_command(str_command)
 

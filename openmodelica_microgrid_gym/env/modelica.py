@@ -29,6 +29,7 @@ class ModelicaEnv(gym.Env):
 
     def __init__(self, net: Union[str, Network], time_start: float = 0,
                  reward_fun: Callable[[List[str], np.ndarray, float], float] = lambda cols, obs, risk: 1,
+                 abort_reward: Optional[float] = -np.inf,
                  is_normalized=True,
                  log_level: int = logging.WARNING, solver_method: str = 'LSODA', max_episode_steps: Optional[int] = 200,
                  model_params: Optional[Dict[str, Union[Callable[[float], Optional[float]], float]]] = None,
@@ -49,6 +50,7 @@ class ModelicaEnv(gym.Env):
             It must return the reward of this timestep as float.
             It should return np.nan or -np.inf or None in case of a failiure.
             It should have no side-effects
+        :param abort_reward: reward returned on episode abort
         :param log_level: logging granularity. see logging in stdlib
         :param solver_method: solver of the scipy.integrate.solve_ivp function
         :param max_episode_steps: maximum number of episode steps.
@@ -98,6 +100,7 @@ class ModelicaEnv(gym.Env):
 
         # if you reward policy is different from just reward/penalty - implement custom step method
         self.reward = reward_fun
+        self.abort_reward = abort_reward
         self._failed = False
 
         # Parameters required by this implementation
@@ -324,7 +327,10 @@ class ModelicaEnv(gym.Env):
             logger.debug("Experiment step done, experiment done.")
 
         reward = self.reward(self.history.cols, outputs, risk)
-        self._failed = risk >= 1 or np.isnan(reward) or (np.isinf(reward) and reward < 0) or reward is None
+        self._failed = risk >= 1 or reward is None or np.isnan(reward) or (np.isinf(reward) and reward < 0)
+
+        if self._failed:
+            reward = self.abort_reward
 
         # only return the state, the agent does not need the measurement
         return outputs, reward, self.is_done, dict(risk=risk)
