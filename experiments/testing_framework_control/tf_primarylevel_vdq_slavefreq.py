@@ -8,16 +8,15 @@
 
 import logging
 import os
-import sys
-from functools import partial
+from random import random
 from time import strftime, gmtime
 from typing import List
-from math import sqrt
 
 import GPy
 import gym
 import numpy as np
-from gym.envs.tests.test_envs_semantics import steps
+import pandas as pd
+from scipy.stats import linregress
 
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
@@ -25,14 +24,8 @@ from openmodelica_microgrid_gym.agents.util import MutableFloat
 from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, \
     MultiPhaseDQ0PIPIController, PLLParams, InverseDroopParams, MultiPhaseDQCurrentController
 from openmodelica_microgrid_gym.env import PlotTmpl
-from openmodelica_microgrid_gym.util import nested_map, FullHistory
-from random import random
-from random import seed
 from openmodelica_microgrid_gym.execution import Callback
-from scipy.stats import linregress
-from sklearn.metrics import mean_squared_error
-from scipy.signal import argrelextrema
-import pandas as pd
+from openmodelica_microgrid_gym.util import nested_map, FullHistory
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -52,9 +45,6 @@ vd_ref = np.array([325, 0, 0])  # exemplary set point i.e. vd = 325, vq = 0, v0 
 vq_ref = 0  # vq = 0
 R = 20  # resistance value / Ohm
 L = 0.001  # resistance value / Henry
-ts = 0.5e-4  # duration of episode / s
-position_settling_time = 0  # initial value
-position_steady_state = 0  # initial value
 load_step_resistance = 7.5  # load step / Ohm
 load_step_inductance = 0.015  # sets the inductive load step / H
 movement_1_resistor = load_step_resistance  # first load step is negative
@@ -62,7 +52,7 @@ movement_2_resistor = (load_step_resistance if random() < 0.5
                        else -1 * load_step_resistance) + movement_1_resistor  # randomly chosen load step
 movement_1_inductance = load_step_inductance  # first load step is negative
 movement_2_inductance = (load_step_inductance if movement_2_resistor >= 0
-else -load_step_inductance) + movement_1_inductance  # same sign as resistive load step
+                         else -load_step_inductance) + movement_1_inductance  # same sign as resistive load step
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
@@ -153,7 +143,7 @@ class LoadstepCallback(Callback):
         self.upper_bound = 1.02 * nomFreq
         self.lower_bound = 0.98 * nomFreq
         self.databuffer_settling_time = 0
-        self.databuffer_length=150
+        self.databuffer_length = 150
         self.slope_info = None
 
     def set_idx(self, obs):
@@ -170,7 +160,7 @@ class LoadstepCallback(Callback):
         self.set_idx(cols)
         self.databuffer_droop[-1] = obs[self._idx[0][0]]
         self.list_abcissa.append(len(self.list_data))
-        self.list_data.append(obs[self._idx[0][0]]) # the current value is appended to the list
+        self.list_data.append(obs[self._idx[0][0]])  # the current value is appended to the list
 
         # only when a certain number of values is available, slopeinfo is created --> used for conditions below
         if len(self.list_data) > self.databuffer_length:
@@ -191,7 +181,7 @@ class LoadstepCallback(Callback):
                 position_settling_time = len(self.list_data)
                 self.interval_check = True
             if self.databuffer_droop.std() < 0.003 and np.abs(self.slope_info[0]) < 0.00001 and np.round(
-                    self.databuffer_droop.mean()) == nomFreq: # if databuffer fulfills the conditions-->steady state
+                    self.databuffer_droop.mean()) == nomFreq:  # if databuffer fulfills the conditions-->steady state
                 self.steady_state_reached = True
                 if not self.steady_state_check:
                     global position_steady_state
@@ -202,22 +192,22 @@ class LoadstepCallback(Callback):
     # After 3/4 of the simulation time, another random load step of +/- 7.5 Ohm is implemented
     def load_step_resistance(self, t):
         for i in range(1, len(list_resistor)):
-            if self.steady_state_reached == False and t <= ts * i + ts:  # no steady state, no load step
+            if not self.steady_state_reached and t <= ts * i + ts:  # no steady state, no load step
                 return list_resistor[i]  # for every step, it contains values that fluctuate a little bit
-            elif self.steady_state_reached == True and t <= ts * i + ts and i <= max_episode_steps * 0.75:
+            elif self.steady_state_reached and t <= ts * i + ts and i <= max_episode_steps * 0.75:
                 return list_resistor[i] + movement_1_resistor  # when steady state reached, first load step
-            elif self.steady_state_reached == True and t <= ts * i + ts and i > max_episode_steps * 0.75:  # 75 % ts
+            elif self.steady_state_reached and t <= ts * i + ts and i > max_episode_steps * 0.75:  # 75 % ts
                 return list_resistor[i] + movement_2_resistor
 
     # After steady state is reached, a fixed load step of + 150 mH is implemented
     # After 3/4 of the simulation time, another random load step of +/- 150 mH is implemented
     def load_step_inductance(self, t):
         for i in range(1, len(list_inductance)):
-            if self.steady_state_reached == False and t <= ts * i + ts:  # no load step, no steady state
+            if not self.steady_state_reached and t <= ts * i + ts:  # no load step, no steady state
                 return list_inductance[i]  # for every step, it contains values that fluctuate a little bit
-            elif self.steady_state_reached == True and t <= ts * i + ts and i <= max_episode_steps * 0.75:
+            elif self.steady_state_reached and t <= ts * i + ts and i <= max_episode_steps * 0.75:
                 return list_inductance[i] + movement_1_inductance  # when steady state reached, first load step
-            elif self.steady_state_reached == True and t <= ts * i + ts and i > max_episode_steps * 0.75:  # 75 % ts
+            elif self.steady_state_reached and t <= ts * i + ts and i > max_episode_steps * 0.75:  # 75 % ts
                 return list_inductance[i] + movement_2_inductance
 
 
@@ -248,7 +238,7 @@ if __name__ == '__main__':
 
     # Factor to multiply with the initial reward to give back an abort_reward-times higher negative reward in case of
     # limit exceeded
-    abort_reward = -10 *j_min
+    abort_reward = -10 * j_min
 
     # Definition of the kernel
     kernel = GPy.kern.Matern32(input_dim=len(bounds), variance=prior_var, lengthscale=lengthscale, ARD=True)
@@ -257,7 +247,7 @@ if __name__ == '__main__':
     # Definition of the controllers
 
     # Choose all droop parameter as mutable parameters
-    mutable_params = dict(pDroop_master=MutableFloat(30000.0), pDroop_slave=MutableFloat(30000.0), \
+    mutable_params = dict(pDroop_master=MutableFloat(30000.0), pDroop_slave=MutableFloat(30000.0),
                           qDroop_master=MutableFloat(QDroopGain), qDroop_slave=MutableFloat(10))
 
     # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for
@@ -395,7 +385,6 @@ if __name__ == '__main__':
         ax.grid(which='both')
 
 
-
     callback = LoadstepCallback()
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
@@ -448,16 +437,14 @@ if __name__ == '__main__':
     print('\n\nBest experiment results are plotted in the following:')
     print()
 
-
 #####################################
 # Calculation of Metrics
 # Here, the d- term of vd is analysed
 
 df_master_CVVd = env.history.df[['master.CVVd']]
-from Metrics_file import Metrics
-voltage_controller_metrics_vd = Metrics(df_master_CVVd, vd_ref[0], position_steady_state, position_settling_time,
-                                        ts, max_episode_steps)
+from metrics import Metrics
 
+voltage_controller_metrics_vd = Metrics(df_master_CVVd, vd_ref[0], ts, max_episode_steps)
 
 d = {'Overshoot': [voltage_controller_metrics_vd.overshoot()],
      'Rise Time/s ': [voltage_controller_metrics_vd.rise_time()],
@@ -483,11 +470,9 @@ print(df_metrics_vd)
 # Here, the q-term of vdq is analysed
 df_master_CVVq = env.history.df[['master.CVVq']]
 
-from Metrics_file import Metrics
+from metrics import Metrics
 
-voltage_controller_metrics_vq = Metrics(df_master_CVVq, vq_ref, position_steady_state, position_settling_time,
-                                        ts, max_episode_steps)
-
+voltage_controller_metrics_vq = Metrics(df_master_CVVq, vq_ref, ts, max_episode_steps)
 
 d = {'Root Mean Squared Error/V': [voltage_controller_metrics_vq.RMSE()],
      'Steady State Error/V': [voltage_controller_metrics_vq.steady_state_error()],
@@ -500,7 +485,6 @@ df_metrics_vq.columns = ['Value']
 print('Metrics of Vq')
 print(df_metrics_vq)
 
-
 ######IMPORTANT FOR THE SCORING MODEL PRIMARY LEVEL##############################
 # Use the following code, to create a pkl-File in which the Dataframe is stored
 # df_metrics_vq.to_pickle("./df_metrics_vq_controller1_droop.pkl")
@@ -512,9 +496,9 @@ print(df_metrics_vq)
 # Here, the slave frequency is analysed
 
 df_slave_frequency = env.history.df[['slave.freq']]
-from Metrics_file import Metrics
-frequency_controller_metrics = Metrics(df_slave_frequency, nomFreq, position_steady_state, position_settling_time,
-                                        ts, max_episode_steps)
+from metrics import Metrics
+
+frequency_controller_metrics = Metrics(df_slave_frequency, nomFreq, ts, max_episode_steps)
 
 d = {'Overshoot': [frequency_controller_metrics.overshoot()],
      'Rise Time/s ': [frequency_controller_metrics.rise_time()],
@@ -529,10 +513,7 @@ df_metrics_slave_f.columns = ['Value']
 print('Metrics of Slave Frequency')
 print(df_metrics_slave_f)
 
-
 ######IMPORTANT FOR THE SCORING MODEL PRIMARY LEVEL##############################
 # Use the following code, to create a pkl-File in which the Dataframe is stored
 # df_metrics_slave_f.to_pickle("./df_metrics_slave_f_controller1_droop.pkl")
 # Maybe you need to replace 'controller1.pkl' with 'controller2.pkl'
-
-

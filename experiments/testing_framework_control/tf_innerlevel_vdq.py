@@ -8,7 +8,6 @@
 
 import logging
 import os
-from math import sqrt
 from random import random
 from time import strftime, gmtime
 from typing import List
@@ -19,11 +18,6 @@ import numpy as np
 import pandas as pd
 
 pd.options.mode.chained_assignment = None  # default='warn'
-import scipy
-from gym.envs.tests.test_envs_semantics import steps
-from sklearn.metrics import mean_squared_error
-from scipy.signal import argrelextrema
-from matplotlib import pyplot as plt
 
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
@@ -43,24 +37,19 @@ iNominal = 20  # nominal inverter current / A
 mu = 2  # factor for barrier function (see below)
 DroopGain = 0  # virtual droop gain for active power / W/Hz 40000
 QDroopGain = 0  # virtual droop gain for reactive power / VAR/V 1000
-R = 20  # sets the resistance value of RL
-L = 0.001
-ts = 1e-4
 vd_ref = np.array([325, 0, 0])  # exemplary set point i.e. vd = 325, vq = 0, v0 = 0 / A
 vq_ref = 0  # vq = 0
 R = 20  # resistance value / Ohm
 L = 0.001  # resistance value / Henry
 ts = 1e-4  # duration of episode / s
-position_settling_time = 0  # initial value
-position_steady_state = 0  # initial value
 load_step_resistance = 5  # load step / Ohm
 load_step_inductance = 0.0004  # sets the inductive load step / H
-movement_1_resistor =  load_step_resistance  # first load step is negative
+movement_1_resistor = load_step_resistance  # first load step is negative
 movement_2_resistor = (load_step_resistance if random() < 0.5
                        else -1 * load_step_resistance) + movement_1_resistor  # randomly chosen load step
 movement_1_inductance = load_step_inductance  # first load step is negative
 movement_2_inductance = (load_step_inductance if movement_2_resistor >= 0
-else -load_step_inductance) + movement_1_inductance  # same sign as resistive load step
+                         else -load_step_inductance) + movement_1_inductance  # same sign as resistive load step
 
 
 #####################################
@@ -137,7 +126,7 @@ class Reward:
         #  better, i.e. more significant,  gradients)
         # plus barrier penalty for violating the current constraint
         error = np.sum((np.abs((isp_abc_master - iabc_master)) / iLimit) ** 0.5, axis=0) \
-                + -np.sum(mu * np.log(1 - np.maximum(np.abs(iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0)\
+                + -np.sum(mu * np.log(1 - np.maximum(np.abs(iabc_master) - iNominal, 0) / (iLimit - iNominal)), axis=0) \
                 + np.sum((np.abs((vsp_abc_master - vabc_master)) / net.v_nom) ** 0.5, axis=0)
 
         return -error.squeeze()
@@ -175,7 +164,7 @@ class LoadstepCallback(Callback):
 
     def __call__(self, cols, obs):
         self.set_idx(cols)
-        self.databuffer[-1] = obs[self._idx[5][0]]   # all values are shifted to the left by one
+        self.databuffer[-1] = obs[self._idx[5][0]]  # all values are shifted to the left by one
         self.databuffer = np.roll(self.databuffer, -1)  # all values are shifted to the left by one
         self.list_data.append(obs[self._idx[5][0]])  # current value is appended to the list
 
@@ -250,7 +239,7 @@ if __name__ == '__main__':
 
     # Factor to multiply with the initial reward to give back an abort_reward-times higher negative reward in case of
     # limit exceeded
-    abort_reward = -10*j_min
+    abort_reward = -10 * j_min
 
     # Definition of the kernel
     kernel = GPy.kern.Matern32(input_dim=len(bounds), variance=prior_var, lengthscale=lengthscale, ARD=True)
@@ -275,8 +264,8 @@ if __name__ == '__main__':
     qdroop_param = DroopParams(QDroopGain, 0.002, net.v_nom)
 
     # Define a voltage forming inverter using the PIPI and droop parameters from above
-    #ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, net.ts, droop_param, qdroop_param,
-                                       #undersampling=2, name='master')
+    # ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, net.ts, droop_param, qdroop_param,
+    # undersampling=2, name='master')
     ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, droop_param, qdroop_param,
                                        ts_sim=net.ts,
                                        ts_ctrl=2 * net.ts, name='master')
@@ -291,13 +280,14 @@ if __name__ == '__main__':
                               safe_threshold=safe_threshold, explore_threshold=explore_threshold),
                          ctrls=[ctrl],
                          obs_template=dict(master=[[f'lc1.inductor{k}.i' for k in '123'],
-                                      [f'lc1.capacitor{k}.v' for k in '123'],
-                                      ]),
+                                                   [f'lc1.capacitor{k}.v' for k in '123'],
+                                                   ]),
                          history=FullHistory()
                          )
+
+
     # Arguments described above
     # History is used to store results
-
 
     #####################################
     # Definition of the environment using a FMU created by OpenModelica
@@ -427,17 +417,15 @@ if __name__ == '__main__':
         best_env_plt[ii].show()
         # best_env_plt[0].savefig('best_env_plt.png')
 
-
 #####################################
 # Calculation of Metrics
 # Here, the d- term of vdq is analysed
 
 df_master_CVVd = env.history.df[['master.CVVd']]
 
-from Metrics_file import Metrics
+from metrics import Metrics
 
-voltage_controller_metrics_vd = Metrics(df_master_CVVd, vd_ref[0], position_steady_state, position_settling_time,
-                                        ts, max_episode_steps)
+voltage_controller_metrics_vd = Metrics(df_master_CVVd, vd_ref[0], ts, max_episode_steps)
 
 d = {'Overshoot': [voltage_controller_metrics_vd.overshoot()],
      'Rise Time/s ': [voltage_controller_metrics_vd.rise_time()],
@@ -451,7 +439,6 @@ df_metrics_vd.columns = ['Value']
 print('Metrics of Vd')
 print(df_metrics_vd)
 
-
 ######IMPORTANT FOR THE SCORING MODEL INNER LEVEL##############################
 # Use the following code, to create a pkl-File in which the Dataframe is stored
 # df_metrics_vd.to_pickle("./df_metrics_vd_controller1.pkl")
@@ -464,10 +451,9 @@ print(df_metrics_vd)
 
 df_master_CVVq = env.history.df[['master.CVVq']]
 
-from Metrics_file import Metrics
+from metrics import Metrics
 
-voltage_controller_metrics_vq = Metrics(df_master_CVVq, vq_ref, position_steady_state, position_settling_time,
-                                        ts, max_episode_steps)
+voltage_controller_metrics_vq = Metrics(df_master_CVVq, vq_ref, ts, max_episode_steps)
 
 d = {'Root Mean Squared Error/V': [voltage_controller_metrics_vq.RMSE()],
      'Steady State Error/V': [voltage_controller_metrics_vq.steady_state_error()],
@@ -479,16 +465,7 @@ df_metrics_vq.columns = ['Value']
 print('Metrics of Vq')
 print(df_metrics_vq)
 
-
 ######IMPORTANT FOR THE SCORING MODEL INNER LEVEL##############################
 # Use the following code, to create a pkl-File in which the Dataframe is stored
 # df_metrics_vq.to_pickle("./df_metrics_vq_controller1.pkl")
 # Maybe you need to replace 'controller1.pkl' with 'controller2.pkl'
-
-
-
-
-
-
-
-

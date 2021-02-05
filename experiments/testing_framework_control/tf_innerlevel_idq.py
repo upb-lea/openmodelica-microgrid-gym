@@ -8,22 +8,16 @@
 
 import logging
 from typing import List
-from math import sqrt
-from random import random
+
 import GPy
 import gym
-import sys
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 import numpy as np
 import pandas as pd
 
+from metrics import Metrics
+
 pd.options.mode.chained_assignment = None  # default='warn'
-import scipy
-from gym.envs.tests.test_envs_semantics import steps
-from sklearn.metrics import mean_squared_error
-from scipy.signal import argrelextrema
-from statistics import mean
 
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
@@ -34,7 +28,6 @@ from openmodelica_microgrid_gym.execution import Callback
 from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import dq0_to_abc, nested_map, FullHistory
 
-from random import seed
 from random import random
 
 # Choose which controller parameters should be adjusted by SafeOpt.
@@ -60,8 +53,6 @@ iq_ref = 0  # iq = 0
 R = 20  # resistance value / Ohm
 L = 0.001  # resistance value / Henry
 ts = 1e-4  # duration of episode / s
-position_settling_time = 0  # initial value
-position_steady_state = 0  # initial value
 load_step_resistance = 5  # load step / Ohm
 load_step_inductance = 0.0004  # sets the inductive load step / H
 movement_1_resistor = -load_step_resistance  # first load step is negative
@@ -258,7 +249,7 @@ if __name__ == '__main__':
 
     # Factor to multiply with the initial reward to give back an abort_reward-times higher negative reward in case of
     # limit exceeded
-    abort_reward = 10*j_min #10
+    abort_reward = 10 * j_min  # 10
 
     # Definition of the kernel
     kernel = GPy.kern.Matern32(input_dim=len(bounds), variance=prior_var, lengthscale=lengthscale, ARD=True)
@@ -288,7 +279,6 @@ if __name__ == '__main__':
     # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
     ctrl = MultiPhaseDQCurrentSourcingController(current_dqp_iparams, ts_sim=net.ts, f_nom=net.freq_nom,
                                                  ts_ctrl=1e-4, name='master')
-
 
     #####################################
     # Definition of the optimization agent
@@ -424,17 +414,13 @@ if __name__ == '__main__':
         best_agent_plt.show()
         best_agent_plt.savefig('agent_plt.png')
 
-
 #####################################
 # Calculation of Metrics
 # Here, the d- term of idq is analysed
 
 df_master_CVId = env.history.df[['master.CVId']]
 
-from Metrics_file import Metrics  # imports Class from 'Metrics_file.py'
-
-current_controller_metrics_id = Metrics(df_master_CVId, id_ref[0], position_steady_state, position_settling_time,
-                                           ts, max_episode_steps)
+current_controller_metrics_id = Metrics(df_master_CVId, id_ref[0], ts, max_episode_steps)
 
 d = {'Overshoot': [current_controller_metrics_id.overshoot()],
      'Rise Time/s ': [current_controller_metrics_id.rise_time()],
@@ -460,10 +446,7 @@ print(df_metrics_id)
 
 df_master_CVIq = env.history.df[['master.CVIq']]
 
-from Metrics_file import Metrics  # imports Class from Metrics_file.py
-
-current_controller_metrics_iq = Metrics(df_master_CVIq, iq_ref, position_steady_state, position_settling_time,
-                                           ts, max_episode_steps)
+current_controller_metrics_iq = Metrics(df_master_CVIq, iq_ref, ts, max_episode_steps)
 
 d = {'Root Mean Squared Error/A': [current_controller_metrics_iq.RMSE()],
      'Steady State Error/A': [current_controller_metrics_iq.steady_state_error()],
