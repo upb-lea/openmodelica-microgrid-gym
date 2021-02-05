@@ -1,7 +1,6 @@
 from datetime import datetime
 from functools import partial
 from os import makedirs
-from typing import List
 
 import torch as th
 import torch.nn as nn
@@ -15,6 +14,7 @@ from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback,
 from stable_baselines3.common.monitor import Monitor
 from stochastic.processes import VasicekProcess
 
+from experiments.issue51_new.env.rewards import Reward
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import nested_map, RandProcess
@@ -63,141 +63,94 @@ def load_step(t, gain):
     return gen.sample(t)
 
 
-class Reward:
-    def __init__(self):
-        self._idx = None
+def experiment_fit_DDPG(learning_rate, gamma, n_trail):
+    makedirs(folder_name + experiment_name + n_trail)
 
-    def set_idx(self, obs):
-        if self._idx is None:
-            self._idx = nested_map(
-                lambda n: obs.index(n),
-                [[f'lc.inductor{k}.i' for k in '123'], [f'inverter1.i_ref.{k}' for k in '012'],
-                 [f'lc.capacitor{k}.v' for k in '123'], [f'inverter1.v_ref.{k}' for k in '012']])
+    def xylables_i(fig):
+        ax = fig.gca()
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
+        ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
+        ax.grid(which='both')
+        fig.savefig(f'{folder_name + experiment_name + n_trail}/Inductor_currents.pdf')
+        fig.show()
 
-    def rew_fun(self, cols: List[str], data: np.ndarray, risk) -> float:
-        """
-        Defines the reward function for the environment. Uses the observations and set-points to evaluate the quality of
-        the used parameters.
-        Takes current and voltage measurements and set-points to calculate the mean-root control error and uses a
-        logarithmic barrier function in case of violating the current limit. Barrier function is adjustable using
-        parameter mu.
+    def xylables_v(fig):
+        ax = fig.gca()
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
+        ax.set_ylabel('$v_{\mathrm{abc}}\,/\,\mathrm{V}$')
+        ax.grid(which='both')
+        fig.savefig(f'{folder_name + experiment_name + n_trail}/Capacitor_voltages{datetime.now()}.pdf')
+        fig.show()
 
-        :param cols: list of variable names of the data
-        :param data: observation data from the environment (ControlVariables, e.g. currents and voltages)
-        :return: Error as negative reward
-        """
-        self.set_idx(cols)
-        idx = self._idx
+    def xylables_R(fig):
+        ax = fig.gca()
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
+        ax.set_ylabel('$R_{\mathrm{abc}}\,/\,\mathrm{\Omega}$')
+        ax.grid(which='both')
+        ax.set_ylim([lower_bound_load - 2, upper_bound_load + 2])
+        fig.savefig(f'{folder_name + experiment_name + n_trail}/Load.pdf')
+        fig.show()
 
-        iabc_master = data[idx[0]]  # 3 phase currents at LC inductors
-        vabc_master = data[idx[2]]  # 3 phase currents at LC inductors
+    rew = Reward(v_nom, v_lim, v_DC, gamma)
 
-        # set points (sp)
-        isp_abc_master = data[idx[1]]  # convert dq set-points into three-phase abc coordinates
-        vsp_abc_master = data[idx[3]]  # convert dq set-points into three-phase abc coordinates
+    env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
+                   reward_fun=rew.rew_fun,
+                   viz_cols=[
+                       PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
+                                callback=xylables_v,
+                                color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+                                style=[[None], ['--']]
+                                ),
+                       PlotTmpl([[f'lc.inductor{i}.i' for i in '123'], [f'inverter1.i_ref.{k}' for k in '012']],
+                                callback=xylables_i,
+                                color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+                                style=[[None], ['--']]
+                                ),
+                       # PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
+                       #         callback=xylables_R,
+                       #         color=[['b', 'r', 'g']],
+                       #         style=[[None]]
+                       #         )
+                   ],
+                   viz_mode='episode',
+                   max_episode_steps=max_episode_steps,
+                   model_params={'lc.resistor1.R': R_filter,
+                                 'lc.resistor2.R': R_filter,
+                                 'lc.resistor3.R': R_filter,
+                                 'lc.resistor4.R': 0.0000001,
+                                 'lc.resistor5.R': 0.0000001,
+                                 'lc.resistor6.R': 0.0000001,
+                                 'lc.inductor1.L': L_filter,
+                                 'lc.inductor2.L': L_filter,
+                                 'lc.inductor3.L': L_filter,
+                                 'lc.capacitor1.C': C_filter,
+                                 'lc.capacitor2.C': C_filter,
+                                 'lc.capacitor3.C': C_filter,
+                                 'r_load.resistor1.R': partial(load_step, gain=R),
+                                 'r_load.resistor2.R': partial(load_step, gain=R),
+                                 'r_load.resistor3.R': partial(load_step, gain=R),
+                                 # 'lc.capacitor1.v': lambda t: np.random.uniform(low=-v_lim,
+                                 #                                              high=v_lim) if t == 0 else None,
+                                 # 'lc.capacitor2.v': lambda t: np.random.uniform(low=-v_lim,
+                                 #                                              high=v_lim) if t == 0 else None,
+                                 # 'lc.capacitor3.v': lambda t: np.random.uniform(low=-v_lim,
+                                 #                                              high=v_lim) if t == 0 else None,
+                                 # 'lc.inductor1.i': lambda t: np.random.uniform(low=-i_lim,
+                                 #                                              high=i_lim) if t == 0 else None,
+                                 # 'lc.inductor2.i': lambda t: np.random.uniform(low=-i_lim,
+                                 #                                              high=i_lim) if t == 0 else None,
+                                 # 'lc.inductor3.i': lambda t: np.random.uniform(low=-i_lim,
+                                 #                                              high=i_lim) if t == 0 else None,
+                                 },
+                   net=net,
+                   model_path='../../omg_grid/grid.paper_loadstep.fmu',
+                   on_episode_reset_callback=partial(gen.reset, initial=R),
+                   is_normalized=True
+                   )
 
-        # control error = mean-root-error (MRE) of reference minus measurement
-        # (due to normalization the control error is often around zero -> compared to MSE metric, the MRE provides
-        #  better, i.e. more significant,  gradients)
-        # plus barrier penalty for violating the current constraint
-
-        error = (  # np.sum((np.abs((isp_abc_master - iabc_master)) / i_lim) ** 0.5, axis=0)
-            # toDo: Es gibt kein iREF!!! Nur Grenze überprüfen
-            # + -np.sum(mu_c * np.log(1 - np.maximum(np.abs(iabc_master) - i_nom, 0) /
-            #                             (i_lim - i_nom)), axis=0)
-            np.sum((np.abs((vsp_abc_master - vabc_master)) / v_nom) ** 0.5, axis=0) \
-            # + -np.sum(mu_v * np.log(1 - np.maximum(np.abs(vabc_master) - v_nom, 0) /
-            #                             (v_lim - v_nom)), axis=0)\
-        )  # / max_episode_steps
-
-        return -np.clip(error.squeeze(), 0, 1e5)
-
-
-def xylables_i(fig):
-    ax = fig.gca()
-    ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
-    ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
-    ax.grid(which='both')
-    fig.savefig(f'{timestamp}/Inductor_currents.pdf')
-    fig.show()
-
-
-def xylables_v(fig):
-    ax = fig.gca()
-    ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
-    ax.set_ylabel('$v_{\mathrm{abc}}\,/\,\mathrm{V}$')
-    ax.grid(which='both')
-    fig.savefig(f'{timestamp}/Capacitor_voltages.pdf')
-    fig.show()
-
-
-def xylables_R(fig):
-    ax = fig.gca()
-    ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
-    ax.set_ylabel('$R_{\mathrm{abc}}\,/\,\mathrm{\Omega}$')
-    ax.grid(which='both')
-    ax.set_ylim([lower_bound_load - 2, upper_bound_load + 2])
-    fig.savefig(f'{timestamp}/Load.pdf')
-    fig.show()
-
-
-env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
-               reward_fun=Reward().rew_fun,
-               viz_cols=[
-                   PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
-                            callback=xylables_v,
-                            color=[['b', 'r', 'g'], ['b', 'r', 'g']],
-                            style=[[None], ['--']]
-                            ),
-                   PlotTmpl([[f'lc.inductor{i}.i' for i in '123'], [f'inverter1.i_ref.{k}' for k in '012']],
-                            callback=xylables_i,
-                            color=[['b', 'r', 'g'], ['b', 'r', 'g']],
-                            style=[[None], ['--']]
-                            ),
-                   PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
-                            callback=xylables_R,
-                            color=[['b', 'r', 'g']],
-                            style=[[None]]
-                            )
-               ],
-               viz_mode='episode',
-               max_episode_steps=max_episode_steps,
-               model_params={'lc.resistor1.R': R_filter,
-                             'lc.resistor2.R': R_filter,
-                             'lc.resistor3.R': R_filter,
-                             'lc.resistor4.R': 0.0000001,
-                             'lc.resistor5.R': 0.0000001,
-                             'lc.resistor6.R': 0.0000001,
-                             'lc.inductor1.L': L_filter,
-                             'lc.inductor2.L': L_filter,
-                             'lc.inductor3.L': L_filter,
-                             'lc.capacitor1.C': C_filter,
-                             'lc.capacitor2.C': C_filter,
-                             'lc.capacitor3.C': C_filter,
-                             'r_load.resistor1.R': partial(load_step, gain=R),
-                             'r_load.resistor2.R': partial(load_step, gain=R),
-                             'r_load.resistor3.R': partial(load_step, gain=R),
-                             # 'lc.capacitor1.v': lambda t: np.random.uniform(low=-v_lim,
-                             #                                              high=v_lim) if t == 0 else None,
-                             # 'lc.capacitor2.v': lambda t: np.random.uniform(low=-v_lim,
-                             #                                              high=v_lim) if t == 0 else None,
-                             # 'lc.capacitor3.v': lambda t: np.random.uniform(low=-v_lim,
-                             #                                              high=v_lim) if t == 0 else None,
-                             # 'lc.inductor1.i': lambda t: np.random.uniform(low=-i_lim,
-                             #                                              high=i_lim) if t == 0 else None,
-                             # 'lc.inductor2.i': lambda t: np.random.uniform(low=-i_lim,
-                             #                                              high=i_lim) if t == 0 else None,
-                             # 'lc.inductor3.i': lambda t: np.random.uniform(low=-i_lim,
-                             #                                              high=i_lim) if t == 0 else None,
-                             },
-               net=net,
-               model_path='../../omg_grid/grid.paper_loadstep.fmu',
-               on_episode_reset_callback=partial(gen.reset, initial=R)
-               )
-
-with open(f'{timestamp}/env.txt', 'w') as f:
-    print(str(env), file=f)
-env = Monitor(env)
+    with open(f'{folder_name + experiment_name + n_trail}/env.txt', 'w') as f:
+        print(str(env), file=f)
+    env = Monitor(env)
 
 
 class RecordEnvCallback(BaseCallback):
