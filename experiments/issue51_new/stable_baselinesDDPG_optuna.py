@@ -3,6 +3,7 @@ from datetime import datetime
 from os import makedirs
 from typing import List
 
+import pandas as pd
 import gym
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,7 +28,7 @@ timestamp = datetime.now().strftime(f'%Y.%b.%d_%X')
 
 makedirs(folder_name + experiment_name + timestamp)
 
-train_steps = 20000
+train_steps = 5000
 
 # Simulation definitions
 net = Network.load('../../net/net_single-inv-curr.yaml')
@@ -109,86 +110,6 @@ n_actions = env.action_space.shape[-1]
 action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
 
 
-class CustomMPL(BaseFeaturesExtractor):
-
-    def __init__(self, observation_space: gym.spaces.Box, features_dim: int = 256):
-        super(CustomMPL, self).__init__(observation_space, features_dim)
-        # We assume CxHxW images (channels first)
-        # Re-ordering will be done by pre-preprocessing or wrapper
-        n_input_channels = observation_space.shape[0]
-        self.cnn = nn.Sequential(
-            nn.Linear(n_input_channels, 32),
-            nn.ReLU(),
-            nn.Linear(32, 64),
-            nn.ReLU(),
-        )
-
-        # Compute shape by doing one forward pass
-        with th.no_grad():
-            n_flatten = self.cnn(
-                th.as_tensor(observation_space.sample()[None]).float()
-            ).shape[1]
-
-        self.linear = nn.Sequential(nn.Linear(n_flatten, features_dim), nn.ReLU())
-
-    def forward(self, observations: th.Tensor) -> th.Tensor:
-        return self.linear(self.cnn(observations))
-
-
-policy_kwargs = dict(
-    features_extractor_class=CustomMPL,
-    features_extractor_kwargs=dict(features_dim=128, net_arch=[32, 32]),
-)
-
-
-# ex = Experiment(experiment_name + timestamp)
-# ex.observers.append(MongoObserver(url=f'mongodb://sample:password@localhost:27017/?authMechanism=SCRAM-SHA-1',
-#                                  db_name='db', failure_dir='fail'))
-
-
-# @ex.config
-def cfg():
-    # DDPG learning parameters
-    gamma = 0.9  # discount factor
-    batch_size = 128
-    memory_interval = 1
-    # alpha_actor = 5e-4#5e-6
-    learning_rate = 5e-3  # 5e-4
-
-    noise_var = 0.2
-    noise_theta = 5  # stiffness of OU
-    alpha_lRelu = 0.1
-    weigth_regularizer = 0.01
-
-    memory_lim = 5000  # = buffersize?
-    warm_up_steps_actor = 2048
-    warm_up_steps_critic = 1024
-    target_model_update = 1000
-
-    # NN architecture
-    actor_hidden_size = 100  # Using LeakyReLU
-    # output linear
-    critic_hidden_size_1 = 75  # Using LeakyReLU
-    critic_hidden_size_2 = 75  # Using LeakyReLU
-    critic_hidden_size_3 = 75  # Using LeakyReLU
-    # output linear
-
-    n_actions = env.action_space.shape[-1]
-
-    # description = experiment_name
-    # start_time = timestamp
-    # corresponding_data_in = folder_name + experiment_name + timestamp
-
-    max_learning_steps = train_steps
-
-
-# @ex.automain
-# def main(gamma, batch_size, memory_interval, learning_rate, noise_var, noise_theta, alpha_lRelu,
-#         weigth_regularizer,
-#         memory_lim, warm_up_steps_actor, warm_up_steps_critic, target_model_update, actor_hidden_size,
-#         critic_hidden_size_1, critic_hidden_size_2, critic_hidden_size_3, n_actions,
-#         max_learning_steps):  # description, start_time,
-# corresponding_data_in):
 
 def objective(trail):
     # DDPG learning parameters
@@ -216,9 +137,6 @@ def objective(trail):
 
     n_actions = env.action_space.shape[-1]
 
-    # description = experiment_name
-    # start_time = timestamp
-    # corresponding_data_in = folder_name + experiment_name + timestamp
 
     max_learning_steps = train_steps
 
@@ -243,9 +161,7 @@ def objective(trail):
     policy_kwargs = dict(activation_fn=th.nn.LeakyReLU, net_arch=dict(pi=[actor_hidden_size], qf=[critic_hidden_size_1,
                                                                                                   critic_hidden_size_2,
                                                                                                   critic_hidden_size_3]))
-    # policy_kwargs = dict( activation_fn=th.nn.LeakyReLU(negative_slope=alpha_lRelu), net_arch=dict(pi=[actor_hidden_size], qf=[critic_hidden_size_1,
-    #                                                                                               critic_hidden_size_2,
-    #                                                                                               critic_hidden_size_3]))
+
     model = DDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name + experiment_name + timestamp}/',
                  policy_kwargs=policy_kwargs,
                  learning_rate=learning_rate, buffer_size=memory_lim, learning_starts=warm_up_steps_critic,
@@ -260,28 +176,23 @@ def objective(trail):
     model.learn(total_timesteps=max_learning_steps, callback=[checkpoint_on_event, plot_callback])
 
     model.save(f'{folder_name + experiment_name + timestamp}/model.zip')
-    # ex.add_artifact(f'{folder_name + experiment_name + timestamp}/model.zip')
 
-    # model.save(experiment_name)
-    # ex.add_artifact(f'{experiment_name}.zip')
+    return_sum = 0.0
+    obs = env.reset()
+    while True:
 
-    # with NamedTemporaryFile() as t:
+        action, _states = model.predict(obs)
+        obs, rewards, done, info = env.step(action)
+        env.render()
+        return_sum += rewards
+        if done:
+            break
 
-    #   model.save(t.name)
-    #  ex.add_artifact(t.name, f'{experiment_name}.zip')
-
-    # del model  # remove to demonstrate saving and loading
-
-    # model = DDPG.load("ddpg_CC")
-
-    # obs = env.reset()
-    # while True:
-    #    action, _states = model.predict(obs)
-    #    obs, rewards, dones, info = env.step(action)
-    #    env.render()
-
-    return 0
+    return return_sum
 
 
-study = optuna.create_study()
-study.optimize(objective, n_trials=100)
+study = optuna.create_study(direction='maximize', storage='sqlite:///db.sqlite3')
+# change to MAXIMIZE
+study.optimize(objective, n_trials=2)
+
+pd.Series(index=[trail.params['lr'] for trail in study.trials], data=[trail.value for trail in study.trials]).scatter()
