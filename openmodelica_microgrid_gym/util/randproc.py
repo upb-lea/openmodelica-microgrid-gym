@@ -28,8 +28,9 @@ class RandProcess:
         self._reserve = None
 
     def reset(self, initial):
-        self._last_t = 0
         self._last = initial
+        self._last_t = 0
+        self._reserve = None
 
     def sample(self, t):
         """

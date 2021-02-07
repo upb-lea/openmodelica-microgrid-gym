@@ -8,12 +8,21 @@ components:
     #i_nom: 20
     #i_lim: 30
     v_DC: 600
+    i_noise:
+      fun:
+        normal: # np.random.*
+          loc: 0
+          scale: 0.0018
+      clip: # np.clip
+        a_min: 0.0005
+        a_max: 0.32
     cls: MasterInverterCurrentSourcing
     in:
-      u: [i1p1, i1p2, i1p3]    # names of the inputs
+      u: [ i1p1, i1p2, i1p3 ]    # names of the inputs
     out:
       v: [ lc.capacitor1.v, lc.capacitor2.v, lc.capacitor3.v ]
-      i: [lc.inductor1.i, lc.inductor2.i, lc.inductor3.i]
+      i: [ lc.inductor1.i, lc.inductor2.i, lc.inductor3.i ]
+
     # iref: [0,0,0]
     # vref: [1,0,0]
 

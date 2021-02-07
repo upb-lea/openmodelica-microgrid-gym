@@ -47,7 +47,7 @@ params = {'backend': 'ps',
           'font.family': 'serif',
           'lines.linewidth': 1
           }
-# matplotlib.rcParams.update(params)
+matplotlib.rcParams.update(params)
 
 include_simulate = True
 show_plots = True
@@ -231,7 +231,9 @@ if __name__ == '__main__':
     #                                   name='master')
 
     # Controller without observer
-    ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, droop_param, qdroop_param, delta_t,
+    ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, droop_param, qdroop_param,
+                                       ts_sim=delta_t,
+                                       ts_ctrl=undersample * delta_t,
                                        name='master')
 
     #####################################

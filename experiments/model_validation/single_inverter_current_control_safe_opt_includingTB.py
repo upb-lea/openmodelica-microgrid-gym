@@ -54,7 +54,7 @@ matplotlib.rcParams.update(params)
 # - Ki: 1D example: Only the integral gain Ki of the PI controller is adjusted
 # - Kpi: 2D example: Kp and Ki are adjusted simultaneously
 
-adjust = 'Ki'
+adjust = 'Kpi'
 
 # Check if really only one simulation scenario was selected
 if adjust not in {'Kp', 'Ki', 'Kpi'}:
@@ -246,14 +246,15 @@ if __name__ == '__main__':
     if include_simulate:
 
         # Defining unbalanced loads sampling from Gaussian distribution with sdt = 0.2*mean
-        # r_load = Load(R, 0.1 * R, balanced=balanced_load, tolerance=0.1)
-        # l_load = Load(L, 0.1 * L, balanced=balanced_load, tolerance=0.1)
+        r_load = Load(R, 0.1 * R, balanced=balanced_load, tolerance=0.1)
+        l_load = Load(L, 0.1 * L, balanced=balanced_load, tolerance=0.1)
+
+
         # i_noise = Noise([0, 0, 0], [0.0023, 0.0015, 0.0018], 0.0005, 0.32)
 
         # if no noise should be included:
-        r_load = Load(R, 0 * R, balanced=balanced_load)
-        l_load = Load(L, 0 * L, balanced=balanced_load)
-
+        # r_load = Load(R, 0 * R, balanced=balanced_load)
+        # l_load = Load(L, 0 * L, balanced=balanced_load)
 
         # i_noise = Noise([0, 0, 0], [0.0, 0.0, 0.0], 0.0, 0.0)
 
