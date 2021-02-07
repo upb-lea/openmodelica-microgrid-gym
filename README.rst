@@ -136,6 +136,8 @@ You can either use one of the provided FMUs (Windows and Linux, 64-bit, both inc
 
     openmodelica_microgrid_gym\fmu> omc create_fmu.mos
 
+Windows users might need to open the terminal out of OpenModelica by clicking 'tools' => 'OpenModelica Command Prompt' to make sure that the command 'omc' gets recognized.
+
 Running the ``staticctrl.py`` starts a simulation with a manually tuned cascaded PIPI controller
 
 .. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/raw/master/docs/pictures/control.jpg
