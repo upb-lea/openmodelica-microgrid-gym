@@ -3,6 +3,8 @@ from functools import partial
 from itertools import accumulate
 from os import makedirs
 
+import time
+
 import torch as th
 import torch.nn as nn
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
@@ -27,7 +29,7 @@ from openmodelica_microgrid_gym.util import nested_map, RandProcess
 
 np.random.seed(0)
 
-folder_name = 'DDPG_VC_hyperoptTEST_Neu/'
+folder_name = 'DDPG_VC_hyperopt_2_Picard/'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'DDPG_VC_'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
@@ -78,7 +80,7 @@ def load_step(t, gain):
     return gen.sample(t)
 
 
-def experiment_fit_DDPG(learning_rate, gamma, n_trail):
+def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, n_trail):
     makedirs(folder_name + experiment_name + n_trail)
 
     def xylables_i(fig):
@@ -87,15 +89,16 @@ def experiment_fit_DDPG(learning_rate, gamma, n_trail):
         ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
         fig.savefig(f'{folder_name + experiment_name + n_trail}/Inductor_currents.pdf')
-        fig.show()
+        plt.close()
 
     def xylables_v(fig):
         ax = fig.gca()
         ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$v_{\mathrm{abc}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
-        fig.savefig(f'{folder_name + experiment_name + n_trail}/Capacitor_voltages{datetime.now()}.pdf')
-        fig.show()
+        ts = time.gmtime()
+        fig.savefig(f'{folder_name + experiment_name + n_trail}/Capacitor_voltages{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
+        plt.close()
 
     def xylables_R(fig):
         ax = fig.gca()
@@ -104,9 +107,9 @@ def experiment_fit_DDPG(learning_rate, gamma, n_trail):
         ax.grid(which='both')
         ax.set_ylim([lower_bound_load - 2, upper_bound_load + 2])
         fig.savefig(f'{folder_name + experiment_name + n_trail}/Load.pdf')
-        fig.show()
+        plt.close()
 
-    rew = Reward(v_nom, v_lim, v_DC, gamma)
+    rew = Reward(v_nom, v_lim, v_DC, gamma, use_gamma_in_rew)
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=rew.rew_fun,
@@ -213,8 +216,9 @@ def experiment_fit_DDPG(learning_rate, gamma, n_trail):
             plt.xlabel(r'$t\,/\,\mathrm{s}$')
             plt.ylabel('$Reward$')
             plt.grid(which='both')
-            plt.savefig(f'{folder_name + experiment_name + n_trail}/reward{datetime.now()}.pdf')
-            plt.show()
+            ts = time.gmtime()
+            plt.savefig(f'{folder_name + experiment_name + n_trail}/reward{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
+            plt.close()
 
             # plt.plot(acc_Reward)
             # plt.xlabel(r'$t\,/\,\mathrm{s}$')
@@ -246,12 +250,13 @@ def experiment_fit_DDPG(learning_rate, gamma, n_trail):
                                              save_path=f'{folder_name + experiment_name + n_trail}/checkpoints/')
     record_env = RecordEnvCallback()
     plot_callback = EveryNTimesteps(n_steps=10000, callback=record_env)
-    model.learn(total_timesteps=200000, callback=[checkpoint_on_event, plot_callback])
+    model.learn(total_timesteps=100000, callback=[checkpoint_on_event, plot_callback])
 
     model.save(f'{folder_name + experiment_name + n_trail}/model.zip')
 
     return_sum = 0.0
     obs = env.reset()
+    rew.gamma = 0
     while True:
 
         action, _states = model.predict(obs)
@@ -265,15 +270,16 @@ def experiment_fit_DDPG(learning_rate, gamma, n_trail):
 
 
 def objective(trail):
-    learning_rate = trail.suggest_loguniform("lr", 1e-5, 1)
-    gamma = trail.suggest_loguniform("gamma", 0.8, 1)
+    learning_rate = trail.suggest_loguniform("lr", 1e-6, 1e-2)
+    gamma = trail.suggest_loguniform("gamma", 0.7, 1)
+    use_gamma_in_rew = trail.suggest_int("use_gamma_in_rew", 0, 1)
 
-    return experiment_fit_DDPG(learning_rate, gamma, str(trail.number))
+    return experiment_fit_DDPG(learning_rate, gamma,use_gamma_in_rew, str(trail.number))
 
 
 study = optuna.create_study(direction='maximize', storage=f'sqlite:///{folder_name}optuna_data.sqlite3')
 
-study.optimize(objective, n_trials=50)
+study.optimize(objective, n_trials=20)
 print(study.best_params, study.best_value)
 
 # pd.Series(index=[trail.params['lr'] for trail in study.trials], data=[trail.value for trail in study.trials]).scatter()

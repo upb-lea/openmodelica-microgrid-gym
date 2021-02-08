@@ -3,4 +3,4 @@ setCommandLineOptions("-d=newInst"); getErrorString();
 setCommandLineOptions("-d=initialization"); getErrorString();
 setCommandLineOptions("--simCodeTarget=Cpp"); getErrorString();
 setCommandLineOptions("-d=-disableDirectionalDerivatives"); getErrorString();
-OpenModelica.Scripting.translateModelFMU(grid.network, version="2.0", fmuType = "me"); getErrorString();
+OpenModelica.Scripting.translateModelFMU(grid.paper_loadstep, version="2.0", fmuType = "me"); getErrorString();
