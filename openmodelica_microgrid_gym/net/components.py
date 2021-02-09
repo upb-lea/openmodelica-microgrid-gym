@@ -18,7 +18,7 @@ class Inverter(Component):
                  out_vars=None, **kwargs):
         """
 
-        :param u:
+        :param u: input variable
         :param i:
         :param i_noise: structured like: must contain the key 'fun',
         the key 'clip' is optional and no clipping is applied if omited
@@ -85,6 +85,9 @@ class Inverter(Component):
         self.i = self.i + self.i_noise()
         self.v = self.v + self.v_noise()
         [integ.step(i) for i, integ in zip(self.i, self.limit_load_integrals)]
+
+        # no reference values or similar added
+        return None
 
 
 class SlaveInverter(Inverter):

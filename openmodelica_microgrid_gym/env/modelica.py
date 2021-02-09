@@ -338,7 +338,7 @@ class ModelicaEnv(gym.Env):
     def _create_state(self):
         # Simulate and observe result state
         self._state = self._simulate()
-        raw, normalized = self.net.augment(self._state)
+        raw, normalized = self.net.augment(self._state, self.sim_time_interval[0])
         outputs = normalized if self.is_normalized else raw
         measurements = self.measure(outputs)
 
