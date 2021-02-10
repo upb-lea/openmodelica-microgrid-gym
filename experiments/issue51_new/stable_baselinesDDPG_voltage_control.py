@@ -29,7 +29,7 @@ from openmodelica_microgrid_gym.util import nested_map, RandProcess
 
 np.random.seed(0)
 
-folder_name = 'DDPG_VC_hyperopt_2_Picard/'
+folder_name = 'DDPG_VC_hyperopt_6_Picard_w_scale_lr/'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'DDPG_VC_'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
@@ -80,7 +80,8 @@ def load_step(t, gain):
     return gen.sample(t)
 
 
-def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, n_trail):
+def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, n_trail):
+
     makedirs(folder_name + experiment_name + n_trail)
 
     def xylables_i(fig):
@@ -246,6 +247,11 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, n_trail):
                  train_freq=- 1, gradient_steps=- 1, n_episodes_rollout=1, optimize_memory_usage=False,
                  create_eval_env=False, seed=None, device='auto', _init_setup_model=True)
 
+    model.actor.mu._modules['0'].weight.data = model.actor.mu._modules['0'].weight.data * weight_scale
+    model.actor.mu._modules['2'].weight.data = model.actor.mu._modules['2'].weight.data * weight_scale
+    #model.actor.mu._modules['0'].bias.data = model.actor.mu._modules['0'].bias.data * weight_bias_scale
+    #model.actor.mu._modules['2'].bias.data = model.actor.mu._modules['2'].bias.data * weight_bias_scale
+
     checkpoint_on_event = CheckpointCallback(save_freq=10000,
                                              save_path=f'{folder_name + experiment_name + n_trail}/checkpoints/')
     record_env = RecordEnvCallback()
@@ -270,16 +276,23 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, n_trail):
 
 
 def objective(trail):
-    learning_rate = trail.suggest_loguniform("lr", 1e-6, 1e-2)
-    gamma = trail.suggest_loguniform("gamma", 0.7, 1)
-    use_gamma_in_rew = trail.suggest_int("use_gamma_in_rew", 0, 1)
+    learning_rate = trail.suggest_loguniform("lr", 1e-5, 5e-3)
+    #gamma = trail.suggest_loguniform("gamma", 0.5, 0.9)
+    #use_gamma_in_rew = trail.suggest_int("use_gamma_in_rew", 0, 1)
+    #weigth_regularizer_fu = trail.suggest_loguniform("weigth_regularizer_fu", 1e-4, 1)
+    #bias_regularizer_fu = trail.suggest_loguniform("bias_regularizer_fu", 1e-4, 1)
+    weight_scale = trail.suggest_loguniform("weight_scale", 5e-3, 1)
 
-    return experiment_fit_DDPG(learning_rate, gamma,use_gamma_in_rew, str(trail.number))
+    gamma = 0.75
+    use_gamma_in_rew = 0
+
+    return experiment_fit_DDPG(learning_rate, gamma,use_gamma_in_rew, weight_scale,
+                               str(trail.number))
 
 
 study = optuna.create_study(direction='maximize', storage=f'sqlite:///{folder_name}optuna_data.sqlite3')
 
-study.optimize(objective, n_trials=20)
+study.optimize(objective, n_trials=50)
 print(study.best_params, study.best_value)
 
 # pd.Series(index=[trail.params['lr'] for trail in study.trials], data=[trail.value for trail in study.trials]).scatter()
