@@ -4,7 +4,7 @@ from typing import List
 
 
 class Reward:
-    def __init__(self, nom, lim, v_DC, gamma, use_gamma_normalization=1):
+    def __init__(self, nom, lim, v_DC, gamma, nom_region, use_gamma_normalization=0):
         self._idx = None
         self.nom = nom
         self.lim = lim
@@ -14,6 +14,7 @@ class Reward:
             self.gamma = gamma
         else:
             self.gamma = 0
+        self.nom_region = nom_region
 
     def set_idx(self, obs):
         if self._idx is None:
@@ -44,33 +45,11 @@ class Reward:
         isp_abc_master = data[idx[1]]  # convert dq set-points into three-phase abc coordinates
         vsp_abc_master = data[idx[3]]  # convert dq set-points into three-phase abc coordinates
 
-        # control error = mean-root-error (MRE) of reference minus measurement
-        # (due to normalization the control error is often around zero -> compared to MSE metric, the MRE provides
-        #  better, i.e. more significant,  gradients)
-        # plus barrier penalty for violating the current constraint
-
-        #        error = (  # np.sum((np.abs((isp_abc_master - iabc_master)) / i_lim) ** 0.5, axis=0)
-        # toDo: Es gibt kein iREF!!! Nur Grenze überprüfen
-        # + -np.sum(mu_c * np.log(1 - np.maximum(np.abs(iabc_master) - i_nom, 0) /
-        #                             (i_lim - i_nom)), axis=0)
-        #            np.sum((np.abs((vsp_abc_master - vabc_master)) / v_nom) ** 0.5, axis=0) \
-        # + -np.sum(mu_v * np.log(1 - np.maximum(np.abs(vabc_master) - v_nom, 0)/ \
-        #                           (v_lim - v_nom)), axis=0)\
-        #        )   #/ max_episode_steps
-
-        # difference_sp_nom = vsp_abc_master - vabc_master
-        # error = np.sum(
-        #    np.minimum(
-        #        1 - np.abs(difference_sp_nom) / np.abs(
-        #            vsp_abc_master + (v_nom * (np.sign(difference_sp_nom) + (difference_sp_nom == 0)))),
-        #        (v_nom - np.abs(vabc_master)) / (v_lim - v_nom))
-        # )
-        # error = error* 10
-
         SP = vsp_abc_master * self.lim
         mess = vabc_master * self.lim
 
-        if all(np.abs(mess) <= self.nom):
+        if all(np.abs(mess) <= self.nom*1.1):
+        #if all(np.abs(mess) <= self.lim*self.nom_region):
             """
             1st area - inside wanted (nom) operation range
             -v_nom -> + v_nom
