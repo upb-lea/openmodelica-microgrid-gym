@@ -24,7 +24,7 @@ num_episodes = 1  # number of simulation episodes
 DroopGain = 4000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 50  # virtual droop gain for reactive power / VAR/V
 
-net = Network.load('../microgrid.yaml')
+net = Network.load('microgrid.yaml')
 delta_t = net.ts  # simulation time step size / s
 freq_nom = net.freq_nom  # nominal grid frequency / Hz
 v_nom = net.v_nom  # nominal grid voltage / V
