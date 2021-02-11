@@ -29,12 +29,12 @@ from openmodelica_microgrid_gym.util import nested_map, RandProcess
 
 np.random.seed(0)
 
-folder_name = 'DDPG_VC_hyperopt_6_Picard_w_scale_lr/'
+folder_name = 'DDPG_VC_randLoad_exploringStarts/'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
-experiment_name = 'DDPG_VC_'
+experiment_name = 'DDPG_VC_gammaReward_load_test'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
 
-makedirs(folder_name)
+makedirs(folder_name, exist_ok=True)
 
 # Simulation definitions
 net = Network.load('../../net/net_single-inv-Paper_Loadstep.yaml')
@@ -63,26 +63,48 @@ gen = RandProcess(VasicekProcess, proc_kwargs=dict(speed=1000, vol=10, mean=R), 
                   bounds=(lower_bound_load, upper_bound_load))
 
 
-def load_step(t, gain):
-    """
-    Changes the load parameters
-    :param t:
-    :param gain: device parameter
-    :return: Sample from SP
-    """
-    # Defines a load step after 0.01 s
-    # if loadstep_timestep*net.ts < t <= loadstep_timestep*net.ts + net.ts:
-    #    gen.proc.mean = gain * 0.55
-    #    gen.reserve = gain * 0.55
-    # elif t <= net.ts:
-    #    gen.proc.mean = gain
+class RandomLoad:
+    def __init__(self, max_episode_steps, ts, loadstep_time=None):
+        self.max_episode_steps = max_episode_steps
+        self.ts = ts
+        if loadstep_time is None:
+            self.loadstep_time = np.random.randint(0, self.max_episode_steps)
+        else:
+            self.loadstep_time = loadstep_time
 
-    return gen.sample(t)
+    def reset(self, loadstep_time=None):
+        if loadstep_time is None:
+            self.loadstep_time = np.random.randint(0, self.max_episode_steps)
+        else:
+            self.loadstep_time = loadstep_time
+
+    def load_step(self, t, gain):
+        """
+        Changes the load parameters
+        :param t:
+        :param gain: device parameter
+        :return: Sample from SP
+        """
+        # Defines a load step after 0.01 s
+        if self.loadstep_time * self.ts < t <= self.loadstep_time * self.ts + self.ts:
+            gen.proc.mean = gain * 0.55
+            gen.reserve = gain * 0.55
+        elif t <= self.ts:
+            gen.proc.mean = gain
+
+        return gen.sample(t)
 
 
-def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, n_trail):
+class CallbackList(list):
+    def fire(self, *args, **kwargs):
+        for listener in self:
+            listener(*args, **kwargs)
 
-    makedirs(folder_name + experiment_name + n_trail)
+
+# def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, n_trail):
+def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, batch_size,
+                        actor_hidden_size, critic_hidden_size, n_trail):
+    makedirs(folder_name + experiment_name + n_trail, exist_ok=True)
 
     def xylables_i(fig):
         ax = fig.gca()
@@ -97,6 +119,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, n_
         ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
         ax.set_ylabel('$v_{\mathrm{abc}}\,/\,\mathrm{V}$')
         ax.grid(which='both')
+        #ax.set_xlim([0, 0.005])
         ts = time.gmtime()
         fig.savefig(f'{folder_name + experiment_name + n_trail}/Capacitor_voltages{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
         plt.close()
@@ -111,6 +134,11 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, n_
         plt.close()
 
     rew = Reward(v_nom, v_lim, v_DC, gamma, use_gamma_in_rew)
+    rand_load = RandomLoad(max_episode_steps, net.ts)
+
+    cb = CallbackList()
+    cb.append(partial(gen.reset, initial=R))
+    cb.append(rand_load.reset)
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    reward_fun=rew.rew_fun,
@@ -125,11 +153,11 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, n_
                                 color=[['b', 'r', 'g'], ['b', 'r', 'g']],
                                 style=[[None], ['--']]
                                 ),
-                       # PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
-                       #         callback=xylables_R,
-                       #         color=[['b', 'r', 'g']],
-                       #         style=[[None]]
-                       #         )
+                       PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
+                                callback=xylables_R,
+                                color=[['b', 'r', 'g']],
+                                style=[[None]]
+                                )
                    ],
                    viz_mode='episode',
                    max_episode_steps=max_episode_steps,
@@ -145,25 +173,28 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, n_
                                  'lc.capacitor1.C': C_filter,
                                  'lc.capacitor2.C': C_filter,
                                  'lc.capacitor3.C': C_filter,
-                                 'r_load.resistor1.R': partial(load_step, gain=R),
-                                 'r_load.resistor2.R': partial(load_step, gain=R),
-                                 'r_load.resistor3.R': partial(load_step, gain=R),
-                                 # 'lc.capacitor1.v': lambda t: np.random.uniform(low=-v_lim,
-                                 #                                              high=v_lim) if t == 0 else None,
-                                 # 'lc.capacitor2.v': lambda t: np.random.uniform(low=-v_lim,
-                                 #                                              high=v_lim) if t == 0 else None,
-                                 # 'lc.capacitor3.v': lambda t: np.random.uniform(low=-v_lim,
-                                 #                                              high=v_lim) if t == 0 else None,
-                                 # 'lc.inductor1.i': lambda t: np.random.uniform(low=-i_lim,
-                                 #                                              high=i_lim) if t == 0 else None,
-                                 # 'lc.inductor2.i': lambda t: np.random.uniform(low=-i_lim,
-                                 #                                              high=i_lim) if t == 0 else None,
-                                 # 'lc.inductor3.i': lambda t: np.random.uniform(low=-i_lim,
-                                 #                                              high=i_lim) if t == 0 else None,
+                                 'r_load.resistor1.R': partial(rand_load.load_step, gain=R),
+                                 'r_load.resistor2.R': partial(rand_load.load_step, gain=R),
+                                 'r_load.resistor3.R': partial(rand_load.load_step, gain=R),
+                                 'lc.capacitor1.v': lambda t: np.random.uniform(low=-v_lim,
+                                                                                high=v_lim) if t == 0 else None,
+                                 'lc.capacitor2.v': lambda t: np.random.uniform(low=-v_lim,
+                                                                                high=v_lim) if t == 0 else None,
+                                 'lc.capacitor3.v': lambda t: np.random.uniform(low=-v_lim,
+                                                                                high=v_lim) if t == 0 else None,
+                                 'lc.inductor1.i': lambda t: np.random.uniform(low=-i_lim,
+                                                                               high=i_lim) if t == 0 else None,
+                                 'lc.inductor2.i': lambda t: np.random.uniform(low=-i_lim,
+                                                                               high=i_lim) if t == 0 else None,
+                                 'lc.inductor3.i': lambda t: np.random.uniform(low=-i_lim,
+                                                                               high=i_lim) if t == 0 else None,
                                  },
                    net=net,
                    model_path='../../omg_grid/grid.paper_loadstep.fmu',
-                   on_episode_reset_callback=partial(gen.reset, initial=R),
+                   # on_episode_reset_callback=partial(gen.reset, initial=R),
+                   # on_episode_reset_callback=[partial(gen.reset, initial=R), partial(rand_load.reset)],
+                   # on_episode_reset_callback=rand_load.reset,
+                   on_episode_reset_callback=cb.fire,
                    is_normalized=True
                    )
 
@@ -173,7 +204,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, n_
 
     # DDPG learning parameters
     # gamma = 0.9  # discount factor
-    batch_size = 128
+    batch_size = batch_size
     memory_interval = 1
     # alpha_actor = 5e-6
     # learning_rate = 5e-3
@@ -182,7 +213,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, n_
 
     noise_var = 0.2
     noise_theta = 5  # stiffness of OU
-    alpha_lRelu = 0.1
+    #alpha_lRelu = alpha_lRelu
     weigth_regularizer = 0.5
 
     memory_lim = 5000  # = buffersize?
@@ -191,11 +222,11 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, n_
     target_model_update = 1000
 
     # NN architecture
-    actor_hidden_size = 100  # Using LeakyReLU
+    actor_hidden_size = actor_hidden_size  # Using LeakyReLU
     # output linear
-    critic_hidden_size_1 = 75  # Using LeakyReLU
-    critic_hidden_size_2 = 75  # Using LeakyReLU
-    critic_hidden_size_3 = 75  # Using LeakyReLU
+    critic_hidden_size_1 = critic_hidden_size  # Using LeakyReLU
+    critic_hidden_size_2 = critic_hidden_size  # Using LeakyReLU
+    critic_hidden_size_3 = critic_hidden_size  # Using LeakyReLU
 
     # output linear
 
@@ -249,14 +280,16 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, n_
 
     model.actor.mu._modules['0'].weight.data = model.actor.mu._modules['0'].weight.data * weight_scale
     model.actor.mu._modules['2'].weight.data = model.actor.mu._modules['2'].weight.data * weight_scale
-    #model.actor.mu._modules['0'].bias.data = model.actor.mu._modules['0'].bias.data * weight_bias_scale
-    #model.actor.mu._modules['2'].bias.data = model.actor.mu._modules['2'].bias.data * weight_bias_scale
+    model.actor_target.mu._modules['0'].weight.data = model.actor_target.mu._modules['0'].weight.data * weight_scale
+    model.actor_target.mu._modules['2'].weight.data = model.actor_target.mu._modules['2'].weight.data * weight_scale
+    # model.actor.mu._modules['0'].bias.data = model.actor.mu._modules['0'].bias.data * weight_bias_scale
+    # model.actor.mu._modules['2'].bias.data = model.actor.mu._modules['2'].bias.data * weight_bias_scale
 
-    checkpoint_on_event = CheckpointCallback(save_freq=10000,
+    checkpoint_on_event = CheckpointCallback(save_freq=1000,
                                              save_path=f'{folder_name + experiment_name + n_trail}/checkpoints/')
     record_env = RecordEnvCallback()
-    plot_callback = EveryNTimesteps(n_steps=10000, callback=record_env)
-    model.learn(total_timesteps=100000, callback=[checkpoint_on_event, plot_callback])
+    plot_callback = EveryNTimesteps(n_steps=1000, callback=record_env)
+    model.learn(total_timesteps=200000, callback=[checkpoint_on_event, plot_callback])
 
     model.save(f'{folder_name + experiment_name + n_trail}/model.zip')
 
@@ -276,23 +309,41 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, n_
 
 
 def objective(trail):
-    learning_rate = trail.suggest_loguniform("lr", 1e-5, 5e-3)
-    #gamma = trail.suggest_loguniform("gamma", 0.5, 0.9)
-    #use_gamma_in_rew = trail.suggest_int("use_gamma_in_rew", 0, 1)
-    #weigth_regularizer_fu = trail.suggest_loguniform("weigth_regularizer_fu", 1e-4, 1)
-    #bias_regularizer_fu = trail.suggest_loguniform("bias_regularizer_fu", 1e-4, 1)
-    weight_scale = trail.suggest_loguniform("weight_scale", 5e-3, 1)
+    learning_rate = trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
+    gamma = trail.suggest_loguniform("gamma", 0.5, 0.99)
+    weight_scale = trail.suggest_loguniform("weight_scale", 5e-4, 1)  # 0.005
+    batch_size = trail.suggest_int("batch_size", 32, 1024)  # 128
+    # alpha_lRelu = trail.suggest_loguniform("alpha_lRelu", 0.0001, 0.5)  #0.1
+    actor_hidden_size = trail.suggest_int("actor_hidden_size", 10, 500)  # 100  # Using LeakyReLU
+    # output linear
+    critic_hidden_size = trail.suggest_int("critic_hidden_size", 10, 500)  # # Using LeakyReLU
 
-    gamma = 0.75
-    use_gamma_in_rew = 0
+    # memory_interval = 1
+    # noise_var = 0.2
+    # noise_theta = 5  # stiffness of OU
+    # weigth_regularizer = 0.5
 
-    return experiment_fit_DDPG(learning_rate, gamma,use_gamma_in_rew, weight_scale,
-                               str(trail.number))
+    memory_lim = 5000  # = buffersize?
+    warm_up_steps_actor = 2048
+    warm_up_steps_critic = 1024
+    target_model_update = 1000
+
+    #
+
+    # n_trail = str(0)#str(trail.number)
+    # gamma = 0.75
+    use_gamma_in_rew = 1
+
+    return experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, batch_size,
+                               actor_hidden_size, critic_hidden_size, str(trail.number))
 
 
-study = optuna.create_study(direction='maximize', storage=f'sqlite:///{folder_name}optuna_data.sqlite3')
+# study = optuna.load_study(study_name="V-crtl_learn_use_hyperopt_params", storage="sqlite:///Hyperotp_visualization/test.sqlite3")
 
-study.optimize(objective, n_trials=50)
+study = optuna.create_study(study_name="V-crtl_stochLoad_single_Loadstep_exploring_starts",
+                            direction='maximize', storage=f'sqlite:///{folder_name}optuna_data.sqlite3')
+
+study.optimize(objective, n_trials=100)
 print(study.best_params, study.best_value)
 
 # pd.Series(index=[trail.params['lr'] for trail in study.trials], data=[trail.value for trail in study.trials]).scatter()
