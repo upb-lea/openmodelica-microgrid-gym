@@ -45,7 +45,7 @@ def load_step(t, gain):
     :param gain: device parameter
     :return: Dictionary with load parameters
     """
-    return 1 * gain if t < .52 else 2 * gain
+    return 1 * gain if t < .2 else 2 * gain
 
 
 if __name__ == '__main__':
@@ -67,8 +67,8 @@ if __name__ == '__main__':
     # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
     qdroop_param = InverseDroopParams(QDroopGain, delta_t, v_nom, tau_filt=0.01)
     # Add to dict
-    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, i_lim,
-                                              droop_param, qdroop_param, name='slave1'))
+    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, i_lim,
+                                              droop_param, qdroop_param, lower_droop_voltage_threshold=-100000, ts_sim=delta_t, name='slave1'))
 
     #####################################
     # Define the current sourcing inverter as slave
@@ -81,8 +81,8 @@ if __name__ == '__main__':
     # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
     qdroop_param = InverseDroopParams(50, delta_t, v_nom / 1.411, tau_filt=0.01)
     # Add to dict
-    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, i_lim,
-                                              droop_param, qdroop_param, name='slave'))
+    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, i_lim,
+                                              droop_param, qdroop_param, lower_droop_voltage_threshold=-100000, ts_sim=delta_t, name='slave'))
 
     # Define the agent as StaticControlAgent which performs the basic controller steps for every environment set
     agent = StaticControlAgent(ctrl, {'slave1': [[f'lc1.inductor{k}.i' for k in '123'],
@@ -97,7 +97,6 @@ if __name__ == '__main__':
                    # viz_cols=['*.m[dq0]', 'slave.freq', 'lcl1.*'],
                    # viz_cols=['slave1.m[abc]', 'slave1.inst*', 'slave.inst*', 'lcl1.*', 'lc1.*', 'slave.freq','l12.*', 'r.resistor*'],
                    log_level=logging.INFO,
-                   time_step=delta_t,
                    max_episode_steps=max_episode_steps,
                    model_params={'rl.resistor1.R': partial(load_step, gain=20 / 1.4),
                                  'rl.resistor2.R': partial(load_step, gain=20 / 1.4),
@@ -106,7 +105,7 @@ if __name__ == '__main__':
                                  'rl.inductor2.L': partial(load_step, gain=0.031 / 1.4),
                                  'rl.inductor3.L': partial(load_step, gain=0.031 / 1.4)
                                  },
-                   model_path='../fmu/grid.microgrid4.fmu',
+                   model_path='../../omg_grid/grid.microgrid4.fmu',
                    net=net
                    )
 

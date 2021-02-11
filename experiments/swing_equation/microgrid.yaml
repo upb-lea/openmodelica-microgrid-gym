@@ -42,7 +42,7 @@ components:
       i: [ lcl1.inductor1.i, lcl1.inductor2.i, lcl1.inductor3.i ]
     #i_ref: [15,0,0]
   load:
-    id: rl1
+    id: rl
     cls: Load
     out:
       i: [ .resistor1.v, .resistor2.v, .resistor3.v , l12.inductor1.i, l12.inductor2.i, l12.inductor3.i ]
