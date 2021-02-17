@@ -5,28 +5,29 @@ import matplotlib.pyplot as plt
 m = GEKKO(remote=False)
 
 #define parameter
-Pdroop = 4000
-Qdroop = 500
+Pdroop = 3
+Qdroop = 4
 t_end = 0.4
 steps = 400
-nomFreq = 50  # grid frequency / Hz
-nomVolt = value=230
+nomFreq = 50                        # grid frequency / Hz
+nomVolt = value = 230
 omega = 2*np.pi*nomFreq
 
 J = 0.05
 J_Q = 0.0005
 
 R_lv_line_10km = 0.0
-L_lv_line_10km = 0.00083/3
+#L_lv_line_10km = 0.00083/3         # Splitting Inductance into per phase value
+L_lv_line_10km = 0.00083
 B_L_lv_line_10km = -(omega * L_lv_line_10km)/(R_lv_line_10km**2 + (omega*L_lv_line_10km)**2)
 
 step = np.zeros(steps)
 step[0:200] = 10/3
-step[200:]  = 20/3
+step[200:] = 20/3
 
 step_l = np.zeros(steps)
 step_l[0:250] = 0.0
-step_l[250:]  = 0
+step_l[250:] = 0
 
 R_load = m.Param(value=step)
 L_load = m.Param(value=step_l)
@@ -39,8 +40,8 @@ B = np.array([[2*B_L_lv_line_10km, -B_L_lv_line_10km, -B_L_lv_line_10km],
               [-B_L_lv_line_10km, -B_L_lv_line_10km, 2*B_L_lv_line_10km+B_RL_load]])
 
 G = np.array([[0, 0, 0],
-                   [0, 0, 0],
-                   [0, 0, G_RL_load]])
+              [0, 0, 0],
+              [0, 0, G_RL_load]])
 
 #constants
 
@@ -64,7 +65,7 @@ w3 = m.Var(value=50)
 theta1, theta2, theta3 = [m.Var() for i in range(3)]
 #initialize variables
 
-droop_linear=[-Pdroop,-Pdroop,0]
+droop_linear=[-Pdroop,-Pdroop,0]                  # Droop?
 q_droop_linear=[-Qdroop,-Qdroop,0]
 #initial values
 
@@ -101,10 +102,10 @@ m.Equation(u3 * u1 * (G[2][0] * m.sin(theta3 - theta1) + B[2][0] * m.cos(theta3 
 
 # Equations
 
-# define omega
-m.Equation(theta1.dt()==w1)
-m.Equation(theta2.dt()==w2)
-m.Equation(theta3.dt()==w3)
+# Define angular frequency as a function of phase angle
+m.Equation(theta1.dt() == w1)
+m.Equation(theta2.dt() == w2)
+m.Equation(theta3.dt() == w3)
 
 #Power ODE
 
@@ -118,9 +119,9 @@ m.Equation(theta3.dt()==w3)
 #           u3 * u2 * -(G[2][1] * m.cos(theta3 - theta2) + B[2][1] * m.sin(theta3 - theta2)) + \
 #           u3 * u3 * -(G[2][2] * m.cos(theta3 - theta3) + B[2][2] * m.sin(theta3 - theta3))))
 
-m.Equation(w1.dt()==((-P1+p_offset[0])+(droop_linear[0]*(w1-nomFreq)))/(J*w1))
-m.Equation(w2.dt()==((-P2+p_offset[1])+(droop_linear[1]*(w2-nomFreq)))/(J*w2))
-m.Equation(w3.dt()==((-P3+p_offset[2])+(droop_linear[2]*(w3-nomFreq)))/(J*w3))
+m.Equation(w1.dt() == ((-P1+p_offset[0])+(droop_linear[0]*(w1-nomFreq)))/(J*w1))
+m.Equation(w2.dt() == ((-P2+p_offset[1])+(droop_linear[1]*(w2-nomFreq)))/(J*w2))
+m.Equation(w3.dt() == ((-P3+p_offset[2])+(droop_linear[2]*(w3-nomFreq)))/(J*w3))
 
 #Q_ODE
 
@@ -137,9 +138,9 @@ m.Equation(w3.dt()==((-P3+p_offset[2])+(droop_linear[2]*(w3-nomFreq)))/(J*w3))
 
 
 
-m.Equation(u1.dt()==((Q1+q_offset[0])+(q_droop_linear[0]*(u1-nomVolt)))/(J_Q*u1))
-m.Equation(u2.dt()==((Q2+q_offset[1])+(q_droop_linear[1]*(u2-nomVolt)))/(J_Q*u2))
-m.Equation(u3.dt()==((Q3+q_offset[2])+(q_droop_linear[2]*(u3-nomVolt)))/(J_Q*u3))
+m.Equation(u1.dt()==((-Q1+q_offset[0])+(q_droop_linear[0]*(u1-nomVolt)))/(J_Q*u1))
+m.Equation(u2.dt()==((-Q2+q_offset[1])+(q_droop_linear[1]*(u2-nomVolt)))/(J_Q*u2))
+m.Equation(u3.dt()==((-Q3+q_offset[2])+(q_droop_linear[2]*(u3-nomVolt)))/(J_Q*u3))
 
 #m.Equation(J_Q*u1*u1.dt()==(-Q1))
 #m.Equation(J_Q*u2*u2.dt()==(-Q2))
@@ -147,7 +148,8 @@ m.Equation(u3.dt()==((Q3+q_offset[2])+(q_droop_linear[2]*(u3-nomVolt)))/(J_Q*u3)
 
 
 #Set global options
-m.options.IMODE = 7
+m.options.IMODE = 7                 # Setting Sequential method of dynamic simulation https://gekko.readthedocs.io/en/latest/global.html
+
 #steady state optimization
 
 m.time = np.linspace(0,t_end,steps) # time points
