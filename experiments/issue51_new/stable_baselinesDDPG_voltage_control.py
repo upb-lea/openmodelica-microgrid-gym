@@ -31,8 +31,10 @@ np.random.seed(0)
 
 folder_name = 'DDPG_VC_randLoad_exploringStarts/'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
-experiment_name = 'DDPG_VC_gammaReward_load_test'
+experiment_name = 'DDPG_VC_bestParamsTest'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
+
+
 
 makedirs(folder_name, exist_ok=True)
 
@@ -133,7 +135,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
         fig.savefig(f'{folder_name + experiment_name + n_trail}/Load.pdf')
         plt.close()
 
-    rew = Reward(v_nom, v_lim, v_DC, gamma, use_gamma_in_rew)
+    rew = Reward(v_nom, v_lim, v_DC, gamma, use_gamma_normalization=use_gamma_in_rew)
     rand_load = RandomLoad(max_episode_steps, net.ts)
 
     cb = CallbackList()
@@ -285,10 +287,10 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
     # model.actor.mu._modules['0'].bias.data = model.actor.mu._modules['0'].bias.data * weight_bias_scale
     # model.actor.mu._modules['2'].bias.data = model.actor.mu._modules['2'].bias.data * weight_bias_scale
 
-    checkpoint_on_event = CheckpointCallback(save_freq=1000,
+    checkpoint_on_event = CheckpointCallback(save_freq=10000,
                                              save_path=f'{folder_name + experiment_name + n_trail}/checkpoints/')
     record_env = RecordEnvCallback()
-    plot_callback = EveryNTimesteps(n_steps=1000, callback=record_env)
+    plot_callback = EveryNTimesteps(n_steps=10000, callback=record_env)
     model.learn(total_timesteps=200000, callback=[checkpoint_on_event, plot_callback])
 
     model.save(f'{folder_name + experiment_name + n_trail}/model.zip')
@@ -309,14 +311,14 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
 
 
 def objective(trail):
-    learning_rate = trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
-    gamma = trail.suggest_loguniform("gamma", 0.5, 0.99)
-    weight_scale = trail.suggest_loguniform("weight_scale", 5e-4, 1)  # 0.005
-    batch_size = trail.suggest_int("batch_size", 32, 1024)  # 128
+    learning_rate = 0.0004  # trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
+    gamma = 0.7  # trail.suggest_loguniform("gamma", 0.5, 0.99)
+    weight_scale = 0.02  # trail.suggest_loguniform("weight_scale", 5e-4, 1)  # 0.005
+    batch_size = 128  # trail.suggest_int("batch_size", 32, 1024)  # 128
     # alpha_lRelu = trail.suggest_loguniform("alpha_lRelu", 0.0001, 0.5)  #0.1
-    actor_hidden_size = trail.suggest_int("actor_hidden_size", 10, 500)  # 100  # Using LeakyReLU
+    actor_hidden_size = 100  # trail.suggest_int("actor_hidden_size", 10, 500)  # 100  # Using LeakyReLU
     # output linear
-    critic_hidden_size = trail.suggest_int("critic_hidden_size", 10, 500)  # # Using LeakyReLU
+    critic_hidden_size = 100  # trail.suggest_int("critic_hidden_size", 10, 500)  # # Using LeakyReLU
 
     # memory_interval = 1
     # noise_var = 0.2
@@ -343,7 +345,7 @@ def objective(trail):
 study = optuna.create_study(study_name="V-crtl_stochLoad_single_Loadstep_exploring_starts",
                             direction='maximize', storage=f'sqlite:///{folder_name}optuna_data.sqlite3')
 
-study.optimize(objective, n_trials=100)
+study.optimize(objective, n_trials=1)
 print(study.best_params, study.best_value)
 
 # pd.Series(index=[trail.params['lr'] for trail in study.trials], data=[trail.value for trail in study.trials]).scatter()

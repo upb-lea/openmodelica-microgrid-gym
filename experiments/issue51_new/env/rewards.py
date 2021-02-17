@@ -4,7 +4,7 @@ from typing import List
 
 
 class Reward:
-    def __init__(self, nom, lim, v_DC, gamma, nom_region, use_gamma_normalization=0):
+    def __init__(self, nom, lim, v_DC, gamma, nom_region=1.1, use_gamma_normalization=1):
         self._idx = None
         self.nom = nom
         self.lim = lim
