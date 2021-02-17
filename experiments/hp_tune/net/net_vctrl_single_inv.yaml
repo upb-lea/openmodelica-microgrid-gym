@@ -1,0 +1,44 @@
+v_nom: 169.7
+freq_nom: 60
+ts: 1e-4
+#max_episode_steps: 1000
+
+components:
+  inv1:
+    id: inverter1
+    i_nom: 12
+    i_lim: 16
+    #v_nom: 190
+    v_lim: 285
+    v_DC: 600
+    v_noise:
+      fun:
+        normal: # np.random.*
+          loc: 0
+          scale: 0.4
+        clip:
+          a_min: 0.3
+          a_max: 0.5
+      i_noise:
+        fun:
+          normal: # np.random.*
+            loc: 0
+            scale: 0.0018
+        clip: # np.clip
+          a_min: 0.0005
+          a_max: 0.32
+    cls: MasterInverter
+    in:
+      u: [ i1p1, i1p2, i1p3 ]    # names of the inputs
+    out:
+      v: [ lc.capacitor1.v, lc.capacitor2.v, lc.capacitor3.v ]
+      i: [ lc.inductor1.i, lc.inductor2.i, lc.inductor3.i ]
+
+    # iref: [0,0,0]
+    # vref: [1,0,0]
+
+  load:
+    id: r_load
+    cls: Load
+    out:
+      i: [ .resistor1.R, .resistor2.R, .resistor3.R, .resistor1.i, .resistor2.i, .resistor3.i ]
