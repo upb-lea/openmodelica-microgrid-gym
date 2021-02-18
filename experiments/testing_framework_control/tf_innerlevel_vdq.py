@@ -387,7 +387,7 @@ if __name__ == '__main__':
                                  },
                    max_episode_steps=max_episode_steps,
                    net=net,
-                   model_path='../omg_grid/grid.network_singleInverter.fmu',
+                   model_path='../../omg_grid/grid.network_singleInverter.fmu',
                    history=FullHistory()
                    )
 
@@ -425,7 +425,9 @@ df_master_CVVd = env.history.df[['master.CVVd']]
 
 from metrics import Metrics
 
-voltage_controller_metrics_vd = Metrics(df_master_CVVd, vd_ref[0], ts, max_episode_steps)
+voltage_controller_metrics_vd = Metrics(df_master_CVVd, vd_ref[0], ts, max_episode_steps,
+                                        position_steady_state=position_steady_state,
+                                        position_settling_time=position_settling_time)
 
 d = {'Overshoot': [voltage_controller_metrics_vd.overshoot()],
      'Rise Time/s ': [voltage_controller_metrics_vd.rise_time()],

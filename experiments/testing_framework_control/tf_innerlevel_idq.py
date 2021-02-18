@@ -365,7 +365,7 @@ if __name__ == '__main__':
 
                    max_episode_steps=max_episode_steps,
                    net=net,
-                   model_path='../omg_grid/grid.network_singleInverter.fmu',
+                   model_path='../../omg_grid/grid.network_singleInverter.fmu',
                    history=FullHistory()
                    )
 
@@ -420,7 +420,9 @@ if __name__ == '__main__':
 
 df_master_CVId = env.history.df[['master.CVId']]
 
-current_controller_metrics_id = Metrics(df_master_CVId, id_ref[0], ts, max_episode_steps)
+current_controller_metrics_id = Metrics(df_master_CVId, id_ref[0], ts, max_episode_steps,
+                                        position_steady_state=position_steady_state,
+                                        position_settling_time=position_settling_time)
 
 d = {'Overshoot': [current_controller_metrics_id.overshoot()],
      'Rise Time/s ': [current_controller_metrics_id.rise_time()],

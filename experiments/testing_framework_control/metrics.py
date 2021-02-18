@@ -77,27 +77,43 @@ class Metrics:
         # is calculated in the class LoadstepCallback
         return self.position_settling_time * self.ts
 
-    def settling_time_vd_droop(self):
+        # def settling_time_vd_droop(self):
         """
         identification of settling time, only for vd in in tf_primarylevel_vdq_slavefreq.py
         :return:
         """
+
+    #    interval_before_steady_state = self.quantity['master.CVVd'].iloc[0:self.position_steady_state]
+
+    # find the beginning of the last period settled period
+    #    is_settled = False
+    #    for index, data in interval_before_steady_state.items():
+    #        if self.lower_bound < data < self.upper_bound and not is_settled:
+    #            is_settled = True
+    #            self.position_settling_time_CVVd = index
+    #        else:
+    #            is_settled = False
+
+    #    if self.position_settling_time_CVVd == 0:
+    #        raise RuntimeError(
+    #            "Steady State could not be reached. The controller need to be improved. PROGRAM EXECUTION STOP")
+
+    #    return self.position_settling_time_CVVd * self.ts
+
+    def settling_time_vd_droop(
+            self):  # identification of settling time, only for vd in in tf_primarylevel_vdq_slavefreq.py
         interval_before_steady_state = self.quantity['master.CVVd'].iloc[0:self.position_steady_state]
-
-        # find the beginning of the last period settled period
-        is_settled = False
-        for index, data in interval_before_steady_state.items():
-            if self.lower_bound < data < self.upper_bound and not is_settled:
-                is_settled = True
+        for index, row in interval_before_steady_state.iteritems():  # iteration
+            if row > self.lower_bound and row < self.upper_bound and self.settling_time_check == False:
+                self.settling_time_check = True
                 self.position_settling_time_CVVd = index
-            else:
-                is_settled = False
-
+            if row < self.lower_bound or row > self.upper_bound:
+                self.settling_time_check = False
         if self.position_settling_time_CVVd == 0:
             raise RuntimeError(
                 "Steady State could not be reached. The controller need to be improved. PROGRAM EXECUTION STOP")
-
-        return self.position_settling_time_CVVd * self.ts
+        settling_time_value = self.position_settling_time_CVVd * self.ts
+        return settling_time_value
 
     def RMSE(self):
         # converts and reshapes it into an array

@@ -31,7 +31,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 
 # Simulation definitions
 ts = .5e-4  # simulation time step size / s
-max_episode_steps = 10000  # number of simulation steps per episode
+max_episode_steps = 3000  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 v_DC = 1000  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 50  # nominal grid frequency / Hz
@@ -369,6 +369,7 @@ if __name__ == '__main__':
         ax.grid(which='both')
         time = strftime("%Y-%m-%d %H_%M_%S", gmtime())
         fig.savefig(save_folder + '/f_slave' + time + '.pdf')
+        fig.show()
 
 
     def xylables_R(fig):
@@ -413,7 +414,7 @@ if __name__ == '__main__':
                                  'rl1.inductor2.L': callback.load_step_inductance,
                                  'rl1.inductor3.L': callback.load_step_inductance
                                  },
-                   model_path='../omg_grid/grid.network.fmu',
+                   model_path='../../omg_grid/grid.network.fmu',
                    net='net_RL_load.yaml',
                    history=FullHistory()
                    )
@@ -444,7 +445,9 @@ if __name__ == '__main__':
 df_master_CVVd = env.history.df[['master.CVVd']]
 from metrics import Metrics
 
-voltage_controller_metrics_vd = Metrics(df_master_CVVd, vd_ref[0], ts, max_episode_steps)
+voltage_controller_metrics_vd = Metrics(df_master_CVVd, vd_ref[0], ts, max_episode_steps,
+                                        position_steady_state=position_steady_state,
+                                        position_settling_time=position_settling_time)
 
 d = {'Overshoot': [voltage_controller_metrics_vd.overshoot()],
      'Rise Time/s ': [voltage_controller_metrics_vd.rise_time()],
@@ -472,7 +475,9 @@ df_master_CVVq = env.history.df[['master.CVVq']]
 
 from metrics import Metrics
 
-voltage_controller_metrics_vq = Metrics(df_master_CVVq, vq_ref, ts, max_episode_steps)
+voltage_controller_metrics_vq = Metrics(df_master_CVVq, vq_ref, ts, max_episode_steps,
+                                        position_steady_state=position_steady_state,
+                                        position_settling_time=position_settling_time)
 
 d = {'Root Mean Squared Error/V': [voltage_controller_metrics_vq.RMSE()],
      'Steady State Error/V': [voltage_controller_metrics_vq.steady_state_error()],
@@ -498,7 +503,9 @@ print(df_metrics_vq)
 df_slave_frequency = env.history.df[['slave.freq']]
 from metrics import Metrics
 
-frequency_controller_metrics = Metrics(df_slave_frequency, nomFreq, ts, max_episode_steps)
+frequency_controller_metrics = Metrics(df_slave_frequency, nomFreq, ts, max_episode_steps,
+                                       position_steady_state=position_steady_state,
+                                       position_settling_time=position_settling_time)
 
 d = {'Overshoot': [frequency_controller_metrics.overshoot()],
      'Rise Time/s ': [frequency_controller_metrics.rise_time()],
