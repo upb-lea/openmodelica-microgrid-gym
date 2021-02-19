@@ -54,6 +54,8 @@ class ModelicaEnv(gym.Env):
         :param log_level: logging granularity. see logging in stdlib
         :param solver_method: solver of the scipy.integrate.solve_ivp function
         :param max_episode_steps: maximum number of episode steps.
+            After one episodes there are max_episode_steps+1 states available (one additionally caused by the reset)
+            and max_episode_steps actions, so the env.step() is executed max_episode_steps-times
             The end time of the episode is calculated by the time resolution and the number of steps.
 
             If set to None, the environment will never finish because of step sizes, but it might still stop because of
@@ -112,7 +114,8 @@ class ModelicaEnv(gym.Env):
             self.net = Network.load(net)
         self.time_step_size = self.net.ts
         self.time_end = np.inf if max_episode_steps is None \
-            else self.time_start + max_episode_steps * self.time_step_size
+            else self.time_start + (max_episode_steps + 1) * self.time_step_size  # + 1 to execute env.step()
+        # max_episode_step-times
 
         # if there are parameters, we will convert all scalars to constant functions.
         model_params = model_params or dict()
