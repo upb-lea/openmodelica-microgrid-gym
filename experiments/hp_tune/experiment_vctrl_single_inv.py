@@ -11,7 +11,6 @@ from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
 # imports net to define reward and executes script to register experiment
 from experiments.hp_tune.env.vctrl_single_inv import net, folder_name, max_episode_steps
 from experiments.hp_tune.util.record_env import RecordEnvCallback
-from experiments.issue51_new.env.rewards import Reward
 
 np.random.seed(0)
 
@@ -21,8 +20,9 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
     rew = Reward(net.v_nom, net['inverter1'].v_lim, net['inverter1'].v_DC, gamma,
                  use_gamma_normalization=use_gamma_in_rew)
 
-    env = gym.make('experiments.hp_tune.env:vctrl_single_inv-v0',
+    env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train-v0',
                    reward_fun=rew.rew_fun,
+                   abort_reward=-(1 - gamma)
                    # on_episode_reset_callback=cb.fire  # needed?
                    )
 
@@ -61,15 +61,30 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
     # model.save(f'{folder_name + experiment_name + n_trail}/model.zip')
 
     return_sum = 0.0
-    obs = env.reset()
+
     rew.gamma = 0
+    # episodes will not abort, if limit is exceeded reward = -1
+    rew.det_run = True
+    env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v0',
+                        reward_fun=rew.rew_fun,
+                        abort_reward=-1  # no needed if in rew no None is given back
+                        # on_episode_reset_callback=cb.fire  # needed?
+                        )
+
+    obs = env_test.reset()
+
+    # toDo: - Use other Test-episode
+    #       - Rückgabewert = (Summe der üblichen Rewards) / (Anzahl steps Validierung) + (Penalty i.H.v. -1)
     while True:
         action, _states = model.predict(obs)
-        obs, rewards, done, info = env.step(action)
-        env.render()
+        obs, rewards, done, info = env_test.step(action)
+
+        if rewards == -1:
+            asd = 1
+        env_test.render()
         return_sum += rewards
         if done:
-            env.close()
+            env_test.close()
             break
 
     return return_sum
@@ -78,14 +93,16 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
 def objective(trail):
     learning_rate = 0.0004  # trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
     gamma = 0.7  # trail.suggest_loguniform("gamma", 0.5, 0.99)
-    weight_scale = 0.02  # trail.suggest_loguniform("weight_scale", 5e-4, 1)  # 0.005
+    weight_scale = 1  # 0.02  # trail.suggest_loguniform("weight_scale", 5e-4, 1)  # 0.005
     batch_size = 128  # trail.suggest_int("batch_size", 32, 1024)  # 128
     actor_hidden_size = 100  # trail.suggest_int("actor_hidden_size", 10, 500)  # 100  # Using LeakyReLU
     n_trail = str(trail.number)
     use_gamma_in_rew = 1
     critic_hidden_size = 100  # trail.suggest_int("critic_hidden_size", 10, 500)  # # Using LeakyReLU
 
+
     # toDo:
+    error_exponent = trail.suggest_loguniform("error_exponent", 0.01, 4)
     # alpha_lRelu = trail.suggest_loguniform("alpha_lRelu", 0.0001, 0.5)  #0.1
     # memory_interval = 1
     # noise_var = 0.2

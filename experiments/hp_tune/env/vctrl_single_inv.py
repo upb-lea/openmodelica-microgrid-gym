@@ -8,6 +8,7 @@ import time
 import gym
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from stochastic.processes import VasicekProcess
 
 from experiments.hp_tune.env.random_load import RandomLoad
@@ -77,7 +78,7 @@ def xylables_v(fig):
     ts = time.gmtime()
     fig.savefig(
         f'{folder_name + experiment_name}/Capacitor_voltages{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
-    plt.close()
+    plt.show()
 
 
 def xylables_R(fig):
@@ -88,17 +89,17 @@ def xylables_R(fig):
     # ax.set_ylim([lower_bound_load - 2, upper_bound_load + 2])
     ts = time.gmtime()
     fig.savefig(f'{folder_name + experiment_name}/Load{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
-    plt.close()
+    plt.show()
 
 
 # rew = Reward(v_nom, v_lim, v_DC, gamma, use_gamma_in_rew)
-rand_load = RandomLoad(max_episode_steps, net.ts, gen)
+rand_load_train = RandomLoad(max_episode_steps, net.ts, gen)
 
 cb = CallbackList()
 cb.append(partial(gen.reset, initial=R))
-cb.append(rand_load.reset)
+cb.append(rand_load_train.reset)
 
-register(id='vctrl_single_inv-v0',
+register(id='vctrl_single_inv_train-v0',
          entry_point='openmodelica_microgrid_gym.env:ModelicaEnv',
          kwargs=dict(  # reward_fun=rew.rew_fun,
              viz_cols=[
@@ -132,9 +133,78 @@ register(id='vctrl_single_inv-v0',
                            'lc.capacitor1.C': C_filter,
                            'lc.capacitor2.C': C_filter,
                            'lc.capacitor3.C': C_filter,
-                           'r_load.resistor1.R': partial(rand_load.load_step, gain=R),
-                           'r_load.resistor2.R': partial(rand_load.load_step, gain=R),
-                           'r_load.resistor3.R': partial(rand_load.load_step, gain=R),
+                           # 'r_load.resistor1.R': partial(rand_load_train.load_step, gain=R),
+                           # 'r_load.resistor2.R': partial(rand_load_train.load_step, gain=R),
+                           # 'r_load.resistor3.R': partial(rand_load_train.load_step, gain=R),
+                           'r_load.resistor1.R': rand_load_train.random_load_step,
+                           'r_load.resistor2.R': rand_load_train.random_load_step,
+                           'r_load.resistor3.R': rand_load_train.random_load_step,
+                           'lc.capacitor1.v': lambda t: np.random.uniform(low=-v_lim,
+                                                                          high=v_lim) if t == 0 else None,
+                           'lc.capacitor2.v': lambda t: np.random.uniform(low=-v_lim,
+                                                                          high=v_lim) if t == 0 else None,
+                           'lc.capacitor3.v': lambda t: np.random.uniform(low=-v_lim,
+                                                                          high=v_lim) if t == 0 else None,
+                           'lc.inductor1.i': lambda t: np.random.uniform(low=-i_lim,
+                                                                         high=i_lim) if t == 0 else None,
+                           'lc.inductor2.i': lambda t: np.random.uniform(low=-i_lim,
+                                                                         high=i_lim) if t == 0 else None,
+                           'lc.inductor3.i': lambda t: np.random.uniform(low=-i_lim,
+                                                                         high=i_lim) if t == 0 else None,
+                           },
+             net=net,
+             model_path='../../omg_grid/grid.paper_loadstep.fmu',
+             on_episode_reset_callback=cb.fire,
+             is_normalized=True
+         )
+         )
+
+rand_load_test = RandomLoad(max_episode_steps, net.ts, gen, load_curve=pd.read_pickle('R_load_test_case_1_second'))
+
+# R_load_test_case = pd.read_pickle('R_load_test_case')
+# R_load_test_case['r_load.resistor1.R'][2]
+
+# def give_R_value1(t):
+#    return R_load_test_case['r_load.resistor1.R'][int(t/net.ts)]
+
+
+register(id='vctrl_single_inv_test-v0',
+         entry_point='openmodelica_microgrid_gym.env:ModelicaEnv',
+         kwargs=dict(  # reward_fun=rew.rew_fun,
+             viz_cols=[
+                 PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
+                          callback=xylables_v,
+                          color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+                          style=[[None], ['--']]
+                          ),
+                 PlotTmpl([[f'lc.inductor{i}.i' for i in '123'], [f'inverter1.i_ref.{k}' for k in '012']],
+                          callback=xylables_i,
+                          color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+                          style=[[None], ['--']]
+                          ),
+                 PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
+                          callback=xylables_R,
+                          color=[['b', 'r', 'g']],
+                          style=[[None]]
+                          )
+             ],
+             viz_mode='episode',
+             max_episode_steps=10000,
+             model_params={'lc.resistor1.R': R_filter,
+                           'lc.resistor2.R': R_filter,
+                           'lc.resistor3.R': R_filter,
+                           'lc.resistor4.R': 0.0000001,
+                           'lc.resistor5.R': 0.0000001,
+                           'lc.resistor6.R': 0.0000001,
+                           'lc.inductor1.L': L_filter,
+                           'lc.inductor2.L': L_filter,
+                           'lc.inductor3.L': L_filter,
+                           'lc.capacitor1.C': C_filter,
+                           'lc.capacitor2.C': C_filter,
+                           'lc.capacitor3.C': C_filter,
+                           'r_load.resistor1.R': partial(rand_load_test.give_dataframe_value, col='r_load.resistor1.R'),
+                           'r_load.resistor2.R': partial(rand_load_test.give_dataframe_value, col='r_load.resistor2.R'),
+                           'r_load.resistor3.R': partial(rand_load_test.give_dataframe_value, col='r_load.resistor3.R'),
                            'lc.capacitor1.v': lambda t: np.random.uniform(low=-v_lim,
                                                                           high=v_lim) if t == 0 else None,
                            'lc.capacitor2.v': lambda t: np.random.uniform(low=-v_lim,
