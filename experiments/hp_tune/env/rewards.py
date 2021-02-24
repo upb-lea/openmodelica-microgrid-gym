@@ -4,7 +4,22 @@ from typing import List
 
 
 class Reward:
-    def __init__(self, nom, lim, v_DC, gamma, nom_region, use_gamma_normalization=0):
+    def __init__(self, nom, lim, v_DC, gamma, det_run=False, nom_region: float = 1.1, use_gamma_normalization=1,
+                 error_exponent: float = 1.0):
+        """
+
+        :param nom: Nominal value
+        :param lim: Limit value
+        :param v_DC: DC-Link voltage
+        :param gamma: Discount factor to map critic values -> [-1, 1]
+        :param use_gamma_normalization: if 0 normalization depending on gamma is not used
+        :param nom_region: Defines cliff in the reward landscape where the reward is pulled down because the nominal
+                           value is exceeded. nom_region defines how much the nominal value can be exceeded before
+                           the cliff (e.g. 1.1 -> cliff @ 1.1*self.nom
+        :param error_exponent: defines the used error-function: E.g.: 1 -> Mean absolute error
+                                                                2 -> Mean squared error
+                                                              0.5 -> Mean root error
+        """
         self._idx = None
         self.nom = nom
         self.lim = lim
@@ -14,7 +29,9 @@ class Reward:
             self.gamma = gamma
         else:
             self.gamma = 0
+        self.det_run = det_run
         self.nom_region = nom_region
+        self.exponent = error_exponent
 
     def set_idx(self, obs):
         if self._idx is None:
@@ -56,14 +73,16 @@ class Reward:
                 rew = 1; if mess = SP
                 rew = 1/3; if error = SP-mess = 2*v_nom (worst case without braking out from nom area)
             """
+            # devided by 3 because of sums up all 3 phases
+            rew = np.sum((1 - (np.abs(SP - mess) / (2 * self.nom)) ** self.exponent) * 2 * (1 - self.gamma) / 3 + (
+                        1 - self.gamma) / 3) / 3
 
-            rew = np.sum((1 - np.abs(SP - mess) / (2 * self.nom)) * 2 * (1 - self.gamma) / 3 + (1 - self.gamma) / 3) / 3
-
-        elif any(np.abs(vabc_master) > self.lim):
+        elif any(np.abs(mess) > self.lim):
             """
             3rd area - outside valid area - above lim - possible if enough v_DC - DANGEROUS
             +-v_lim -> +-v_DC
 
+            V1:
             @ SP = +v_nom AND mess = -v_DC:
                 rew = -1; if error = v_DC + v_nom -> Worst case, +v_nom wanted BUT -v_DC measured
             @ SP = -v_nom AND mess = -v_lim
@@ -71,16 +90,26 @@ class Reward:
                 rew -> -1 - 2/3*(1 - |lim - nom| / (nom+v_DC))
                 The latter fraction is quite small but leads to depending on the system less then 2/3 is
                 substracted and we have a gap to the 2nd area! :) 
+                
+            V2: None is returned to stop the episode (hint: in the env env.abort_reward is given back as reward(?)
+            
+            V3: rew = -1
             """
 
-            rew = np.sum(
-                (1 - np.abs(SP - mess) / (self.nom + self.v_DC)) * 2 * (1 - self.gamma) / 3 - (1 - self.gamma)) / 3
+            # V1:
+            # rew = np.sum(
+            #    (1 - np.abs(SP - mess) / (self.nom + self.v_DC)) * 2 * (1 - self.gamma) / 3 - (1 - self.gamma)) / 3
 
+            # V2:
             # if return -> rew = None and in env abort_reward is given to agent
-            # return
+            if self.det_run:
+                return -(1 - self.gamma)
+            else:
+                return
 
-        # elif any(np.abs(vabc_master) > v_DC):
-        #    rew = (1-gamma)
+            # V3:
+            # rew = (1 - gamma)
+
 
         else:
             """
