@@ -22,6 +22,79 @@ from openmodelica_microgrid_gym.env import PlotTmpl
 
 np.random.seed(0)
 
+# toDo: what to store:
+"""
+Alle importieren vom Recorder der in DB speichert und interagieren an den richtungen stellen mit dem env/agent...
+
+after training: -> like: SaveOnBestTrainingRewardCallback(BaseCallback): after training
+    hyperopt-data 
+    weights
+    model / net-architecture
+    
+Each step: -> StepRecorder (ggf. StepMonitor?)
+    training_reward
+    messdaten? (aus der net.yaml die outs?)
+    
+    training_return -> if episode done: store return(-> sollte der Monitor kennen)
+
+config    
+skriptname
+start- und endzeit stempel
+Computername
+Architektur des Netzes (mit model.to_json() )
+Gewichte des Netzes (mit model.get_layer('layer_name').weights)
+Prädiktion (für jede Zielgröße eine längere Liste)
+Testset (profilnummern von den messschrieben die prädiziert wurden)
+	
+"""
+
+
+class Recorder:
+
+    def __init__(self, URI: str = 'mongodb://localhost:27017/', database_name: str = 'OMG', ):
+        self.client = MongoClient(URI)
+        self.db = self.client[database_name]
+
+    def save_to_mongodb(self, col: str = ' trails', data=None):
+        trial_coll = self.db[col]
+        if data is None:
+            raise ValueError('No data given to store in database!')
+        trial_coll.insert_one(data)
+
+
+class StepRecorder(Monitor):
+
+    def __init__(self, env):
+        super().__init__(env)
+
+    def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
+        observation, reward, done, info = super().step(action)
+        print(reward)
+
+        # hier vll noch die Messung loggen? aus der obs die richtigen suchen? wie figure out die augmented states?
+
+        return observation, reward, done, info
+
+
+class TrainRecorder(BaseCallback):
+
+    def __init__(self, verbose=1):
+        super(TrainRecorder, self).__init__(verbose)
+
+    def _on_training_end(self) -> None:
+        """
+        This event is triggered before exiting the `learn()` method.
+        """
+        asd = 1
+        ads = 2
+
+    def _on_step(self) -> bool:
+        asd = 1
+        return True
+
+    def _on_rollout_end(self) -> None:
+        asd = 1
+
 
 def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, batch_size,
                         actor_hidden_size, critic_hidden_size, noise_var, noise_theta, error_exponent, n_trail):
@@ -67,8 +140,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
                    # on_episode_reset_callback=cb.fire  # needed?
                    )
 
-    # toDo: Whatfore?
-    env = Monitor(env)
+    env = StepRecorder(env)
 
     n_actions = env.action_space.shape[-1]
     noise_var = noise_var  # 20#0.2
@@ -80,9 +152,12 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
                                                                                                   critic_hidden_size,
                                                                                                   critic_hidden_size]))
 
+    callback = TrainRecorder()
+
+    # model = myDDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
     model = DDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
                  policy_kwargs=policy_kwargs,
-                 learning_rate=learning_rate, buffer_size=5000, learning_starts=1024,
+                 learning_rate=learning_rate, buffer_size=5000, learning_starts=100,
                  batch_size=batch_size, tau=0.005, gamma=gamma, action_noise=action_noise,
                  train_freq=- 1, gradient_steps=- 1, n_episodes_rollout=1, optimize_memory_usage=False,
                  create_eval_env=False, seed=None, device='auto', _init_setup_model=True)
@@ -95,9 +170,12 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
     # model.actor.mu._modules['2'].bias.data = model.actor.mu._modules['2'].bias.data * weight_bias_scale
 
     # todo: instead /here? store reward per step?!
-    plot_callback = EveryNTimesteps(n_steps=1000, callback=RecordEnvCallback(env, model, max_episode_steps))
-    model.learn(total_timesteps=2000, callback=[plot_callback])
+    plot_callback = EveryNTimesteps(n_steps=50000, callback=RecordEnvCallback(env, model, max_episode_steps))
+    model.learn(total_timesteps=150000, callback=[callback, plot_callback])
+    # model.learn(total_timesteps=1000, callback=callback)
 
+    monitor_rewards = env.get_episode_rewards()
+    print(monitor_rewards)
     # todo: instead: store model(/weights+bias?) to database
     model.save(f'{folder_name}/{n_trail}/model.zip')
 
