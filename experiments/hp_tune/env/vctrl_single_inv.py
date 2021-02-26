@@ -102,23 +102,23 @@ cb.append(rand_load_train.reset)
 register(id='vctrl_single_inv_train-v0',
          entry_point='openmodelica_microgrid_gym.env:ModelicaEnv',
          kwargs=dict(  # reward_fun=rew.rew_fun,
-             viz_cols=[
-                 PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
-                          callback=xylables_v,
-                          color=[['b', 'r', 'g'], ['b', 'r', 'g']],
-                          style=[[None], ['--']]
-                          ),
-                 PlotTmpl([[f'lc.inductor{i}.i' for i in '123'], [f'inverter1.i_ref.{k}' for k in '012']],
-                          callback=xylables_i,
-                          color=[['b', 'r', 'g'], ['b', 'r', 'g']],
-                          style=[[None], ['--']]
-                          ),
-                 PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
-                          callback=xylables_R,
-                          color=[['b', 'r', 'g']],
-                          style=[[None]]
-                          )
-             ],
+             # viz_cols=[
+             #    PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
+             #             callback=xylables_v,
+             #             color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+             #             style=[[None], ['--']]
+             #             ),
+             #    PlotTmpl([[f'lc.inductor{i}.i' for i in '123'], [f'inverter1.i_ref.{k}' for k in '012']],
+             #             callback=xylables_i,
+             #             color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+             #             style=[[None], ['--']]
+             #             ),
+             #    PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
+             #             callback=xylables_R,
+             #             color=[['b', 'r', 'g']],
+             #             style=[[None]]
+             #             )
+             # ],
              viz_mode='episode',
              max_episode_steps=max_episode_steps,
              model_params={'lc.resistor1.R': R_filter,
@@ -171,23 +171,23 @@ rand_load_test = RandomLoad(max_episode_steps, net.ts, gen, load_curve=pd.read_p
 register(id='vctrl_single_inv_test-v0',
          entry_point='openmodelica_microgrid_gym.env:ModelicaEnv',
          kwargs=dict(  # reward_fun=rew.rew_fun,
-             viz_cols=[
-                 PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
-                          callback=xylables_v,
-                          color=[['b', 'r', 'g'], ['b', 'r', 'g']],
-                          style=[[None], ['--']]
-                          ),
-                 PlotTmpl([[f'lc.inductor{i}.i' for i in '123'], [f'inverter1.i_ref.{k}' for k in '012']],
-                          callback=xylables_i,
-                          color=[['b', 'r', 'g'], ['b', 'r', 'g']],
-                          style=[[None], ['--']]
-                          ),
-                 PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
-                          callback=xylables_R,
-                          color=[['b', 'r', 'g']],
-                          style=[[None]]
-                          )
-             ],
+             # viz_cols=[
+             #    PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
+             #             callback=xylables_v,
+             #             color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+             #             style=[[None], ['--']]
+             #             ),
+             #    PlotTmpl([[f'lc.inductor{i}.i' for i in '123'], [f'inverter1.i_ref.{k}' for k in '012']],
+             #             callback=xylables_i,
+             #             color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+             #             style=[[None], ['--']]
+             #             ),
+             #    PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
+             #             callback=xylables_R,
+             #             color=[['b', 'r', 'g']],
+             #             style=[[None]]
+             #             )
+             # ],
              viz_mode='episode',
              max_episode_steps=10000,
              model_params={'lc.resistor1.R': R_filter,
