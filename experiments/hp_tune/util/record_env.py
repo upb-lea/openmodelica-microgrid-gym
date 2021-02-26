@@ -5,7 +5,7 @@ class RecordEnvCallback(BaseCallback):
 
     def __init__(self, env, agent, max_episode_steps):
         """
-        Class to interact with stablebaseline learner callback,
+        Class to interact with stable_baseline learner callback,
         Runs e.g. every 1000 steps to evaluate the learning process in the env:
 
         plot_callback = EveryNTimesteps(n_steps=1000, callback=RecordEnvCallback(env, model))
