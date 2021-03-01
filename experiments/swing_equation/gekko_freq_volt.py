@@ -6,7 +6,7 @@ m = GEKKO(remote=False)
 
 #User system property input
 
-S_base_kVA = 100             #Enter maximum expected load of system (kVA)
+S_base_kVA = 100               #Enter maximum expected load of system (kVA)
 V_base_ll = 400                #Nominal Voltage Line-Line
 Freq_base = 50                 #System frequency
 
@@ -20,12 +20,12 @@ Z_base = (V_base_ll**2)/S_base_VA
 print(I_base)
 print(Z_base)
 #define parameter
-Pdroop = 4000
-Qdroop = 40
+Pdroop = 8000
+Qdroop = 50
 t_end = 0.4
 steps = 400
 Freq_base = 50                        # grid frequency / Hz
-nomVolt = value = 230
+nomVolt = 230
 omega = 2*np.pi*Freq_base
 
 J = 0.05
@@ -33,21 +33,25 @@ J_Q = 0.0005
 
 R_lv_line_10km = 0.0
 #L_lv_line_10km = 0.00083/3         # Splitting Inductance into per phase value
-L_lv_line_10km = 0.0002
+L_lv_line_10km = 0.00026
 B_L_lv_line_10km = -(omega * L_lv_line_10km)/(R_lv_line_10km**2 + (omega*L_lv_line_10km)**2)
 
+# Resistors kan not be devided into three
+
 step = np.zeros(steps)
-step[0:200] = 10/3
-step[200:] = 20/3
+step[0:50] = 10000000
+step[50:200] = 20
+step[200:] = 40
 
 step_l = np.zeros(steps)
-step_l[0:200] = 0.0
-step_l[200:] = 0
+step_l[0:50] = 0
+step_l[50:200] = 0.002
+step_l[200:] = 0.002
 
 R_load = m.Param(value=step)
 L_load = m.Param(value=step_l)
 G_RL_load = R_load/(R_load**2 + (omega*L_load)**2)
-B_RL_load = np.imag(-(omega * L_load)/(R_load**2 + (omega * L_load)**2))
+B_RL_load = -(omega * L_load)/(R_load**2 + (omega * L_load)**2)
 
 
 B = np.array([[2*B_L_lv_line_10km, -B_L_lv_line_10km, -B_L_lv_line_10km],
@@ -61,19 +65,19 @@ G = np.array([[0, 0, 0],
 #constants
 
 p_offset = [100, 100, 0]
-q_offset = [20, 20, 0]
+q_offset = [0, 0, 0]
 
 #variables
 
-u1 = m.Var(value=200)
-u2 = m.Var(value=200)
-u3 = m.Var(value=200)
-P1 = m.Var(value=100)
-P2 = m.Var(value=100)
+u1 = m.Var(value=10)
+u2 = m.Var(value=10)
+u3 = m.Var(value=10)
+P1 = m.Var(value=0)
+P2 = m.Var(value=0)
 P3 = m.Var(value=0)
-Q1 = m.Var(value=-40)
-Q2 = m.Var(value=-40)
-Q3 = m.Var(value=-40)
+Q1 = m.Var(value=0)
+Q2 = m.Var(value=0)
+Q3 = m.Var(value=0)
 w1 = m.Var(value=50)
 w2 = m.Var(value=50)
 w3 = m.Var(value=50)
@@ -95,24 +99,24 @@ theta3.value = 0
 
 #constraints
 
-m.Equation(u1 * u1 * (G[0][0] * m.cos(theta1 - theta1) + B[0][0] * m.sin(theta1 - theta1)) + \
-           u1 * u2 * (G[0][1] * m.cos(theta1 - theta2) + B[0][1] * m.sin(theta1 - theta2)) + \
+m.Equation(u1 * u1 * (G[0][0] * m.cos(theta1 - theta1) + B[0][0] * m.sin(theta1 - theta1)) +
+           u1 * u2 * (G[0][1] * m.cos(theta1 - theta2) + B[0][1] * m.sin(theta1 - theta2)) +
            u1 * u3 * (G[0][2] * m.cos(theta1 - theta3) + B[0][2] * m.sin(theta1 - theta3)) == P1)
-m.Equation(u2 * u1 * (G[1][0] * m.cos(theta2 - theta1) + B[1][0] * m.sin(theta2 - theta1)) + \
-           u2 * u2 * (G[1][1] * m.cos(theta2 - theta2) + B[1][1] * m.sin(theta2 - theta2)) + \
+m.Equation(u2 * u1 * (G[1][0] * m.cos(theta2 - theta1) + B[1][0] * m.sin(theta2 - theta1)) +
+           u2 * u2 * (G[1][1] * m.cos(theta2 - theta2) + B[1][1] * m.sin(theta2 - theta2)) +
            u2 * u3 * (G[1][2] * m.cos(theta2 - theta3) + B[1][2] * m.sin(theta2 - theta3)) == P2)
-m.Equation(u3 * u1 * (G[2][0] * m.cos(theta3 - theta1) + B[2][0] * m.sin(theta3 - theta1)) + \
-           u3 * u2 * (G[2][1] * m.cos(theta3 - theta2) + B[2][1] * m.sin(theta3 - theta2)) + \
+m.Equation(u3 * u1 * (G[2][0] * m.cos(theta3 - theta1) + B[2][0] * m.sin(theta3 - theta1)) +
+           u3 * u2 * (G[2][1] * m.cos(theta3 - theta2) + B[2][1] * m.sin(theta3 - theta2)) +
            u3 * u3 * (G[2][2] * m.cos(theta3 - theta3) + B[2][2] * m.sin(theta3 - theta3)) == P3)
 
-m.Equation(u1 * u1 * (G[0][0] * m.sin(theta1 - theta1) + B[0][0] * m.cos(theta1 - theta1)) + \
-           u1 * u2 * (G[0][1] * m.sin(theta1 - theta2) + B[0][1] * m.cos(theta1 - theta2)) + \
+m.Equation(u1 * u1 * (G[0][0] * m.sin(theta1 - theta1) + B[0][0] * m.cos(theta1 - theta1)) +
+           u1 * u2 * (G[0][1] * m.sin(theta1 - theta2) + B[0][1] * m.cos(theta1 - theta2)) +
            u1 * u3 * (G[0][2] * m.sin(theta1 - theta3) + B[0][2] * m.cos(theta1 - theta3)) == Q1)
-m.Equation(u2 * u1 * (G[1][0] * m.sin(theta2 - theta1) + B[1][0] * m.cos(theta2 - theta1)) + \
-           u2 * u2 * (G[1][1] * m.sin(theta2 - theta2) + B[1][1] * m.cos(theta2 - theta2)) + \
+m.Equation(u2 * u1 * (G[1][0] * m.sin(theta2 - theta1) + B[1][0] * m.cos(theta2 - theta1)) +
+           u2 * u2 * (G[1][1] * m.sin(theta2 - theta2) + B[1][1] * m.cos(theta2 - theta2)) +
            u2 * u3 * (G[1][2] * m.sin(theta2 - theta3) + B[1][2] * m.cos(theta2 - theta3)) == Q2)
-m.Equation(u3 * u1 * (G[2][0] * m.sin(theta3 - theta1) + B[2][0] * m.cos(theta3 - theta1)) + \
-           u3 * u2 * (G[2][1] * m.sin(theta3 - theta2) + B[2][1] * m.cos(theta3 - theta2)) + \
+m.Equation(u3 * u1 * (G[2][0] * m.sin(theta3 - theta1) + B[2][0] * m.cos(theta3 - theta1)) +
+           u3 * u2 * (G[2][1] * m.sin(theta3 - theta2) + B[2][1] * m.cos(theta3 - theta2)) +
            u3 * u3 * (G[2][2] * m.sin(theta3 - theta3) + B[2][2] * m.cos(theta3 - theta3)) == Q3)
 
 # Equations
@@ -140,6 +144,8 @@ m.Equation(u3.dt() == ((q_offset[2]-Q3)+(q_droop_linear[2]*(u3-nomVolt)))/(J_Q*u
 #m.Equation(J_Q*u2*u2.dt()==(-Q2))
 #m.Equation(J_Q*u3*u3.dt()==(-Q3))
 
+m.Obj(Freq_base-w3)
+m.Obj(nomVolt-u3)
 
 #Set global options
 m.options.IMODE = 7                 # Setting Sequential method of dynamic simulation https://gekko.readthedocs.io/en/latest/global.html
@@ -155,20 +161,21 @@ m.solve()
 
 #Results
 
-plt.plot(m.time,w1)
-plt.xlabel('time (s)')
-plt.ylabel('Frequency (Hz)')
+# plt.plot(m.time,w1)
+# plt.xlabel('time (s)')
+# plt.ylabel('Frequency (Hz)')
+#
+#
+# plt.plot(m.time,w2)
+# plt.xlabel('time')
+# plt.ylabel('w2(t)')
 
 
-plt.plot(m.time,w2)
-plt.xlabel('time')
-plt.ylabel('w2(t)')
-
-
-plt.plot(m.time,w3,'--')
+plt.plot(m.time,w3,'--', label='f at load')
 plt.xlabel('time')
 plt.ylabel('w3(t)')
 #plt.ylim(48, 52)
+plt.legend()
 plt.show()
 
 
@@ -183,11 +190,11 @@ plt.show()
 # plt.ylabel('u2(t)')
 #
 #
-# plt.plot(m.time,u3,'--g')
-# plt.xlabel('time')
-# plt.ylabel('u3(t)')
-# plt.ylim(200, 400)
-# plt.show()
+plt.plot(m.time,u3,'g')
+plt.xlabel('time')
+plt.ylabel('u3(t)')
+plt.ylim(0, 400)
+plt.show()
 
 
 
@@ -201,13 +208,16 @@ plt.legend()
 plt.show()
 
 
-plt.plot(m.time,np.multiply(-1,np.add(Q1,Q2)),'b')
-#plt.plot(m.time,Q2,'r')
-plt.plot(m.time,Q3,'g')
-plt.plot(m.time,u3,'--g')
+plt.plot(m.time,np.multiply(1,np.add(Q1,Q2)),'b', label="Total Supply")
+plt.plot(m.time,np.multiply(1,Q1),'m', label = 'Inverter 1')
+plt.plot(m.time,np.multiply(1,Q2),'r', label = 'Inverter 2')
+plt.plot(m.time,Q3,'g', label='load')
+#plt.plot(m.time,np.add(np.add(Q1,Q2),Q3),'k', label='Difference')
+#plt.plot(m.time,u3,'--g')
 plt.xlabel('time')
 plt.ylabel('Q(t)')
-#plt.ylim(-100, 300)
+#plt.ylim(-40, 40)
+plt.legend()
 plt.show()
 
 
