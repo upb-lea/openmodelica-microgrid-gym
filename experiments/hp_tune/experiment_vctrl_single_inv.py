@@ -69,7 +69,7 @@ class StepRecorder(Monitor):
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
         observation, reward, done, info = super().step(action)
-        print(reward)
+        #print(reward)
 
         # hier vll noch die Messung loggen? aus der obs die richtigen suchen? wie figure out die augmented states?
 
@@ -85,15 +85,17 @@ class TrainRecorder(BaseCallback):
         """
         This event is triggered before exiting the `learn()` method.
         """
-        asd = 1
-        ads = 2
+        #asd = 1
+        #ads = 2
+        pass
 
     def _on_step(self) -> bool:
-        asd = 1
+        #asd = 1
         return True
 
     def _on_rollout_end(self) -> None:
-        asd = 1
+        #asd = 1
+        pass
 
 
 def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, batch_size,
@@ -110,7 +112,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
         ts = time.gmtime()
         fig.savefig(
             f'{folder_name}/{n_trail}/Capacitor_voltages{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
-        plt.show()
+        plt.close()
 
     def xylables_R(fig):
         ax = fig.gca()
@@ -120,7 +122,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
         # ax.set_ylim([lower_bound_load - 2, upper_bound_load + 2])
         ts = time.gmtime()
         fig.savefig(f'{folder_name}/{n_trail}/Load{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
-        plt.show()
+        plt.close()
 
     env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train-v0',
                    reward_fun=rew.rew_fun,
@@ -184,6 +186,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
     rew.gamma = 0
     # episodes will not abort, if limit is exceeded reward = -1
     rew.det_run = True
+    rew.exponent = 1
     limit_exceeded_in_test = False
     limit_exceeded_penalty = 0
     env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v0',
@@ -218,10 +221,10 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
             limit_exceeded_penalty = -1
         env_test.render()
         return_sum += rewards
-        print(rewards)
+        #print(rewards)
         if done:
             env_test.close()
-            print(limit_exceeded_in_test)
+            #print(limit_exceeded_in_test)
             break
 
     return (return_sum / env_test.max_episode_steps + limit_exceeded_penalty)
