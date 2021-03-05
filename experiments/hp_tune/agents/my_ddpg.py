@@ -18,6 +18,8 @@ class myDDPG(DDPG, myTD3):
         super(myDDPG, self).__init__(*args, **kwargs)
         # training variables for logging
         self.critic_loss_batch_mean = []  # mean of critic losses of the batch
+        self.critic_estimate_target_diff_mean = []  # sum(Q_estimat - target)/N_batch_size
         self.actor_loss_batch_mean = []  # mean of critic losses of the batch
         self.current_q_estimates_batch_mean = []  # Q(s,a)    (mean of the batch!)
         self.target_q_batch_mean = []  # yi = r + gamma*Q_target(s',µ_target(s')) (mean of the batch!)
+        self.reward_batch_mean = []  # mean of the batch reward used in training

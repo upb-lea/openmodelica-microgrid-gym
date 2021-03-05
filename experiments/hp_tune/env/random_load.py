@@ -69,7 +69,8 @@ class RandomLoad:
         # Changes rand process data with probability of 5% and sets new value randomly
         if np.random.randint(0, 1001) < 2:
 
-            gain = np.random.randint(self.rand_process.bounds[0], self.rand_process.bounds[1] + 1)
+            # toDo: harte grenze z.b. bei 11 Ohm (limit) aber ziehen nur aus nom-Bereich (14 Ohm)
+            gain = np.random.randint(self.rand_process.bounds[0] + 3, self.rand_process.bounds[1] + 1)
 
             self.rand_process.proc.mean = gain
 
@@ -78,8 +79,11 @@ class RandomLoad:
                 # step
                 self.rand_process.reserve = gain
                 self.rand_process.proc.speed = 1000
+                self.rand_process.proc.vol = 10
             else:
                 # drift
-                self.rand_process.proc.speed = 10
+                self.rand_process.proc.speed = np.random.randint(10, 100)
+                self.rand_process.proc.vol = np.random.randint(10, 100)
+                self.rand_process.proc.vol = np.random.randint(1, 100)
 
         return self.rand_process.sample(t)

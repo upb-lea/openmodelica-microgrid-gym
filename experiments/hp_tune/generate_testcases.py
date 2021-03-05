@@ -9,25 +9,29 @@ from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import RandProcess
 
-load = 28
-upper_bound_load = 45
+load = 55  # 28
+upper_bound_load = 140
 lower_bound_load = 11
 net = Network.load('net/net_vctrl_single_inv.yaml')
-max_episode_steps = 1000  # int(1/net.ts)
+max_episode_steps = int(2 / net.ts)
 
 """
  Tescases need to have:
   - Full load
-  - No load
+  - (nearly) No load
   - Step up/down
   - Drift up/down
 1 second, start at nominal power
 """
 time_to_nomPower = 0.1
-time_loadshading = 0.3
-time_power_ramp_up = 0.5
-time_power_ramp_down = 0.7
-time_power_Ramp_stop = 0.9
+time_nomPower_drift = 0.32
+time_loadshading = 0.587
+time_power_ramp_up = 0.741
+time_power_ramp_down = 0.985
+time_power_Ramp_stop = 1.3
+time_drift_down2 = 1.52
+time_step_up2 = 1.66
+time_drift_down3 = 1.72
 
 R_load = []
 
@@ -45,25 +49,52 @@ def load_step(t):
         gen.proc.mean = 14
         gen.reserve = 14
 
-    elif time_loadshading < t <= time_loadshading + net.ts:
-        #
+    elif time_nomPower_drift < t <= time_nomPower_drift + net.ts:
+        # drift
         gen.proc.mean = 40
-        gen.reserve = 40
+        gen.proc.speed = 40
+        # gen.reserve = 40
+
+
+    elif time_loadshading < t <= time_loadshading + net.ts:
+        # loadshading
+        gen.proc.mean = upper_bound_load
+        gen.reserve = upper_bound_load
+        gen.proc.vol = 25
 
     elif time_power_ramp_up < t <= time_power_ramp_up + net.ts:
-        gen.proc.mean = 20
+        # drift
+        gen.proc.mean = 80
         gen.proc.speed = 10
         # gen.reserve = 40
 
 
     elif time_power_ramp_down < t <= time_power_ramp_down + net.ts:
         gen.proc.mean = 30
-        gen.proc.speed = 10
+        gen.proc.speed = 80
+        gen.proc.vol = 10
         # gen.reserve = 40
 
     elif time_power_Ramp_stop < t <= time_power_Ramp_stop + net.ts:
         gen.proc.mean = 30
         gen.proc.speed = 1000
+        gen.proc.vol = 100
+        # gen.reserve = 40
+
+    elif time_drift_down2 < t <= time_drift_down2 + net.ts:
+        gen.proc.mean = 100
+        gen.proc.speed = 100
+        # gen.reserve = 40
+
+    elif time_step_up2 < t <= time_step_up2 + net.ts:
+        gen.proc.mean = 20
+        gen.proc.speed = 1000
+        gen.reserve = 20
+
+    elif time_drift_down3 < t <= time_drift_down3 + net.ts:
+        gen.proc.mean = 50
+        gen.proc.speed = 60
+        gen.proc.vol = 2
         # gen.reserve = 40
 
     R_load_sample = gen.sample(t)
@@ -92,12 +123,12 @@ if __name__ == '__main__':
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    net=net,
-                   # model_params={'r_load.resistor1.R': load_step,          # For use upper function
-                   #              'r_load.resistor2.R': load_step,
-                   #              'r_load.resistor3.R': load_step},
-                   model_params={'r_load.resistor1.R': rand_load.random_load_step,
-                                 'r_load.resistor2.R': rand_load.random_load_step,
-                                 'r_load.resistor3.R': rand_load.random_load_step},
+                   model_params={'r_load.resistor1.R': load_step,  # For use upper function
+                                 'r_load.resistor2.R': load_step,
+                                 'r_load.resistor3.R': load_step},
+                   # model_params={'r_load.resistor1.R': rand_load.random_load_step,         # for check train-random
+                   #              'r_load.resistor2.R': rand_load.random_load_step,         # loadstep
+                   #              'r_load.resistor3.R': rand_load.random_load_step},
                    viz_cols=[
                        PlotTmpl([f'r_load.resistor{i}.R' for i in '123'],
                                 callback=xylables
@@ -115,4 +146,4 @@ if __name__ == '__main__':
     env.close()
 
     df_store = env.history.df[['r_load.resistor1.R', 'r_load.resistor2.R', 'r_load.resistor3.R']]
-    # df_store.to_pickle('R_load_test_case')
+    #df_store.to_pickle('R_load_test_case_2_seconds')
