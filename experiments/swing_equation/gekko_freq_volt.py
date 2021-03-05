@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 m = GEKKO(remote=False)
 
 #define parameter
-Pdroop = 4000
-Qdroop = 500
-t_end = 0.4
-steps = 400
+Pdroop = 40000
+Qdroop = 400
+t_end = 1
+steps = 1000
 nomFreq = 50  # grid frequency / Hz
 nomVolt = value=230
 omega = 2*np.pi*nomFreq
@@ -17,16 +17,16 @@ J = 0.05
 J_Q = 0.0005
 
 R_lv_line_10km = 0.0
-L_lv_line_10km = 0.00083/3
+L_lv_line_10km = 0.0005
 B_L_lv_line_10km = -(omega * L_lv_line_10km)/(R_lv_line_10km**2 + (omega*L_lv_line_10km)**2)
 
 step = np.zeros(steps)
-step[0:200] = 10/3
-step[200:]  = 20/3
+step[0:500] = 5.29
+step[500:]  = 5.29/2
 
 step_l = np.zeros(steps)
-step_l[0:250] = 0.0
-step_l[250:]  = 0
+step_l[0:500] = 0.00424 # in Henry
+step_l[500:]  = 0.00212 # in Henry
 
 R_load = m.Param(value=step)
 L_load = m.Param(value=step_l)
@@ -44,8 +44,8 @@ G = np.array([[0, 0, 0],
 
 #constants
 
-p_offset = [100, 100, 0]
-q_offset = [20, 20, 0]
+p_offset = [00, 00, 0]
+q_offset = [50, 50, 0]
 
 #variables
 
@@ -64,8 +64,8 @@ w3 = m.Var(value=50)
 theta1, theta2, theta3 = [m.Var() for i in range(3)]
 #initialize variables
 
-droop_linear=[-Pdroop,-Pdroop,0]
-q_droop_linear=[-Qdroop,-Qdroop,0]
+droop_linear=[Pdroop,Pdroop,0]
+q_droop_linear=[Qdroop,Qdroop,0]
 #initial values
 
 theta1.value = 0
@@ -79,6 +79,8 @@ theta3.value = 0
 
 #constraints
 
+#m.Equation(Q3 == 0)
+
 m.Equation(u1 * u1 * (G[0][0] * m.cos(theta1 - theta1) + B[0][0] * m.sin(theta1 - theta1)) + \
            u1 * u2 * (G[0][1] * m.cos(theta1 - theta2) + B[0][1] * m.sin(theta1 - theta2)) + \
            u1 * u3 * (G[0][2] * m.cos(theta1 - theta3) + B[0][2] * m.sin(theta1 - theta3)) == P1)
@@ -87,7 +89,7 @@ m.Equation(u2 * u1 * (G[1][0] * m.cos(theta2 - theta1) + B[1][0] * m.sin(theta2 
            u2 * u3 * (G[1][2] * m.cos(theta2 - theta3) + B[1][2] * m.sin(theta2 - theta3)) == P2)
 m.Equation(u3 * u1 * (G[2][0] * m.cos(theta3 - theta1) + B[2][0] * m.sin(theta3 - theta1)) + \
            u3 * u2 * (G[2][1] * m.cos(theta3 - theta2) + B[2][1] * m.sin(theta3 - theta2)) + \
-           u3 * u3 * (G[2][2] * m.cos(theta3 - theta3) + B[2][2] * m.sin(theta3 - theta3)) == P3)
+           u3 * -u3 * (G[2][2] * m.cos(theta3 - theta3) + B[2][2] * m.sin(theta3 - theta3)) == P3)
 
 m.Equation(u1 * u1 * (G[0][0] * m.sin(theta1 - theta1) + B[0][0] * m.cos(theta1 - theta1)) + \
            u1 * u2 * (G[0][1] * m.sin(theta1 - theta2) + B[0][1] * m.cos(theta1 - theta2)) + \
@@ -97,7 +99,7 @@ m.Equation(u2 * u1 * (G[1][0] * m.sin(theta2 - theta1) + B[1][0] * m.cos(theta2 
            u2 * u3 * (G[1][2] * m.sin(theta2 - theta3) + B[1][2] * m.cos(theta2 - theta3)) == Q2)
 m.Equation(u3 * u1 * (G[2][0] * m.sin(theta3 - theta1) + B[2][0] * m.cos(theta3 - theta1)) + \
            u3 * u2 * (G[2][1] * m.sin(theta3 - theta2) + B[2][1] * m.cos(theta3 - theta2)) + \
-           u3 * u3 * (G[2][2] * m.sin(theta3 - theta3) + B[2][2] * m.cos(theta3 - theta3)) == Q3)
+           u3 * -u3 * (G[2][2] * m.sin(theta3 - theta3) + B[2][2] * m.cos(theta3 - theta3)) == Q3)
 
 # Equations
 
@@ -118,10 +120,10 @@ m.Equation(theta3.dt()==w3)
 #           u3 * u2 * -(G[2][1] * m.cos(theta3 - theta2) + B[2][1] * m.sin(theta3 - theta2)) + \
 #           u3 * u3 * -(G[2][2] * m.cos(theta3 - theta3) + B[2][2] * m.sin(theta3 - theta3))))
 
-m.Equation(w1.dt()==((-P1+p_offset[0])+(droop_linear[0]*(w1-nomFreq)))/(J*w1))
-m.Equation(w2.dt()==((-P2+p_offset[1])+(droop_linear[1]*(w2-nomFreq)))/(J*w2))
-m.Equation(w3.dt()==((-P3+p_offset[2])+(droop_linear[2]*(w3-nomFreq)))/(J*w3))
-
+m.Equation(w1.dt()==((P1+p_offset[0])-(droop_linear[0]*(w1-nomFreq)))/(J*w1))
+m.Equation(w2.dt()==((P2+p_offset[1])-(droop_linear[1]*(w2-nomFreq)))/(J*w2))
+#m.Equation(w3.dt()==((-P3+p_offset[2])-(droop_linear[2]*(w3-nomFreq)))/(J*w3))
+m.Equation(P3==0)
 #Q_ODE
 
 
@@ -137,10 +139,11 @@ m.Equation(w3.dt()==((-P3+p_offset[2])+(droop_linear[2]*(w3-nomFreq)))/(J*w3))
 
 
 
-m.Equation(u1.dt()==((Q1+q_offset[0])+(q_droop_linear[0]*(u1-nomVolt)))/(J_Q*u1))
-m.Equation(u2.dt()==((Q2+q_offset[1])+(q_droop_linear[1]*(u2-nomVolt)))/(J_Q*u2))
-m.Equation(u3.dt()==((Q3+q_offset[2])+(q_droop_linear[2]*(u3-nomVolt)))/(J_Q*u3))
-
+m.Equation(u1.dt()==((Q1+q_offset[0])-(q_droop_linear[0]*(u1-nomVolt)))/(J_Q*u1))
+m.Equation(u2.dt()==((Q2+q_offset[1])-(q_droop_linear[1]*(u2-nomVolt)))/(J_Q*u2))
+#m.Equation(u3.dt()==((-Q3+q_offset[2])-(q_droop_linear[2]*(u3-nomVolt)))/(J_Q*u3))
+#m.Equation(u3.dt()==0)
+m.Equation(Q3==0)
 #m.Equation(J_Q*u1*u1.dt()==(-Q1))
 #m.Equation(J_Q*u2*u2.dt()==(-Q2))
 #m.Equation(J_Q*u3*u3.dt()==(-Q3))
@@ -172,7 +175,7 @@ plt.ylabel('w2(t)')
 plt.plot(m.time,w3,'--')
 plt.xlabel('time')
 plt.ylabel('w3(t)')
-#plt.ylim(48, 52)
+plt.ylim(48, 52)
 plt.show()
 
 
@@ -189,8 +192,9 @@ plt.ylabel('u2(t)')
 
 plt.plot(m.time,u3,'--g')
 plt.xlabel('time')
-plt.ylabel('u3(t)')
-plt.ylim(200, 240)
+plt.ylabel('u(t)')
+plt.ylim(180, 240)
+plt.legend()
 plt.show()
 
 
@@ -198,10 +202,10 @@ plt.show()
 
 plt.plot(m.time,P1, 'b', label='P1')
 plt.plot(m.time,P2, '--r', label='P2')
-#plt.plot(m.time,P3, 'g')
+plt.plot(m.time,P3, 'g')
 plt.xlabel('time')
 plt.ylabel('P(t)')
-plt.legend()
+#plt.legend()
 plt.show()
 
 
@@ -210,7 +214,7 @@ plt.plot(m.time,Q2,'r')
 plt.plot(m.time,Q3,'g')
 plt.xlabel('time')
 plt.ylabel('Q(t)')
-plt.ylim(-100, 100)
+#plt.ylim(-100, 100)
 plt.show()
 
 
