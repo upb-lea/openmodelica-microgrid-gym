@@ -56,7 +56,7 @@ class Recorder:
         self.db = self.client[database_name]
 
     def save_to_mongodb(self, col: str = ' trails', data=None):
-        trial_coll = self.db[col]
+        trial_coll = self.db[col]  # get collection named col
         if data is None:
             raise ValueError('No data given to store in database!')
         trial_coll.insert_one(data)
@@ -90,18 +90,24 @@ class TrainRecorder(BaseCallback):
         pass
 
     def _on_step(self) -> bool:
-        #asd = 1
+        # asd = 1
         return True
 
     def _on_rollout_end(self) -> None:
-        #asd = 1
+        # asd = 1
         pass
+
+
+mongo_recorder = Recorder(database_name=folder_name)
 
 
 def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, batch_size,
                         actor_hidden_size, critic_hidden_size, noise_var, noise_theta, error_exponent, n_trail):
+    # rew = Reward(net.v_nom, net['inverter1'].v_lim, net['inverter1'].v_DC, gamma,
+    #             use_gamma_normalization=use_gamma_in_rew, error_exponent=error_exponent)
     rew = Reward(net.v_nom, net['inverter1'].v_lim, net['inverter1'].v_DC, gamma,
-                 use_gamma_normalization=use_gamma_in_rew, error_exponent=error_exponent)
+                 use_gamma_normalization=use_gamma_in_rew, error_exponent=error_exponent, i_lim=net['inverter1'].i_lim,
+                 i_nom=net['inverter1'].i_nom)
 
     def xylables_v(fig):
         ax = fig.gca()
@@ -112,6 +118,16 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
         ts = time.gmtime()
         fig.savefig(
             f'{folder_name}/{n_trail}/Capacitor_voltages{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
+        plt.close()
+
+    def xylables_i(fig):
+        ax = fig.gca()
+        ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
+        ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
+        ax.grid(which='both')
+        ts = time.gmtime()
+        fig.savefig(
+            f'{folder_name}/{n_trail}/Inductor_currents{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
         plt.close()
 
     def xylables_R(fig):
@@ -125,11 +141,17 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
         plt.close()
 
     env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train-v0',
-                   reward_fun=rew.rew_fun,
-                   abort_reward=-(1 - gamma),
+                   # reward_fun=rew.rew_fun,
+                   reward_fun=rew.rew_fun_include_current,
+                   abort_reward=-(1 - rew.gamma),
                    viz_cols=[
                        PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
                                 callback=xylables_v,
+                                color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+                                style=[[None], ['--']]
+                                ),
+                       PlotTmpl([[f'lc.inductor{i}.i' for i in '123'], [f'inverter1.i_ref.{k}' for k in '012']],
+                                callback=xylables_i,
                                 color=[['b', 'r', 'g'], ['b', 'r', 'g']],
                                 style=[[None], ['--']]
                                 ),
@@ -172,12 +194,13 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
     # model.actor.mu._modules['2'].bias.data = model.actor.mu._modules['2'].bias.data * weight_bias_scale
 
     # todo: instead /here? store reward per step?!
-    plot_callback = EveryNTimesteps(n_steps=50000, callback=RecordEnvCallback(env, model, max_episode_steps))
-    model.learn(total_timesteps=150000, callback=[callback, plot_callback])
+    plot_callback = EveryNTimesteps(n_steps=1500,
+                                    callback=RecordEnvCallback(env, model, max_episode_steps, mongo_recorder, n_trail))
+    model.learn(total_timesteps=2000, callback=[callback, plot_callback])
     # model.learn(total_timesteps=1000, callback=callback)
 
     monitor_rewards = env.get_episode_rewards()
-    print(monitor_rewards)
+    # print(monitor_rewards)
     # todo: instead: store model(/weights+bias?) to database
     model.save(f'{folder_name}/{n_trail}/model.zip')
 
@@ -199,6 +222,11 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
                                      color=[['b', 'r', 'g'], ['b', 'r', 'g']],
                                      style=[[None], ['--']]
                                      ),
+                            PlotTmpl([[f'lc.inductor{i}.i' for i in '123'], [f'inverter1.i_ref.{k}' for k in '012']],
+                                     callback=xylables_i,
+                                     color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+                                     style=[[None], ['--']]
+                                     ),
                             PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
                                      callback=xylables_R,
                                      color=[['b', 'r', 'g']],
@@ -208,6 +236,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
                         )
 
     obs = env_test.reset()
+
+    rew_list = []
 
     # toDo: - Use other Test-episode
     #       - Rückgabewert = (Summe der üblichen Rewards) / (Anzahl steps Validierung) + (Penalty i.H.v. -1)
@@ -221,11 +251,30 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
             limit_exceeded_penalty = -1
         env_test.render()
         return_sum += rewards
-        #print(rewards)
+        rew_list.append(rewards)
+        # print(rewards)
         if done:
             env_test.close()
-            #print(limit_exceeded_in_test)
+            # print(limit_exceeded_in_test)
             break
+
+    ts = time.gmtime()
+    test_after_training = {"Name": "Test",
+                           "time": ts,
+                           "Reward": rew_list}
+
+    # Add v-measurements
+    test_after_training.update({env_test.viz_col_tmpls[j].vars[i].replace(".", "_"): env_test.history[
+        env_test.viz_col_tmpls[j].vars[i]].copy().tolist() for j in range(2) for i in range(6)
+                                })
+
+    test_after_training.update({env_test.viz_col_tmpls[2].vars[i].replace(".", "_"): env_test.history[
+        env_test.viz_col_tmpls[2].vars[i]].copy().tolist() for i in range(3)
+                                })
+
+    # va = self.env.env.history[self.env.env.viz_col_tmpls[0].vars[0]].copy()
+
+    mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, test_after_training)
 
     return (return_sum / env_test.max_episode_steps + limit_exceeded_penalty)
 
@@ -236,14 +285,14 @@ def objective(trail):
     weight_scale = trail.suggest_loguniform("weight_scale", 5e-4, 1)  # 0.005
     batch_size = trail.suggest_int("batch_size", 32, 1024)  # 128
     actor_hidden_size = trail.suggest_int("actor_hidden_size", 10, 500)  # 100  # Using LeakyReLU
-    critic_hidden_size = trail.suggest_int("actor_hidden_size", 10, 500)  # 100
+    critic_hidden_size = trail.suggest_int("critic_hidden_size", 10, 500)  # 100
     n_trail = str(trail.number)
     use_gamma_in_rew = 1
-    noise_var = trail.suggest_loguniform("lr", 0.01, 10)  # 2
-    noise_theta = trail.suggest_loguniform("lr", 1, 50)  # 25  # stiffness of OU
+    noise_var = trail.suggest_loguniform("noise_var", 0.01, 10)  # 2
+    noise_theta = trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
+    error_exponent = trail.suggest_loguniform("error_exponent", 0.01, 4)
 
     # toDo:
-    error_exponent = trail.suggest_loguniform("error_exponent", 0.01, 4)
     # alpha_lRelu = trail.suggest_loguniform("alpha_lRelu", 0.0001, 0.5)  #0.1
     # memory_interval = 1
     # weigth_regularizer = 0.5
@@ -252,13 +301,18 @@ def objective(trail):
     # warm_up_steps_critic = 1024  # learning starts?
     # target_model_update = 1000
 
+    trail_config_mongo = {"Name": "Config"}
+    trail_config_mongo.update(trail.params)
+
+    mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, trail_config_mongo)
+
     return experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, batch_size,
                                actor_hidden_size, critic_hidden_size, noise_var, noise_theta, error_exponent, n_trail)
 
 
 # toDo: postgresql instead of sqlite
-study = optuna.create_study(study_name="V-crtl_stochLoad_single_Loadstep_exploring_starts",
-                            direction='maximize', storage=f'sqlite:///{folder_name}optuna_data.sqlite3',
+study = optuna.create_study(study_name="Test_mongo",
+                            direction='maximize', storage=f'sqlite:///{folder_name}optuna_data2.sqlite3',
                             load_if_exists=True)
 
-study.optimize(objective, n_trials=200)
+study.optimize(objective, n_trials=1)

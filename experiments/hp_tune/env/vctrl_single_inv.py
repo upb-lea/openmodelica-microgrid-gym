@@ -19,13 +19,13 @@ from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import RandProcess
 from gym.envs.registration import register
 
-folder_name = 'DDPG_VC_test_reward_MAE/'
+folder_name = 'DDGP_using_Gamma_Normalization'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'plots'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
 
 makedirs(folder_name, exist_ok=True)
-makedirs(folder_name + experiment_name, exist_ok=True)
+# makedirs(folder_name + experiment_name, exist_ok=True)
 
 # toDo: give net and params via config from mail script
 
@@ -44,9 +44,9 @@ v_DC = net['inverter1'].v_DC
 L_filter = 2.3e-3  # / H
 R_filter = 400e-3  # / Ohm
 C_filter = 10e-6  # / F
-R = 28  # nomVoltPeak / 7.5   # / Ohm
+R = 40  # nomVoltPeak / 7.5   # / Ohm
 lower_bound_load = 11  # to allow maximal load that draws i_limit (toDo: let exceed?)
-upper_bound_load = 45  # to apply symmetrical load bounds
+upper_bound_load = 160  # to apply symmetrical load bounds
 
 loadstep_timestep = max_episode_steps / 2
 
@@ -159,7 +159,7 @@ register(id='vctrl_single_inv_train-v0',
          )
          )
 
-rand_load_test = RandomLoad(max_episode_steps, net.ts, gen, load_curve=pd.read_pickle('R_load_test_case_1_second'))
+rand_load_test = RandomLoad(max_episode_steps, net.ts, gen, load_curve=pd.read_pickle('R_load_test_case_2_seconds'))
 
 # R_load_test_case = pd.read_pickle('R_load_test_case')
 # R_load_test_case['r_load.resistor1.R'][2]
@@ -189,7 +189,7 @@ register(id='vctrl_single_inv_test-v0',
              #             )
              # ],
              viz_mode='episode',
-             max_episode_steps=10000,
+             max_episode_steps=20000,
              model_params={'lc.resistor1.R': R_filter,
                            'lc.resistor2.R': R_filter,
                            'lc.resistor3.R': R_filter,

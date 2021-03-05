@@ -39,6 +39,14 @@ class myTD3(TD3):
             critic_loss = sum([F.mse_loss(current_q, target_q) for current_q in current_q_estimates])
             critic_losses.append(critic_loss.item())
 
+            # store data for logging - use mean from batch
+            self.critic_loss_batch_mean.append(critic_loss.item())
+            self.critic_estimate_target_diff_mean.append(
+                (sum(current_q_estimates[0] - target_q) / target_q.shape[0]).item())
+            self.current_q_estimates_batch_mean.append(current_q_estimates[0].mean().item())
+            self.target_q_batch_mean.append(np.mean(target_q.mean().item()))
+            self.reward_batch_mean.append(np.mean(replay_data.rewards.mean().item()))
+
             # Optimize the critics
             self.critic.optimizer.zero_grad()
             critic_loss.backward()
@@ -59,15 +67,11 @@ class myTD3(TD3):
                 polyak_update(self.critic.parameters(), self.critic_target.parameters(), self.tau)
                 polyak_update(self.actor.parameters(), self.actor_target.parameters(), self.tau)
 
-        self._n_updates += gradient_steps
-        print('new Training function!')
+                # store data for logging - use mean from batch
+                self.actor_loss_batch_mean.append(np.mean(actor_losses))
 
-        # store data for logging
-        # toDo: hier nicht der mean von target_q und q_estmate?!
-        self.critic_loss_batch_mean.append(np.mean(critic_losses))
-        self.actor_loss_batch_mean.append(np.mean(actor_losses))
-        self.current_q_estimates_batch_mean.append(np.mean(critic_losses))
-        self.target_q_batch_mean.append(np.mean(critic_losses))
+        self._n_updates += gradient_steps
+        # print('new Training function!')
 
         logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
         logger.record("train/actor_loss", np.mean(actor_losses))
