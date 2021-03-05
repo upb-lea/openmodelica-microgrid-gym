@@ -213,7 +213,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
     limit_exceeded_in_test = False
     limit_exceeded_penalty = 0
     env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v0',
-                        reward_fun=rew.rew_fun,
+                        reward_fun=rew.rew_fun_include_current,
                         abort_reward=-1,  # no needed if in rew no None is given back
                         # on_episode_reset_callback=cb.fire  # needed?
                         viz_cols=[
