@@ -19,7 +19,7 @@ from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import RandProcess
 from gym.envs.registration import register
 
-folder_name = 'DDGP_using_Gamma_Normalization'
+folder_name = 'Testrun_mit_action_delay'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'plots'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
@@ -155,7 +155,8 @@ register(id='vctrl_single_inv_train-v0',
              net=net,
              model_path='../../omg_grid/grid.paper_loadstep.fmu',
              on_episode_reset_callback=cb.fire,
-             is_normalized=True
+             is_normalized=True,
+             action_time_delay=1
          )
          )
 
@@ -221,6 +222,7 @@ register(id='vctrl_single_inv_test-v0',
              net=net,
              model_path='../../omg_grid/grid.paper_loadstep.fmu',
              on_episode_reset_callback=cb.fire,
-             is_normalized=True
+             is_normalized=True,
+             action_time_delay=1
          )
          )
