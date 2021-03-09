@@ -155,11 +155,11 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
                                 color=[['b', 'r', 'g'], ['b', 'r', 'g']],
                                 style=[[None], ['--']]
                                 ),
-                       PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
-                                callback=xylables_R,
-                                color=[['b', 'r', 'g']],
-                                style=[[None]]
-                                )
+                       #PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
+                       #         callback=xylables_R,
+                       #         color=[['b', 'r', 'g']],
+                       #         style=[[None]]
+                       #         )
                    ],
                    # on_episode_reset_callback=cb.fire  # needed?
                    )
@@ -280,18 +280,32 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
 
 
 def objective(trail):
+    learning_rate = 0.00027  # trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
+    gamma = 0.28  # trail.suggest_loguniform("gamma", 0.1, 0.99)
+    weight_scale = 0.03  # trail.suggest_loguniform("weight_scale", 5e-4, 1)  # 0.005
+    batch_size = 900  # trail.suggest_int("batch_size", 32, 1024)  # 128
+    actor_hidden_size = 223  # trail.suggest_int("actor_hidden_size", 10, 500)  # 100  # Using LeakyReLU
+    critic_hidden_size = 413  # trail.suggest_int("critic_hidden_size", 10, 500)  # 100
+    n_trail = str(trail.number)
+    use_gamma_in_rew = 1
+    noise_var = 0.4  # trail.suggest_loguniform("noise_var", 0.01, 10)  # 2
+    noise_theta = 13.8  # trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
+    error_exponent = 0.03  # trail.suggest_loguniform("error_exponent", 0.01, 4)
+
+    """
+
     learning_rate = trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
     gamma = trail.suggest_loguniform("gamma", 0.1, 0.99)
-    weight_scale = trail.suggest_loguniform("weight_scale", 5e-4, 1)  # 0.005
+    weight_scale = trail.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
     batch_size = trail.suggest_int("batch_size", 32, 1024)  # 128
     actor_hidden_size = trail.suggest_int("actor_hidden_size", 10, 500)  # 100  # Using LeakyReLU
     critic_hidden_size = trail.suggest_int("critic_hidden_size", 10, 500)  # 100
     n_trail = str(trail.number)
     use_gamma_in_rew = 1
-    noise_var = trail.suggest_loguniform("noise_var", 0.01, 10)  # 2
+    noise_var = trail.suggest_loguniform("noise_var", 0.01, 2)  # 2
     noise_theta = trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
-    error_exponent = trail.suggest_loguniform("error_exponent", 0.01, 4)
-
+    error_exponent = trail.suggest_loguniform("error_exponent", 0.01, 0.5)
+"""
     # toDo:
     # alpha_lRelu = trail.suggest_loguniform("alpha_lRelu", 0.0001, 0.5)  #0.1
     # memory_interval = 1
@@ -311,8 +325,8 @@ def objective(trail):
 
 
 # toDo: postgresql instead of sqlite
-study = optuna.create_study(study_name="Test_mongo",
-                            direction='maximize', storage=f'sqlite:///{folder_name}optuna_data2.sqlite3',
+study = optuna.create_study(study_name=folder_name,
+                            direction='maximize', storage=f'sqlite:///{folder_name}/optuna_data.sqlite',
                             load_if_exists=True)
 
 study.optimize(objective, n_trials=1)
