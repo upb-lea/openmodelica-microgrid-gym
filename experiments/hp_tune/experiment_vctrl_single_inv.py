@@ -1,5 +1,7 @@
+import itertools
 import time
 from typing import Union
+from gym.spaces import Discrete, Box
 
 import matplotlib.pyplot as plt
 
@@ -19,6 +21,7 @@ from experiments.hp_tune.env.rewards import Reward
 from experiments.hp_tune.env.vctrl_single_inv import net, folder_name, max_episode_steps
 from experiments.hp_tune.util.record_env import RecordEnvCallback
 from openmodelica_microgrid_gym.env import PlotTmpl
+from openmodelica_microgrid_gym.util import nested_map
 
 np.random.seed(0)
 
@@ -66,14 +69,32 @@ class StepRecorder(Monitor):
 
     def __init__(self, env):
         super().__init__(env)
+        self.observation_space = gym.spaces.Box(low=np.full(3 * 3, -np.inf), high=np.full(3 * 3, np.inf))
+        self.obs_idx = None
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
         observation, reward, done, info = super().step(action)
-        #print(reward)
+        # print(reward)
+        obs = observation[list(itertools.chain.from_iterable(self.obs_idx))]
 
         # hier vll noch die Messung loggen? aus der obs die richtigen suchen? wie figure out die augmented states?
 
-        return observation, reward, done, info
+        # todo: hier unnötige states rauswerfen?
+
+        return obs, reward, done, info
+
+    def set_idx(self, obs):
+        if self.obs_idx is None:
+            self.obs_idx = nested_map(
+                lambda n: obs.index(n),
+                [[f'lc.inductor{k}.i' for k in '123'],
+                 [f'lc.capacitor{k}.v' for k in '123'], [f'inverter1.v_ref.{k}' for k in '012']])
+
+    def reset(self, **kwargs):
+        observation = super().reset()
+        self.set_idx(self.env.history.cols)
+        obs = observation[list(itertools.chain.from_iterable(self.obs_idx))]
+        return obs
 
 
 class TrainRecorder(BaseCallback):
@@ -161,6 +182,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
                        #         style=[[None]]
                        #         )
                    ],
+                   # obs_output = ['v1,v2']
                    # on_episode_reset_callback=cb.fire  # needed?
                    )
 
@@ -194,9 +216,9 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
     # model.actor.mu._modules['2'].bias.data = model.actor.mu._modules['2'].bias.data * weight_bias_scale
 
     # todo: instead /here? store reward per step?!
-    plot_callback = EveryNTimesteps(n_steps=1500,
+    plot_callback = EveryNTimesteps(n_steps=10000,
                                     callback=RecordEnvCallback(env, model, max_episode_steps, mongo_recorder, n_trail))
-    model.learn(total_timesteps=2000, callback=[callback, plot_callback])
+    model.learn(total_timesteps=50000, callback=[callback, plot_callback])
     # model.learn(total_timesteps=1000, callback=callback)
 
     monitor_rewards = env.get_episode_rewards()
