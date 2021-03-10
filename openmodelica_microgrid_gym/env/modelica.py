@@ -14,7 +14,7 @@ from scipy import integrate
 from openmodelica_microgrid_gym.env.plot import PlotTmpl
 from openmodelica_microgrid_gym.env.pyfmi import PyFMI_Wrapper
 from openmodelica_microgrid_gym.net.base import Network
-from openmodelica_microgrid_gym.util import FullHistory, EmptyHistory, Fastqueue
+from openmodelica_microgrid_gym.util import FullHistory, EmptyHistory, Fastqueue, ObsTempl
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,8 @@ class ModelicaEnv(gym.Env):
                  viz_mode: Optional[str] = 'episode', viz_cols: Optional[Union[str, List[Union[str, PlotTmpl]]]] = None,
                  history: EmptyHistory = FullHistory(),
                  action_time_delay: int = 0,
-                 on_episode_reset_callback: Optional[Callable[[], None]] = None):
+                 on_episode_reset_callback: Optional[Callable[[], None]] = None,
+                 obs_output: List[str] = None):
         """
         Initialize the Environment.
         The environment can only be used after reset() is called.
@@ -88,6 +89,8 @@ class ModelicaEnv(gym.Env):
         :param on_episode_reset_callback: Callable which is executed during the environment reset. Can be used for
             example to reset external processes like random process used in model params and to synchronize their reset
             to the env reset
+        :param obs_output: List of strings of observations given to the agent. obs_output is compared to history.cols (
+            variable names have to fit)
         """
         if viz_mode not in self.viz_modes:
             raise ValueError(f'Please select one of the following viz_modes: {self.viz_modes}')
@@ -163,7 +166,7 @@ class ModelicaEnv(gym.Env):
                              f'and not {type(viz_cols)}')
 
         # OpenAI Gym requirements
-        d_i, d_o = len(self.model_input_names), len(self.history.cols)
+        d_i, d_o = len(self.model_input_names), len(obs_output or self.history.cols)
         self.action_space = gym.spaces.Box(low=np.full(d_i, -1), high=np.full(d_i, 1))
         self.observation_space = gym.spaces.Box(low=np.full(d_o, -np.inf), high=np.full(d_o, np.inf))
 
@@ -174,6 +177,12 @@ class ModelicaEnv(gym.Env):
             self.on_episode_reset_callback = lambda: None
         else:
             self.on_episode_reset_callback = on_episode_reset_callback
+
+        if obs_output is None:
+            # if not defined all hist.cols are used as observations
+            self._out_obs_tmpl = ObsTempl(self.history.cols, None)
+        else:
+            self._out_obs_tmpl = ObsTempl(self.history.cols, [obs_output])
 
     def _calc_jac(self, t, x) -> np.ndarray:  # noqa
         """
@@ -336,7 +345,9 @@ class ModelicaEnv(gym.Env):
             reward = self.abort_reward
 
         # only return the state, the agent does not need the measurement
-        return outputs, reward, self.is_done, dict(risk=risk)
+        # if self.obs_output is defined, obs_tmpl is used to filter out wanted observations, otherwise all states are
+        # passed
+        return self._out_obs_tmpl.fill(outputs)[0], reward, self.is_done, dict(risk=risk)
 
     def _create_state(self):
         # Simulate and observe result state

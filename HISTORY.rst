@@ -11,11 +11,13 @@ Changes
     - Introduced action clipping
     - model_params: None values are not passed to the OpenModelica env to allow initialization
     - Introduced abort reward in env if episode is terminated
+    - Introduced obs_output to define a subset of history given as observation to the agent
 
 
 Add
 ^^^
 * Random Process wrapper
+* ObsTempl test
 
 
 
