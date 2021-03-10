@@ -176,11 +176,11 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
                                 color=[['b', 'r', 'g'], ['b', 'r', 'g']],
                                 style=[[None], ['--']]
                                 ),
-                       #PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
-                       #         callback=xylables_R,
-                       #         color=[['b', 'r', 'g']],
-                       #         style=[[None]]
-                       #         )
+                       PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
+                                callback=xylables_R,
+                                color=[['b', 'r', 'g']],
+                                style=[[None]]
+                                )
                    ],
                    # obs_output = ['v1,v2']
                    # on_episode_reset_callback=cb.fire  # needed?
@@ -216,9 +216,9 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
     # model.actor.mu._modules['2'].bias.data = model.actor.mu._modules['2'].bias.data * weight_bias_scale
 
     # todo: instead /here? store reward per step?!
-    plot_callback = EveryNTimesteps(n_steps=10000,
+    plot_callback = EveryNTimesteps(n_steps=50000,
                                     callback=RecordEnvCallback(env, model, max_episode_steps, mongo_recorder, n_trail))
-    model.learn(total_timesteps=50000, callback=[callback, plot_callback])
+    model.learn(total_timesteps=200000, callback=[callback, plot_callback])
     # model.learn(total_timesteps=1000, callback=callback)
 
     monitor_rewards = env.get_episode_rewards()
@@ -256,7 +256,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
                                      )
                         ],
                         )
-
+    env_test = StepRecorder(env_test)
     obs = env_test.reset()
 
     rew_list = []
@@ -302,6 +302,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
 
 
 def objective(trail):
+    """
     learning_rate = 0.00027  # trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
     gamma = 0.28  # trail.suggest_loguniform("gamma", 0.1, 0.99)
     weight_scale = 0.03  # trail.suggest_loguniform("weight_scale", 5e-4, 1)  # 0.005
@@ -324,10 +325,10 @@ def objective(trail):
     critic_hidden_size = trail.suggest_int("critic_hidden_size", 10, 500)  # 100
     n_trail = str(trail.number)
     use_gamma_in_rew = 1
-    noise_var = trail.suggest_loguniform("noise_var", 0.01, 2)  # 2
+    noise_var = trail.suggest_loguniform("noise_var", 0.01, 4)  # 2
     noise_theta = trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
     error_exponent = trail.suggest_loguniform("error_exponent", 0.01, 0.5)
-"""
+
     # toDo:
     # alpha_lRelu = trail.suggest_loguniform("alpha_lRelu", 0.0001, 0.5)  #0.1
     # memory_interval = 1
@@ -351,4 +352,4 @@ study = optuna.create_study(study_name=folder_name,
                             direction='maximize', storage=f'sqlite:///{folder_name}/optuna_data.sqlite',
                             load_if_exists=True)
 
-study.optimize(objective, n_trials=1)
+study.optimize(objective, n_trials=50)
