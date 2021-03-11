@@ -89,17 +89,17 @@ m.Equation(u2 * u1 * (G[1][0] * m.cos(theta2 - theta1) + B[1][0] * m.sin(theta2 
            u2 * u3 * (G[1][2] * m.cos(theta2 - theta3) + B[1][2] * m.sin(theta2 - theta3)) == P2)
 m.Equation(u3 * u1 * (G[2][0] * m.cos(theta3 - theta1) + B[2][0] * m.sin(theta3 - theta1)) + \
            u3 * u2 * (G[2][1] * m.cos(theta3 - theta2) + B[2][1] * m.sin(theta3 - theta2)) + \
-           u3 * -u3 * (G[2][2] * m.cos(theta3 - theta3) + B[2][2] * m.sin(theta3 - theta3)) == P3)
+           u3 * u3 * (G[2][2] * m.cos(theta3 - theta3) + B[2][2] * m.sin(theta3 - theta3)) == P3)
 
-m.Equation(u1 * u1 * (G[0][0] * m.sin(theta1 - theta1) + B[0][0] * m.cos(theta1 - theta1)) + \
-           u1 * u2 * (G[0][1] * m.sin(theta1 - theta2) + B[0][1] * m.cos(theta1 - theta2)) + \
-           u1 * u3 * (G[0][2] * m.sin(theta1 - theta3) + B[0][2] * m.cos(theta1 - theta3)) == Q1)
-m.Equation(u2 * u1 * (G[1][0] * m.sin(theta2 - theta1) + B[1][0] * m.cos(theta2 - theta1)) + \
-           u2 * u2 * (G[1][1] * m.sin(theta2 - theta2) + B[1][1] * m.cos(theta2 - theta2)) + \
-           u2 * u3 * (G[1][2] * m.sin(theta2 - theta3) + B[1][2] * m.cos(theta2 - theta3)) == Q2)
-m.Equation(u3 * u1 * (G[2][0] * m.sin(theta3 - theta1) + B[2][0] * m.cos(theta3 - theta1)) + \
-           u3 * u2 * (G[2][1] * m.sin(theta3 - theta2) + B[2][1] * m.cos(theta3 - theta2)) + \
-           u3 * -u3 * (G[2][2] * m.sin(theta3 - theta3) + B[2][2] * m.cos(theta3 - theta3)) == Q3)
+m.Equation(u1 * u1 * (G[0][0] * m.sin(theta1 - theta1) - B[0][0] * m.cos(theta1 - theta1)) + \
+           u1 * u2 * (G[0][1] * m.sin(theta1 - theta2) - B[0][1] * m.cos(theta1 - theta2)) + \
+           u1 * u3 * (G[0][2] * m.sin(theta1 - theta3) - B[0][2] * m.cos(theta1 - theta3)) == Q1)
+m.Equation(u2 * u1 * (G[1][0] * m.sin(theta2 - theta1) - B[1][0] * m.cos(theta2 - theta1)) + \
+           u2 * u2 * (G[1][1] * m.sin(theta2 - theta2) - B[1][1] * m.cos(theta2 - theta2)) + \
+           u2 * u3 * (G[1][2] * m.sin(theta2 - theta3) - B[1][2] * m.cos(theta2 - theta3)) == Q2)
+m.Equation(u3 * u1 * (G[2][0] * m.sin(theta3 - theta1) - B[2][0] * m.cos(theta3 - theta1)) + \
+           u3 * u2 * (G[2][1] * m.sin(theta3 - theta2) - B[2][1] * m.cos(theta3 - theta2)) + \
+           u3 * u3 * (G[2][2] * m.sin(theta3 - theta3) - B[2][2] * m.cos(theta3 - theta3)) == Q3)
 
 # Equations
 
@@ -120,8 +120,8 @@ m.Equation(theta3.dt()==w3)
 #           u3 * u2 * -(G[2][1] * m.cos(theta3 - theta2) + B[2][1] * m.sin(theta3 - theta2)) + \
 #           u3 * u3 * -(G[2][2] * m.cos(theta3 - theta3) + B[2][2] * m.sin(theta3 - theta3))))
 
-m.Equation(w1.dt()==((P1+p_offset[0])-(droop_linear[0]*(w1-nomFreq)))/(J*w1))
-m.Equation(w2.dt()==((P2+p_offset[1])-(droop_linear[1]*(w2-nomFreq)))/(J*w2))
+m.Equation(w1.dt()==((-P1+p_offset[0])-(droop_linear[0]*(w1-nomFreq)))/(J*w1))
+m.Equation(w2.dt()==((-P2+p_offset[1])-(droop_linear[1]*(w2-nomFreq)))/(J*w2))
 #m.Equation(w3.dt()==((-P3+p_offset[2])-(droop_linear[2]*(w3-nomFreq)))/(J*w3))
 m.Equation(P3==0)
 #Q_ODE
@@ -139,8 +139,8 @@ m.Equation(P3==0)
 
 
 
-m.Equation(u1.dt()==((Q1+q_offset[0])-(q_droop_linear[0]*(u1-nomVolt)))/(J_Q*u1))
-m.Equation(u2.dt()==((Q2+q_offset[1])-(q_droop_linear[1]*(u2-nomVolt)))/(J_Q*u2))
+m.Equation(u1.dt()==((-Q1+q_offset[0])-(q_droop_linear[0]*(u1-nomVolt)))/(J_Q*u1))
+m.Equation(u2.dt()==((-Q2+q_offset[1])-(q_droop_linear[1]*(u2-nomVolt)))/(J_Q*u2))
 #m.Equation(u3.dt()==((-Q3+q_offset[2])-(q_droop_linear[2]*(u3-nomVolt)))/(J_Q*u3))
 #m.Equation(u3.dt()==0)
 m.Equation(Q3==0)
