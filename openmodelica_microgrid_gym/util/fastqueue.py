@@ -6,7 +6,7 @@ import numpy as np
 class Fastqueue:
     def __init__(self, size: int, dim: Optional[int] = 1):
         """
-        Efficient numpy implementation of constant sized queue
+        Efficient numpy implementation of constant sized queue without queue-shifting (indices-based value selection)
         :param size: Size of queue
         """
         self._buffer = None
@@ -19,6 +19,7 @@ class Fastqueue:
         """
         if self._buffer is None:
             raise RuntimeError('please call clear() before using the object')
+        # ringbuffer implementation with index calculated using np.ravel... -> no shifting
         last = self._buffer[np.ravel_multi_index([self._idx - 1], (len(self._buffer),), mode='wrap'), :]
         self._idx = np.ravel_multi_index([self._idx + 1], (len(self._buffer),), mode='wrap')
         self._buffer[self._idx, :] = val

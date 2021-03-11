@@ -256,7 +256,8 @@ class ModelicaEnv(gym.Env):
                 - Using the parameters defined in self.model_parameters
             * initializes the model
 
-        :return: state of the environment after resetting.
+        :return: state of the environment after resetting. If self.ob_output is not None, the there defined outputs are
+            returned.
         """
         self.net.reset()
         logger.debug("Experiment reset was called. Resetting the model.")
@@ -270,7 +271,7 @@ class ModelicaEnv(gym.Env):
         self._register_render = False
         self.delay_buffer.clear()
         outputs = self._create_state()
-        return outputs
+        return self._out_obs_tmpl.fill(outputs)[0]
 
     def step(self, action: Sequence) -> Tuple[np.ndarray, float, bool, Mapping]:
         """
