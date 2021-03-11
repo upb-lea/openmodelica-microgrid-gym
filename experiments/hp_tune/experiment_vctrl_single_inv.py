@@ -74,8 +74,10 @@ class StepRecorder(Monitor):
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
         observation, reward, done, info = super().step(action)
-        # print(reward)
-        obs = observation[list(itertools.chain.from_iterable(self.obs_idx))]
+
+        # alternative: delete unwanted obs here (if not defined by obs_output) like:
+        # obs = observation[list(itertools.chain.from_iterable(self.obs_idx))]
+        obs = observation
 
         # hier vll noch die Messung loggen? aus der obs die richtigen suchen? wie figure out die augmented states?
 
@@ -201,8 +203,9 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
                                 style=[[None]]
                                 )
                    ],
-                   # obs_output = ['v1,v2']
-                   # on_episode_reset_callback=cb.fire  # needed?
+                   obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
+                               'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
+                               'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                    )
 
     env = StepRecorder(env)
@@ -348,7 +351,7 @@ def objective(trail):
     noise_var = trail.suggest_loguniform("noise_var", 0.01, 4)  # 2
     noise_theta = trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
     error_exponent = trail.suggest_loguniform("error_exponent", 0.01, 0.5)
-
+"""
     # toDo:
     # alpha_lRelu = trail.suggest_loguniform("alpha_lRelu", 0.0001, 0.5)  #0.1
     # memory_interval = 1
@@ -372,4 +375,4 @@ study = optuna.create_study(study_name=folder_name,
                             direction='maximize', storage=f'sqlite:///{folder_name}/optuna_data.sqlite',
                             load_if_exists=True)
 
-study.optimize(objective, n_trials=50)
+study.optimize(objective, n_trials=1)
