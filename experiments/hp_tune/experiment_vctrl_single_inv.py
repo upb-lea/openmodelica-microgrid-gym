@@ -21,7 +21,7 @@ from experiments.hp_tune.env.rewards import Reward
 from experiments.hp_tune.env.vctrl_single_inv import net, folder_name, max_episode_steps
 from experiments.hp_tune.util.record_env import RecordEnvCallback
 from openmodelica_microgrid_gym.env import PlotTmpl
-from openmodelica_microgrid_gym.util import nested_map
+from openmodelica_microgrid_gym.util import nested_map, abc_to_alpha_beta
 
 np.random.seed(0)
 
@@ -69,7 +69,7 @@ class StepRecorder(Monitor):
 
     def __init__(self, env):
         super().__init__(env)
-        self.observation_space = gym.spaces.Box(low=np.full(3 * 3, -np.inf), high=np.full(3 * 3, np.inf))
+        self.observation_space = gym.spaces.Box(low=np.full(3 * 3 + 1, -np.inf), high=np.full(3 * 3 + 1, np.inf))
         self.obs_idx = None
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
@@ -79,7 +79,17 @@ class StepRecorder(Monitor):
 
         # hier vll noch die Messung loggen? aus der obs die richtigen suchen? wie figure out die augmented states?
 
-        # todo: hier unnötige states rauswerfen?
+        # add wanted features here (add appropriate self.observation in init!!)
+
+        # calculate magnitude of current phasor abc-> alpha,beta ->|sqrt(alpha² + beta²)|
+        i_alpha_beta = abc_to_alpha_beta(obs[0:3])
+        i_phasor_mag = np.sqrt(i_alpha_beta[0] ** 2 + i_alpha_beta[1] ** 2)
+
+        # feature_diff_imax_iphasor = 1 - (1 - i_phasor_mag)  # mapping [0,1+]
+        feature_diff_imax_iphasor = (
+                                                1 - i_phasor_mag) - 0.5  # mapping [-0.5 -,0.5]  (can be < 0.5 if phasor exceeds lim)
+
+        obs = np.append(obs, feature_diff_imax_iphasor)
 
         return obs, reward, done, info
 
@@ -91,9 +101,18 @@ class StepRecorder(Monitor):
                  [f'lc.capacitor{k}.v' for k in '123'], [f'inverter1.v_ref.{k}' for k in '012']])
 
     def reset(self, **kwargs):
-        observation = super().reset()
-        self.set_idx(self.env.history.cols)
-        obs = observation[list(itertools.chain.from_iterable(self.obs_idx))]
+        obs = super().reset()
+        # self.set_idx(self.env.history.cols)
+        # obs = observation[list(itertools.chain.from_iterable(self.obs_idx))]
+        # calculate magnitude of current phasor abc-> alpha,beta ->|sqrt(alpha² + beta²)|
+        i_alpha_beta = abc_to_alpha_beta(obs[0:3])
+        i_phasor_mag = np.sqrt(i_alpha_beta[0] ** 2 + i_alpha_beta[1] ** 2)
+
+        # feature_diff_imax_iphasor = 1 - (1 - i_phasor_mag)  # mapping [0,1+]
+        feature_diff_imax_iphasor = (
+                                            1 - i_phasor_mag) - 0.5  # mapping [-0.5 -,0.5]  (can be < 0.5 if phasor exceeds lim)
+
+        obs = np.append(obs, feature_diff_imax_iphasor)
         return obs
 
 
@@ -253,8 +272,10 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
                                      callback=xylables_R,
                                      color=[['b', 'r', 'g']],
                                      style=[[None]]
-                                     )
-                        ],
+                                     )],
+                        obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
+                                    'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
+                                    'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                         )
     env_test = StepRecorder(env_test)
     obs = env_test.reset()
@@ -302,18 +323,17 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
 
 
 def objective(trail):
-    """
-    learning_rate = 0.00027  # trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
-    gamma = 0.28  # trail.suggest_loguniform("gamma", 0.1, 0.99)
-    weight_scale = 0.03  # trail.suggest_loguniform("weight_scale", 5e-4, 1)  # 0.005
-    batch_size = 900  # trail.suggest_int("batch_size", 32, 1024)  # 128
-    actor_hidden_size = 223  # trail.suggest_int("actor_hidden_size", 10, 500)  # 100  # Using LeakyReLU
-    critic_hidden_size = 413  # trail.suggest_int("critic_hidden_size", 10, 500)  # 100
+    learning_rate = 0.0001  # trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
+    gamma = 0.68  # trail.suggest_loguniform("gamma", 0.1, 0.99)
+    weight_scale = 0.08  # trail.suggest_loguniform("weight_scale", 5e-4, 1)  # 0.005
+    batch_size = 124  # trail.suggest_int("batch_size", 32, 1024)  # 128
+    actor_hidden_size = 100  # trail.suggest_int("actor_hidden_size", 10, 500)  # 100  # Using LeakyReLU
+    critic_hidden_size = 400  # trail.suggest_int("critic_hidden_size", 10, 500)  # 100
     n_trail = str(trail.number)
     use_gamma_in_rew = 1
-    noise_var = 0.4  # trail.suggest_loguniform("noise_var", 0.01, 10)  # 2
-    noise_theta = 13.8  # trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
-    error_exponent = 0.03  # trail.suggest_loguniform("error_exponent", 0.01, 4)
+    noise_var = 0.2  # trail.suggest_loguniform("noise_var", 0.01, 10)  # 2
+    noise_theta = 20  # trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
+    error_exponent = 0.08  # trail.suggest_loguniform("error_exponent", 0.01, 4)
 
     """
 
