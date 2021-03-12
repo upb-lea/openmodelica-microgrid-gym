@@ -254,6 +254,9 @@ class ModelicaEnv(gym.Env):
             logger.info(f'risk level exceeded')
             return True
         logger.debug(f't: {self.sim_time_interval[1]}, ')
+        # return abs(self.sim_time_interval[1]) > self.time_end
+
+        # Only done if failed
         return abs(self.sim_time_interval[1]) > self.time_end
 
     def reset(self) -> np.ndarray:
@@ -352,8 +355,13 @@ class ModelicaEnv(gym.Env):
         if not self.is_done:
             logger.debug("Experiment step done, experiment continues.")
             self.sim_time_interval += self.time_step_size
+            timelimit_reached = False
         else:
+            timelimit_reached = True
             logger.debug("Experiment step done, experiment done.")
+
+        if self.is_done:
+            timelimit_reached = True
 
         reward = self.reward(self.history.cols, outputs, risk)
         self._failed = risk >= 1 or reward is None or np.isnan(reward) or (np.isinf(reward) and reward < 0)
@@ -364,7 +372,8 @@ class ModelicaEnv(gym.Env):
         # only return the state, the agent does not need the measurement
         # if self.obs_output is defined, obs_tmpl is used to filter out wanted observations, otherwise all states are
         # passed
-        return self._out_obs_tmpl.fill(outputs)[0], reward, self.is_done, dict(risk=risk)
+        return self._out_obs_tmpl.fill(outputs)[0], reward, self.is_done, dict(risk=risk,
+                                                                               timelimit_reached=timelimit_reached)
 
     def _create_state(self, is_init: bool = False):
         # Simulate and observe result state

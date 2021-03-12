@@ -79,8 +79,9 @@ class Reward:
                 rew = 1/3; if error = SP-mess = 2*v_nom (worst case without braking out from nom area)
             """
             # devided by 3 because of sums up all 3 phases
-            rew = np.sum((1 - (np.abs(SP - mess) / (2 * self.nom)) ** self.exponent) * 2 * (1 - self.gamma) / 3 + (
-                        1 - self.gamma) / 3) / 3
+            rew = np.sum((1 - (np.abs(SP - mess) / (2 * self.nom)) ** self.exponent) * 2 * 1 / 3 +
+                         1 / 3) / 3
+
 
         elif any(np.abs(mess) > self.lim):
             """
@@ -128,9 +129,9 @@ class Reward:
 
             """
             rew = np.sum(
-                (1 - np.abs(SP - mess) / (self.nom + self.lim)) * 2 * (1 - self.gamma) / 3 - (1 - self.gamma) / 3) / 3
+                (1 - np.abs(SP - mess) / (self.nom + self.lim)) * 2 * 1 / 3 - 1 / 3) / 3
 
-        return rew  # * (1-0.9)
+        return rew * (1 - self.gamma)
         # return -np.clip(error.squeeze(), 0, 1e5)
 
     def rew_fun_include_current(self, cols: List[str], data: np.ndarray, risk) -> float:

@@ -17,6 +17,7 @@ from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
 # imports net to define reward and executes script to register experiment
 from stable_baselines3.common.type_aliases import GymStepReturn
 
+from experiments.hp_tune.agents.my_ddpg import myDDPG
 from experiments.hp_tune.env.rewards import Reward
 from experiments.hp_tune.env.vctrl_single_inv import net, folder_name, max_episode_steps
 from experiments.hp_tune.util.record_env import RecordEnvCallback
@@ -185,6 +186,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
     env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train-v0',
                    # reward_fun=rew.rew_fun,
                    reward_fun=rew.rew_fun_include_current,
+                   # reward_fun=rew.rew_fun,
                    abort_reward=-(1 - rew.gamma),
                    viz_cols=[
                        PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
@@ -222,13 +224,13 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
 
     callback = TrainRecorder()
 
-    # model = myDDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
-    model = DDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
-                 policy_kwargs=policy_kwargs,
-                 learning_rate=learning_rate, buffer_size=5000, learning_starts=100,
-                 batch_size=batch_size, tau=0.005, gamma=gamma, action_noise=action_noise,
-                 train_freq=- 1, gradient_steps=- 1, n_episodes_rollout=1, optimize_memory_usage=False,
-                 create_eval_env=False, seed=None, device='auto', _init_setup_model=True)
+    model = myDDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
+                   # model = DDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
+                   policy_kwargs=policy_kwargs,
+                   learning_rate=learning_rate, buffer_size=5000, learning_starts=100,
+                   batch_size=batch_size, tau=0.005, gamma=gamma, action_noise=action_noise,
+                   train_freq=- 1, gradient_steps=- 1, n_episodes_rollout=1, optimize_memory_usage=False,
+                   create_eval_env=False, seed=None, device='auto', _init_setup_model=True)
 
     model.actor.mu._modules['0'].weight.data = model.actor.mu._modules['0'].weight.data * weight_scale
     model.actor.mu._modules['2'].weight.data = model.actor.mu._modules['2'].weight.data * weight_scale
@@ -240,7 +242,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
     # todo: instead /here? store reward per step?!
     plot_callback = EveryNTimesteps(n_steps=50000,
                                     callback=RecordEnvCallback(env, model, max_episode_steps, mongo_recorder, n_trail))
-    model.learn(total_timesteps=200000, callback=[callback, plot_callback])
+    model.learn(total_timesteps=300000, callback=[callback, plot_callback])
     # model.learn(total_timesteps=1000, callback=callback)
 
     monitor_rewards = env.get_episode_rewards()
@@ -258,6 +260,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
     limit_exceeded_penalty = 0
     env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v0',
                         reward_fun=rew.rew_fun_include_current,
+                        # reward_fun=rew.rew_fun,
                         abort_reward=-1,  # no needed if in rew no None is given back
                         # on_episode_reset_callback=cb.fire  # needed?
                         viz_cols=[
@@ -327,7 +330,10 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
 
 def objective(trail):
     learning_rate = 0.0001  # trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
-    gamma = 0.68  # trail.suggest_loguniform("gamma", 0.1, 0.99)
+    gamma = 0.5  # trail.suggest_loguniform("gamma", 0.1, 0.99)
+
+    # gamma =  trail.suggest_float("gamma", 0.001, 0.99)
+
     weight_scale = 0.08  # trail.suggest_loguniform("weight_scale", 5e-4, 1)  # 0.005
     batch_size = 124  # trail.suggest_int("batch_size", 32, 1024)  # 128
     actor_hidden_size = 100  # trail.suggest_int("actor_hidden_size", 10, 500)  # 100  # Using LeakyReLU
@@ -370,9 +376,15 @@ def objective(trail):
                                actor_hidden_size, critic_hidden_size, noise_var, noise_theta, error_exponent, n_trail)
 
 
+# for gamma grid search:
+# gamma_list = list(itertools.chain(*[[0.001]*5, [0.25]*5, [0.5]*5, [0.75]*5, [0.99]*5]))
+# search_space = {'gamma': gamma_list}
+
 # toDo: postgresql instead of sqlite
 study = optuna.create_study(study_name=folder_name,
                             direction='maximize', storage=f'sqlite:///{folder_name}/optuna_data.sqlite',
-                            load_if_exists=True)
+                            load_if_exists=True,
+                            # sampler=optuna.samplers.GridSampler(search_space)
+                            )
 
 study.optimize(objective, n_trials=1)
