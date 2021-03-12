@@ -19,6 +19,7 @@ J_Q = 0.0005
 R_lv_line_10km = 0.11
 L_lv_line_10km = 0.000589
 B_L_lv_line_10km = -(omega * L_lv_line_10km)/(R_lv_line_10km**2 + (omega*L_lv_line_10km)**2)
+G_L_lv_line_10km = R_lv_line_10km/(R_lv_line_10km**2 + (omega*L_lv_line_10km)**2)
 
 step = np.zeros(steps)
 step[0:500] = 6.612
@@ -30,6 +31,9 @@ step_l[500:]  = 0.210  # in Henry
 
 R_load = m.Param(value=step)
 L_load = m.Param(value=step_l)
+# G_RL_load = 1/R_load
+# B_RL_load = 1/L_load
+
 G_RL_load = R_load/(R_load**2 + (omega*L_load)**2)
 B_RL_load = -(omega * L_load)/(R_load**2 + (omega * L_load)**2)
 
@@ -38,11 +42,14 @@ B = np.array([[2*B_L_lv_line_10km, -B_L_lv_line_10km, -B_L_lv_line_10km],
               [-B_L_lv_line_10km, 2*B_L_lv_line_10km+0, -B_L_lv_line_10km],
               [-B_L_lv_line_10km, -B_L_lv_line_10km, 2*B_L_lv_line_10km+B_RL_load]])
 
-G = np.array([[0, 0, 0],
-                [0, 0, 0],
-                [0, 0, G_RL_load]])
+G = np.array([[2*G_L_lv_line_10km, -G_L_lv_line_10km, -G_L_lv_line_10km],
+                [-G_L_lv_line_10km, 2*G_L_lv_line_10km, -G_L_lv_line_10km],
+                [-G_L_lv_line_10km, -G_L_lv_line_10km, 2*G_L_lv_line_10km+G_RL_load]])
 
 #constants
+print("Matrix print test")
+print(B)
+print(G)
 
 p_offset = [10, 10, 10]
 q_offset = [10, 10, 10]
@@ -64,8 +71,8 @@ w3 = m.Var(value=50)
 theta1, theta2, theta3 = [m.Var() for i in range(3)]
 #initialize variables
 
-droop_linear=[Pdroop,Pdroop,Pdroop]
-q_droop_linear=[Qdroop,Qdroop,Qdroop]
+droop_linear=[Pdroop,Pdroop,0]
+q_droop_linear=[Qdroop,Qdroop,0]
 #initial values
 
 theta1.value = 0
