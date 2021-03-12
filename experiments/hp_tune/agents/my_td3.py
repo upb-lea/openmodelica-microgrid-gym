@@ -6,8 +6,10 @@ from torch.nn import functional as F
 from stable_baselines3.common import logger
 from stable_baselines3.common.utils import polyak_update
 
+from experiments.hp_tune.agents.my_off_policy_algorithm import myOffPolicyAlgorithm
 
-class myTD3(TD3):
+
+class myTD3(TD3, myOffPolicyAlgorithm):
 
     def train(self, gradient_steps: int, batch_size: int = 100) -> None:
 
@@ -30,6 +32,9 @@ class myTD3(TD3):
                 # Compute the target Q value: min over all critics targets
                 targets = th.cat(self.critic_target(replay_data.next_observations, next_actions), dim=1)
                 target_q, _ = th.min(targets, dim=1, keepdim=True)
+                # toDo: Fusch am Bau
+                # if timelimit -> reset: use target_q!
+                # if done = True caused by abort -> do not use target_q
                 target_q = replay_data.rewards + (1 - replay_data.dones) * self.gamma * target_q
 
             # Get current Q estimates for each critic network

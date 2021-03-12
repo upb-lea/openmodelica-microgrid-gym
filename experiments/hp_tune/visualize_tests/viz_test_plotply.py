@@ -6,9 +6,9 @@ from plotly import tools
 from pymongo import MongoClient
 
 client = MongoClient('mongodb://localhost:27017/')
-db = client['Feature_i_phasor_test']
+db = client['Continuing_learning']
 
-trail = db.Trail_number_1
+trail = db.Trail_number_0
 
 test_data = trail.find_one({"Name": "Test"})
 fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))
