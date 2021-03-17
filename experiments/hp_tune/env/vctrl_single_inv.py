@@ -31,7 +31,7 @@ makedirs(folder_name, exist_ok=True)
 
 # Simulation definitions
 net = Network.load('net/net_vctrl_single_inv.yaml')
-max_episode_steps = 1000  # net.max_episode_steps  # number of simulation steps per episode
+max_episode_steps = 1000000  # net.max_episode_steps  # number of simulation steps per episode
 
 i_lim = net['inverter1'].i_lim  # inverter current limit / A
 i_nom = net['inverter1'].i_nom  # nominal inverter current / A

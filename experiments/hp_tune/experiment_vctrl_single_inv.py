@@ -1,11 +1,8 @@
-import itertools
 import time
 from typing import Union
-from gym.spaces import Discrete, Box
-
-import matplotlib.pyplot as plt
 
 import gym
+import matplotlib.pyplot as plt
 import numpy as np
 import optuna
 import torch as th
@@ -17,12 +14,11 @@ from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
 # imports net to define reward and executes script to register experiment
 from stable_baselines3.common.type_aliases import GymStepReturn
 
-from experiments.hp_tune.agents.my_ddpg import myDDPG
 from experiments.hp_tune.env.rewards import Reward
 from experiments.hp_tune.env.vctrl_single_inv import net, folder_name, max_episode_steps
 from experiments.hp_tune.util.record_env import RecordEnvCallback
 from openmodelica_microgrid_gym.env import PlotTmpl
-from openmodelica_microgrid_gym.util import nested_map, abc_to_alpha_beta
+from openmodelica_microgrid_gym.util import abc_to_alpha_beta
 
 np.random.seed(0)
 
@@ -66,57 +62,84 @@ class Recorder:
         trial_coll.insert_one(data)
 
 
-class StepRecorder(Monitor):
+class FeatureWrapper(Monitor):
 
-    def __init__(self, env):
+    def __init__(self, env, number_of_features: int = 0, training_episode_length: int = np.inf):
+        """
+        Env Wrapper to add features to the env-observations and adds information to env.step output which can be used in
+        case of an continuing (non-episodic) task to reset the environment without being terminated by done
+        :param env: Gym environment to wrap
+        :param number_of_features: Number of features added to the env observations in the wrapped step method
+        :param training_episode_length: (For non-episodic environments) number of training steps after the env is reset
+            by the agent for training purpose (Set to inf in test env!)
+        :
+        """
         super().__init__(env)
-        self.observation_space = gym.spaces.Box(low=np.full(3 * 3 + 1, -np.inf), high=np.full(3 * 3 + 1, np.inf))
-        self.obs_idx = None
+        self.observation_space = gym.spaces.Box(
+            low=np.full(env.observation_space.shape[0] + number_of_features, -np.inf),
+            high=np.full(env.observation_space.shape[0] + number_of_features, np.inf))
+        self.training_episode_length = training_episode_length
+        self._n_training_steps = 0
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
-        observation, reward, done, info = super().step(action)
+        """
+        Adds additional features and infos after the gym env.step() function is executed.
+        Triggers the env to reset without done=True every training_episode_length steps
+        """
 
-        # alternative: delete unwanted obs here (if not defined by obs_output) like:
-        # obs = observation[list(itertools.chain.from_iterable(self.obs_idx))]
-        obs = observation
+        obs, reward, done, info = super().step(action)
 
-        # hier vll noch die Messung loggen? aus der obs die richtigen suchen? wie figure out die augmented states?
+        self._n_training_steps += 1
+
+        if self._n_training_steps % self.training_episode_length == 0:
+            info["timelimit_reached"] = True
+
+        # log measurement here?
 
         # add wanted features here (add appropriate self.observation in init!!)
-
-        # calculate magnitude of current phasor abc-> alpha,beta ->|sqrt(alpha² + beta²)|
-        i_alpha_beta = abc_to_alpha_beta(obs[0:3])
-        i_phasor_mag = np.sqrt(i_alpha_beta[0] ** 2 + i_alpha_beta[1] ** 2)
-
-        # feature_diff_imax_iphasor = 1 - (1 - i_phasor_mag)  # mapping [0,1+]
-        feature_diff_imax_iphasor = (
-                                                1 - i_phasor_mag) - 0.5  # mapping [-0.5 -,0.5]  (can be < 0.5 if phasor exceeds lim)
+        # calculate magnitude of current phasor abc
+        feature_diff_imax_iphasor = self.cal_phasor_magnitude(obs[0:3])
 
         obs = np.append(obs, feature_diff_imax_iphasor)
 
         return obs, reward, done, info
 
-    def set_idx(self, obs):
-        if self.obs_idx is None:
-            self.obs_idx = nested_map(
-                lambda n: obs.index(n),
-                [[f'lc.inductor{k}.i' for k in '123'],
-                 [f'lc.capacitor{k}.v' for k in '123'], [f'inverter1.v_ref.{k}' for k in '012']])
-
     def reset(self, **kwargs):
+        """
+        Reset the wrapped env and the flag for the number of training steps after the env is reset
+        by the agent for training purpose and internal counters
+        """
         obs = super().reset()
-        # self.set_idx(self.env.history.cols)
-        # obs = observation[list(itertools.chain.from_iterable(self.obs_idx))]
+        self._n_training_steps = 0
+
+        # reset timelimit_reached flag
+        # self.info["timelimit_reached"] = False
+
+        feature_diff_imax_iphasor = self.cal_phasor_magnitude(obs[0:3])
+        obs = np.append(obs, feature_diff_imax_iphasor)
+
+        return obs
+
+    def cal_phasor_magnitude(self, abc: np.array) -> float:
+        """
+        Calculated the magnitude of a phasor in a three phase system. Maps the return to the range of [-0.5, 0.5] in
+        case of magnitude = [-lim, lim] using (1 - phasor_mag) - 0.5. -0.5 can be exceeded in case of the magnitude
+        exceeds the limit (no extra env interruption here!, all phases should be validated separately)
+
+        :param abc: Due to limit normed currents or voltages in abc frame
+        :return: magnitude of the current or voltage phasor
+        """
         # calculate magnitude of current phasor abc-> alpha,beta ->|sqrt(alpha² + beta²)|
-        i_alpha_beta = abc_to_alpha_beta(obs[0:3])
+        i_alpha_beta = abc_to_alpha_beta(abc)
         i_phasor_mag = np.sqrt(i_alpha_beta[0] ** 2 + i_alpha_beta[1] ** 2)
 
-        # feature_diff_imax_iphasor = 1 - (1 - i_phasor_mag)  # mapping [0,1+]
-        feature_diff_imax_iphasor = (
-                                            1 - i_phasor_mag) - 0.5  # mapping [-0.5 -,0.5]  (can be < 0.5 if phasor exceeds lim)
+        # mapping [0,1+]
+        # feature_diff_imax_iphasor = 1 - (1 - i_phasor_mag)
 
-        obs = np.append(obs, feature_diff_imax_iphasor)
-        return obs
+        # mapping [-0.5 -,0.5] (can be < 0.5 if phasor exceeds lim)
+        feature_diff_imax_iphasor = (1 - i_phasor_mag) - 0.5
+
+        return feature_diff_imax_iphasor
 
 
 class TrainRecorder(BaseCallback):
@@ -133,7 +156,10 @@ class TrainRecorder(BaseCallback):
         pass
 
     def _on_step(self) -> bool:
-        # asd = 1
+        asd = 1
+
+        # nach env.step()
+
         return True
 
     def _on_rollout_end(self) -> None:
@@ -210,7 +236,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
                                'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                    )
 
-    env = StepRecorder(env)
+    env = FeatureWrapper(env, number_of_features=1, training_episode_length=1000)
 
     n_actions = env.action_space.shape[-1]
     noise_var = noise_var  # 20#0.2
@@ -224,13 +250,15 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
 
     callback = TrainRecorder()
 
-    model = myDDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
-                   # model = DDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
-                   policy_kwargs=policy_kwargs,
-                   learning_rate=learning_rate, buffer_size=5000, learning_starts=100,
-                   batch_size=batch_size, tau=0.005, gamma=gamma, action_noise=action_noise,
-                   train_freq=- 1, gradient_steps=- 1, n_episodes_rollout=1, optimize_memory_usage=False,
-                   create_eval_env=False, seed=None, device='auto', _init_setup_model=True)
+    # model = myDDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
+    model = DDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
+                 policy_kwargs=policy_kwargs,
+                 learning_rate=learning_rate, buffer_size=5000, learning_starts=100,
+                 batch_size=batch_size, tau=0.005, gamma=gamma, action_noise=action_noise,
+                 train_freq=(1, "episode"), gradient_steps=- 1,
+                 # n_episodes_rollout=1,
+                 optimize_memory_usage=False,
+                 create_eval_env=False, seed=None, device='auto', _init_setup_model=True)
 
     model.actor.mu._modules['0'].weight.data = model.actor.mu._modules['0'].weight.data * weight_scale
     model.actor.mu._modules['2'].weight.data = model.actor.mu._modules['2'].weight.data * weight_scale
@@ -240,9 +268,9 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
     # model.actor.mu._modules['2'].bias.data = model.actor.mu._modules['2'].bias.data * weight_bias_scale
 
     # todo: instead /here? store reward per step?!
-    plot_callback = EveryNTimesteps(n_steps=50000,
+    plot_callback = EveryNTimesteps(n_steps=2000,
                                     callback=RecordEnvCallback(env, model, max_episode_steps, mongo_recorder, n_trail))
-    model.learn(total_timesteps=300000, callback=[callback, plot_callback])
+    model.learn(total_timesteps=10000, callback=[callback, plot_callback])
     # model.learn(total_timesteps=1000, callback=callback)
 
     monitor_rewards = env.get_episode_rewards()
@@ -283,7 +311,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
                                     'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
                                     'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                         )
-    env_test = StepRecorder(env_test)
+    env_test = FeatureWrapper(env_test, number_of_features=1)
     obs = env_test.reset()
 
     rew_list = []
