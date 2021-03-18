@@ -36,6 +36,8 @@ class FeatureWrapper(Monitor):
         self.training_episode_length = training_episode_length
         self._n_training_steps = 0
         self.episode_return = []
+        self.observation_space = gym.spaces.Box(low=np.full(env.observation_space.shape[0] + 1, -np.inf),
+                                                high=np.full(env.observation_space.shape[0] + 1, np.inf))
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
         """
@@ -57,7 +59,14 @@ class FeatureWrapper(Monitor):
         if self._n_training_steps == self.training_episode_length or done:
             self.episode_return.append(sum(self.rewards))
 
-        return obs, reward, done, info
+        norm_state = [(obs[0] - self.state_low[0]) / (self.state_high[0] - self.state_low[0]) * 2 - 1,
+                      (obs[1] - self.state_low[1]) / (self.state_high[1] - self.state_low[1]) * 2 - 1,
+                      np.cos(obs[2]),
+                      np.sin(obs[2]),
+                      (obs[3] - self.state_low[3]) / (self.state_high[3] - self.state_low[3]) * 2 - 1,
+                      ]
+
+        return norm_state, reward, done, info
 
     def reset(self, **kwargs) -> GymObs:
         """
@@ -86,7 +95,14 @@ class FeatureWrapper(Monitor):
 
         self._n_training_steps = 0
 
-        return np.array(self.state)
+        norm_state = [(self.env.state[0] - self.state_low[0]) / (self.state_high[0] - self.state_low[0]) * 2 - 1,
+                      (self.env.state[1] - self.state_low[1]) / (self.state_high[1] - self.state_low[1]) * 2 - 1,
+                      np.cos(self.env.state[2]),
+                      np.sin(self.env.state[2]),
+                      (self.env.state[3] - self.state_low[3]) / (self.state_high[3] - self.state_low[3]) * 2 - 1,
+                      ]
+
+        return norm_state  #np.array(self.state)
 
 
 # for i in range(2):
@@ -120,10 +136,11 @@ def bla(idx):
     return np.array(env.episode_return)
 
 
-with Pool(1) as p:
-    return_all_agents = p.map(bla, range(5))
+# with Pool(1) as p:
+#    return_all_agents = p.map(bla, range(5))
 
-    pvc = 1
+return_all_agents = map(bla, range(1))
+#    pvc = 1
 
 # return_all_agents.append(np.array(env.episode_return))
 
@@ -133,7 +150,7 @@ with Pool(1) as p:
 
 df = pd.DataFrame(return_all_agents)
 
-df.to_pickle("DQN_WITH_fix5Agents")
+df.to_pickle("DQN_ORIGINAL_5Agents")
 
 m = df.mean()
 s = df.std()
@@ -146,7 +163,7 @@ plt.ylabel('Average return')
 plt.xlabel('Episode')
 plt.ylim([0, 200])
 plt.grid()
-plt.title('5 Agent Fixed Code')
+plt.title('5 Agent Original Code')
 plt.show()
 
 """
