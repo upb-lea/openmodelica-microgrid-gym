@@ -24,6 +24,14 @@ class FeatureWrapper(Monitor):
         """
         :
         """
+        state_constraints = [[- 2.4, 2.4],
+                             [-7, 7],
+                             [-np.pi, +np.pi],
+                             [-10, 10]]
+        self.state_low = np.array(state_constraints)[:, 0]
+        self.state_high = np.array(state_constraints)[:, 1]
+        self.delta_v = 0.15
+
         super().__init__(env)
         self.training_episode_length = training_episode_length
         self._n_training_steps = 0
@@ -35,11 +43,16 @@ class FeatureWrapper(Monitor):
 
         obs, reward, done, info = super().step(action)
 
+        done = False
+        if np.any(np.abs(self.env.state) > self.state_high):
+            reward = -1
+            done = True
+
         self._n_training_steps += 1
 
         if self._n_training_steps == self.training_episode_length:
-            done = True
-            # info["timelimit_reached"] = True
+            # done = True
+            info["timelimit_reached"] = True
 
         if self._n_training_steps == self.training_episode_length or done:
             self.episode_return.append(sum(self.rewards))
@@ -48,18 +61,27 @@ class FeatureWrapper(Monitor):
 
     def reset(self, **kwargs) -> GymObs:
         """
-                state_constraints = [[  - 2.4,    2.4],
-                                     [     -7,      7],
-                                     [ -np.pi, +np.pi],
-                                     [    -10,     10]]
+
         """
         obs = super().reset()
 
         # self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(4,))
-        self.state[0] = self.np_random.uniform(low=-2.4, high=2.4, size=(1,))
-        self.state[1] = self.np_random.uniform(low=-7, high=7, size=(1,))
-        self.state[2] = self.np_random.uniform(low=-np.pi, high=np.pi, size=(1,))
-        self.state[3] = self.np_random.uniform(low=-10, high=10, size=(1,))
+        # self.state[0] = self.np_random.uniform(low=-2.4, high=2.4, size=(1,))
+        # self.state[1] = self.np_random.uniform(low=-7, high=7, size=(1,))
+        # self.state[2] = self.np_random.uniform(low=-np.pi, high=np.pi, size=(1,))
+        # self.state[3] = self.np_random.uniform(low=-10, high=10, size=(1,))
+
+        while True:
+            self.env.state = np.random.uniform(low=self.state_low,
+                                               high=self.state_high)
+            if np.abs(self.env.state[3]) < 1:
+                if self.env.state[1] > 0:
+                    if np.sqrt((2.4 - self.env.state[0]) / self.env.tau * self.delta_v) > self.env.state[1]:
+                        break
+                if self.env.state[1] < 0:
+                    if -np.sqrt((2.4 + self.env.state[0]) / self.env.tau * self.delta_v) < self.env.state[1]:
+                        break
+
         self.steps_beyond_done = None
 
         self._n_training_steps = 0
@@ -99,7 +121,7 @@ def bla(idx):
 
 
 with Pool(1) as p:
-    return_all_agents = p.map(bla, range(25))
+    return_all_agents = p.map(bla, range(5))
 
     pvc = 1
 
@@ -111,7 +133,7 @@ with Pool(1) as p:
 
 df = pd.DataFrame(return_all_agents)
 
-df.to_pickle("DQN_without_fix")
+df.to_pickle("DQN_WITH_fix5Agents")
 
 m = df.mean()
 s = df.std()
@@ -122,7 +144,11 @@ plt.plot(episode, m)
 plt.fill_between(episode, m - s, m + s, facecolor='r')
 plt.ylabel('Average return')
 plt.xlabel('Episode')
+plt.ylim([0, 200])
+plt.grid()
+plt.title('5 Agent Fixed Code')
 plt.show()
+
 """
 obs = env.reset()
 while True:
