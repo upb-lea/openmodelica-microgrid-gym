@@ -14,6 +14,7 @@ from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
 # imports net to define reward and executes script to register experiment
 from stable_baselines3.common.type_aliases import GymStepReturn
 
+from experiments.hp_tune.agents.my_ddpg import myDDPG
 from experiments.hp_tune.env.rewards import Reward
 from experiments.hp_tune.env.vctrl_single_inv import net, folder_name, max_episode_steps
 from experiments.hp_tune.util.record_env import RecordEnvCallback
@@ -170,8 +171,11 @@ class TrainRecorder(BaseCallback):
 mongo_recorder = Recorder(database_name=folder_name)
 
 
-def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, batch_size,
-                        actor_hidden_size, critic_hidden_size, noise_var, noise_theta, error_exponent, n_trail):
+def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor, batch_size,
+                        actor_hidden_size, actor_number_layers, critic_hidden_size, critic_number_layers,
+                        alpha_relu_critic,
+                        noise_var, noise_theta, error_exponent, training_episode_length, buffer_size,
+                        learning_starts, tau, n_trail):
     # rew = Reward(net.v_nom, net['inverter1'].v_lim, net['inverter1'].v_DC, gamma,
     #             use_gamma_normalization=use_gamma_in_rew, error_exponent=error_exponent)
     rew = Reward(net.v_nom, net['inverter1'].v_lim, net['inverter1'].v_DC, gamma,
@@ -236,7 +240,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
                                'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                    )
 
-    env = FeatureWrapper(env, number_of_features=1, training_episode_length=1000)
+    env = FeatureWrapper(env, number_of_features=1, training_episode_length=training_episode_length)
 
     n_actions = env.action_space.shape[-1]
     noise_var = noise_var  # 20#0.2
@@ -244,28 +248,48 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
     action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
                                                 sigma=noise_var * np.ones(n_actions), dt=net.ts)
 
-    policy_kwargs = dict(activation_fn=th.nn.LeakyReLU, net_arch=dict(pi=[actor_hidden_size], qf=[critic_hidden_size,
-                                                                                                  critic_hidden_size,
-                                                                                                  critic_hidden_size]))
+    policy_kwargs = dict(activation_fn=th.nn.LeakyReLU, net_arch=dict(pi=[actor_hidden_size] * actor_number_layers
+                                                                      , qf=[critic_hidden_size] * critic_number_layers))
 
     callback = TrainRecorder()
 
-    # model = myDDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
-    model = DDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
-                 policy_kwargs=policy_kwargs,
-                 learning_rate=learning_rate, buffer_size=5000, learning_starts=100,
-                 batch_size=batch_size, tau=0.005, gamma=gamma, action_noise=action_noise,
-                 train_freq=(1, "episode"), gradient_steps=- 1,
-                 # n_episodes_rollout=1,
-                 optimize_memory_usage=False,
-                 create_eval_env=False, seed=None, device='auto', _init_setup_model=True)
+    # model = DDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
+    model = myDDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
+                   policy_kwargs=policy_kwargs,
+                   learning_rate=learning_rate, buffer_size=buffer_size, learning_starts=learning_starts,
+                   batch_size=batch_size, tau=tau, gamma=gamma, action_noise=action_noise,
+                   train_freq=(1, "episode"), gradient_steps=- 1,
+                   # n_episodes_rollout=1,
+                   optimize_memory_usage=False,
+                   create_eval_env=False, seed=None, device='auto', _init_setup_model=True)
 
-    model.actor.mu._modules['0'].weight.data = model.actor.mu._modules['0'].weight.data * weight_scale
-    model.actor.mu._modules['2'].weight.data = model.actor.mu._modules['2'].weight.data * weight_scale
-    model.actor_target.mu._modules['0'].weight.data = model.actor_target.mu._modules['0'].weight.data * weight_scale
-    model.actor_target.mu._modules['2'].weight.data = model.actor_target.mu._modules['2'].weight.data * weight_scale
-    # model.actor.mu._modules['0'].bias.data = model.actor.mu._modules['0'].bias.data * weight_bias_scale
-    # model.actor.mu._modules['2'].bias.data = model.actor.mu._modules['2'].bias.data * weight_bias_scale
+    count = 0
+
+    for kk in range(actor_number_layers + 1):
+
+        model.actor.mu._modules[str(count)].weight.data = model.actor.mu._modules[str(count)].weight.data * weight_scale
+        model.actor_target.mu._modules[str(count)].weight.data = model.actor_target.mu._modules[
+                                                                     str(count)].weight.data * weight_scale
+
+        model.actor.mu._modules[str(count)].bias.data = model.actor.mu._modules[str(count)].bias.data * bias_scale
+        model.actor_target.mu._modules[str(count)].bias.data = model.actor.mu._modules[
+                                                                   str(count)].bias.data * bias_scale
+
+        if kk < actor_number_layers:
+            model.actor.mu._modules[str(count + 1)].negative_slope = alpha_relu_actor
+            model.actor_target.mu._modules[str(count + 1)].negative_slope = alpha_relu_actor
+
+        count = count + 2
+
+    count = 0
+
+    for kk in range(critic_number_layers + 1):
+
+        if kk < critic_number_layers:
+            model.critic.qf0._modules[str(count + 1)].negative_slope = alpha_relu_critic
+            model.critic_target.qf0._modules[str(count + 1)].negative_slope = alpha_relu_critic
+
+        count = count + 2
 
     # todo: instead /here? store reward per step?!
     plot_callback = EveryNTimesteps(n_steps=2000,
@@ -357,6 +381,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, ba
 
 
 def objective(trail):
+    """
     learning_rate = 0.0001  # trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
     gamma = 0.5  # trail.suggest_loguniform("gamma", 0.1, 0.99)
 
@@ -377,17 +402,31 @@ def objective(trail):
     learning_rate = trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
     gamma = trail.suggest_loguniform("gamma", 0.1, 0.99)
     weight_scale = trail.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
+
+    bias_scale = trail.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
+    alpha_relu_actor = trail.suggest_loguniform("alpha_relu_actor", 0.0001, 0.5)  # 0.005
+    alpha_relu_critic = trail.suggest_loguniform("alpha_relu_critic", 0.0001, 0.5)  # 0.005
+
     batch_size = trail.suggest_int("batch_size", 32, 1024)  # 128
+    buffer_size = trail.suggest_int("buffer_size", 10, 20000)  # 128
+
     actor_hidden_size = trail.suggest_int("actor_hidden_size", 10, 500)  # 100  # Using LeakyReLU
+    actor_number_layers = trail.suggest_int("actor_number_layers", 1, 3)
+
     critic_hidden_size = trail.suggest_int("critic_hidden_size", 10, 500)  # 100
+    critic_number_layers = trail.suggest_int("critic_number_layers", 1, 4)
+
     n_trail = str(trail.number)
     use_gamma_in_rew = 1
     noise_var = trail.suggest_loguniform("noise_var", 0.01, 4)  # 2
     noise_theta = trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
     error_exponent = trail.suggest_loguniform("error_exponent", 0.01, 0.5)
-"""
+
+    training_episode_length = trail.suggest_int("batch_size", 200, 5000)  # 128
+    learning_starts = trail.suggest_int("learning_starts", 100, 5000)  # 128
+    tau = trail.suggest_loguniform("tau", 0.0001, 0.2)  # 2
+
     # toDo:
-    # alpha_lRelu = trail.suggest_loguniform("alpha_lRelu", 0.0001, 0.5)  #0.1
     # memory_interval = 1
     # weigth_regularizer = 0.5
     # memory_lim = 5000  # = buffersize?
@@ -400,8 +439,12 @@ def objective(trail):
 
     mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, trail_config_mongo)
 
-    return experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, batch_size,
-                               actor_hidden_size, critic_hidden_size, noise_var, noise_theta, error_exponent, n_trail)
+    return experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
+                               batch_size,
+                               actor_hidden_size, actor_number_layers, critic_hidden_size, critic_number_layers,
+                               alpha_relu_critic,
+                               noise_var, noise_theta, error_exponent, training_episode_length, buffer_size,
+                               learning_starts, tau, n_trail)
 
 
 # for gamma grid search:
