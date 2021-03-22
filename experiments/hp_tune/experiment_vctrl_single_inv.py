@@ -253,15 +253,15 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
     callback = TrainRecorder()
 
-    # model = DDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
-    model = myDDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
-                   policy_kwargs=policy_kwargs,
-                   learning_rate=learning_rate, buffer_size=buffer_size, learning_starts=learning_starts,
-                   batch_size=batch_size, tau=tau, gamma=gamma, action_noise=action_noise,
-                   train_freq=(1, "episode"), gradient_steps=- 1,
-                   # n_episodes_rollout=1,
-                   optimize_memory_usage=False,
-                   create_eval_env=False, seed=None, device='auto', _init_setup_model=True)
+    model = DDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
+                 # model = myDDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
+                 policy_kwargs=policy_kwargs,
+                 learning_rate=learning_rate, buffer_size=buffer_size, learning_starts=learning_starts,
+                 batch_size=batch_size, tau=tau, gamma=gamma, action_noise=action_noise,
+                 train_freq=(1, "episode"), gradient_steps=- 1,
+                 # n_episodes_rollout=1,
+                 optimize_memory_usage=False,
+                 create_eval_env=False, seed=None, device='auto', _init_setup_model=True)
 
     count = 0
 
