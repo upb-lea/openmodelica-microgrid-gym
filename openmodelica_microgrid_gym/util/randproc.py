@@ -39,7 +39,7 @@ class RandProcess:
         :return: value at the timestep
         """
         # if not initial actually sample from processes otherwise return initial value
-        if t != self._last_t:
+        if t != self._last_t and t >= 0:
             if self.reserve is not None:
                 self._last = self.reserve
                 self.reserve = None
