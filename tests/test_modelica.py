@@ -66,7 +66,7 @@ def test_proper_reset(env):
     assert state == str(env) + str(env.history.df)
 
 
-def test_proper_reset(initialized_env):
+def test_proper_reset_init_env(initialized_env):
     # Test using initial values in env which are not zero
     np.random.seed(1)
     actions = np.random.random((100, 6))
@@ -81,7 +81,7 @@ def test_proper_reset(initialized_env):
     assert state == str(initialized_env) + str(initialized_env.history.df)
 
 
-def test_proper_reset(initialized_env):
+def test_reset_after_init(initialized_env):
     """
     Check reset. Are the values to be reset (see initialized_env.make) used in first step?
     """
