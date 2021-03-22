@@ -63,12 +63,16 @@ class ModelicaEnv(gym.Env):
             system failure (-inf reward)
         :param model_params: parameters of the FMU.
             dictionary of variable names and scalars or callables.
-            If a callable is provided it is called every time step with the current time.
+            If a callable is provided it is called on reset with t==-1 and in every time step with the current time.
             This callable must return a float or None
             The float is passed to the fmu, None values are discarded.
             This allows setting initial values using like::
 
-                model_params={'lc1.capacitor1.v': lambda t: -10 if t==0 else None}
+                model_params={'lc1.capacitor1.v': lambda t: -10 if t==-1 else None}
+
+            as well as continuosly changing values using like::
+
+                model_params={'lc1.capacitor1.v': lambda t: np.random.random()}
         :param net: Path to the network configuration file passed to the net.Network.load() function
         :param model_path: Path to the FMU
         :param viz_mode: specifies how and if to render
@@ -110,6 +114,9 @@ class ModelicaEnv(gym.Env):
 
         # Parameters required by this implementation
         self.max_episode_steps = max_episode_steps
+        if time_start < 0:
+            raise RuntimeError('Starttime must not negative! -1 is used for initialization of model params functions!'
+                               ' See ModelicaEnv.__init__() parameter "model_params".')
         self.time_start = time_start
         if isinstance(net, Network):
             self.net = net
@@ -270,7 +277,7 @@ class ModelicaEnv(gym.Env):
         self._failed = False
         self._register_render = False
         self.delay_buffer.clear()
-        outputs = self._create_state()
+        outputs = self._create_state(is_init=True)
         return self._out_obs_tmpl.fill(outputs)[0]
 
     def step(self, action: Sequence) -> Tuple[np.ndarray, float, bool, Mapping]:
@@ -350,10 +357,14 @@ class ModelicaEnv(gym.Env):
         # passed
         return self._out_obs_tmpl.fill(outputs)[0], reward, self.is_done, dict(risk=risk)
 
-    def _create_state(self):
+    def _create_state(self, is_init: bool = False):
         # Simulate and observe result state
-        self._state = self._simulate()
-        raw, normalized = self.net.augment(self._state, self.sim_time_interval[0])
+        if is_init:
+            self._state = self.model.obs
+            raw, normalized = self.net.augment(self._state, -1)
+        else:
+            self._state = self._simulate()
+            raw, normalized = self.net.augment(self._state, self.sim_time_interval[0])
         outputs = normalized if self.is_normalized else raw
         measurements = self.measure(outputs)
 

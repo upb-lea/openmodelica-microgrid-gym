@@ -1,10 +1,10 @@
 import logging
 from datetime import datetime
 from os.path import basename
-import numpy as np
+from typing import Dict, Callable
 
+import numpy as np
 from pyfmi import load_fmu
-from pyfmi.fmi import FMUModelME2
 
 logger = logging.getLogger(__name__)
 
@@ -23,14 +23,16 @@ class PyFMI_Wrapper:
         logger.debug('Successfully loaded model "%s"', model_name)
         return model
 
-    def setup(self, time_start, output_names, model_params):
+    def setup(self, time_start, output_names, model_params: Dict[str, Callable]):
         self.model.reset()
         self.model.setup_experiment(start_time=time_start)
 
         # This is needed, because otherwise setting new values seems not to work
         self.model.initialize()
         if model_params:
-            values = {var: f(time_start) for var, f in model_params.items()}
+            # set to -1 for initial evaluation of params. See documentation of ModelicaEnv.__init__().
+            values = {var: f(-1) for var, f in model_params.items()}
+            # values = {var: f(time_start) for var, f in model_params.items()}
             # list of keys and list of values
             self.set_params(**values)
 
