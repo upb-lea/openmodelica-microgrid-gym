@@ -19,7 +19,7 @@ from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import RandProcess
 from gym.envs.registration import register
 
-folder_name = 'Continuing_learning'
+folder_name = 'Hyperopt_all_first_try'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'plots'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
@@ -145,12 +145,12 @@ register(id='vctrl_single_inv_train-v0',
                                                                           high=v_lim) if t == -1 else None,
                            'lc.capacitor3.v': lambda t: np.random.uniform(low=-v_lim,
                                                                           high=v_lim) if t == -1 else None,
-                           'lc.inductor1.i': lambda t: np.random.uniform(low=-i_lim,
-                                                                         high=i_lim) if t == -1 else None,
-                           'lc.inductor2.i': lambda t: np.random.uniform(low=-i_lim,
-                                                                         high=i_lim) if t == -1 else None,
-                           'lc.inductor3.i': lambda t: np.random.uniform(low=-i_lim,
-                                                                         high=i_lim) if t == -1 else None,
+                           'lc.inductor1.i': lambda t: np.random.uniform(low=-i_nom,
+                                                                         high=i_nom) if t == -1 else None,
+                           'lc.inductor2.i': lambda t: np.random.uniform(low=-i_nom,
+                                                                         high=i_nom) if t == -1 else None,
+                           'lc.inductor3.i': lambda t: np.random.uniform(low=-i_nom,
+                                                                         high=i_nom) if t == -1 else None,
                            },
              net=net,
              model_path='../../omg_grid/grid.paper_loadstep.fmu',
@@ -205,19 +205,7 @@ register(id='vctrl_single_inv_test-v0',
                            'lc.capacitor3.C': C_filter,
                            'r_load.resistor1.R': partial(rand_load_test.give_dataframe_value, col='r_load.resistor1.R'),
                            'r_load.resistor2.R': partial(rand_load_test.give_dataframe_value, col='r_load.resistor2.R'),
-                           'r_load.resistor3.R': partial(rand_load_test.give_dataframe_value, col='r_load.resistor3.R'),
-                           'lc.capacitor1.v': lambda t: np.random.uniform(low=-v_lim,
-                                                                          high=v_lim) if t == 0 else None,
-                           'lc.capacitor2.v': lambda t: np.random.uniform(low=-v_lim,
-                                                                          high=v_lim) if t == 0 else None,
-                           'lc.capacitor3.v': lambda t: np.random.uniform(low=-v_lim,
-                                                                          high=v_lim) if t == 0 else None,
-                           'lc.inductor1.i': lambda t: np.random.uniform(low=-i_lim,
-                                                                         high=i_lim) if t == 0 else None,
-                           'lc.inductor2.i': lambda t: np.random.uniform(low=-i_lim,
-                                                                         high=i_lim) if t == 0 else None,
-                           'lc.inductor3.i': lambda t: np.random.uniform(low=-i_lim,
-                                                                         high=i_lim) if t == 0 else None,
+                           'r_load.resistor3.R': partial(rand_load_test.give_dataframe_value, col='r_load.resistor3.R')
                            },
              net=net,
              model_path='../../omg_grid/grid.paper_loadstep.fmu',

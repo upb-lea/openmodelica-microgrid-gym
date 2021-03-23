@@ -17,6 +17,7 @@ from stable_baselines3.common.type_aliases import GymStepReturn
 from experiments.hp_tune.agents.my_ddpg import myDDPG
 from experiments.hp_tune.env.rewards import Reward
 from experiments.hp_tune.env.vctrl_single_inv import net, folder_name, max_episode_steps
+from experiments.hp_tune.util.action_noise_wrapper import myOrnsteinUhlenbeckActionNoise
 from experiments.hp_tune.util.record_env import RecordEnvCallback
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.util import abc_to_alpha_beta
@@ -93,7 +94,8 @@ class FeatureWrapper(Monitor):
         self._n_training_steps += 1
 
         if self._n_training_steps % self.training_episode_length == 0:
-            info["timelimit_reached"] = True
+            # info["timelimit_reached"] = True
+            done = True
 
         # log measurement here?
 
@@ -171,10 +173,12 @@ class TrainRecorder(BaseCallback):
 mongo_recorder = Recorder(database_name=folder_name)
 
 
-def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor, batch_size,
+def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
+                        batch_size,
                         actor_hidden_size, actor_number_layers, critic_hidden_size, critic_number_layers,
                         alpha_relu_critic,
-                        noise_var, noise_theta, error_exponent, training_episode_length, buffer_size,
+                        noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
+                        training_episode_length, buffer_size,
                         learning_starts, tau, n_trail):
     # rew = Reward(net.v_nom, net['inverter1'].v_lim, net['inverter1'].v_DC, gamma,
     #             use_gamma_normalization=use_gamma_in_rew, error_exponent=error_exponent)
@@ -245,8 +249,13 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     n_actions = env.action_space.shape[-1]
     noise_var = noise_var  # 20#0.2
     noise_theta = noise_theta  # 50 # stiffness of OU
-    action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
-                                                sigma=noise_var * np.ones(n_actions), dt=net.ts)
+    # action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
+    #                                            sigma=noise_var * np.ones(n_actions), dt=net.ts)
+
+    action_noise = myOrnsteinUhlenbeckActionNoise(n_steps_annealing=training_episode_length * noise_steps_annealing,
+                                                  sigma_min=noise_var * np.ones(n_actions) * noise_var_min,
+                                                  mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
+                                                  sigma=noise_var * np.ones(n_actions), dt=net.ts)
 
     policy_kwargs = dict(activation_fn=th.nn.LeakyReLU, net_arch=dict(pi=[actor_hidden_size] * actor_number_layers
                                                                       , qf=[critic_hidden_size] * critic_number_layers))
@@ -256,7 +265,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     model = DDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
                  # model = myDDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
                  policy_kwargs=policy_kwargs,
-                 learning_rate=learning_rate, buffer_size=buffer_size, learning_starts=learning_starts,
+                 learning_rate=learning_rate, buffer_size=buffer_size,
+                 learning_starts=int(learning_starts * training_episode_length),
                  batch_size=batch_size, tau=tau, gamma=gamma, action_noise=action_noise,
                  train_freq=(1, "episode"), gradient_steps=- 1,
                  # n_episodes_rollout=1,
@@ -292,9 +302,10 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
         count = count + 2
 
     # todo: instead /here? store reward per step?!
-    plot_callback = EveryNTimesteps(n_steps=2000,
-                                    callback=RecordEnvCallback(env, model, max_episode_steps, mongo_recorder, n_trail))
-    model.learn(total_timesteps=10000, callback=[callback, plot_callback])
+    plot_callback = EveryNTimesteps(n_steps=50000,
+                                    callback=RecordEnvCallback(env, model, training_episode_length, mongo_recorder,
+                                                               n_trail))
+    model.learn(total_timesteps=200000, callback=[callback, plot_callback])
     # model.learn(total_timesteps=1000, callback=callback)
 
     monitor_rewards = env.get_episode_rewards()
@@ -419,11 +430,15 @@ def objective(trail):
     n_trail = str(trail.number)
     use_gamma_in_rew = 1
     noise_var = trail.suggest_loguniform("noise_var", 0.01, 4)  # 2
+    # min var, action noise is reduced to (depends on noise_var)
+    noise_var_min = trail.suggest_loguniform("noise_var_min", 0.0000001, 2)
+    # min var, action noise is reduced to (depends on training_episode_length)
+    noise_steps_annealing = trail.suggest_loguniform("noise_steps_annealing", 0.0000001, 2)
     noise_theta = trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
     error_exponent = trail.suggest_loguniform("error_exponent", 0.01, 0.5)
 
-    training_episode_length = trail.suggest_int("batch_size", 200, 5000)  # 128
-    learning_starts = trail.suggest_int("learning_starts", 100, 5000)  # 128
+    training_episode_length = trail.suggest_int("training_episode_length", 200, 5000)  # 128
+    learning_starts = trail.suggest_loguniform("learning_starts", 0.1, 2)  # 128
     tau = trail.suggest_loguniform("tau", 0.0001, 0.2)  # 2
 
     # toDo:
@@ -443,7 +458,8 @@ def objective(trail):
                                batch_size,
                                actor_hidden_size, actor_number_layers, critic_hidden_size, critic_number_layers,
                                alpha_relu_critic,
-                               noise_var, noise_theta, error_exponent, training_episode_length, buffer_size,
+                               noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
+                               training_episode_length, buffer_size,
                                learning_starts, tau, n_trail)
 
 
@@ -453,9 +469,10 @@ def objective(trail):
 
 # toDo: postgresql instead of sqlite
 study = optuna.create_study(study_name=folder_name,
-                            direction='maximize', storage=f'sqlite:///{folder_name}/optuna_data.sqlite',
+                            direction='maximize',
+                            storage=f'sqlite:///{folder_name}/optuna_data_hyperopt_firstTry.sqlite',
                             load_if_exists=True,
                             # sampler=optuna.samplers.GridSampler(search_space)
                             )
 
-study.optimize(objective, n_trials=1)
+study.optimize(objective, n_trials=2)
