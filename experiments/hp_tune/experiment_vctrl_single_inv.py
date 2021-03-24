@@ -172,7 +172,7 @@ class TrainRecorder(BaseCallback):
 
 mongo_recorder = Recorder(database_name=folder_name)
 
-number_learning_steps = 300000
+number_learning_steps = 200000
 number_plotting_steps = 50000
 
 
@@ -255,7 +255,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     # action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
     #                                            sigma=noise_var * np.ones(n_actions), dt=net.ts)
 
-    action_noise = myOrnsteinUhlenbeckActionNoise(n_steps_annealing=number_learning_steps * noise_steps_annealing,
+    action_noise = myOrnsteinUhlenbeckActionNoise(n_steps_annealing=noise_steps_annealing,
                                                   sigma_min=noise_var * np.ones(n_actions) * noise_var_min,
                                                   mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
                                                   sigma=noise_var * np.ones(n_actions), dt=net.ts)
@@ -436,7 +436,8 @@ def objective(trail):
     # min var, action noise is reduced to (depends on noise_var)
     noise_var_min = trail.suggest_loguniform("noise_var_min", 0.0000001, 2)
     # min var, action noise is reduced to (depends on training_episode_length)
-    noise_steps_annealing = trail.suggest_loguniform("noise_steps_annealing", 0.0000001, 2)
+    noise_steps_annealing = trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
+                                              number_learning_steps)
     noise_theta = trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
     error_exponent = trail.suggest_loguniform("error_exponent", 0.01, 0.5)
 
