@@ -41,4 +41,6 @@ class myOrnsteinUhlenbeckActionNoise(OrnsteinUhlenbeckActionNoise):
 
     def reset(self) -> None:
         super().reset()
-        self.n_steps = 0
+
+        # should not be reset because action_noise is reset after episode, but noise reduction over learning-length
+        # self.n_steps = 0

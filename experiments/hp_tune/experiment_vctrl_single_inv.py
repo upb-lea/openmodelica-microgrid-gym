@@ -172,6 +172,9 @@ class TrainRecorder(BaseCallback):
 
 mongo_recorder = Recorder(database_name=folder_name)
 
+number_learning_steps = 300000
+number_plotting_steps = 50000
+
 
 def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
                         batch_size,
@@ -252,7 +255,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     # action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
     #                                            sigma=noise_var * np.ones(n_actions), dt=net.ts)
 
-    action_noise = myOrnsteinUhlenbeckActionNoise(n_steps_annealing=training_episode_length * noise_steps_annealing,
+    action_noise = myOrnsteinUhlenbeckActionNoise(n_steps_annealing=number_learning_steps * noise_steps_annealing,
                                                   sigma_min=noise_var * np.ones(n_actions) * noise_var_min,
                                                   mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
                                                   sigma=noise_var * np.ones(n_actions), dt=net.ts)
@@ -302,10 +305,10 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
         count = count + 2
 
     # todo: instead /here? store reward per step?!
-    plot_callback = EveryNTimesteps(n_steps=50000,
+    plot_callback = EveryNTimesteps(n_steps=number_plotting_steps,
                                     callback=RecordEnvCallback(env, model, training_episode_length, mongo_recorder,
                                                                n_trail))
-    model.learn(total_timesteps=200000, callback=[callback, plot_callback])
+    model.learn(total_timesteps=number_learning_steps, callback=[callback, plot_callback])
     # model.learn(total_timesteps=1000, callback=callback)
 
     monitor_rewards = env.get_episode_rewards()

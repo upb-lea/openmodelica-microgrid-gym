@@ -19,7 +19,7 @@ from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import RandProcess
 from gym.envs.registration import register
 
-folder_name = 'Hyperopt_all_first_try'
+folder_name = 'RandLoadTest'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'plots'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
@@ -44,9 +44,11 @@ v_DC = net['inverter1'].v_DC
 L_filter = 2.3e-3  # / H
 R_filter = 400e-3  # / Ohm
 C_filter = 10e-6  # / F
-R = 40  # nomVoltPeak / 7.5   # / Ohm
+# R = 40  # nomVoltPeak / 7.5   # / Ohm
 lower_bound_load = 11  # to allow maximal load that draws i_limit (toDo: let exceed?)
 upper_bound_load = 160  # to apply symmetrical load bounds
+
+R = np.random.uniform(low=lower_bound_load, high=upper_bound_load)
 
 loadstep_timestep = max_episode_steps / 2
 
@@ -96,7 +98,8 @@ def xylables_R(fig):
 rand_load_train = RandomLoad(max_episode_steps, net.ts, gen)
 
 cb = CallbackList()
-cb.append(partial(gen.reset, initial=R))
+# set initial = None to reset load random in range of bounds
+cb.append(partial(gen.reset))  # , initial=np.random.uniform(low=lower_bound_load, high=upper_bound_load)))
 cb.append(rand_load_train.reset)
 
 register(id='vctrl_single_inv_train-v0',
