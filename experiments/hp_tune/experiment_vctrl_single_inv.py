@@ -94,8 +94,8 @@ class FeatureWrapper(Monitor):
         self._n_training_steps += 1
 
         if self._n_training_steps % self.training_episode_length == 0:
-            # info["timelimit_reached"] = True
-            done = True
+            info["timelimit_reached"] = True
+            # done = True
 
         # log measurement here?
 
