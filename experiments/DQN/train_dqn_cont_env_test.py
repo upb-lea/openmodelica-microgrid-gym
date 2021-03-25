@@ -53,8 +53,8 @@ class FeatureWrapper(Monitor):
         self._n_training_steps += 1
 
         if self._n_training_steps == self.training_episode_length:
-            # done = True
-            info["timelimit_reached"] = True
+            done = True
+            #info["timelimit_reached"] = True
 
         if self._n_training_steps == self.training_episode_length or done:
             self.episode_return.append(sum(self.rewards))
@@ -112,7 +112,7 @@ def bla(idx):
 
     policy_kwargs = dict(activation_fn=th.nn.LeakyReLU, net_arch=[200, 200, 200])
 
-    model = DQN("MlpPolicy", env, learning_rate=1e-3, buffer_size=100000, learning_starts=1000, batch_size=32,
+    model = DQN("MlpPolicy", env, learning_rate=1e-3, buffer_size=10000, learning_starts=1000, batch_size=32,
                 tau=0.001,
                 gamma=0.99, train_freq=(1, "step"), gradient_steps=-1, optimize_memory_usage=False,
                 target_update_interval=1,
@@ -136,11 +136,10 @@ def bla(idx):
     return np.array(env.episode_return)
 
 
-# with Pool(1) as p:
-#    return_all_agents = p.map(bla, range(5))
+#with Pool(2) as p:
+return_all_agents = map(bla, range(20))
 
-return_all_agents = map(bla, range(1))
-#    pvc = 1
+
 
 # return_all_agents.append(np.array(env.episode_return))
 
@@ -150,7 +149,7 @@ return_all_agents = map(bla, range(1))
 
 df = pd.DataFrame(return_all_agents)
 
-df.to_pickle("DQN_ORIGINAL_5Agents")
+df.to_pickle("DQN_original20Agents_sb3_original_lowBuffer")
 
 m = df.mean()
 s = df.std()
@@ -163,7 +162,7 @@ plt.ylabel('Average return')
 plt.xlabel('Episode')
 plt.ylim([0, 200])
 plt.grid()
-plt.title('5 Agent Original Code')
+plt.title('20 Agent Fixed Code_original_lowBuffer')
 plt.show()
 
 """
