@@ -32,7 +32,7 @@ class RecordEnvCallback(BaseCallback):
             action, _states = self.agent.predict(obs, deterministic=True)
             obs, reward, done, info = self.env.step(action)
             rewards.append(reward)
-            if done or self.info.get("timelimit_reached", False):
+            if done or info.get("timelimit_reached", False):
                 break
         # plot rewards?
 

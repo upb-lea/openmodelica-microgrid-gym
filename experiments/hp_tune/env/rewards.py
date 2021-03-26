@@ -240,3 +240,110 @@ class Reward:
             asd = 1
         return rew  # * (1-0.9)
         # return -np.clip(error.squeeze(), 0, 1e5)
+
+    def rew_fun_PIPI(self, cols: List[str], data: np.ndarray, risk) -> float:
+        """
+        uses the same reward for voltage like defined above but also includes reward depending on the current
+        If i_nom is exceeded r_current: f(i_mess) -> [0, 1] is multiplied to the r_voltage
+        Before r_voltage is scaled to the region [0,1]:
+         - r_voltage = (r_voltage+1)/2
+         - r = r_voltage * r_current
+         - r = r-1
+
+         If v_lim or i_lim are exceeded, episode abort -> env.abort_reward (should be -1) is given back
+
+        :param cols: list of variable names of the data
+        :param data: observation data from the environment (ControlVariables, e.g. currents and voltages)
+        :return: Error as negative reward
+        """
+        self.set_idx(cols)
+        idx = self._idx
+
+        i_mess = data[idx[0]]  # 3 phase currents at LC inductors
+        mess = data[idx[2]]  # 3 phase currents at LC inductors
+
+        # set points (sp)
+        isp_abc_master = data[idx[1]]  # convert dq set-points into three-phase abc coordinates
+        SP = data[idx[3]]  # convert dq set-points into three-phase abc coordinates
+
+        # i_mess = iabc_master * self.i_lim
+
+        # SP = vsp_abc_master * self.lim
+        # mess = vabc_master * self.lim
+
+        if any(np.abs(mess) > self.lim) or any(np.abs(i_mess) > self.i_lim):
+            """
+            3rd area - outside valid area - above lim - possible if enough v_DC - DANGEROUS
+            +-v_lim -> +-v_DC
+            Valid for v_lim OR i_lim exceeded
+
+            V1:
+            @ SP = +v_nom AND mess = -v_DC:
+                rew = -1; if error = v_DC + v_nom -> Worst case, +v_nom wanted BUT -v_DC measured
+            @ SP = -v_nom AND mess = -v_lim
+                rew ~ -1/3 - f[(lim-nom)/(nom+v_DC)]
+                rew -> -1 - 2/3*(1 - |lim - nom| / (nom+v_DC))
+                The latter fraction is quite small but leads to depending on the system less then 2/3 is
+                substracted and we have a gap to the 2nd area! :) 
+
+            V2: None is returned to stop the episode (hint: in the env env.abort_reward is given back as reward(?)
+
+            V3: rew = -1
+            """
+
+            # V1:
+            # rew = np.sum(
+            #    (1 - np.abs(SP - mess) / (self.nom + self.v_DC)) * 2 * (1 - self.gamma) / 3 - (1 - self.gamma)) / 3
+
+            # V2:
+            # if return -> rew = None and in env abort_reward is given to agent
+            if self.det_run:
+                return -(1 - self.gamma)
+            else:
+                return
+
+            # V3:
+            # rew = (1 - gamma)
+
+        elif all(np.abs(mess) <= self.nom * 1.1):
+            # if all(np.abs(mess) <= self.lim*self.nom_region):
+            """
+            1st area - inside wanted (nom) operation range
+            -v_nom -> + v_nom
+                rew = 1; if mess = SP
+                rew = 1/3; if error = SP-mess = 2*v_nom (worst case without braking out from nom area)
+            """
+            # devided by 3 because of sums up all 3 phases
+            rew = np.sum((1 - (np.abs(SP - mess) / (2 * self.nom)) ** self.exponent) * 2 * (1 - self.gamma) / 3 + (
+                    1 - self.gamma) / 3) / 3
+
+
+
+
+        else:
+            """
+            2nd area
+            +-v_nom -> +- v_lim
+
+            @ SP = v_nom AND mess = v_nom (-µV), da if mess > v_nom (hier noch Sicherheitsabstand?)
+                rew = 1/3
+            @ SP = v_nom AND mess = -v_lim
+                rew = -1/3
+
+            """
+            rew = np.sum(
+                (1 - np.abs(SP - mess) / (self.nom + self.lim)) * 2 * (1 - self.gamma) / 3 - (1 - self.gamma) / 3) / 3
+
+        if any(abs(i_mess) > self.i_nom):
+            rew = (rew + 1) / 2  # map rew_voltage -> [0,1]
+
+            # Scale rew_voltage with rew_current
+            # rew = rew * np.sum((((self.i_nom - i_mess) / (self.i_lim - self.i_nom))+1) ** self.i_exponent) / 3
+            rew = rew * (((self.i_nom - max(abs(i_mess))) / (self.i_lim - self.i_nom)) + 1) ** self.i_exponent
+
+            rew = rew * 2 - 1  # map rew -> [-1, 1]
+
+        if rew < -1:
+            asd = 1
+        return rew  # * (1-0.9)
+        # return -np.clip(error.squeeze(), 0, 1e5)
