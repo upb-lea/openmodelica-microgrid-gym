@@ -162,7 +162,7 @@ plt.ylabel('Average return')
 plt.xlabel('Episode')
 plt.ylim([0, 200])
 plt.grid()
-plt.title('20 Agent Fixed Code_original_lowBuffer')
+plt.title('20 Agent Original Code_original_lowBuffer')
 plt.show()
 
 """

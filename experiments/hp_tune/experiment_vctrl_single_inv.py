@@ -94,8 +94,8 @@ class FeatureWrapper(Monitor):
         self._n_training_steps += 1
 
         if self._n_training_steps % self.training_episode_length == 0:
-            info["timelimit_reached"] = True
-            # done = True
+            #info["timelimit_reached"] = True
+            done = True
 
         # log measurement here?
 
@@ -172,8 +172,8 @@ class TrainRecorder(BaseCallback):
 
 mongo_recorder = Recorder(database_name=folder_name)
 
-number_learning_steps = 200000
-number_plotting_steps = 50000
+number_learning_steps = 500000
+number_plotting_steps = 100000
 
 
 def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
@@ -306,7 +306,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
     # todo: instead /here? store reward per step?!
     plot_callback = EveryNTimesteps(n_steps=number_plotting_steps,
-                                    callback=RecordEnvCallback(env, model, training_episode_length, mongo_recorder,
+                                    callback=RecordEnvCallback(env, model, 1000, mongo_recorder,
                                                                n_trail))
     model.learn(total_timesteps=number_learning_steps, callback=[callback, plot_callback])
     # model.learn(total_timesteps=1000, callback=callback)
@@ -321,7 +321,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     rew.gamma = 0
     # episodes will not abort, if limit is exceeded reward = -1
     rew.det_run = True
-    rew.exponent = 1
+    rew.exponent = 0.5#1
     limit_exceeded_in_test = False
     limit_exceeded_penalty = 0
     env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v0',
@@ -474,9 +474,9 @@ def objective(trail):
 # toDo: postgresql instead of sqlite
 study = optuna.create_study(study_name=folder_name,
                             direction='maximize',
-                            storage=f'sqlite:///{folder_name}/optuna_data_hyperopt_firstTry.sqlite',
+                            storage=f'sqlite:///{folder_name}/optuna_data_hyperopt_sb3_original_MRE.sqlite',
                             load_if_exists=True,
                             # sampler=optuna.samplers.GridSampler(search_space)
                             )
 
-study.optimize(objective, n_trials=2)
+study.optimize(objective, n_trials=300)
