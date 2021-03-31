@@ -43,7 +43,7 @@ def load_step(t, gain):
     :param gain: device parameter
     :return: Dictionary with load parameters
     """
-    return 1 * gain if t < .02 else 2 * gain
+    return 1 * gain if t < .2 else 2 * gain
 
 
 if __name__ == '__main__':

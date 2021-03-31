@@ -120,7 +120,7 @@ m.Equation(theta3.dt()==w3)
 #           u3 * u2 * -(G[2][1] * m.cos(theta3 - theta2) + B[2][1] * m.sin(theta3 - theta2)) + \
 #           u3 * u3 * -(G[2][2] * m.cos(theta3 - theta3) + B[2][2] * m.sin(theta3 - theta3))))
 
-m.Equation(w1.dt()==((-P1+p_offset[0])-(droop_linear[0]*(w1-nomFreq)))/(J*w1))
+m.Equation(w1.dt()==((-P1+p_offset[0])-(droop_linear[0]*(w1-nomFreq)))/(J*w1)) # use p1~ here instead of p1 calculated above, p1~ delayed with pt1 filter, ampp = 1, same for Q
 m.Equation(w2.dt()==((-P2+p_offset[1])-(droop_linear[1]*(w2-nomFreq)))/(J*w2))
 #m.Equation(w3.dt()==((-P3+p_offset[2])-(droop_linear[2]*(w3-nomFreq)))/(J*w3))
 m.Equation(P3==0)
