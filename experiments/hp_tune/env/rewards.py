@@ -227,7 +227,7 @@ class Reward:
             rew = np.sum(
                 (1 - np.abs(SP - mess) / (self.nom + self.lim)) * 2 * (1 - self.gamma) / 3 - (1 - self.gamma) / 3) / 3
 
-        if any(abs(i_mess) > self.i_nom):
+        if any(abs(i_mess) > ((self.i_nom + self.i_lim) / 2)):
             rew = (rew + 1) / 2  # map rew_voltage -> [0,1]
 
             # Scale rew_voltage with rew_current
