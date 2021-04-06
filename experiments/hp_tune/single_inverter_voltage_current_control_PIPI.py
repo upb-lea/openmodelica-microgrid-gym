@@ -61,7 +61,7 @@ save_results = True
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
-folder_name = 'Pipi_safeopt_v_opt_cc_analytical_MRE'
+folder_name = 'Pipi_safeopt_vc_cc_analytical_MRE'
 save_folder = os.path.join(current_directory, folder_name)
 os.makedirs(save_folder, exist_ok=True)
 
@@ -103,7 +103,7 @@ class Recorder:
 
 def run_experiment():
     rew = Reward(net.v_nom, net['inverter1'].v_lim, net['inverter1'].v_DC, gamma=0,
-                 use_gamma_normalization=1, error_exponent=1, i_lim=net['inverter1'].i_lim,
+                 use_gamma_normalization=1, error_exponent=0.5, i_lim=net['inverter1'].i_lim,
                  i_nom=net['inverter1'].i_nom)
 
     #####################################
@@ -140,12 +140,12 @@ def run_experiment():
     # Definition of the controllers
     # Choose Kp and Ki for the current and voltage controller as mutable parameters
     # mutable_params = dict(voltageP=MutableFloat(0.0175), voltageI=MutableFloat(12))  # 300Hz
-    mutable_params = dict(voltageP=MutableFloat(0.022), voltageI=MutableFloat(213))  # 300Hz
+    mutable_params = dict(voltageP=MutableFloat(0.016), voltageI=MutableFloat(105))  # 300Hz
     voltage_dqp_iparams = PI_params(kP=mutable_params['voltageP'], kI=mutable_params['voltageI'],
                                     limits=(-iLimit, iLimit))
 
     kp_c = 0.04
-    ki_c = 12  # 11.8
+    ki_c = 27  # 11.8
     current_dqp_iparams = PI_params(kP=kp_c, kI=ki_c, limits=(-1, 1))  # Current controller values
 
     # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
@@ -301,11 +301,11 @@ def run_experiment():
         rew.gamma = 0
         # episodes will not abort, if limit is exceeded reward = -1
         rew.det_run = True
-        rew.exponent = 2
+        rew.exponent = 0.5
         limit_exceeded_in_test = False
         limit_exceeded_penalty = 0
 
-        rew_list = []
+
         """
         # toDo: - Use other Test-episode
         #       - Rückgabewert = (Summe der üblichen Rewards) / (Anzahl steps Validierung) + (Penalty i.H.v. -1)
@@ -362,7 +362,7 @@ def run_experiment():
         ts = time.gmtime()
         test_after_training = {"Name": "Test",
                                "time": ts,
-                               "Reward": rew_list}
+                               "Reward": reward_list}
 
         # Add v-measurements
         test_after_training.update({env.viz_col_tmpls[j].vars[i].replace(".", "_"): env.history[
