@@ -122,8 +122,8 @@ class MasterInverter(Inverter):
     def __init__(self, v_ref=(1, 0, 0), pdroop=None, qdroop=None, **kwargs):
         self.v_ref = v_ref
         super().__init__(out_calc=dict(i_ref=3, v_ref=3), **kwargs)
-        pdroop = {**(pdroop or {}), **dict(gain=40000.0, tau=.005)}
-        qdroop = {**(qdroop or {}), **dict(gain=1000.0, tau=.002)}
+        pdroop = {**dict(gain=0.0, tau=.005), **(pdroop or {})}
+        qdroop = {**dict(gain=0.0, tau=.002), **(qdroop or {})}
 
         self.pdroop_ctl = DroopController(DroopParams(nom_value=self.net.freq_nom, **pdroop), self.net.ts)
         self.qdroop_ctl = DroopController(DroopParams(nom_value=self.net.v_nom, **qdroop), self.net.ts)
