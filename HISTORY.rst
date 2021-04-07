@@ -5,6 +5,8 @@ History
 Next
 -------
 
+0.4.0 (2021-04-07)
+------------------
 Changes
 ^^^^^^^
 * ModelicaEnv:
@@ -14,6 +16,10 @@ Changes
     - Introduced abort reward in env if episode is terminated
     - Introduced obs_output to define a subset of history given as observation to the agent
 
+Fix
+^^^
+* omg.net.MasterInverter:
+    - default values used to overwrite passed values
 
 Add
 ^^^
@@ -24,7 +30,7 @@ Add
 
 
 
-0.3.1 (2021-03-26)
+0.3.0 (2020-12-18)
 ------------------
 
 API
