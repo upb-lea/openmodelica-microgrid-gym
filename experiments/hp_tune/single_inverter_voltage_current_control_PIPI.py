@@ -68,7 +68,8 @@ os.makedirs(save_folder, exist_ok=True)
 np.random.seed(1)
 
 # Simulation definitions
-net = Network.load('../../net/net_single-inv-Paper_Loadstep.yaml')
+# net = Network.load('../../net/net_single-inv-Paper_Loadstep.yaml')
+net = Network.load('net/net_vctrl_single_inv.yaml')
 delta_t = 1e-4  # simulation time step size / s
 undersample = 1
 max_episode_steps = 2000  # number of simulation steps per episode
@@ -337,8 +338,12 @@ def run_experiment():
         agent_fig = None
         obs = env.reset()
         for _ in tqdm(range(env.max_episode_steps), desc='steps', unit='step', leave=False):
+            # for _ in tqdm(range(1000), desc='steps', unit='step', leave=False):
 
             done, r = False, None
+
+            if len(reward_list) > 10000:
+                asd = 1
 
             agent.observe(r, done)
             act = agent.act(obs)

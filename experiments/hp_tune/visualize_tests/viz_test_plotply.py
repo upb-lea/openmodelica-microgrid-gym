@@ -6,9 +6,9 @@ from plotly import tools
 from pymongo import MongoClient
 
 client = MongoClient('mongodb://localhost:27017/')
-db = client['Continuing_learning']
+db = client['Hyperopt_MRE_validierung_higherC_border_test']
 
-trail = db.Trail_number_0
+trail = db.Trail_number_1
 
 test_data = trail.find_one({"Name": "Test"})
 fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))
@@ -21,13 +21,24 @@ df2['t'] = pd.DataFrame(t)
 df2['v_a'] = pd.DataFrame(test_data['lc_capacitor1_v'])
 df2['v_b'] = pd.DataFrame(test_data['lc_capacitor2_v'])
 df2['v_c'] = pd.DataFrame(test_data['lc_capacitor3_v'])
-df2['v_c'] = pd.DataFrame(test_data['lc_capacitor3_v'])
+
 df2['v_a_SP'] = pd.DataFrame(test_data['inverter1_v_ref_0'])
+
 x = df2['t']
 v_a = df2['v_a']
 v_b = df2['v_b']
 v_c = df2['v_c']
 v_a_SP = df2['v_a_SP']
+
+# df2['v_a'] = pd.DataFrame(test_data['lc_inductor1_i'])
+# df2['v_b'] = pd.DataFrame(test_data['lc_inductor2_i'])
+# df2['v_c'] = pd.DataFrame(test_data['lc_inductor3_i'])
+# df2['v_a_SP'] = pd.DataFrame(test_data['master_SPVa'])
+# df2['v_b_SP'] = pd.DataFrame(test_data['master_SPVb'])
+# df2['v_c_SP'] = pd.DataFrame(test_data['master_SPVc'])
+# #
+# v_b_SP = df2['v_b_SP']
+# v_c_SP = df2['v_c_SP']
 
 # plot = px.Figure(data=[px.Scatter(
 #    x=x,
@@ -66,6 +77,12 @@ plot.add_trace(
 
 plot.add_trace(
     px.Scatter(x=x, y=v_a_SP))
+
+# plot.add_trace(
+#    px.Scatter(x=x, y=v_b_SP))
+
+# plot.add_trace(
+#    px.Scatter(x=x, y=v_c_SP))
 
 plot.update_layout(
     xaxis=dict(

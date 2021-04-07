@@ -11,6 +11,12 @@ components:
     #v_nom: 190
     v_lim: 285
     v_DC: 600
+    pdroop:
+      gain: 0
+      tau: 0.005
+    qdroop:
+      gain: 0
+      tau: 0.005
     v_noise:
       fun:
         normal: # np.random.*
