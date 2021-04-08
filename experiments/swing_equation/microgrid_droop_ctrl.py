@@ -15,14 +15,14 @@ import numpy as np
 
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import StaticControlAgent
-from openmodelica_microgrid_gym.aux_ctl import PI_params, MultiPhaseDQCurrentController, InverseDroopParams, PLLParams
+from openmodelica_microgrid_gym.aux_ctl import PI_params, MultiPhaseDQCurrentController, InverseDroopParams, PLLParams, MultiPhaseDQ0PIPIController, DroopParams
 # Simulation definitions
 from openmodelica_microgrid_gym.net import Network
 
 max_episode_steps = 8000  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes
-DroopGain = 4000.0  # virtual droop gain for active power / W/Hz
-QDroopGain = 50  # virtual droop gain for reactive power / VAR/V
+DroopGain = 8000.0  # virtual droop gain for active power / W/Hz
+QDroopGain = 200  # virtual droop gain for reactive power / VAR/V
 
 net = Network.load('microgrid.yaml')
 delta_t = net.ts  # simulation time step size / s
@@ -45,13 +45,27 @@ def load_step(t, gain):
     :param gain: device parameter
     :return: Dictionary with load parameters
     """
-    return 1 * gain if t < .2 else 2 * gain
+    return 1 * gain if t < 2.2 else 2 * gain
 
 
 if __name__ == '__main__':
     ctrl = []  # Empty dict which shall include all controllers
 
     #####################################
+
+    #####################################
+    # Define the voltage forming inverter as master
+    # Voltage control PI gain parameters for the voltage sourcing inverter
+    voltage_dqp_iparams = PI_params(kP=0.025, kI=60, limits=(-i_lim, i_lim))
+    # Current control PI gain parameters for the voltage sourcing inverter
+    current_dqp_iparams = PI_params(kP=0.012, kI=90, limits=(-1, 1))
+    # Droop characteristic for the active power Watt/Hz, delta_t
+    droop_param = DroopParams(DroopGain, 0.005, freq_nom)
+    # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
+    qdroop_param = DroopParams(QDroopGain, 0.002, v_nom)
+    # Add to dict
+    ctrl.append(MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, droop_param,
+                                            qdroop_param, ts_sim=delta_t, name='master'))
     # Define the voltage forming inverter as master
     # Voltage control PI gain parameters for the voltage sourcing inverter
     # voltage_dqp_iparams = PI_params(kP=0.025, kI=60, limits=(-iLimit, iLimit))
@@ -59,21 +73,28 @@ if __name__ == '__main__':
     # current_dqp_iparams = PI_params(kP=0.012, kI=90, limits=(-1, 1))
     # pll_params = PLLParams(kP=20, kI=400, limits=None, f_nom=nomFreq)
 
-    current_dqp_iparams = PI_params(kP=0.005, kI=200, limits=(-1, 1))
-    # PI gain parameters for the PLL in the current forming inverter
-    pll_params = PLLParams(kP=10, kI=200, limits=None, f_nom=freq_nom)
-    # Droop characteristic for the active power Watt/Hz, delta_t
-    droop_param = InverseDroopParams(DroopGain, delta_t, freq_nom, tau_filt=0.04)
-    # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
-    qdroop_param = InverseDroopParams(QDroopGain, delta_t, v_nom, tau_filt=0.01)
-    # Add to dict
-    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, i_lim,
-                                              droop_param, qdroop_param, lower_droop_voltage_threshold=-100000, ts_sim=delta_t, name='slave1'))
+   # current_dqp_iparams = PI_params(kP=0.005, kI=200, limits=(-1, 1))
+   # # PI gain parameters for the PLL in the current forming inverter
+   # pll_params = PLLParams(kP=10, kI=200, limits=None, f_nom=freq_nom)
+   # # Droop characteristic for the active power Watt/Hz, delta_t
+   # droop_param = InverseDroopParams(DroopGain, delta_t, freq_nom, tau_filt=0.04)
+   # # Droop characteristic for the reactive power VAR/Volt Var.s/Volt
+   # qdroop_param = InverseDroopParams(QDroopGain, delta_t, v_nom, tau_filt=0.01)
+   # # Add to dict
+   # ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, i_lim,
+#                                              droop_param, qdroop_param, lower_droop_voltage_threshold=-100000, ts_sim=delta_t, name='slave1'))
 
     #####################################
+
+
     # Define the current sourcing inverter as slave
     # Current control PI gain parameters for the current sourcing inverter
-    current_dqp_iparams = PI_params(kP=0.005, kI=200, limits=(-1, 1))
+
+
+
+
+   # current_dqp_iparams = PI_params(kP=0.005, kI=200, limits=(-1, 1))
+    current_dqp_iparams = PI_params(kP=0, kI=0, limits=(-1, 1))
     # PI gain parameters for the PLL in the current forming inverter
     pll_params = PLLParams(kP=10, kI=200, limits=None, f_nom=freq_nom)
     # Droop characteristic for the active power Watts/Hz, W.s/Hz
@@ -85,7 +106,7 @@ if __name__ == '__main__':
                                               droop_param, qdroop_param, lower_droop_voltage_threshold=-100000, ts_sim=delta_t, name='slave'))
 
     # Define the agent as StaticControlAgent which performs the basic controller steps for every environment set
-    agent = StaticControlAgent(ctrl, {'slave1': [[f'lc1.inductor{k}.i' for k in '123'],
+    agent = StaticControlAgent(ctrl, {'master': [[f'lc1.inductor{k}.i' for k in '123'],
                                                  [f'lc1.capacitor{k}.v' for k in '123']],
                                       'slave': [[f'lcl1.inductor{k}.i' for k in '123'],
                                                 [f'lcl1.capacitor{k}.v' for k in '123'],
@@ -98,12 +119,28 @@ if __name__ == '__main__':
                    # viz_cols=['slave1.m[abc]', 'slave1.inst*', 'slave.inst*', 'lcl1.*', 'lc1.*', 'slave.freq','l12.*', 'r.resistor*'],
                    log_level=logging.INFO,
                    max_episode_steps=max_episode_steps,
-                   model_params={'rl.resistor1.R': partial(load_step, gain=20 / 1.4),
-                                 'rl.resistor2.R': partial(load_step, gain=20 / 1.4),
-                                 'rl.resistor3.R': partial(load_step, gain=20 / 1.4),
-                                 'rl.inductor1.L': partial(load_step, gain=0.031 / 1.4),
-                                 'rl.inductor2.L': partial(load_step, gain=0.031 / 1.4),
-                                 'rl.inductor3.L': partial(load_step, gain=0.031 / 1.4)
+ #                  model_params={'rl.resistor1.R': partial(load_step, gain=20 / 1.4),
+ #                                'rl.resistor2.R': partial(load_step, gain=20 / 1.4),
+ #                                'rl.resistor3.R': partial(load_step, gain=20 / 1.4),
+ #                                'rl.inductor1.L': partial(load_step, gain=0.031 / 1.4),
+ #                                'rl.inductor2.L': partial(load_step, gain=0.031 / 1.4),
+ #                                'rl.inductor3.L': partial(load_step, gain=0.031 / 1.4)
+ #                                },
+                   model_params={'rl.resistor1.R': partial(load_step, gain=6.22),
+                                 'rl.resistor2.R': partial(load_step, gain=6.22),
+                                 'rl.resistor3.R': partial(load_step, gain=6.22),
+                                 'rl.inductor1.L': partial(load_step, gain=0.00495),
+                                 'rl.inductor2.L': partial(load_step, gain=0.00495),
+                                 'rl.inductor3.L': partial(load_step, gain=0.00495),
+                                 'l12.inductor1.L': 0.000589,
+                                 'l12.inductor2.L': 0.000589,
+                                 'l12.inductor3.L': 0.000589,
+                                 'l13.inductor1.L': 0.000589,
+                                 'l13.inductor2.L': 0.000589,
+                                 'l13.inductor3.L': 0.000589,
+                                 'l23.inductor1.L': 0.000589,
+                                 'l23.inductor2.L': 0.000589,
+                                 'l23.inductor3.L': 0.000589,
                                  },
                    model_path='../../omg_grid/grid.microgrid4.fmu',
                    net=net
@@ -112,12 +149,12 @@ if __name__ == '__main__':
     # User runner to execute num_episodes-times episodes of the env controlled by the agent
     runner = Runner(agent, env)
     runner.run(num_episodes, visualise=True)
-plt.plot(env.history['slave1.instPow'] - env.history['slave.instPow'])
+plt.plot(env.history['master.instPow'] - env.history['slave.instPow'])
 # plt.label('pow')
 # plt.ylim(-0.02, 0)
 plt.show()
 #   plt.plot(histslave=[['phase']])-dict(slave=[['phase']]))
-plt.plot(env.history['slave1.instQ'] - env.history['slave.instQ'])
+plt.plot(env.history['master.instQ'] - env.history['slave.instQ'])
 plt.show()
 
 # a = env.history['slave1.freq']
