@@ -12,10 +12,10 @@ steps = 1000
 nomFreq = 50  # grid frequency / Hz
 nomVolt = value=230
 omega = 2*np.pi*nomFreq
-tau = 0.01 # Filter constant of, inverse of cut-off frequency
+tau = 0.001 # Filter constant of, inverse of cut-off frequency
 J = 0.05
 J_Q = 0.0005
-
+Ti = 0.00001
 R_lv_line_10km = 0.0
 L_lv_line_10km = 0.0005
 B_L_lv_line_10km = -(omega * L_lv_line_10km)/(R_lv_line_10km**2 + (omega*L_lv_line_10km)**2)
@@ -42,10 +42,7 @@ G = np.array([[0, 0, 0],
                    [0, 0, 0],
                    [0, 0, G_RL_load]])
 
-#constants
 
-p_offset = [00, 00, 0]
-q_offset = [50, 50, 0]
 
 #variables
 
@@ -73,6 +70,7 @@ q3f = m.Var(value=0)
 w1 = m.Var(value=50)
 w2 = m.Var(value=50)
 w3 = m.Var(value=50)
+delta_P = m.Var(value=0)
 theta1, theta2, theta3 = [m.Var() for i in range(3)]
 #initialize variables
 
@@ -90,7 +88,8 @@ theta3.value = 0
     #Equations
 
 #constraints
-
+p_offset = [delta_P, delta_P, 0]
+q_offset = [50, 50, 0]
 #m.Equation(Q3 == 0)
 
 m.Equation(u1 * u1 * (G[0][0] * m.cos(theta1 - theta1) + B[0][0] * m.sin(theta1 - theta1)) + \
@@ -136,6 +135,14 @@ m.Equation(P3f + tau * p3f == P3)
 m.Equation(Q1f + tau * q1f == Q1)
 m.Equation(Q2f + tau * q2f == Q2)
 m.Equation(Q3f + tau * q3f == Q3)
+
+
+
+#Define Power Offset to eliminate steady state frewquency deviations
+m.Equation(delta_P == -1/Ti * m.integral(w3-nomFreq))
+
+
+
 #Power ODE
 
 #m.Equation(J*w1*w1.dt()==(u1 * u1 * -(G[0][0] * m.cos(theta1 - theta1) + B[0][0] * m.sin(theta1 - theta1)) + \
@@ -203,7 +210,7 @@ plt.ylabel('w2(t)')
 plt.plot(m.time,w3,'--')
 plt.xlabel('time')
 plt.ylabel('w3(t)')
-plt.ylim(48, 52)
+plt.ylim(49.5, 50.1)
 plt.show()
 
 
@@ -253,6 +260,15 @@ plt.plot(m.time,(np.array(u1.value)-np.array(u2.value)))
 plt.xlabel('time')
 plt.ylabel('diff_u(t)')
 plt.show()
+
+plt.plot(m.time, delta_P)
+#plt.plot(m.time,(np.array(theta1.value)-np.array(theta3.value)))
+#plt.plot(m.time,(np.array(theta2.value)-np.array(theta3.value)))
+#plt.legend()
+plt.xlabel('time')
+plt.ylabel('delta_P')
+plt.show()
+
 
 a = w1
 np.savetxt("Swing_4000Q50j0_5jq0_0005.csv", a, delimiter=",")
