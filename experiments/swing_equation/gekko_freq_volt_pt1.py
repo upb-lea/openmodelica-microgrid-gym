@@ -15,7 +15,7 @@ omega = 2*np.pi*nomFreq
 tau = 0.001 # Filter constant of, inverse of cut-off frequency
 J = 0.05
 J_Q = 0.0005
-Ti = 0.00001
+Ti = 0.000005
 R_lv_line_10km = 0.0
 L_lv_line_10km = 0.0005
 B_L_lv_line_10km = -(omega * L_lv_line_10km)/(R_lv_line_10km**2 + (omega*L_lv_line_10km)**2)
@@ -71,6 +71,7 @@ w1 = m.Var(value=50)
 w2 = m.Var(value=50)
 w3 = m.Var(value=50)
 delta_P = m.Var(value=0)
+delta_Q = m.Var(value=0)
 theta1, theta2, theta3 = [m.Var() for i in range(3)]
 #initialize variables
 
@@ -89,7 +90,7 @@ theta3.value = 0
 
 #constraints
 p_offset = [delta_P, delta_P, 0]
-q_offset = [50, 50, 0]
+q_offset = [delta_Q, delta_Q, 0]
 #m.Equation(Q3 == 0)
 
 m.Equation(u1 * u1 * (G[0][0] * m.cos(theta1 - theta1) + B[0][0] * m.sin(theta1 - theta1)) + \
@@ -140,6 +141,8 @@ m.Equation(Q3f + tau * q3f == Q3)
 
 #Define Power Offset to eliminate steady state frewquency deviations
 m.Equation(delta_P == -1/Ti * m.integral(w3-nomFreq))
+
+m.Equation(delta_Q == -1/Ti * m.integral(u3-nomVolt))
 
 
 
@@ -268,6 +271,15 @@ plt.plot(m.time, delta_P)
 plt.xlabel('time')
 plt.ylabel('delta_P')
 plt.show()
+
+plt.plot(m.time, delta_Q)
+#plt.plot(m.time,(np.array(theta1.value)-np.array(theta3.value)))
+#plt.plot(m.time,(np.array(theta2.value)-np.array(theta3.value)))
+#plt.legend()
+plt.xlabel('time')
+plt.ylabel('delta_Q')
+plt.show()
+
 
 
 a = w1
