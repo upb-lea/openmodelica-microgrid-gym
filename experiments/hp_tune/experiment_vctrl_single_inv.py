@@ -1,4 +1,5 @@
 import time
+from collections import OrderedDict
 from typing import Union
 
 import gym
@@ -23,7 +24,23 @@ from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.util import abc_to_alpha_beta
 
 np.random.seed(0)
-#asd
+
+number_learning_steps = 50000
+number_plotting_steps = 250000
+number_trails = 1
+
+R_training = []  # np.zeros(shape=(number_learning_steps+5,number_trails))
+i_phasor_training = []  # np.zeros(shape=(number_learning_steps,number_trails))
+v_phasor_training = []  # np.zeros(shape=(number_learning_steps,number_trails))
+i_a = []
+i_b = []
+i_c = []
+v_a = []
+v_b = []
+v_c = []
+# params_change = OrderedDict()   # für schichtweise
+params_change = []
+# asd
 # toDo: what to store:
 """
 Alle importieren vom Recorder der in DB speichert und interagieren an den richtungen stellen mit dem env/agent...
@@ -81,6 +98,8 @@ class FeatureWrapper(Monitor):
             low=np.full(env.observation_space.shape[0] + number_of_features, -np.inf),
             high=np.full(env.observation_space.shape[0] + number_of_features, np.inf))
         self.training_episode_length = training_episode_length
+        self._i_phasor = 0.0
+        self._v_pahsor = 0.0
         self._n_training_steps = 0
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
@@ -94,16 +113,29 @@ class FeatureWrapper(Monitor):
         self._n_training_steps += 1
 
         if self._n_training_steps % self.training_episode_length == 0:
-            #info["timelimit_reached"] = True
+            # info["timelimit_reached"] = True
             done = True
 
         # log measurement here?
 
         # add wanted features here (add appropriate self.observation in init!!)
         # calculate magnitude of current phasor abc
-        feature_diff_imax_iphasor = self.cal_phasor_magnitude(obs[0:3])
+        self.i_phasor = self.cal_phasor_magnitude(obs[0:3])
+        self.v_phasor = self.cal_phasor_magnitude(obs[3:6])
 
-        obs = np.append(obs, feature_diff_imax_iphasor)
+        R_training.append(self.env.history.df['r_load.resistor1.R'].iloc[-1])
+        i_phasor_training.append((self.i_phasor) * self.env.net['inverter1'].i_lim)
+        v_phasor_training.append((self.v_phasor) * self.env.net['inverter1'].v_lim)
+
+        i_a.append(self.env.history.df['lc.inductor1.i'].iloc[-1])
+        i_b.append(self.env.history.df['lc.inductor2.i'].iloc[-1])
+        i_c.append(self.env.history.df['lc.inductor3.i'].iloc[-1])
+
+        v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
+        v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
+        v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
+
+        obs = np.append(obs, self.i_phasor - 0.5)
 
         return obs, reward, done, info
 
@@ -118,8 +150,22 @@ class FeatureWrapper(Monitor):
         # reset timelimit_reached flag
         # self.info["timelimit_reached"] = False
 
-        feature_diff_imax_iphasor = self.cal_phasor_magnitude(obs[0:3])
-        obs = np.append(obs, feature_diff_imax_iphasor)
+        self.i_phasor = self.cal_phasor_magnitude(obs[0:3])
+        self.v_phasor = self.cal_phasor_magnitude(obs[3:6])
+
+        R_training.append(self.env.history.df['r_load.resistor1.R'].iloc[-1])
+        i_phasor_training.append((self.i_phasor) * self.env.net['inverter1'].i_lim)
+        v_phasor_training.append((self.v_phasor) * self.env.net['inverter1'].v_lim)
+
+        i_a.append(self.env.history.df['lc.inductor1.i'].iloc[-1])
+        i_b.append(self.env.history.df['lc.inductor2.i'].iloc[-1])
+        i_c.append(self.env.history.df['lc.inductor3.i'].iloc[-1])
+
+        v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
+        v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
+        v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
+
+        obs = np.append(obs, self.i_phasor - 0.5)
 
         return obs
 
@@ -141,14 +187,19 @@ class FeatureWrapper(Monitor):
 
         # mapping [-0.5 -,0.5] (can be < 0.5 if phasor exceeds lim)
         feature_diff_imax_iphasor = (1 - i_phasor_mag) - 0.5
+        feature_diff_imax_iphasor = (i_phasor_mag) - 0.5
 
-        return feature_diff_imax_iphasor
+        if (i_phasor_mag) * 16 > 15:
+            asd = 1
+
+        return i_phasor_mag
 
 
 class TrainRecorder(BaseCallback):
 
     def __init__(self, verbose=1):
         super(TrainRecorder, self).__init__(verbose)
+        self.last_model_params = None  #self.model.policy.state_dict()
 
     def _on_training_end(self) -> None:
         """
@@ -160,20 +211,56 @@ class TrainRecorder(BaseCallback):
 
     def _on_step(self) -> bool:
         asd = 1
+        # R_training[self.n_calls, number_trails] = self.training_env.envs[0].env.history.df['r_load.resistor1.R'].iloc[-1]
+        # R_training[self.n_calls-1, 0] = self.training_env.envs[0].env.history.df['r_load.resistor1.R'].iloc[-1]
+        """
+        R_training.append(self.training_env.envs[0].env.history.df['r_load.resistor1.R'].iloc[-1])
+        i_phasor_training.append((self.training_env.envs[0].i_phasor+0.5)*net['inverter1'].i_lim)
+        v_phasor_training.append((self.training_env.envs[0].v_phasor+0.5)*net['inverter1'].v_lim)
 
+        if (self.training_env.envs[0].i_phasor)*net['inverter1'].i_lim > 15:
+            asd = 1
+
+        i_a.append(self.training_env.envs[0].env.history.df['lc.inductor1.i'].iloc[-1])
+        i_b.append(self.training_env.envs[0].env.history.df['lc.inductor2.i'].iloc[-1])
+        i_c.append(self.training_env.envs[0].env.history.df['lc.inductor3.i'].iloc[-1])
+
+        v_a.append(self.training_env.envs[0].env.history.df['lc.capacitor1.v'].iloc[-1])
+        v_b.append(self.training_env.envs[0].env.history.df['lc.capacitor2.v'].iloc[-1])
+        v_c.append(self.training_env.envs[0].env.history.df['lc.capacitor3.v'].iloc[-1])
         # nach env.step()
-
+        """
         return True
 
     def _on_rollout_end(self) -> None:
         # asd = 1
+
+        model_params = self.model.policy.parameters_to_vector()
+
+        if self.last_model_params is None:
+            self.last_model_params = model_params
+        else:
+            params_change.append(np.float64(np.mean(self.last_model_params - model_params)))
+
+        """model_params = self.model.policy.state_dict()
+        if self.last_model_params is None:
+            for key, value in model_params.items():
+                params_change[key.replace(".", "_")] = []
+        else:
+            for key, value in model_params.items():
+                #print(key)
+                params_change[key.replace(".", "_")].append(th.mean((model_params[key]-self.last_model_params[key])).tolist())
+        """
+
+        self.last_model_params = model_params
+
+        # self.model.actor.mu._modules # alle :)
         pass
 
 
 mongo_recorder = Recorder(database_name=folder_name)
 
-number_learning_steps = 500000
-number_plotting_steps = 100000
+
 
 
 def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
@@ -265,16 +352,16 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
     callback = TrainRecorder()
 
-    model = DDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
-                 # model = myDDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
-                 policy_kwargs=policy_kwargs,
-                 learning_rate=learning_rate, buffer_size=buffer_size,
-                 learning_starts=int(learning_starts * training_episode_length),
-                 batch_size=batch_size, tau=tau, gamma=gamma, action_noise=action_noise,
-                 train_freq=(1, "episode"), gradient_steps=- 1,
-                 # n_episodes_rollout=1,
-                 optimize_memory_usage=False,
-                 create_eval_env=False, seed=None, device='auto', _init_setup_model=True)
+    # model = DDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
+    model = myDDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
+                   policy_kwargs=policy_kwargs,
+                   learning_rate=learning_rate, buffer_size=buffer_size,
+                   learning_starts=int(learning_starts * training_episode_length),
+                   batch_size=batch_size, tau=tau, gamma=gamma, action_noise=action_noise,
+                   train_freq=(1, "episode"), gradient_steps=- 1,
+                   # n_episodes_rollout=1,
+                   optimize_memory_usage=False,
+                   create_eval_env=False, seed=None, device='auto', _init_setup_model=True)
 
     count = 0
 
@@ -391,6 +478,23 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
     mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, test_after_training)
 
+    train_R = {"Name": "Training",
+               "R_load_training": R_training,
+               "i_phasor_training": i_phasor_training,
+               "v_phasor_training": v_phasor_training,
+               "i_a": i_a,
+               "i_b": i_b,
+               "i_c": i_c,
+               "v_a": v_a,
+               "v_b": v_b,
+               "v_c": v_c,
+               "model_params_change": params_change,
+               "actor_loss_batch_mean": model.actor_loss_batch_mean,
+               "critic_loss_batch_mean": model.critic_loss_batch_mean
+               }
+
+    mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, train_R)
+
     return (return_sum / env_test.max_episode_steps + limit_exceeded_penalty)
 
 
@@ -413,37 +517,37 @@ def objective(trail):
 
     """
 
-    learning_rate = trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
-    gamma = trail.suggest_loguniform("gamma", 0.1, 0.99)
-    weight_scale = trail.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
+    learning_rate = 70e-6  # trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
+    gamma = 0.65  # trail.suggest_loguniform("gamma", 0.1, 0.99)
+    weight_scale = 0.012  # trail.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
 
-    bias_scale = trail.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
-    alpha_relu_actor = trail.suggest_loguniform("alpha_relu_actor", 0.0001, 0.5)  # 0.005
-    alpha_relu_critic = trail.suggest_loguniform("alpha_relu_critic", 0.0001, 0.5)  # 0.005
+    bias_scale = 0.01  # trail.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
+    alpha_relu_actor = 0.4  # trail.suggest_loguniform("alpha_relu_actor", 0.0001, 0.5)  # 0.005
+    alpha_relu_critic = 0.04  # trail.suggest_loguniform("alpha_relu_critic", 0.0001, 0.5)  # 0.005
 
-    batch_size = trail.suggest_int("batch_size", 32, 1024)  # 128
-    buffer_size = trail.suggest_int("buffer_size", 10, 20000)  # 128
+    batch_size = 256  # trail.suggest_int("batch_size", 32, 1024)  # 128
+    buffer_size = 100000  # trail.suggest_int("buffer_size", 10, 20000)  # 128
 
-    actor_hidden_size = trail.suggest_int("actor_hidden_size", 10, 500)  # 100  # Using LeakyReLU
-    actor_number_layers = trail.suggest_int("actor_number_layers", 1, 3)
+    actor_hidden_size = 400  # trail.suggest_int("actor_hidden_size", 10, 500)  # 100  # Using LeakyReLU
+    actor_number_layers = 1  # trail.suggest_int("actor_number_layers", 1, 3)
 
-    critic_hidden_size = trail.suggest_int("critic_hidden_size", 10, 500)  # 100
-    critic_number_layers = trail.suggest_int("critic_number_layers", 1, 4)
+    critic_hidden_size = 200  # trail.suggest_int("critic_hidden_size", 10, 500)  # 100
+    critic_number_layers = 3  # trail.suggest_int("critic_number_layers", 1, 4)
 
     n_trail = str(trail.number)
     use_gamma_in_rew = 1
-    noise_var = trail.suggest_loguniform("noise_var", 0.01, 4)  # 2
+    noise_var = 0.04  # trail.suggest_loguniform("noise_var", 0.01, 4)  # 2
     # min var, action noise is reduced to (depends on noise_var)
-    noise_var_min = trail.suggest_loguniform("noise_var_min", 0.0000001, 2)
+    noise_var_min = 360e-9  # trail.suggest_loguniform("noise_var_min", 0.0000001, 2)
     # min var, action noise is reduced to (depends on training_episode_length)
-    noise_steps_annealing = trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
-                                              number_learning_steps)
-    noise_theta = trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
-    error_exponent = trail.suggest_loguniform("error_exponent", 0.01, 0.5)
+    noise_steps_annealing = 0.8 * number_learning_steps  # trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
+    #             number_learning_steps)
+    noise_theta = 3.7  # trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
+    error_exponent = 0.04  # trail.suggest_loguniform("error_exponent", 0.01, 0.5)
 
-    training_episode_length = trail.suggest_int("training_episode_length", 200, 5000)  # 128
-    learning_starts = trail.suggest_loguniform("learning_starts", 0.1, 2)  # 128
-    tau = trail.suggest_loguniform("tau", 0.0001, 0.2)  # 2
+    training_episode_length = 800  # trail.suggest_int("training_episode_length", 200, 5000)  # 128
+    learning_starts = 0.1  # 0.32# trail.suggest_loguniform("learning_starts", 0.1, 2)  # 128
+    tau = 0.05  # trail.suggest_loguniform("tau", 0.0001, 0.2)  # 2
 
     # toDo:
     # memory_interval = 1
@@ -457,6 +561,10 @@ def objective(trail):
     trail_config_mongo.update(trail.params)
 
     mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, trail_config_mongo)
+
+
+
+
 
     return experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
                                batch_size,
@@ -474,9 +582,9 @@ def objective(trail):
 # toDo: postgresql instead of sqlite
 study = optuna.create_study(study_name=folder_name,
                             direction='maximize',
-                            storage=f'sqlite:///{folder_name}/optuna_data_hyperopt_sb3_original_MRE.sqlite',
+                            storage=f'sqlite:///{folder_name}/R_load_log_test.sqlite',
                             load_if_exists=True,
                             # sampler=optuna.samplers.GridSampler(search_space)
                             )
 
-study.optimize(objective, n_trials=300)
+study.optimize(objective, n_trials=number_trails)
