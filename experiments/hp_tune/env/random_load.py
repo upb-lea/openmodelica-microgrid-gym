@@ -72,7 +72,7 @@ class RandomLoad:
         if np.random.randint(0, 1001) < 2:
 
             # toDo: harte grenze z.b. bei 11 Ohm (limit) aber ziehen nur aus nom-Bereich (14 Ohm)
-            gain = np.random.randint(self.rand_process.bounds[0] + 3, self.rand_process.bounds[1] + 1)
+            gain = np.random.randint(self.rand_process.bounds[0], self.rand_process.bounds[1])
 
             self.rand_process.proc.mean = gain
 

@@ -6,6 +6,7 @@ import gym
 import matplotlib.pyplot as plt
 import numpy as np
 import optuna
+import pandas as pd
 import torch as th
 from pymongo import MongoClient
 from stable_baselines3 import DDPG
@@ -25,19 +26,20 @@ from openmodelica_microgrid_gym.util import abc_to_alpha_beta
 
 np.random.seed(0)
 
-number_learning_steps = 50000
-number_plotting_steps = 250000
+number_learning_steps = 20000
+number_plotting_steps = 50000
 number_trails = 1
 
-R_training = []  # np.zeros(shape=(number_learning_steps+5,number_trails))
-i_phasor_training = []  # np.zeros(shape=(number_learning_steps,number_trails))
-v_phasor_training = []  # np.zeros(shape=(number_learning_steps,number_trails))
-i_a = []
-i_b = []
-i_c = []
-v_a = []
-v_b = []
-v_c = []
+reward_episode_mean = []
+# R_training = []  # np.zeros(shape=(number_learning_steps+5,number_trails))
+# i_phasor_training = []  # np.zeros(shape=(number_learning_steps,number_trails))
+# v_phasor_training = []  # np.zeros(shape=(number_learning_steps,number_trails))
+# i_a = []
+# i_b = []
+# i_c = []
+# v_a = []
+# v_b = []
+# v_c = []
 # params_change = OrderedDict()   # für schichtweise
 params_change = []
 # asd
@@ -83,7 +85,8 @@ class Recorder:
 
 class FeatureWrapper(Monitor):
 
-    def __init__(self, env, number_of_features: int = 0, training_episode_length: int = np.inf):
+    def __init__(self, env, number_of_features: int = 0, training_episode_length: int = np.inf, recorder=None,
+                 n_trail=""):
         """
         Env Wrapper to add features to the env-observations and adds information to env.step output which can be used in
         case of an continuing (non-episodic) task to reset the environment without being terminated by done
@@ -98,9 +101,15 @@ class FeatureWrapper(Monitor):
             low=np.full(env.observation_space.shape[0] + number_of_features, -np.inf),
             high=np.full(env.observation_space.shape[0] + number_of_features, np.inf))
         self.training_episode_length = training_episode_length
+        self.recorder = recorder
+        self._n_training_steps = 0
         self._i_phasor = 0.0
         self._v_pahsor = 0.0
-        self._n_training_steps = 0
+        self.n_episode = 0
+        self.R_training = []
+        self.i_phasor_training = []
+        self.v_phasor_training = []
+        self.n_trail = n_trail
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
         """
@@ -123,10 +132,30 @@ class FeatureWrapper(Monitor):
         self.i_phasor = self.cal_phasor_magnitude(obs[0:3])
         self.v_phasor = self.cal_phasor_magnitude(obs[3:6])
 
-        R_training.append(self.env.history.df['r_load.resistor1.R'].iloc[-1])
-        i_phasor_training.append((self.i_phasor) * self.env.net['inverter1'].i_lim)
-        v_phasor_training.append((self.v_phasor) * self.env.net['inverter1'].v_lim)
+        self.R_training.append(self.env.history.df['r_load.resistor1.R'].iloc[-1])
+        self.i_phasor_training.append((self.i_phasor) * self.env.net['inverter1'].i_lim)
+        self.v_phasor_training.append((self.v_phasor) * self.env.net['inverter1'].v_lim)
 
+        if done:
+            reward_episode_mean.append(np.mean(self.rewards))
+            episode_data = {"Name": "On_Training",
+                            "Epsisode_number": self.n_episode,
+                            "Episode_length": self._n_training_steps,
+                            "R_load_training": self.R_training,
+                            "i_phasor_training": self.i_phasor_training,
+                            "v_phasor_training": self.v_phasor_training,
+                            "Rewards": self.rewards
+                            }
+
+            mongo_recorder.save_to_mongodb('Trail_number_' + self.n_trail, episode_data)
+
+            # clear lists
+            self.R_training = []
+            self.i_phasor_training = []
+            self.v_phasor_training = []
+            self.n_episode += 1
+
+        """
         i_a.append(self.env.history.df['lc.inductor1.i'].iloc[-1])
         i_b.append(self.env.history.df['lc.inductor2.i'].iloc[-1])
         i_c.append(self.env.history.df['lc.inductor3.i'].iloc[-1])
@@ -134,7 +163,7 @@ class FeatureWrapper(Monitor):
         v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
         v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
         v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
-
+        """
         obs = np.append(obs, self.i_phasor - 0.5)
 
         return obs, reward, done, info
@@ -151,6 +180,7 @@ class FeatureWrapper(Monitor):
         # self.info["timelimit_reached"] = False
 
         self.i_phasor = self.cal_phasor_magnitude(obs[0:3])
+        """
         self.v_phasor = self.cal_phasor_magnitude(obs[3:6])
 
         R_training.append(self.env.history.df['r_load.resistor1.R'].iloc[-1])
@@ -164,7 +194,7 @@ class FeatureWrapper(Monitor):
         v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
         v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
         v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
-
+        """
         obs = np.append(obs, self.i_phasor - 0.5)
 
         return obs
@@ -334,7 +364,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                    )
 
-    env = FeatureWrapper(env, number_of_features=1, training_episode_length=training_episode_length)
+    env = FeatureWrapper(env, number_of_features=1, training_episode_length=training_episode_length,
+                         recorder=mongo_recorder, n_trail=n_trail)
 
     n_actions = env.action_space.shape[-1]
     noise_var = noise_var  # 20#0.2
@@ -398,7 +429,13 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     model.learn(total_timesteps=number_learning_steps, callback=[callback, plot_callback])
     # model.learn(total_timesteps=1000, callback=callback)
 
-    monitor_rewards = env.get_episode_rewards()
+    train_data = {"Name": "After_Training",
+                  "Mean_eps_reward": reward_episode_mean,
+                  "Sum_eps_rewad": env.get_episode_rewards()
+                  }
+
+    mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, train_data)
+    # monitor_rewards = env.get_episode_rewards()
     # print(monitor_rewards)
     # todo: instead: store model(/weights+bias?) to database
     model.save(f'{folder_name}/{n_trail}/model.zip')
@@ -478,6 +515,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
     mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, test_after_training)
 
+    """
     train_R = {"Name": "Training",
                "R_load_training": R_training,
                "i_phasor_training": i_phasor_training,
@@ -494,6 +532,12 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                }
 
     mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, train_R)
+    """
+
+    # train_data = pd.DataFrame(R_training)#, i_phasor_training, v_phasor_training, params_change,
+    # model.actor_loss_batch_mean,model.critic_loss_batch_mean)
+
+    # train_data.to_pickle(f'{folder_name}/Trail_number_' + n_trail)
 
     return (return_sum / env_test.max_episode_steps + limit_exceeded_penalty)
 

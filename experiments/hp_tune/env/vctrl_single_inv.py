@@ -19,7 +19,7 @@ from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import RandProcess
 from gym.envs.registration import register
 
-folder_name = 'R_load_log_test2'
+folder_name = 'Train_logging_test'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'plots'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
@@ -45,8 +45,8 @@ L_filter = 2.3e-3  # / H
 R_filter = 400e-3  # / Ohm
 C_filter = 10e-6  # / F
 # R = 40  # nomVoltPeak / 7.5   # / Ohm
-lower_bound_load = 11  # to allow maximal load that draws i_limit (toDo: let exceed?)
-upper_bound_load = 160  # to apply symmetrical load bounds
+lower_bound_load = 2  # to allow maximal load that draws i_limit (toDo: let exceed?)
+upper_bound_load = 200  # to apply symmetrical load bounds
 
 R = np.random.uniform(low=lower_bound_load, high=upper_bound_load)
 
