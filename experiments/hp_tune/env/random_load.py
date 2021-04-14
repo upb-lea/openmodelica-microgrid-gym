@@ -6,14 +6,17 @@ from openmodelica_microgrid_gym.util import RandProcess
 
 class RandomLoad:
     def __init__(self, max_episode_steps: int, ts: float, rand_process: RandProcess, loadstep_time: int = None,
-                 load_curve: pd.DataFrame = None):
+                 load_curve: pd.DataFrame = None, bounds=None, bounds_std=None):
         """
 
         :param max_episode_steps: number of steps per episode
         :param ts: sampletime of env
         :param rand_pocess: Instance of random process defines noise added to load
         :param loadstep_time: number of env step where load step should happen
-        toDo: choose number of loadsteps; distribute them randomly in the episode and let rand choose if up or down
+        :param load_curve: Stored load data to sample from instead of smaple from distribution
+        :param bounds: Bounds to clip the sampled load data
+        :param bounds_std: Chosen bounds are sampled from a distribution with std=bounds_std and mean=bounds
+
         """
         self.max_episode_steps = max_episode_steps
         self.ts = ts
@@ -23,6 +26,14 @@ class RandomLoad:
         else:
             self.loadstep_time = loadstep_time
         self.load_curve = load_curve
+        if bounds is None:
+            self.bounds = (-np.inf, np.inf)
+        else:
+            self.bounds = bounds
+        if bounds_std is None:
+            self.bounds_std = (-np.inf, np.inf)
+        else:
+            self.bounds_std = bounds_std
 
     def reset(self, loadstep_time=None):
         if loadstep_time is None:
@@ -88,4 +99,9 @@ class RandomLoad:
                 self.rand_process.proc.vol = np.random.randint(10, 100)
                 self.rand_process.proc.vol = np.random.randint(1, 100)
 
-        return self.rand_process.sample(t)
+        # return self.rand_process.sample(t)
+        # return np.clip(self.rand_process.sample(t), *self.bounds).squeeze()
+        return np.clip(self.rand_process.sample(t),
+                       self.bounds[0] + np.random.normal(scale=self.bounds_std[0]),
+                       self.bounds[1] + np.random.normal(scale=self.bounds_std[1])
+                       )

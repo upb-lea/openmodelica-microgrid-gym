@@ -30,7 +30,7 @@ number_learning_steps = 20000
 number_plotting_steps = 50000
 number_trails = 1
 
-reward_episode_mean = []
+# reward_episode_mean = []
 # R_training = []  # np.zeros(shape=(number_learning_steps+5,number_trails))
 # i_phasor_training = []  # np.zeros(shape=(number_learning_steps,number_trails))
 # v_phasor_training = []  # np.zeros(shape=(number_learning_steps,number_trails))
@@ -104,11 +104,18 @@ class FeatureWrapper(Monitor):
         self.recorder = recorder
         self._n_training_steps = 0
         self._i_phasor = 0.0
+        self.i_a = []
+        self.i_b = []
+        self.i_c = []
+        self.v_a = []
+        self.v_b = []
+        self.v_c = []
         self._v_pahsor = 0.0
         self.n_episode = 0
         self.R_training = []
         self.i_phasor_training = []
         self.v_phasor_training = []
+        self.reward_episode_mean = []
         self.n_trail = n_trail
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
@@ -136,13 +143,27 @@ class FeatureWrapper(Monitor):
         self.i_phasor_training.append((self.i_phasor) * self.env.net['inverter1'].i_lim)
         self.v_phasor_training.append((self.v_phasor) * self.env.net['inverter1'].v_lim)
 
+        self.i_a.append(self.env.history.df['lc.inductor1.i'].iloc[-1])
+        self.i_b.append(self.env.history.df['lc.inductor2.i'].iloc[-1])
+        self.i_c.append(self.env.history.df['lc.inductor3.i'].iloc[-1])
+
+        self.v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
+        self.v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
+        self.v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
+
         if done:
-            reward_episode_mean.append(np.mean(self.rewards))
+            self.reward_episode_mean.append(np.mean(self.rewards))
             episode_data = {"Name": "On_Training",
                             "Epsisode_number": self.n_episode,
                             "Episode_length": self._n_training_steps,
                             "R_load_training": self.R_training,
                             "i_phasor_training": self.i_phasor_training,
+                            "i_a_training": self.i_a,
+                            "i_b_training": self.i_b,
+                            "i_c_training": self.i_c,
+                            "v_a_training": self.v_a,
+                            "v_b_training": self.v_b,
+                            "v_c_training": self.v_c,
                             "v_phasor_training": self.v_phasor_training,
                             "Rewards": self.rewards
                             }
@@ -153,17 +174,15 @@ class FeatureWrapper(Monitor):
             self.R_training = []
             self.i_phasor_training = []
             self.v_phasor_training = []
+            self.i_a = []
+            self.i_b = []
+            self.i_c = []
+            self.v_a = []
+            self.v_b = []
+            self.v_c = []
             self.n_episode += 1
 
-        """
-        i_a.append(self.env.history.df['lc.inductor1.i'].iloc[-1])
-        i_b.append(self.env.history.df['lc.inductor2.i'].iloc[-1])
-        i_c.append(self.env.history.df['lc.inductor3.i'].iloc[-1])
 
-        v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
-        v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
-        v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
-        """
         obs = np.append(obs, self.i_phasor - 0.5)
 
         return obs, reward, done, info
@@ -430,7 +449,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     # model.learn(total_timesteps=1000, callback=callback)
 
     train_data = {"Name": "After_Training",
-                  "Mean_eps_reward": reward_episode_mean,
+                  "Mean_eps_reward": env.reward_episode_mean,
                   "Sum_eps_rewad": env.get_episode_rewards()
                   }
 

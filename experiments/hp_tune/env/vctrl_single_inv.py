@@ -45,9 +45,12 @@ L_filter = 2.3e-3  # / H
 R_filter = 400e-3  # / Ohm
 C_filter = 10e-6  # / F
 # R = 40  # nomVoltPeak / 7.5   # / Ohm
-lower_bound_load = 2  # to allow maximal load that draws i_limit (toDo: let exceed?)
+lower_bound_load = -10  # to allow maximal load that draws i_limit (toDo: let exceed?)
 upper_bound_load = 200  # to apply symmetrical load bounds
-
+lower_bound_load_clip = 14  # to allow maximal load that draws i_limit (toDo: let exceed?)
+upper_bound_load_clip = 200  # to apply symmetrical load bounds
+lower_bound_load_clip_std = 2
+upper_bound_load_clip_std = 0
 R = np.random.uniform(low=lower_bound_load, high=upper_bound_load)
 
 loadstep_timestep = max_episode_steps / 2
@@ -95,7 +98,8 @@ def xylables_R(fig):
 
 
 # rew = Reward(v_nom, v_lim, v_DC, gamma, use_gamma_in_rew)
-rand_load_train = RandomLoad(max_episode_steps, net.ts, gen)
+rand_load_train = RandomLoad(max_episode_steps, net.ts, gen, bounds=(lower_bound_load_clip, upper_bound_load_clip),
+                             bounds_std=(lower_bound_load_clip_std, upper_bound_load_clip_std))
 
 cb = CallbackList()
 # set initial = None to reset load random in range of bounds
