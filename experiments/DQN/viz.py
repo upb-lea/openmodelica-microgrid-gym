@@ -1,8 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-agents25_original = pd.read_pickle("DQN_without_fix")
-agents50_fix = pd.read_pickle("DQN_WITH_fix_50_Agents")
+agents25_original = pd.read_pickle("DQN_ORIGINAL_5Agents")
+agents50_fix = pd.read_pickle("DQN_WITH_fix5Agents")
 
 m = agents25_original.mean()
 s = agents25_original.std()
