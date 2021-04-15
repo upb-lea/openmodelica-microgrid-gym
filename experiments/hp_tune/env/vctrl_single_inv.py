@@ -19,7 +19,7 @@ from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import RandProcess
 from gym.envs.registration import register
 
-folder_name = 'Train_logging_test'
+folder_name = 'Load_clipp'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'plots'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
@@ -55,7 +55,7 @@ R = np.random.uniform(low=lower_bound_load, high=upper_bound_load)
 
 loadstep_timestep = max_episode_steps / 2
 
-gen = RandProcess(VasicekProcess, proc_kwargs=dict(speed=1000, vol=10, mean=R), initial=R,
+gen = RandProcess(VasicekProcess, proc_kwargs=dict(speed=800, vol=40, mean=R), initial=R,
                   bounds=(lower_bound_load, upper_bound_load))
 
 

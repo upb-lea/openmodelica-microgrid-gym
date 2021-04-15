@@ -31,9 +31,12 @@ class RandomLoad:
         else:
             self.bounds = bounds
         if bounds_std is None:
-            self.bounds_std = (-np.inf, np.inf)
+            self.bounds_std = (0, 0)
         else:
             self.bounds_std = bounds_std
+
+        self.lowerbound_std = 0
+        self.upperbound_std = 0
 
     def reset(self, loadstep_time=None):
         if loadstep_time is None:
@@ -72,7 +75,7 @@ class RandomLoad:
     def random_load_step(self, t, event_prob: int = 2, step_prob: int = 50):
         """
         Changes the load parameters applying a loadstep with 0.2% probability which is a pure step with 50 %
-        probability otherwise a drift
+        probability otherwise a drift. In every event the random process variance is drawn randomly [1, 150].
         :param t: time
         :param event_prob: probability (in pre mill) that the step event is triggered in the current step
         :param step_prob: probability (in pre cent) that event is a abrupt step (drift otherwise!, random process speed
@@ -82,26 +85,26 @@ class RandomLoad:
         # Changes rand process data with probability of 5% and sets new value randomly
         if np.random.randint(0, 1001) < 2:
 
-            # toDo: harte grenze z.b. bei 11 Ohm (limit) aber ziehen nur aus nom-Bereich (14 Ohm)
             gain = np.random.randint(self.rand_process.bounds[0], self.rand_process.bounds[1])
 
             self.rand_process.proc.mean = gain
+            self.rand_process.proc.vol = np.random.randint(1, 150)
+            self.rand_process.proc.speed = np.random.randint(10, 1200)
+            # define sdt for clipping once every event
+            self.lowerbound_std = np.random.normal(scale=self.bounds_std[0])
+            self.upperbound_std = np.random.normal(scale=self.bounds_std[1])
 
             # With 50% probability do a step or a drift
             if np.random.randint(0, 101) < 50:
                 # step
                 self.rand_process.reserve = gain
-                self.rand_process.proc.speed = 1000
-                self.rand_process.proc.vol = 10
-            else:
-                # drift
-                self.rand_process.proc.speed = np.random.randint(10, 100)
-                self.rand_process.proc.vol = np.random.randint(10, 100)
-                self.rand_process.proc.vol = np.random.randint(1, 100)
 
-        # return self.rand_process.sample(t)
-        # return np.clip(self.rand_process.sample(t), *self.bounds).squeeze()
+            else:
+                # drift -> Lower speed to allow
+                self.rand_process.proc.speed = np.random.randint(10, 100)
+
+
         return np.clip(self.rand_process.sample(t),
-                       self.bounds[0] + np.random.normal(scale=self.bounds_std[0]),
-                       self.bounds[1] + np.random.normal(scale=self.bounds_std[1])
+                       self.bounds[0] + self.lowerbound_std,
+                       self.bounds[1] + self.upperbound_std
                        )
