@@ -43,4 +43,6 @@ class myOrnsteinUhlenbeckActionNoise(OrnsteinUhlenbeckActionNoise):
         super().reset()
 
         # should not be reset because action_noise is reset after episode, but noise reduction over learning-length
+        # does not reset the noise reduction! Reduction not per episode but per learing, since action noise
+        # is redifiend then, no reset of annealing needed
         # self.n_steps = 0
