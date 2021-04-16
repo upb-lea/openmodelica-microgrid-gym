@@ -178,7 +178,10 @@ class ModelicaEnv(gym.Env):
         self.observation_space = gym.spaces.Box(low=np.full(d_o, -np.inf), high=np.full(d_o, np.inf))
 
         self.action_time_delay = action_time_delay
-        self.delay_buffer = Fastqueue(self.action_time_delay + 1, self.action_space.shape[0])
+        if self.action_time_delay == 0:
+            self.delay_buffer = None
+        else:
+            self.delay_buffer = Fastqueue(self.action_time_delay, self.action_space.shape[0])
 
         if on_episode_reset_callback is None:
             self.on_episode_reset_callback = lambda: None
@@ -276,7 +279,8 @@ class ModelicaEnv(gym.Env):
         self.history.reset()
         self._failed = False
         self._register_render = False
-        self.delay_buffer.clear()
+        if self.delay_buffer is not None:
+            self.delay_buffer.clear()
         outputs = self._create_state(is_init=True)
         return self._out_obs_tmpl.fill(outputs)[0]
 
@@ -315,7 +319,10 @@ class ModelicaEnv(gym.Env):
         action = np.clip(action, self.action_space.low, self.action_space.high)
 
         # enqueue action and get delayed/last action
-        delayed_action = self.delay_buffer.shift(action)
+        if self.delay_buffer is not None:
+            delayed_action = self.delay_buffer.shift(action)
+        else:
+            delayed_action = action
 
         # Set input values of the model
         logger.debug('model input: %s, values: %s', self.model_input_names, delayed_action)
