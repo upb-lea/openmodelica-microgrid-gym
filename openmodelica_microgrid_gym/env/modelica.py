@@ -177,6 +177,7 @@ class ModelicaEnv(gym.Env):
         self.action_space = gym.spaces.Box(low=np.full(d_i, -1), high=np.full(d_i, 1))
         self.observation_space = gym.spaces.Box(low=np.full(d_o, -np.inf), high=np.full(d_o, np.inf))
 
+        self.used_action = np.zeros(self.action_space.shape)
         self.action_time_delay = action_time_delay
         if self.action_time_delay == 0:
             self.delay_buffer = None
@@ -279,6 +280,7 @@ class ModelicaEnv(gym.Env):
         self.history.reset()
         self._failed = False
         self._register_render = False
+        self.used_action = np.zeros(self.action_space.shape)
         if self.delay_buffer is not None:
             self.delay_buffer.clear()
         outputs = self._create_state(is_init=True)
@@ -320,20 +322,20 @@ class ModelicaEnv(gym.Env):
 
         # enqueue action and get delayed/last action
         if self.delay_buffer is not None:
-            delayed_action = self.delay_buffer.shift(action)
+            self.used_action = self.delay_buffer.shift(action)
         else:
-            delayed_action = action
+            self.used_action = action
 
         # Set input values of the model
-        logger.debug('model input: %s, values: %s', self.model_input_names, delayed_action)
-        self.model.set(**dict(zip(self.model_input_names, delayed_action)))
+        logger.debug('model input: %s, values: %s', self.model_input_names, self.used_action)
+        self.model.set(**dict(zip(self.model_input_names, self.used_action)))
 
         if self.model_parameters:
             values = {var: f(self.sim_time_interval[0]) for var, f in self.model_parameters.items()}
         else:
             values = {}
 
-        params = {**values, **self.net.params(delayed_action)}
+        params = {**values, **self.net.params(self.used_action)}
         # delete None values to make model initialization possible (take care in model_params definition!)
         params = {k: v for k, v in params.items() if v is not None}
         if params:
