@@ -154,6 +154,11 @@ class FeatureWrapper(Monitor):
         obs = np.append(obs, error)
         obs = np.append(obs, delta_i_lim_i_phasor)
 
+        """
+        Add used action to the NN input to learn delay
+        """
+        obs = np.append(obs, self.used_action)
+
         return obs, reward, done, info
 
     def reset(self, **kwargs):
@@ -192,6 +197,11 @@ class FeatureWrapper(Monitor):
         obs = np.append(obs, self.i_phasor - 0.5)
         obs = np.append(obs, error)
         obs = np.append(obs, delta_i_lim_i_phasor)
+
+        """
+        Add used action to the NN input to learn delay
+        """
+        obs = np.append(obs, self.used_action)
 
         return obs
 
@@ -279,7 +289,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                    )
 
-    env = FeatureWrapper(env, number_of_features=5, training_episode_length=training_episode_length,
+    env = FeatureWrapper(env, number_of_features=8, training_episode_length=training_episode_length,
                          recorder=mongo_recorder, n_trail=n_trail)
 
     n_actions = env.action_space.shape[-1]
