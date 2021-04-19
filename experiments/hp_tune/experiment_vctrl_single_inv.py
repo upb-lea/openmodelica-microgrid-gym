@@ -1,3 +1,4 @@
+import itertools
 import time
 from typing import Union
 
@@ -23,9 +24,9 @@ from openmodelica_microgrid_gym.util import abc_to_alpha_beta
 
 np.random.seed(0)
 
-number_learning_steps = 50000
-number_plotting_steps = 25000
-number_trails = 1
+#number_learning_steps = 300000
+number_plotting_steps = 100000
+number_trails = 200
 
 params_change = []
 
@@ -228,7 +229,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                         alpha_relu_critic,
                         noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
                         training_episode_length, buffer_size,
-                        learning_starts, tau, n_trail):
+                        learning_starts, tau, number_learning_steps, n_trail):
     rew = Reward(net.v_nom, net['inverter1'].v_lim, net['inverter1'].v_DC, gamma,
                  use_gamma_normalization=use_gamma_in_rew, error_exponent=error_exponent, i_lim=net['inverter1'].i_lim,
                  i_nom=net['inverter1'].i_nom)
@@ -434,37 +435,40 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
 
 def objective(trail):
-    learning_rate = 70e-6  # trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
-    gamma = 0.65  # trail.suggest_loguniform("gamma", 0.1, 0.99)
-    weight_scale = 0.012  # trail.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
 
-    bias_scale = 0.01  # trail.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
-    alpha_relu_actor = 0.4  # trail.suggest_loguniform("alpha_relu_actor", 0.0001, 0.5)  # 0.005
-    alpha_relu_critic = 0.04  # trail.suggest_loguniform("alpha_relu_critic", 0.0001, 0.5)  # 0.005
+    number_learning_steps = trail.suggest_int("number_learning_steps", 100000, 1000000)
 
-    batch_size = 256  # trail.suggest_int("batch_size", 32, 1024)  # 128
-    buffer_size = 100000  # trail.suggest_int("buffer_size", 10, 20000)  # 128
+    learning_rate = 1.7e-5#trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
+    gamma = 0.6#trail.suggest_loguniform("gamma", 0.1, 0.99)
+    weight_scale = 0.0034#trail.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
 
-    actor_hidden_size = 400  # trail.suggest_int("actor_hidden_size", 10, 500)  # 100  # Using LeakyReLU
-    actor_number_layers = 1  # trail.suggest_int("actor_number_layers", 1, 3)
+    bias_scale = 0.005#trail.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
+    alpha_relu_actor = 0.0025#trail.suggest_loguniform("alpha_relu_actor", 0.0001, 0.5)  # 0.005
+    alpha_relu_critic = 0.04#trail.suggest_loguniform("alpha_relu_critic", 0.0001, 0.5)  # 0.005
 
-    critic_hidden_size = 200  # trail.suggest_int("critic_hidden_size", 10, 500)  # 100
-    critic_number_layers = 3  # trail.suggest_int("critic_number_layers", 1, 4)
+    batch_size = 1024#trail.suggest_int("batch_size", 32, 1024)  # 128
+    buffer_size = 4500#trail.suggest_int("buffer_size", 10, 20000)  # 128
+
+    actor_hidden_size = 175#trail.suggest_int("actor_hidden_size", 10, 200)  # 100  # Using LeakyReLU
+    actor_number_layers = 2#trail.suggest_int("actor_number_layers", 1, 2)
+
+    critic_hidden_size = 140#trail.suggest_int("critic_hidden_size", 10, 200)  # 100
+    critic_number_layers = 1#trail.suggest_int("critic_number_layers", 1, 3)
 
     n_trail = str(trail.number)
     use_gamma_in_rew = 1
-    noise_var = 0.04  # trail.suggest_loguniform("noise_var", 0.01, 4)  # 2
+    noise_var = 0.06#trail.suggest_loguniform("noise_var", 0.01, 4)  # 2
     # min var, action noise is reduced to (depends on noise_var)
-    noise_var_min = 360e-9  # trail.suggest_loguniform("noise_var_min", 0.0000001, 2)
+    noise_var_min = 0.0013#trail.suggest_loguniform("noise_var_min", 0.0000001, 2)
     # min var, action noise is reduced to (depends on training_episode_length)
-    noise_steps_annealing = 0.8 * number_learning_steps  # trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
-    #             number_learning_steps)
-    noise_theta = 3.7  # trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
-    error_exponent = 0.04  # trail.suggest_loguniform("error_exponent", 0.01, 0.5)
+    noise_steps_annealing = int(0.25 * number_learning_steps)# trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
+             #number_learning_steps)
+    noise_theta = 7.5#trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
+    error_exponent = 0.375#trail.suggest_loguniform("error_exponent", 0.01, 0.5)
 
-    training_episode_length = 800  # trail.suggest_int("training_episode_length", 200, 5000)  # 128
-    learning_starts = 0.1  # 0.32# trail.suggest_loguniform("learning_starts", 0.1, 2)  # 128
-    tau = 0.05  # trail.suggest_loguniform("tau", 0.0001, 0.2)  # 2
+    training_episode_length = 3889#trail.suggest_int("training_episode_length", 200, 5000)  # 128
+    learning_starts = 0.32#trail.suggest_loguniform("learning_starts", 0.1, 2)  # 128
+    tau = 0.00033#trail.suggest_loguniform("tau", 0.0001, 0.2)  # 2
 
     trail_config_mongo = {"Name": "Config"}
     trail_config_mongo.update(trail.params)
@@ -476,19 +480,22 @@ def objective(trail):
                                alpha_relu_critic,
                                noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
                                training_episode_length, buffer_size,
-                               learning_starts, tau, n_trail)
+                               learning_starts, tau, number_learning_steps, n_trail)
 
 
 # for gamma grid search:
 # gamma_list = list(itertools.chain(*[[0.001]*5, [0.25]*5, [0.5]*5, [0.75]*5, [0.99]*5]))
 # search_space = {'gamma': gamma_list}
 
+number_learning_steps_list = list(itertools.chain(*[[100000]*3, [300000]*3, [600000]*3, [1000000]*3]))
+search_space = {'number_learning_steps': number_learning_steps_list}
+
 # toDo: postgresql instead of sqlite
 study = optuna.create_study(study_name=folder_name,
                             direction='maximize',
                             storage=f'sqlite:///{folder_name}/{folder_name}.sqlite',
                             load_if_exists=True,
-                            # sampler=optuna.samplers.GridSampler(search_space)
+                            sampler=optuna.samplers.GridSampler(search_space)
                             )
 
-study.optimize(objective, n_trials=number_trails)
+study.optimize(objective, n_trials=12, n_jobs=3)
