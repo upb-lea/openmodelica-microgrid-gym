@@ -35,6 +35,7 @@ params_change = []
 
 mongo_recorder = Recorder(database_name=folder_name)
 
+
 class FeatureWrapper(Monitor):
 
     def __init__(self, env, number_of_features: int = 0, training_episode_length: int = np.inf, recorder=None,
@@ -159,6 +160,9 @@ class FeatureWrapper(Monitor):
         obs = np.append(obs, error)
         obs = np.append(obs, delta_i_lim_i_phasor)
 
+        if any(obs) > 1:
+            asd = 1
+
         """
         Add used action to the NN input to learn delay
         """
@@ -222,7 +226,6 @@ class FeatureWrapper(Monitor):
         i_phasor_mag = np.sqrt(i_alpha_beta[0] ** 2 + i_alpha_beta[1] ** 2)
 
         return i_phasor_mag
-
 
 
 def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
@@ -434,3 +437,71 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, test_after_training)
 
     return (return_sum / env_test.max_episode_steps + limit_exceeded_penalty)
+
+
+def objective(trail):
+    number_learning_steps = trail.suggest_int("number_learning_steps", 1000, 1000000)
+
+    learning_rate = 1.7e-5  # trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
+    gamma = 0.6  # trail.suggest_loguniform("gamma", 0.1, 0.99)
+    weight_scale = 0.0034  # trail.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
+
+    bias_scale = 0.005  # trail.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
+    alpha_relu_actor = 0.0025  # trail.suggest_loguniform("alpha_relu_actor", 0.0001, 0.5)  # 0.005
+    alpha_relu_critic = 0.04  # trail.suggest_loguniform("alpha_relu_critic", 0.0001, 0.5)  # 0.005
+
+    batch_size = 1024  # trail.suggest_int("batch_size", 32, 1024)  # 128
+    buffer_size = 4500  # trail.suggest_int("buffer_size", 10, 20000)  # 128
+
+    actor_hidden_size = 175  # trail.suggest_int("actor_hidden_size", 10, 200)  # 100  # Using LeakyReLU
+    actor_number_layers = 2  # trail.suggest_int("actor_number_layers", 1, 2)
+
+    critic_hidden_size = 140  # trail.suggest_int("critic_hidden_size", 10, 200)  # 100
+    critic_number_layers = 1  # trail.suggest_int("critic_number_layers", 1, 3)
+
+    n_trail = str(trail.number)
+    use_gamma_in_rew = 1
+    noise_var = 0.06  # trail.suggest_loguniform("noise_var", 0.01, 4)  # 2
+    # min var, action noise is reduced to (depends on noise_var)
+    noise_var_min = 0.0013  # trail.suggest_loguniform("noise_var_min", 0.0000001, 2)
+    # min var, action noise is reduced to (depends on training_episode_length)
+    noise_steps_annealing = int(
+        0.25 * number_learning_steps)  # trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
+    # number_learning_steps)
+    noise_theta = 7.5  # trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
+    error_exponent = 0.375  # trail.suggest_loguniform("error_exponent", 0.01, 0.5)
+
+    training_episode_length = 3889  # trail.suggest_int("training_episode_length", 200, 5000)  # 128
+    learning_starts = 0.32  # trail.suggest_loguniform("learning_starts", 0.1, 2)  # 128
+    tau = 0.00033  # trail.suggest_loguniform("tau", 0.0001, 0.2)  # 2
+
+    trail_config_mongo = {"Name": "Config"}
+    trail_config_mongo.update(trail.params)
+    mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, trail_config_mongo)
+
+    return experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
+                               batch_size,
+                               actor_hidden_size, actor_number_layers, critic_hidden_size, critic_number_layers,
+                               alpha_relu_critic,
+                               noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
+                               training_episode_length, buffer_size,
+                               learning_starts, tau, number_learning_steps, n_trail)
+
+
+# for gamma grid search:
+# gamma_list = list(itertools.chain(*[[0.001]*5, [0.25]*5, [0.5]*5, [0.75]*5, [0.99]*5]))
+# search_space = {'gamma': gamma_list}
+
+# number_learning_steps_list = list(itertools.chain(*[[100000] * 3, [300000] * 3, [600000] * 3, [1000000] * 3]))
+number_learning_steps_list = list(itertools.chain(*[[2000] * 3, [30000] * 3, [60000] * 3, [100000] * 3]))
+search_space = {'number_learning_steps': number_learning_steps_list}
+
+# toDo: postgresql instead of sqlite
+study = optuna.create_study(study_name=folder_name,
+                            direction='maximize',
+                            storage=f'sqlite:///optuna_sqlite.sqlite',
+                            load_if_exists=True,
+                            sampler=optuna.samplers.GridSampler(search_space)
+                            )
+
+study.optimize(objective, n_trials=3, n_jobs=1)
