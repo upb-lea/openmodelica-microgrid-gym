@@ -8,7 +8,7 @@ from pymongo import MongoClient
 client = MongoClient('mongodb://localhost:27017/')
 db = client['Pipi_safeopt_best_run4d']
 
-trail = db.Trail_number_1
+trail = db.Trail_number_2
 
 test_data = trail.find_one({"Name": "Test"})
 # fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))

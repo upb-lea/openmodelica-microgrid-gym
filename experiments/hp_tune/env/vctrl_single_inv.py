@@ -19,7 +19,7 @@ from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import RandProcess
 from gym.envs.registration import register
 
-folder_name = 'Master_V_ctrl_DDPG'
+folder_name = 'Master_V_ctrl_DDPG_TEST'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'plots'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
@@ -160,14 +160,15 @@ register(id='vctrl_single_inv_train-v0',
                                                                          high=i_nom) if t == -1 else None,
                            },
              net=net,
-             model_path='../../omg_grid/grid.paper_loadstep.fmu',
+             model_path='omg_grid/grid.paper_loadstep.fmu',
              on_episode_reset_callback=cb.fire,
              is_normalized=True,
              action_time_delay=1
          )
          )
 
-rand_load_test = RandomLoad(max_episode_steps, net.ts, gen, load_curve=pd.read_pickle('R_load_test_case_2_seconds'))
+rand_load_test = RandomLoad(max_episode_steps, net.ts, gen,
+                            load_curve=pd.read_pickle('experiments/hp_tune/R_load_test_case_2_seconds'))
 
 # R_load_test_case = pd.read_pickle('R_load_test_case')
 # R_load_test_case['r_load.resistor1.R'][2]
@@ -215,7 +216,7 @@ register(id='vctrl_single_inv_test-v0',
                            'r_load.resistor3.R': partial(rand_load_test.give_dataframe_value, col='r_load.resistor3.R')
                            },
              net=net,
-             model_path='../../omg_grid/grid.paper_loadstep.fmu',
+             model_path='omg_grid/grid.paper_loadstep.fmu',
              on_episode_reset_callback=cb.fire,
              is_normalized=True,
              action_time_delay=1

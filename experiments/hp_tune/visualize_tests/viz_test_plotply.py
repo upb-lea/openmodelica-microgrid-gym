@@ -8,7 +8,7 @@ from pymongo import MongoClient
 client = MongoClient('mongodb://localhost:27017/')
 db = client['Pipi_safeopt_best_run4d']
 
-trail = db.Trail_number_1
+trail = db.Trail_number_2
 
 test_data = trail.find_one({"Name": "Test"})
 fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))
@@ -18,9 +18,12 @@ t = np.arange(0, len(test_data['lc_capacitor1_v']) * ts, ts).tolist()
 
 df2 = pd.DataFrame(t)
 df2['t'] = pd.DataFrame(t)
-df2['v_a'] = pd.DataFrame(test_data['lc_capacitor1_v'])
-df2['v_b'] = pd.DataFrame(test_data['lc_capacitor2_v'])
-df2['v_c'] = pd.DataFrame(test_data['lc_capacitor3_v'])
+# df2['v_a'] = pd.DataFrame(test_data['lc_capacitor1_v'])
+# df2['v_b'] = pd.DataFrame(test_data['lc_capacitor2_v'])
+# df2['v_c'] = pd.DataFrame(test_data['lc_capacitor3_v'])
+df2['v_a'] = pd.DataFrame(test_data['lc_inductor1_i'])
+df2['v_b'] = pd.DataFrame(test_data['lc_inductor2_i'])
+df2['v_c'] = pd.DataFrame(test_data['lc_inductor3_i'])
 
 # df2['v_a_SP'] = pd.DataFrame(test_data['inverter1_v_ref_0'])
 
@@ -28,7 +31,7 @@ x = df2['t']
 v_a = df2['v_a']
 v_b = df2['v_b']
 v_c = df2['v_c']
-#v_a_SP = df2['v_a_SP']
+# v_a_SP = df2['v_a_SP']
 
 # df2['v_a'] = pd.DataFrame(test_data['lc_inductor1_i'])
 # df2['v_b'] = pd.DataFrame(test_data['lc_inductor2_i'])

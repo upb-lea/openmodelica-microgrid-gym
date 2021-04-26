@@ -34,6 +34,7 @@ number_trails = 200
 params_change = []
 
 mongo_recorder = Recorder(database_name=folder_name)
+mongo_recorder = Recorder(URI='mongodb://localhost:12001:D/', database_name=folder_name)
 
 class FeatureWrapper(Monitor):
 

@@ -73,6 +73,8 @@ def optuna_optimize(objective, sampler=None, study_name='dummy'):
     args = parser.parse_args()
     n_trials = args.n_trials or 10
 
+    print(n_trials)
+
     node = platform.uname().node
 
     # read db credentials
