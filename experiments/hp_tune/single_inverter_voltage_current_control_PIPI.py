@@ -61,7 +61,7 @@ save_results = True
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
-folder_name = 'Pipi_safeopt_vc_cc_analytical_MRE'
+folder_name = 'Pipi_safeopt_best_run4d'
 save_folder = os.path.join(current_directory, folder_name)
 os.makedirs(save_folder, exist_ok=True)
 
@@ -140,13 +140,13 @@ def run_experiment():
     #####################################
     # Definition of the controllers
     # Choose Kp and Ki for the current and voltage controller as mutable parameters
-    mutable_params = dict(voltageP=MutableFloat(0.0175), voltageI=MutableFloat(12))  # 300Hz
+    mutable_params = dict(voltageP=MutableFloat(0.002), voltageI=MutableFloat(143))  # 300Hz
     # mutable_params = dict(voltageP=MutableFloat(0.016), voltageI=MutableFloat(105))  # 300Hz
     voltage_dqp_iparams = PI_params(kP=mutable_params['voltageP'], kI=mutable_params['voltageI'],
                                     limits=(-iLimit, iLimit))
 
-    kp_c = 0.04
-    ki_c = 27  # 11.8
+    kp_c = 0.033
+    ki_c = 17.4  # 11.8
     current_dqp_iparams = PI_params(kP=kp_c, kI=ki_c, limits=(-1, 1))  # Current controller values
 
     # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
@@ -380,7 +380,7 @@ def run_experiment():
 
         # va = self.env.env.history[self.env.env.viz_col_tmpls[0].vars[0]].copy()
         mongo_recorder = Recorder(database_name=folder_name)
-        mongo_recorder.save_to_mongodb('Trail_number_0', test_after_training)
+        mongo_recorder.save_to_mongodb('Trail_number_2', test_after_training)
 
         return (return_sum / env.max_episode_steps + limit_exceeded_penalty)
 

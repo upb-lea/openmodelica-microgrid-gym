@@ -6,13 +6,13 @@ from plotly import tools
 from pymongo import MongoClient
 
 client = MongoClient('mongodb://localhost:27017/')
-db = client['Pipi_safeopt_vc_cc_analytical_MRE']
+db = client['Pipi_safeopt_best_run4d']
 
-trail = db.Trail_number_0
+trail = db.Trail_number_1
 
 test_data = trail.find_one({"Name": "Test"})
-fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))
-ax1, ax2 = ax.flatten()
+# fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))
+# ax1, ax2 = ax.flatten()
 ts = 1e-4  # if ts stored: take from db
 t = np.arange(0, len(test_data['Reward']) * ts, ts).tolist()
 
@@ -22,6 +22,12 @@ df2['r'] = pd.DataFrame(test_data['Reward'])
 
 x = df2['t']
 v_a = df2['r']
+
+plt.plot(x, v_a)
+plt.xlabel('Time')
+plt.ylabel('Reward')
+plt.grid()
+plt.show()
 
 # v_a_SP = df2['v_a_SP']
 

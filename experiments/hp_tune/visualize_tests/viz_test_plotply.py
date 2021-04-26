@@ -6,7 +6,7 @@ from plotly import tools
 from pymongo import MongoClient
 
 client = MongoClient('mongodb://localhost:27017/')
-db = client['Hyperopt_MRE_validierung_higherC_border_test']
+db = client['Pipi_safeopt_best_run4d']
 
 trail = db.Trail_number_1
 
@@ -22,13 +22,13 @@ df2['v_a'] = pd.DataFrame(test_data['lc_capacitor1_v'])
 df2['v_b'] = pd.DataFrame(test_data['lc_capacitor2_v'])
 df2['v_c'] = pd.DataFrame(test_data['lc_capacitor3_v'])
 
-df2['v_a_SP'] = pd.DataFrame(test_data['inverter1_v_ref_0'])
+# df2['v_a_SP'] = pd.DataFrame(test_data['inverter1_v_ref_0'])
 
 x = df2['t']
 v_a = df2['v_a']
 v_b = df2['v_b']
 v_c = df2['v_c']
-v_a_SP = df2['v_a_SP']
+#v_a_SP = df2['v_a_SP']
 
 # df2['v_a'] = pd.DataFrame(test_data['lc_inductor1_i'])
 # df2['v_b'] = pd.DataFrame(test_data['lc_inductor2_i'])
@@ -75,8 +75,8 @@ plot.add_trace(
 plot.add_trace(
     px.Scatter(x=x, y=v_c))
 
-plot.add_trace(
-    px.Scatter(x=x, y=v_a_SP))
+# plot.add_trace(
+#    px.Scatter(x=x, y=v_a_SP))
 
 # plot.add_trace(
 #    px.Scatter(x=x, y=v_b_SP))
