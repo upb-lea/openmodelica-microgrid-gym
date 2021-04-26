@@ -33,8 +33,10 @@ number_trails = 200
 
 params_change = []
 
-mongo_recorder = Recorder(database_name=folder_name)
-mongo_recorder = Recorder(URI='mongodb://localhost:12001:D/', database_name=folder_name)
+# mongo_recorder = Recorder(database_name=folder_name)
+mongo_recorder = Recorder(URI='mongodb://localhost:12001/',
+                          database_name=folder_name)  # store to port 12001 for ssh data to cyberdyne
+
 
 class FeatureWrapper(Monitor):
 
@@ -299,13 +301,13 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     n_actions = env.action_space.shape[-1]
     noise_var = noise_var  # 20#0.2
     noise_theta = noise_theta  # 50 # stiffness of OU
-    action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
-                                                sigma=noise_var * np.ones(n_actions), dt=net.ts)
+    # action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
+    #                                            sigma=noise_var * np.ones(n_actions), dt=net.ts)
 
-    # action_noise = myOrnsteinUhlenbeckActionNoise(n_steps_annealing=noise_steps_annealing,
-    #                                              sigma_min=noise_var * np.ones(n_actions) * noise_var_min,
-    #                                              mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
-    #                                              sigma=noise_var * np.ones(n_actions), dt=net.ts)
+    action_noise = myOrnsteinUhlenbeckActionNoise(n_steps_annealing=noise_steps_annealing,
+                                                  sigma_min=noise_var * np.ones(n_actions) * noise_var_min,
+                                                  mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
+                                                  sigma=noise_var * np.ones(n_actions), dt=net.ts)
 
     policy_kwargs = dict(activation_fn=th.nn.LeakyReLU, net_arch=dict(pi=[actor_hidden_size] * actor_number_layers
                                                                       , qf=[critic_hidden_size] * critic_number_layers))
@@ -354,7 +356,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     plot_callback = EveryNTimesteps(n_steps=number_plotting_steps,
                                     callback=RecordEnvCallback(env, model, 1000, mongo_recorder,
                                                                n_trail))
-    model.learn(total_timesteps=number_learning_steps, callback=[callback, plot_callback])
+    model.learn(
+        total_timesteps=number_learning_steps)  # , callback=[callback])#  Ohne Plotting zwischendurch, plot_callback])
 
     train_data = {"Name": "After_Training",
                   "Mean_eps_reward": env.reward_episode_mean,
@@ -363,7 +366,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
     mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, train_data)
 
-    model.save(f'{folder_name}/{n_trail}/model.zip')
+    model.save(f'{folder_name}/{n_trail}/model.zip')  # Hier woanders speichern!
+    # model.save(f'/scratch/hpc-prf-reinfl/weber/OMG/{folder_name}/{n_trail}/model.zip')  #Hier woanders speichern!
 
     return_sum = 0.0
     rew.gamma = 0
