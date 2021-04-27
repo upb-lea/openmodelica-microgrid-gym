@@ -63,6 +63,7 @@ class FeatureWrapper(Monitor):
         self.v_a = []
         self.v_b = []
         self.v_c = []
+        self.phase = []
         self._v_pahsor = 0.0
         self.n_episode = 0
         self.R_training = []
@@ -108,6 +109,7 @@ class FeatureWrapper(Monitor):
         self.v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
         self.v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
         self.v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
+        self.phase = self.phase.append(self.env.net.components[0].phase)
 
         if done:
             self.reward_episode_mean.append(np.mean(self.rewards))
@@ -123,7 +125,8 @@ class FeatureWrapper(Monitor):
                             "v_b_training": self.v_b,
                             "v_c_training": self.v_c,
                             "v_phasor_training": self.v_phasor_training,
-                            "Rewards": self.rewards
+                            "Rewards": self.rewards,
+                            "Phase": self.phase
                             }
 
             """
@@ -199,7 +202,11 @@ class FeatureWrapper(Monitor):
         self.v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
         self.v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
         self.v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
+        self.phase = self.phase.append(self.env.net.components[0].phase)
 
+        # if setpoint in dq: Transform measurement to dq0!!!!
+        obs[3:6] = dq0_to_abc(obs[3:6], self.env.net.components[0].phase)
+        obs[0:3] = dq0_to_abc(obs[0:3], self.env.net.components[0].phase)
         """
         Feature control error: v_setpoint - v_mess
         """
@@ -430,7 +437,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     ts = time.gmtime()
     test_after_training = {"Name": "Test",
                            "time": ts,
-                           "Reward": rew_list}
+                           "Reward": rew_list,
+                           "Phase": env_test.phase}
 
     # Add v-&i-measurements
     test_after_training.update({env_test.viz_col_tmpls[j].vars[i].replace(".", "_"): env_test.history[
