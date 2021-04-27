@@ -128,25 +128,27 @@ class MasterInverter(Inverter):
         self.pdroop_ctl = DroopController(DroopParams(nom_value=self.net.freq_nom, **pdroop), self.net.ts)
         self.qdroop_ctl = DroopController(DroopParams(nom_value=self.net.v_nom, **qdroop), self.net.ts)
         self.dds = DDS(self.net.ts)
+        self.phase = 0.0
 
     def reset(self):
         super().reset()
         self.pdroop_ctl.reset()
         self.qdroop_ctl.reset()
         self.dds.reset()
+        self.phase = 0.0
 
     def calculate(self):
         super().calculate()
         instPow = -inst_power(self.v, self.i)
         freq = self.pdroop_ctl.step(instPow)
         # Get the next phase rotation angle to implement
-        phase = self.dds.step(freq)
+        self.phase = self.dds.step(freq)
 
         instQ = -inst_reactive(self.v, self.i)
         v_refd = self.qdroop_ctl.step(instQ)
         v_refdq0 = np.array([v_refd, 0, 0]) * self.v_ref
 
-        return dict(i_ref=dq0_to_abc(self.i_ref, phase), v_ref=dq0_to_abc(v_refdq0, phase))
+        return dict(i_ref=dq0_to_abc(self.i_ref, self.phase), v_ref=dq0_to_abc(v_refdq0, self.phase))
 
     def normalize(self, calc_data):
         super().normalize(calc_data),
@@ -163,13 +165,13 @@ class MasterInverter_dq0(MasterInverter):
         instPow = -inst_power(self.v, self.i)
         freq = self.pdroop_ctl.step(instPow)
         # Get the next phase rotation angle to implement
-        phase = self.dds.step(freq)
+        self.phase = self.dds.step(freq)
 
         instQ = -inst_reactive(self.v, self.i)
         v_refd = self.qdroop_ctl.step(instQ)
         v_refdq0 = np.array([v_refd, 0, 0]) * self.v_ref
 
-        return dict(i_ref=self.i_ref, v_ref=v_refdq0)
+        return dict(i_ref=np.array(self.i_ref), v_ref=v_refdq0)
 
 
 class MasterInverterCurrentSourcing(Inverter):
@@ -177,16 +179,18 @@ class MasterInverterCurrentSourcing(Inverter):
         super().__init__(out_calc=dict(i_ref=3), **kwargs)
         self.dds = DDS(self.net.ts)
         self.f_nom = f_nom
+        self.phase = 0.0
 
     def reset(self):
         super().reset()
         self.dds.reset()
+        self.phase = 0.0
 
     def calculate(self):
         super().calculate()
         # Get the next phase rotation angle to implement
-        phase = self.dds.step(self.f_nom)
-        return dict(i_ref=dq0_to_abc(self.i_ref, phase))
+        self.phase = self.dds.step(self.f_nom)
+        return dict(i_ref=dq0_to_abc(self.i_ref, self.phase))
 
 
 class Load(Component):
