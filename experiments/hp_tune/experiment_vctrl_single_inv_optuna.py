@@ -109,7 +109,7 @@ class FeatureWrapper(Monitor):
         self.v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
         self.v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
         self.v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
-        self.phase = self.phase.append(self.env.net.components[0].phase)
+        self.phase.append(self.env.net.components[0].phase)
 
         if done:
             self.reward_episode_mean.append(np.mean(self.rewards))
@@ -202,7 +202,7 @@ class FeatureWrapper(Monitor):
         self.v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
         self.v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
         self.v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
-        self.phase = self.phase.append(self.env.net.components[0].phase)
+        self.phase.append(self.env.net.components[0].phase)
 
         # if setpoint in dq: Transform measurement to dq0!!!!
         obs[3:6] = dq0_to_abc(obs[3:6], self.env.net.components[0].phase)
