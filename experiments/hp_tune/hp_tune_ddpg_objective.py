@@ -4,7 +4,8 @@ import argparse
 import sshtunnel
 import os
 
-from experiments.hp_tune.experiment_vctrl_single_inv import experiment_fit_DDPG, mongo_recorder
+# from experiments.hp_tune.experiment_vctrl_single_inv import experiment_fit_DDPG, mongo_recorder
+from experiments.hp_tune.experiment_vctrl_single_inv_dq0 import experiment_fit_DDPG_dq0, mongo_recorder
 
 PC2_LOCAL_PORT2PSQL = 11999
 DB_NAME = 'optuna'
@@ -55,13 +56,13 @@ def ddpg_objective(trial):
     trail_config_mongo.update(trial.params)
     mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, trail_config_mongo)
 
-    loss = experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
-                               batch_size,
-                               actor_hidden_size, actor_number_layers, critic_hidden_size, critic_number_layers,
-                               alpha_relu_critic,
-                               noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
-                               training_episode_length, buffer_size,
-                               learning_starts, tau, number_learning_steps, n_trail)
+    loss = experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
+                                   batch_size,
+                                   actor_hidden_size, actor_number_layers, critic_hidden_size, critic_number_layers,
+                                   alpha_relu_critic,
+                                   noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
+                                   training_episode_length, buffer_size,
+                                   learning_starts, tau, number_learning_steps, n_trail)
 
     return loss
 

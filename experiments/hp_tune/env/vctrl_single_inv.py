@@ -19,7 +19,7 @@ from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import RandProcess
 from gym.envs.registration import register
 
-folder_name = 'Master_V_ctrl_DDPG'
+folder_name = 'Master_V_ctrl_dq0_DDPG'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'plots'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
@@ -30,7 +30,7 @@ makedirs(folder_name, exist_ok=True)
 # toDo: give net and params via config from mail script
 
 # Simulation definitions
-net = Network.load('net/net_vctrl_single_inv.yaml')
+net = Network.load('net/net_vctrl_single_inv_dq0.yaml')
 max_episode_steps = 1500000  # net.max_episode_steps  # number of simulation steps per episode
 
 i_lim = net['inverter1'].i_lim  # inverter current limit / A
