@@ -153,6 +153,25 @@ class MasterInverter(Inverter):
         calc_data['v_ref'] /= self.v_lim
 
 
+class MasterInverter_dq0(MasterInverter):
+    """
+    MasterInverter that returns observaton in dq0
+    """
+
+    def calculate(self):
+        super().calculate()
+        instPow = -inst_power(self.v, self.i)
+        freq = self.pdroop_ctl.step(instPow)
+        # Get the next phase rotation angle to implement
+        phase = self.dds.step(freq)
+
+        instQ = -inst_reactive(self.v, self.i)
+        v_refd = self.qdroop_ctl.step(instQ)
+        v_refdq0 = np.array([v_refd, 0, 0]) * self.v_ref
+
+        return dict(i_ref=self.i_ref, v_ref=v_refdq0)
+
+
 class MasterInverterCurrentSourcing(Inverter):
     def __init__(self, f_nom=50, **kwargs):
         super().__init__(out_calc=dict(i_ref=3), **kwargs)
