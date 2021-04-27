@@ -28,7 +28,7 @@ from openmodelica_microgrid_gym.util import abc_to_alpha_beta, dq0_to_abc
 np.random.seed(0)
 
 # number_learning_steps = 300000
-number_plotting_steps = 100000
+number_plotting_steps = 2000
 number_trails = 200
 
 params_change = []
@@ -77,9 +77,10 @@ class FeatureWrapper(Monitor):
         Triggers the env to reset without done=True every training_episode_length steps
         """
 
-        action_dq0 = dq0_to_abc(action, self.env.net.components[0].phase)
+        action_abc = dq0_to_abc(action, self.env.net.components[0].phase)
 
-        obs, reward, done, info = super().step(action_dq0)
+        # clipping?
+        obs, reward, done, info = super().step(action_abc)
 
         self._n_training_steps += 1
 
@@ -142,6 +143,10 @@ class FeatureWrapper(Monitor):
             self.v_b = []
             self.v_c = []
             self.n_episode += 1
+
+        # if setpoint in dq: Transform measurement to dq0!!!!
+        obs[3:6] = dq0_to_abc(obs[3:6], self.env.net.components[0].phase)
+        obs[0:3] = dq0_to_abc(obs[0:3], self.env.net.components[0].phase)
 
         """
         Feature control error: v_setpoint - v_mess
@@ -442,7 +447,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
 
 def objective(trail):
-    number_learning_steps = 300000  # trail.suggest_int("number_learning_steps", 1000, 1000000)
+    number_learning_steps = 10000  # trail.suggest_int("number_learning_steps", 1000, 1000000)
 
     learning_rate = 5e-6  # trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
     gamma = 0.75  # trail.suggest_loguniform("gamma", 0.1, 0.99)
