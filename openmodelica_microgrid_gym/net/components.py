@@ -121,7 +121,7 @@ class SlaveInverter(Inverter):
 class MasterInverter(Inverter):
     def __init__(self, v_ref=(1, 0, 0), pdroop=None, qdroop=None, **kwargs):
         self.v_ref = v_ref
-        super().__init__(out_calc=dict(i_ref=3, v_ref=3), **kwargs)
+        super().__init__(out_calc=dict(i_ref=3, v_ref=3, phase=1), **kwargs)
         pdroop = {**dict(gain=0.0, tau=.005), **(pdroop or {})}
         qdroop = {**dict(gain=0.0, tau=.002), **(qdroop or {})}
 
@@ -148,7 +148,8 @@ class MasterInverter(Inverter):
         v_refd = self.qdroop_ctl.step(instQ)
         v_refdq0 = np.array([v_refd, 0, 0]) * self.v_ref
 
-        return dict(i_ref=dq0_to_abc(self.i_ref, self.phase), v_ref=dq0_to_abc(v_refdq0, self.phase))
+        return dict(i_ref=dq0_to_abc(self.i_ref, self.phase), v_ref=dq0_to_abc(v_refdq0, self.phase),
+                    phase=np.array([self.phase]))
 
     def normalize(self, calc_data):
         super().normalize(calc_data),
@@ -159,6 +160,7 @@ class MasterInverter_dq0(MasterInverter):
     """
     MasterInverter that returns observaton in dq0
     """
+
 
     def calculate(self):
         super().calculate()
@@ -171,7 +173,7 @@ class MasterInverter_dq0(MasterInverter):
         v_refd = self.qdroop_ctl.step(instQ)
         v_refdq0 = np.array([v_refd, 0, 0]) * self.v_ref
 
-        return dict(i_ref=np.array(self.i_ref), v_ref=v_refdq0)
+        return dict(i_ref=np.array(self.i_ref), v_ref=v_refdq0, phase=np.array([self.phase]))  # hier die phase mit rein
 
 
 class MasterInverterCurrentSourcing(Inverter):
