@@ -211,7 +211,7 @@ model = DDPG('MlpPolicy', env, verbose=1,
              policy_kwargs=policy_kwargs,
              learning_rate=learning_rate, buffer_size=5000, learning_starts=100,
              batch_size=batch_size, tau=0.005, gamma=gamma, action_noise=action_noise,
-             train_freq=- 1, gradient_steps=- 1, n_episodes_rollout=1, optimize_memory_usage=False,
+             train_freq=- 1, gradient_steps=- 1, optimize_memory_usage=False,
              create_eval_env=False, seed=None, device='auto', _init_setup_model=True)
 
 for ex_run in range(10):
@@ -220,7 +220,7 @@ for ex_run in range(10):
                  policy_kwargs=policy_kwargs,
                  learning_rate=0, buffer_size=5000, learning_starts=100,
                  batch_size=batch_size, tau=0.005, gamma=gamma, action_noise=action_noise,
-                 train_freq=- 1, gradient_steps=- 1, n_episodes_rollout=1, optimize_memory_usage=False,
+                 train_freq=- 1, gradient_steps=- 1, optimize_memory_usage=False,
                  create_eval_env=False, seed=None, device='auto', _init_setup_model=True)
 
     print(model.actor.mu._modules['2'].weight.T)

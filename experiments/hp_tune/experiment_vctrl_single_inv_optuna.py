@@ -285,7 +285,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
         plt.close()
 
     env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train-v0',
-                   reward_fun=rew.rew_fun_include_current,
+                   reward_fun=rew.rew_fun_include_current_dq0,
                    abort_reward=-(1 - rew.gamma),
                    viz_cols=[
                        PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
@@ -389,7 +389,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     limit_exceeded_in_test = False
     limit_exceeded_penalty = 0
     env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v0',
-                        reward_fun=rew.rew_fun_include_current,
+                        reward_fun=rew.rew_fun_include_current_dq0,
                         abort_reward=-1,  # no needed if in rew no None is given back
                         # on_episode_reset_callback=cb.fire  # needed?
                         viz_cols=[
@@ -412,7 +412,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                     'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
                                     'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                         )
-    env_test = FeatureWrapper(env_test, number_of_features=1)
+    env_test = FeatureWrapper(env_test, number_of_features=8)
     obs = env_test.reset()
 
     rew_list = []
