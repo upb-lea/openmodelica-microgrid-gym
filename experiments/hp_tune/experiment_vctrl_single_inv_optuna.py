@@ -27,8 +27,8 @@ from openmodelica_microgrid_gym.util import abc_to_alpha_beta, dq0_to_abc
 
 np.random.seed(0)
 
-# number_learning_steps = 300000
-number_plotting_steps = 2000
+number_learning_steps1 = 150000
+number_plotting_steps = 50000
 number_trails = 200
 
 params_change = []
@@ -145,6 +145,7 @@ class FeatureWrapper(Monitor):
             self.v_a = []
             self.v_b = []
             self.v_c = []
+            self.phase = []
             self.n_episode += 1
 
         # if setpoint in dq: Transform measurement to dq0!!!!
@@ -176,7 +177,7 @@ class FeatureWrapper(Monitor):
         """
         Add used action to the NN input to learn delay
         """
-        obs = np.append(obs, self.used_action)
+        # obs = np.append(obs, self.used_action)
 
         return obs, reward, done, info
 
@@ -224,7 +225,7 @@ class FeatureWrapper(Monitor):
         """
         Add used action to the NN input to learn delay
         """
-        obs = np.append(obs, self.used_action)
+        #obs = np.append(obs, self.used_action)
 
         return obs
 
@@ -286,7 +287,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
     env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train-v0',
                    reward_fun=rew.rew_fun_include_current_dq0,
-                   abort_reward=-(1 - rew.gamma),
+                   abort_reward=-1,
                    viz_cols=[
                        PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
                                 callback=xylables_v,
@@ -309,7 +310,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                    )
 
-    env = FeatureWrapper(env, number_of_features=8, training_episode_length=training_episode_length,
+    env = FeatureWrapper(env, number_of_features=5, training_episode_length=training_episode_length,
                          recorder=mongo_recorder, n_trail=n_trail)
 
     n_actions = env.action_space.shape[-1]
@@ -412,7 +413,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                     'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
                                     'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                         )
-    env_test = FeatureWrapper(env_test, number_of_features=8)
+    env_test = FeatureWrapper(env_test, number_of_features=5)
     obs = env_test.reset()
 
     rew_list = []
@@ -455,10 +456,10 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
 
 def objective(trail):
-    number_learning_steps = 10000  # trail.suggest_int("number_learning_steps", 1000, 1000000)
+    number_learning_steps = number_learning_steps1  # trail.suggest_int("number_learning_steps", 1000, 1000000)
 
     learning_rate = 5e-6  # trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
-    gamma = 0.75  # trail.suggest_loguniform("gamma", 0.1, 0.99)
+    gamma = 0.9  # trail.suggest_loguniform("gamma", 0.1, 0.99)
     weight_scale = 0.0034  # trail.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
 
     bias_scale = 0.005  # trail.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005

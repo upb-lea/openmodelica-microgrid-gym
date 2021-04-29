@@ -19,7 +19,7 @@ from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import RandProcess
 from gym.envs.registration import register
 
-folder_name = 'Master_V_ctrl_dq0_DDPG'
+folder_name = 'Master_V_ctrl_dq0_DDPG_without_current_no_Delay'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'plots'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
@@ -163,7 +163,7 @@ register(id='vctrl_single_inv_train-v0',
              model_path='omg_grid/grid.paper_loadstep.fmu',
              on_episode_reset_callback=cb.fire,
              is_normalized=True,
-             action_time_delay=1
+             action_time_delay=0
          )
          )
 
@@ -219,6 +219,6 @@ register(id='vctrl_single_inv_test-v0',
              model_path='omg_grid/grid.paper_loadstep.fmu',
              on_episode_reset_callback=cb.fire,
              is_normalized=True,
-             action_time_delay=1
+             action_time_delay=0
          )
          )
