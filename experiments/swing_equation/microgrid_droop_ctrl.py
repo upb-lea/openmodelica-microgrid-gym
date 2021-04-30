@@ -59,7 +59,7 @@ if __name__ == '__main__':
     # current_dqp_iparams = PI_params(kP=0.012, kI=90, limits=(-1, 1))
     # pll_params = PLLParams(kP=20, kI=400, limits=None, f_nom=nomFreq)
 
-    current_dqp_iparams = PI_params(kP=0.005, kI=200, limits=(-1, 1))
+    current_dqp_iparams = PI_params(kP=0.4, kI=200, limits=(-1, 1))
     # PI gain parameters for the PLL in the current forming inverter
     pll_params = PLLParams(kP=10, kI=200, limits=None, f_nom=freq_nom)
     # Droop characteristic for the active power Watt/Hz, delta_t
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     #####################################
     # Define the current sourcing inverter as slave
     # Current control PI gain parameters for the current sourcing inverter
-    current_dqp_iparams = PI_params(kP=0.005, kI=200, limits=(-1, 1))
+    current_dqp_iparams = PI_params(kP=0.4, kI=200, limits=(-1, 1))
     # PI gain parameters for the PLL in the current forming inverter
     pll_params = PLLParams(kP=10, kI=200, limits=None, f_nom=freq_nom)
     # Droop characteristic for the active power Watts/Hz, W.s/Hz

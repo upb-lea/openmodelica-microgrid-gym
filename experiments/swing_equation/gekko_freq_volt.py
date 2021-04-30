@@ -192,6 +192,7 @@ f2 = np.divide(w2,(2*np.pi))
 f3 = np.divide(w3,(2*np.pi))
 
 print(f1[400])
+print(B)
 
 plt.plot(m.time,f1,'r')
 plt.plot(m.time,f2,'b')
