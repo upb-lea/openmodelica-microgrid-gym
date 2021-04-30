@@ -6,8 +6,8 @@ m = GEKKO(remote=False)
 
 #define parameter
 Pdroop = 40000
-Qdroop = 400
-t_end = 1
+Qdroop = -400
+t_end = 0.00001
 steps = 1000
 nomFreq = 50  # grid frequency / Hz
 nomVolt = value=230
@@ -20,6 +20,26 @@ R_lv_line_10km = 0.0
 L_lv_line_10km = 0.0005
 B_L_lv_line_10km = -(omega * L_lv_line_10km)/(R_lv_line_10km**2 + (omega*L_lv_line_10km)**2)
 
+L_LC1 = 0.001
+C_LC1 = 0.00001
+L_LC2 = 0.001
+C_LC2 = 0.00001
+L_LCL1 = 0.001
+C_LCL1 = 0.00001
+
+
+Z_LC1 = omega*L_LC1*(-1*1/(omega*C_LC1))/(omega*L_LC1-1/omega*C_LC1)
+Z_LC2 = omega*L_LC2*(-1*1/(omega*C_LC2))/(omega*L_LC2-1/omega*C_LC2)
+Z_LCL1 = 2*omega*L_LCL1*(-1/(omega*C_LCL1)/(2*omega*L_LCL1+1/(omega*C_LCL1)))
+
+print(Z_LC1)
+print(Z_LCL1)
+
+
+B_1_2 = -1*(Z_LC1+Z_LCL1)
+B_1_3 = -1*(Z_LC1+Z_LC2)
+B_2_3 = -1*(Z_LCL1+Z_LC2)
+
 step = np.zeros(steps)
 step[0:500] = 5.29
 step[500:]  = 5.29/2
@@ -28,27 +48,41 @@ step_l = np.zeros(steps)
 step_l[0:500] = 0.00424 # in Henry
 step_l[500:]  = 0.00212 # in Henry
 
-R_load = m.Param(value=step)
-L_load = m.Param(value=step_l)
-R_load = 5.29
-L_load = 0.00424
+R_load = 20
+L_load = 0.001
+
+G_connection = 1
+
+#R_load = m.Param(value=step)
+#L_load = m.Param(value=step_l)
 G_RL_load = R_load/(R_load**2 + (omega*L_load)**2)
 B_RL_load = -(omega * L_load)/(R_load**2 + (omega * L_load)**2)
 
 
-B = np.array([[2*B_L_lv_line_10km, -B_L_lv_line_10km, -B_L_lv_line_10km],
-              [-B_L_lv_line_10km, 2*B_L_lv_line_10km+0, -B_L_lv_line_10km],
-              [-B_L_lv_line_10km, -B_L_lv_line_10km, 2*B_L_lv_line_10km+B_RL_load]])
+B = np.array([[B_1_2+B_1_3, -B_1_2, -B_1_3],
+              [-B_1_2, B_1_2+B_1_3, -B_2_3],
+              [-B_1_3, -B_2_3, B_1_3+B_2_3+B_RL_load]])
 
-G = -np.array([[0, 0, 0],
+#B = np.array([[2*B_L_lv_line_10km, -B_L_lv_line_10km, -B_L_lv_line_10km],
+#              [-B_L_lv_line_10km, 2*B_L_lv_line_10km+0, -B_L_lv_line_10km],
+#              [-B_L_lv_line_10km, -B_L_lv_line_10km, 2*B_L_lv_line_10km+B_RL_load]])
+
+G = np.array([[0, 0, 0],
                    [0, 0, 0],
                    [0, 0, G_RL_load]])
 
-print(B)
-print(G)
+G_connection = 1
+
+#G = np.array([[2*G_connection, -G_connection, -G_connection],
+#                   [-G_connection, 2*G_connection, -G_connection],
+#                   [-G_connection, -G_connection, 2*G_connection+G_RL_load]])
 
 #variables
 
+
+print(B)
+
+print(G)
 u1 = m.Var(value=10)
 u2 = m.Var(value=10)
 u3 = m.Var(value=10)
@@ -215,7 +249,7 @@ plt.ylabel('w2(t)')
 plt.plot(m.time,w3,'--')
 plt.xlabel('time')
 plt.ylabel('w3(t)')
-plt.ylim(49.5, 50.1)
+#plt.ylim(49.5, 50.1)
 plt.show()
 
 
@@ -233,7 +267,7 @@ plt.ylabel('u2(t)')
 plt.plot(m.time,u3,'--g')
 plt.xlabel('time')
 plt.ylabel('u(t)')
-plt.ylim(180, 240)
+#plt.ylim(180, 240)
 plt.legend()
 plt.show()
 
@@ -286,6 +320,3 @@ plt.show()
 
 a = w1
 np.savetxt("Swing_4000Q50j0_5jq0_0005.csv", a, delimiter=",")
-
-print(B)
-print(G)

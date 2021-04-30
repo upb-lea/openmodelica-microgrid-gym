@@ -11,42 +11,64 @@ t_end = 1
 steps = 1000
 nomFreq = 50  # grid frequency / Hz
 nomVolt = value=230
-omega = 2*np.pi*nomFreq
-tau = 0.001 # Filter constant of, inverse of cut-off frequency
+omega = 2*3.1424*nomFreq
+tau = 0.0001 # Filter constant of, inverse of cut-off frequency
 J = 0.05
 J_Q = 0.0005
 Ti = 0.000005
 R_lv_line_10km = 0.0
-L_lv_line_10km = 0.0005
-B_L_lv_line_10km = -(omega * L_lv_line_10km)/(R_lv_line_10km**2 + (omega*L_lv_line_10km)**2)
+L_lv_line_10km = 0.001
+L_LC1 = 0.001
+C_LC1 = 0.00001
+L_LC2 = 0.001
+C_LC2 = 0.00001
+L_LCL1 = 0.001
+C_LCL1 = 0.00001
+
+#Z_LV_line = omega*L_lv_line_10km-1/(omega*C_lv_line_10km) # LC Filter
+Z_LC1 = omega*L_LC1-1/(omega*C_LC1)
+Z_LC2 = omega*L_LC2-1/(omega*C_LC2)
+Z_LCL1 = omega*L_LCL1-1/(omega*C_LCL1)+omega*L_LCL1
+
+B_1_2 = -1*(Z_LC1+Z_LCL1)
+B_1_3 = -1*(Z_LC1+Z_LC2)
+B_2_3 = -1*(Z_LCL1+Z_LC2)
+#B_L_lv_line_10km = -1/Z_LV_line # + or -?!?!
+#B_L_lv_line_10km = -(omega * L_lv_line_10km)/(R_lv_line_10km**2 + (omega*L_lv_line_10km)**2)
+
+
 
 step = np.zeros(steps)
-step[0:500] = 5.29
-step[500:]  = 5.29/2
+step[0:500] = 20
+step[500:]  = 40
 
 step_l = np.zeros(steps)
-step_l[0:500] = 0.00424 # in Henry
-step_l[500:]  = 0.00212 # in Henry
-
+step_l[0:500] = 0.001 # in Henry
+step_l[500:]  = 0.001 # in Henry
+#R_load = 20
+#L_load = 0.001
 R_load = m.Param(value=step)
 L_load = m.Param(value=step_l)
-R_load = 5.29
-L_load = 0.00424
 G_RL_load = R_load/(R_load**2 + (omega*L_load)**2)
 B_RL_load = -(omega * L_load)/(R_load**2 + (omega * L_load)**2)
 
 
-B = np.array([[2*B_L_lv_line_10km, -B_L_lv_line_10km, -B_L_lv_line_10km],
-              [-B_L_lv_line_10km, 2*B_L_lv_line_10km+0, -B_L_lv_line_10km],
-              [-B_L_lv_line_10km, -B_L_lv_line_10km, 2*B_L_lv_line_10km+B_RL_load]])
+B = np.array([[B_1_2+B_1_3, -B_1_2, -B_1_3],
+              [-B_1_2, B_1_2+B_1_3, -B_2_3],
+              [-B_1_3, -B_2_3, B_1_3+B_2_3+B_RL_load]])
+print(B)
 
-G = -np.array([[0, 0, 0],
+#np.linalg.det(B)
+
+#print(np.linalg.cond(B))
+print('Hallowelt')
+#print(B)
+G = np.array([[0, 0, 0],
                    [0, 0, 0],
                    [0, 0, G_RL_load]])
-
-print(B)
-print(G)
-
+#np.linalg.cond(G)
+#print(G)
+#np.linalg.det(G)
 #variables
 
 u1 = m.Var(value=10)
@@ -202,9 +224,9 @@ m.solve()
 
 #Results
 
-plt.plot(m.time,w1)
-plt.xlabel('time')
-plt.ylabel('w1(t)')
+#plt.plot(m.time,w1)
+#plt.xlabel('time')
+#plt.ylabel('w1(t)')
 
 
 plt.plot(m.time,w2)
@@ -234,7 +256,7 @@ plt.plot(m.time,u3,'--g')
 plt.xlabel('time')
 plt.ylabel('u(t)')
 plt.ylim(180, 240)
-plt.legend()
+#plt.legend()
 plt.show()
 
 
@@ -286,6 +308,3 @@ plt.show()
 
 a = w1
 np.savetxt("Swing_4000Q50j0_5jq0_0005.csv", a, delimiter=",")
-
-print(B)
-print(G)
