@@ -19,7 +19,7 @@ from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import RandProcess
 from gym.envs.registration import register
 
-folder_name = 'Master_V_ctrl_dq0_DDPG_without_current_no_Delay'
+folder_name = 'Master_V_ctrl_abc_miniHPopt_TEST'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'plots'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
@@ -30,7 +30,7 @@ makedirs(folder_name, exist_ok=True)
 # toDo: give net and params via config from mail script
 
 # Simulation definitions
-net = Network.load('net/net_vctrl_single_inv_dq0.yaml')
+net = Network.load('net/net_vctrl_single_inv.yaml')
 max_episode_steps = 1500000  # net.max_episode_steps  # number of simulation steps per episode
 
 i_lim = net['inverter1'].i_lim  # inverter current limit / A
@@ -160,10 +160,10 @@ register(id='vctrl_single_inv_train-v0',
                                                                          high=i_nom) if t == -1 else None,
                            },
              net=net,
-             model_path='omg_grid/grid.paper_loadstep.fmu',
+             model_path='omg_grid/grid.paper_loadstepWIN.fmu',
              on_episode_reset_callback=cb.fire,
              is_normalized=True,
-             action_time_delay=0
+             action_time_delay=1
          )
          )
 
@@ -216,9 +216,9 @@ register(id='vctrl_single_inv_test-v0',
                            'r_load.resistor3.R': partial(rand_load_test.give_dataframe_value, col='r_load.resistor3.R')
                            },
              net=net,
-             model_path='omg_grid/grid.paper_loadstep.fmu',
+             model_path='omg_grid/grid.paper_loadstepWIN.fmu',
              on_episode_reset_callback=cb.fire,
              is_normalized=True,
-             action_time_delay=0
+             action_time_delay=1
          )
          )

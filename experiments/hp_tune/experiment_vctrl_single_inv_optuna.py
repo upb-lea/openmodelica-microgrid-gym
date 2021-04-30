@@ -27,9 +27,9 @@ from openmodelica_microgrid_gym.util import abc_to_alpha_beta, dq0_to_abc
 
 np.random.seed(0)
 
-number_learning_steps1 = 150000
-number_plotting_steps = 50000
-number_trails = 200
+number_learning_steps1 = 500000
+number_plotting_steps = 100000
+number_trails = 10
 
 params_change = []
 
@@ -78,10 +78,10 @@ class FeatureWrapper(Monitor):
         Triggers the env to reset without done=True every training_episode_length steps
         """
 
-        action_abc = dq0_to_abc(action, self.env.net.components[0].phase)
+        #action_abc = dq0_to_abc(action, self.env.net.components[0].phase)
 
         # clipping?
-        obs, reward, done, info = super().step(action_abc)
+        obs, reward, done, info = super().step(action)
 
         self._n_training_steps += 1
 
@@ -149,8 +149,8 @@ class FeatureWrapper(Monitor):
             self.n_episode += 1
 
         # if setpoint in dq: Transform measurement to dq0!!!!
-        obs[3:6] = dq0_to_abc(obs[3:6], self.env.net.components[0].phase)
-        obs[0:3] = dq0_to_abc(obs[0:3], self.env.net.components[0].phase)
+        #obs[3:6] = dq0_to_abc(obs[3:6], self.env.net.components[0].phase)
+        #obs[0:3] = dq0_to_abc(obs[0:3], self.env.net.components[0].phase)
 
         """
         Feature control error: v_setpoint - v_mess
@@ -171,13 +171,17 @@ class FeatureWrapper(Monitor):
         obs = np.append(obs, error)
         obs = np.append(obs, delta_i_lim_i_phasor)
 
-        if any(obs) > 1:
-            asd = 1
+
 
         """
         Add used action to the NN input to learn delay
         """
-        # obs = np.append(obs, self.used_action)
+        obs = np.append(obs, self.used_action)
+
+        # add sin/cos of phase to obs
+        obs = np.append(obs, 0.1*np.sin(self.env.net.components[0].phase))
+        obs = np.append(obs, 0.1*np.cos(self.env.net.components[0].phase))
+        obs = np.append(obs, (self.env.net.components[0].phase) / (2 * np.pi))
 
         return obs, reward, done, info
 
@@ -225,7 +229,12 @@ class FeatureWrapper(Monitor):
         """
         Add used action to the NN input to learn delay
         """
-        #obs = np.append(obs, self.used_action)
+        obs = np.append(obs, self.used_action)
+
+        # add sin/cos of phase to obs
+        obs = np.append(obs, 0.1 * np.sin(self.env.net.components[0].phase))
+        obs = np.append(obs, 0.1 * np.cos(self.env.net.components[0].phase))
+        obs = np.append(obs, (self.env.net.components[0].phase)/(2*np.pi))
 
         return obs
 
@@ -249,7 +258,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                         alpha_relu_critic,
                         noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
                         training_episode_length, buffer_size,
-                        learning_starts, tau, number_learning_steps, n_trail):
+                        learning_starts, tau, number_learning_steps, activation_function, n_trail):
+
     rew = Reward(net.v_nom, net['inverter1'].v_lim, net['inverter1'].v_DC, gamma,
                  use_gamma_normalization=use_gamma_in_rew, error_exponent=error_exponent, i_lim=net['inverter1'].i_lim,
                  i_nom=net['inverter1'].i_nom)
@@ -310,21 +320,23 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                    )
 
-    env = FeatureWrapper(env, number_of_features=5, training_episode_length=training_episode_length,
+    env = FeatureWrapper(env, number_of_features=1, training_episode_length=training_episode_length,
                          recorder=mongo_recorder, n_trail=n_trail)
 
     n_actions = env.action_space.shape[-1]
     noise_var = noise_var  # 20#0.2
     noise_theta = noise_theta  # 50 # stiffness of OU
-    action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
-                                                sigma=noise_var * np.ones(n_actions), dt=net.ts)
+    #action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
+    #                                            sigma=noise_var * np.ones(n_actions), dt=net.ts)
 
-    # action_noise = myOrnsteinUhlenbeckActionNoise(n_steps_annealing=noise_steps_annealing,
-    #                                              sigma_min=noise_var * np.ones(n_actions) * noise_var_min,
-    #                                              mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
-    #                                              sigma=noise_var * np.ones(n_actions), dt=net.ts)
+    action_noise = myOrnsteinUhlenbeckActionNoise(n_steps_annealing=noise_steps_annealing,
+                                                  sigma_min=noise_var * np.ones(n_actions) * noise_var_min,
+                                                  mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
+                                                  sigma=noise_var * np.ones(n_actions), dt=net.ts)
 
     policy_kwargs = dict(activation_fn=th.nn.LeakyReLU, net_arch=dict(pi=[actor_hidden_size] * actor_number_layers
+                                                                      , qf=[critic_hidden_size] * critic_number_layers))
+    policy_kwargs = dict(activation_fn=activation_function, net_arch=dict(pi=[actor_hidden_size] * actor_number_layers
                                                                       , qf=[critic_hidden_size] * critic_number_layers))
 
     callback = TrainRecorder()
@@ -413,7 +425,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                     'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
                                     'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                         )
-    env_test = FeatureWrapper(env_test, number_of_features=5)
+    env_test = FeatureWrapper(env_test, number_of_features=8)
     obs = env_test.reset()
 
     rew_list = []
@@ -458,38 +470,39 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 def objective(trail):
     number_learning_steps = number_learning_steps1  # trail.suggest_int("number_learning_steps", 1000, 1000000)
 
-    learning_rate = 5e-6  # trail.suggest_loguniform("lr", 1e-5, 5e-3)  # 0.0002#
-    gamma = 0.9  # trail.suggest_loguniform("gamma", 0.1, 0.99)
-    weight_scale = 0.0034  # trail.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
+    learning_rate = trail.suggest_loguniform("lr", 1e-9, 1e-3)  # 0.0002#
+    gamma = trail.suggest_loguniform("gamma", 0.6, 0.99)
+    weight_scale = 0.05  # trail.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
 
-    bias_scale = 0.005  # trail.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
+    bias_scale = 0.05  # trail.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
     alpha_relu_actor = 0.1  # trail.suggest_loguniform("alpha_relu_actor", 0.0001, 0.5)  # 0.005
     alpha_relu_critic = 0.1  # trail.suggest_loguniform("alpha_relu_critic", 0.0001, 0.5)  # 0.005
 
     batch_size = 1024  # trail.suggest_int("batch_size", 32, 1024)  # 128
     buffer_size = int(1e6)  # trail.suggest_int("buffer_size", 10, 20000)  # 128
 
-    actor_hidden_size = 175  # trail.suggest_int("actor_hidden_size", 10, 200)  # 100  # Using LeakyReLU
-    actor_number_layers = 1  # trail.suggest_int("actor_number_layers", 1, 2)
+    activation_function = trail.suggest_categorical("activation_function", ["th.nn.LeakyReLU", "th.nn.Tanh"])
 
-    critic_hidden_size = 140  # trail.suggest_int("critic_hidden_size", 10, 200)  # 100
-    critic_number_layers = 2  # trail.suggest_int("critic_number_layers", 1, 3)
+    actor_hidden_size = trail.suggest_int("actor_hidden_size", 10, 500)  # 100  # Using LeakyReLU
+    actor_number_layers = trail.suggest_int("actor_number_layers", 1, 3)
+
+    critic_hidden_size = trail.suggest_int("critic_hidden_size", 10, 600)  # 100
+    critic_number_layers = trail.suggest_int("critic_number_layers", 1, 4)
 
     n_trail = str(trail.number)
     use_gamma_in_rew = 1
-    noise_var = 2  # trail.suggest_loguniform("noise_var", 0.01, 4)  # 2
+    noise_var = trail.suggest_loguniform("noise_var", 0.01, 4)  # 2
     # min var, action noise is reduced to (depends on noise_var)
-    noise_var_min = 0.0013  # trail.suggest_loguniform("noise_var_min", 0.0000001, 2)
+    noise_var_min = trail.suggest_loguniform("noise_var_min", 0.0000001, 2)
     # min var, action noise is reduced to (depends on training_episode_length)
-    noise_steps_annealing = int(
-        0.25 * number_learning_steps)  # trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
-    # number_learning_steps)
-    noise_theta = 25  # trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
+    noise_steps_annealing = trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
+     number_learning_steps)
+    noise_theta = trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
     error_exponent = 0.5  # trail.suggest_loguniform("error_exponent", 0.01, 0.5)
 
     training_episode_length = 2000  # trail.suggest_int("training_episode_length", 200, 5000)  # 128
     learning_starts = 0.32  # trail.suggest_loguniform("learning_starts", 0.1, 2)  # 128
-    tau = 0.00033  # trail.suggest_loguniform("tau", 0.0001, 0.2)  # 2
+    tau = 0.005  # trail.suggest_loguniform("tau", 0.0001, 0.2)  # 2
 
     trail_config_mongo = {"Name": "Config"}
     trail_config_mongo.update(trail.params)
@@ -501,7 +514,7 @@ def objective(trail):
                                alpha_relu_critic,
                                noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
                                training_episode_length, buffer_size,
-                               learning_starts, tau, number_learning_steps, n_trail)
+                               learning_starts, tau, number_learning_steps, activation_function, n_trail)
 
 
 # for gamma grid search:
@@ -520,4 +533,4 @@ study = optuna.create_study(study_name=folder_name,
                             # sampler=optuna.samplers.GridSampler(search_space)
                             )
 
-study.optimize(objective, n_trials=1, n_jobs=1)
+study.optimize(objective, n_trials=number_trails, n_jobs=1)
