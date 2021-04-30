@@ -320,13 +320,13 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                    )
 
-    env = FeatureWrapper(env, number_of_features=1, training_episode_length=training_episode_length,
+    env = FeatureWrapper(env, number_of_features=11, training_episode_length=training_episode_length,
                          recorder=mongo_recorder, n_trail=n_trail)
 
     n_actions = env.action_space.shape[-1]
     noise_var = noise_var  # 20#0.2
     noise_theta = noise_theta  # 50 # stiffness of OU
-    #action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
+    # action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
     #                                            sigma=noise_var * np.ones(n_actions), dt=net.ts)
 
     action_noise = myOrnsteinUhlenbeckActionNoise(n_steps_annealing=noise_steps_annealing,
@@ -334,10 +334,14 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                                   mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
                                                   sigma=noise_var * np.ones(n_actions), dt=net.ts)
 
-    policy_kwargs = dict(activation_fn=th.nn.LeakyReLU, net_arch=dict(pi=[actor_hidden_size] * actor_number_layers
-                                                                      , qf=[critic_hidden_size] * critic_number_layers))
-    policy_kwargs = dict(activation_fn=activation_function, net_arch=dict(pi=[actor_hidden_size] * actor_number_layers
-                                                                      , qf=[critic_hidden_size] * critic_number_layers))
+    if activation_function == "LeakyReLU":
+        policy_kwargs = dict(activation_fn=th.nn.LeakyReLU, net_arch=dict(pi=[actor_hidden_size] * actor_number_layers
+                                                                          , qf=[
+                                                                                   critic_hidden_size] * critic_number_layers))
+
+    if activation_function == "Tanh":
+        policy_kwargs = dict(activation_fn=th.nn.Tanh, net_arch=dict(pi=[actor_hidden_size] * actor_number_layers
+                                                                     , qf=[critic_hidden_size] * critic_number_layers))
 
     callback = TrainRecorder()
 
@@ -425,7 +429,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                     'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
                                     'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                         )
-    env_test = FeatureWrapper(env_test, number_of_features=8)
+    env_test = FeatureWrapper(env_test, number_of_features=11)
     obs = env_test.reset()
 
     rew_list = []
@@ -481,7 +485,8 @@ def objective(trail):
     batch_size = 1024  # trail.suggest_int("batch_size", 32, 1024)  # 128
     buffer_size = int(1e6)  # trail.suggest_int("buffer_size", 10, 20000)  # 128
 
-    activation_function = trail.suggest_categorical("activation_function", ["th.nn.LeakyReLU", "th.nn.Tanh"])
+    activation_function = trail.suggest_categorical("activation_functions", ["LeakyReLU", "Tanh"])
+    # activation_function = trail.suggest_categorical('activation_functions', ['linear', 'poly', 'rbf'])
 
     actor_hidden_size = trail.suggest_int("actor_hidden_size", 10, 500)  # 100  # Using LeakyReLU
     actor_number_layers = trail.suggest_int("actor_number_layers", 1, 3)
