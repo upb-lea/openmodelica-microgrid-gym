@@ -296,7 +296,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
         plt.close()
 
     env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train-v0',
-                   reward_fun=rew.rew_fun_include_current_dq0,
+                   reward_fun=rew.rew_fun_include_current,
                    abort_reward=-1,
                    viz_cols=[
                        PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
@@ -406,7 +406,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     limit_exceeded_in_test = False
     limit_exceeded_penalty = 0
     env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v0',
-                        reward_fun=rew.rew_fun_include_current_dq0,
+                        reward_fun=rew.rew_fun_include_current,
                         abort_reward=-1,  # no needed if in rew no None is given back
                         # on_episode_reset_callback=cb.fire  # needed?
                         viz_cols=[
@@ -431,12 +431,15 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                         )
     env_test = FeatureWrapper(env_test, number_of_features=11)
     obs = env_test.reset()
+    phase_list = []
+    phase_list.append(env_test.env.net.components[0].phase)
 
     rew_list = []
 
     while True:
         action, _states = model.predict(obs, deterministic=True)
         obs, rewards, done, info = env_test.step(action)
+        phase_list.append(env_test.env.net.components[0].phase)
 
         if rewards == -1 and not limit_exceeded_in_test:
             # Set addidional penalty of -1 if limit is exceeded once in the test case
