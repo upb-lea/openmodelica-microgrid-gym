@@ -208,8 +208,10 @@ class Reward:
                 rew = 1/3; if error = SP-mess = 2*v_nom (worst case without braking out from nom area)
             """
             # devided by 3 because of sums up all 3 phases
-            rew = np.sum((1 - (np.abs(SP - mess) / (2 * self.nom)) ** self.exponent) * 2 * (1 - self.gamma) / 3 + (
-                    1 - self.gamma) / 3) / 3
+            # rew = np.sum((1 - (np.abs(SP - mess) / (2 * self.nom)) ** self.exponent) * 2 * (1 - self.gamma) / 3 + (
+            #        1 - self.gamma) / 3) / 3
+
+            rew = np.sum((1 - (np.abs(SP - mess) / (2 * self.nom)) ** self.exponent) * (1 - self.gamma)) / 3
 
 
 
@@ -225,8 +227,9 @@ class Reward:
                 rew = -1/3
 
             """
-            rew = np.sum(
-                (1 - np.abs(SP - mess) / (self.nom + self.lim)) * 2 * (1 - self.gamma) / 3 - (1 - self.gamma) / 3) / 3
+            # rew = np.sum(
+            #    (1 - np.abs(SP - mess) / (self.nom + self.lim)) * 2 * (1 - self.gamma) / 3 - (1 - self.gamma) / 3) / 3
+            rew = (1 - np.max(np.abs(SP - mess)) / (self.nom + self.lim)) * (1 - self.gamma) / 2 - (1 - self.gamma) / 2
 
         if any(abs(i_mess) > ((self.i_nom + self.i_lim) / 2)):
             rew = (rew + 1) / 2  # map rew_voltage -> [0,1]
