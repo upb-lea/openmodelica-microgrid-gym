@@ -6,9 +6,9 @@ from plotly import tools
 from pymongo import MongoClient
 
 client = MongoClient('mongodb://localhost:27017/')
-db = client['Load_clipp']
+db = client['Master_V_ctrl_dq0_DDPG_without_Delay_gridS_lr']
 
-trail = db.Trail_number_1
+trail = db.Trail_number_3
 
 R_load = []
 i_a = []
@@ -19,9 +19,9 @@ v_b = []
 v_c = []
 reward = []
 
-for ii in range(287):
-    # test_data = trail.find_one({"Name": "On_Training"})
-    test_data = trail.find_one({"Epsisode_number": ii})
+for ii in range(1):
+    #test_data = trail.find_one({"Name": "On_Training"})
+    test_data = trail.find_one({"Episode_number": 560})
 
     # R_load.append(test_data['R_load_training'][:])
     R_load = R_load + test_data['R_load_training']
@@ -35,30 +35,30 @@ for ii in range(287):
 
 plt.plot(R_load)
 plt.grid()
-plt.xlabel("Episodes")
-plt.ylabel("Mean episode Reward")
+plt.xlabel("steps")
+plt.ylabel("R_load")
 plt.show()
 
 plt.plot(i_a)
 plt.plot(i_b)
 plt.plot(i_c)
 plt.grid()
-plt.xlabel("Episodes")
-plt.ylabel("Mean episode Reward")
+plt.xlabel("steps")
+plt.ylabel("i_abc")
 plt.show()
 
 plt.plot(v_a)
 plt.plot(v_b)
 plt.plot(v_c)
 plt.grid()
-plt.xlabel("Episodes")
-plt.ylabel("Mean episode Reward")
+plt.xlabel("steps")
+plt.ylabel("v_abc")
 plt.show()
 
 plt.plot(reward)
 plt.grid()
-plt.xlabel("Episodes")
-plt.ylabel("Mean episode Reward")
+plt.xlabel("steps")
+plt.ylabel("Reward")
 plt.show()
 
 df = pd.DataFrame()

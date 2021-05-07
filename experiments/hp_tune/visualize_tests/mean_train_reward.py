@@ -6,11 +6,14 @@ from plotly import tools
 from pymongo import MongoClient
 
 client = MongoClient('mongodb://localhost:27017/')
-db = client['Train_logging_Loadclipping_higher_nosie_clip']
+db = client['Master_V_ctrl_dq0_Delay_rewNew']
 
-trail = db.Trail_number_0
+trail = db.Trail_number_5
 
-test_data = trail.find_one({"Name": "After_Training"})
+for post in trail.find({"Name": "After_Training"}):
+    test_data = post
+
+#test_data = trail.find_one({"Name": "After_Training"})
 #fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))
 #ax1, ax2 = ax.flatten()
 ts = 1e-4  # if ts stored: take from db
@@ -23,10 +26,12 @@ df2['r'] = pd.DataFrame(test_data['Mean_eps_reward'])
 x = df2['t']
 y = df2['r']
 
-plt.plot(y)
+ax = plt.plot(y)
 plt.grid()
 plt.xlabel("Episodes")
+plt.yscale('log')
 plt.ylabel("Mean episode Reward")
+#plt.title("1.000.000")
 plt.show()
 
 
@@ -53,4 +58,3 @@ plot.update_layout(
 )
 
 plot.show()
-
