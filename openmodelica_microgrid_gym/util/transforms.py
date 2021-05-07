@@ -112,7 +112,7 @@ def abc_to_dq0_cos_sin(abc: np.ndarray, cos: float, sin: float) -> np.ndarray:
                    sin_shift_neg * abc[1] -
                    sin_shift_pos * abc[2])
 
-    z = (1 / 3) * abc.sum()
+    z = (1 / 3) * abc.sum(axis=0)
 
     return np.array([d, q, z])
 
