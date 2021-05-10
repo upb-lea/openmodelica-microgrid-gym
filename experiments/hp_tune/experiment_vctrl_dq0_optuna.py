@@ -17,7 +17,7 @@ from stable_baselines3.common.type_aliases import GymStepReturn
 from experiments.hp_tune.agents.my_ddpg import myDDPG
 # from agents.my_ddpg import myDDPG
 from experiments.hp_tune.env.rewards import Reward
-from experiments.hp_tune.env.vctrl_single_inv import net, folder_name
+from experiments.hp_tune.env.vctrl_dq0 import net, folder_name
 from experiments.hp_tune.util.action_noise_wrapper import myOrnsteinUhlenbeckActionNoise
 from experiments.hp_tune.util.record_env import RecordEnvCallback
 from experiments.hp_tune.util.recorder import Recorder
@@ -93,10 +93,10 @@ class FeatureWrapper(Monitor):
 
         # add wanted features here (add appropriate self.observation in init!!)
         # calculate magnitude of current phasor abc
-        self.i_phasor = self.cal_phasor_magnitude(obs[0:3])
-        self.v_phasor = self.cal_phasor_magnitude(obs[3:6])
+        # self.i_phasor = self.cal_phasor_magnitude(obs[0:3])
+        self.v_phasor = self.cal_phasor_magnitude(obs[0:3])
 
-        # todo: delta (ref-mess), letzte aktion, beides, delta i_phasor zur stromgrenze
+        # delta (ref-mess), letzte aktion, beides, delta i_phasor zur stromgrenze
 
         self.R_training.append(self.env.history.df['r_load.resistor1.R'].iloc[-1])
         self.i_phasor_training.append((self.i_phasor) * self.env.net['inverter1'].i_lim)
@@ -149,27 +149,27 @@ class FeatureWrapper(Monitor):
             self.n_episode += 1
 
         # if setpoint in dq: Transform measurement to dq0!!!!
-        obs[3:6] = abc_to_dq0(obs[3:6], self.env.net.components[0].phase)
+        #obs[3:6] = abc_to_dq0(obs[3:6], self.env.net.components[0].phase)
         obs[0:3] = abc_to_dq0(obs[0:3], self.env.net.components[0].phase)
 
         """
         Feature control error: v_setpoint - v_mess
         """
-        error = obs[6:9] - obs[3:6]
+        error = obs[3:6] - obs[0:3]
 
         """
         Feature delta to current limit
         """
-        delta_i_lim_i_phasor = 1 - self.i_phasor
+        #delta_i_lim_i_phasor = 1 - self.i_phasor
 
         """
         Following maps the return to the range of [-0.5, 0.5] in
         case of magnitude = [-lim, lim] using (phasor_mag) - 0.5. 0.5 can be exceeded in case of the magnitude
         exceeds the limit (no extra env interruption here!, all phases should be validated separately)
         """
-        obs = np.append(obs, self.i_phasor - 0.5)
+        #obs = np.append(obs, self.i_phasor - 0.5)
         obs = np.append(obs, error)
-        obs = np.append(obs, delta_i_lim_i_phasor)
+        #obs = np.append(obs, delta_i_lim_i_phasor)
 
         if any(obs) > 1:
             asd = 1
@@ -177,7 +177,7 @@ class FeatureWrapper(Monitor):
         """
         Add used action to the NN input to learn delay
         """
-        obs = np.append(obs, self.used_action)
+        #obs = np.append(obs, self.used_action)
 
         return obs, reward, done, info
 
@@ -206,26 +206,26 @@ class FeatureWrapper(Monitor):
         self.phase.append(self.env.net.components[0].phase)
 
         # if setpoint in dq: Transform measurement to dq0!!!!
-        obs[3:6] = abc_to_dq0(obs[3:6], self.env.net.components[0].phase)
+        #obs[3:6] = abc_to_dq0(obs[3:6], self.env.net.components[0].phase)
         obs[0:3] = abc_to_dq0(obs[0:3], self.env.net.components[0].phase)
         """
         Feature control error: v_setpoint - v_mess
         """
-        error = obs[6:9] - obs[3:6]
+        error = obs[3:6] - obs[0:3]
 
         """
         Feature delta to current limit
         """
-        delta_i_lim_i_phasor = 1 - self.i_phasor
+        #delta_i_lim_i_phasor = 1 - self.i_phasor
 
-        obs = np.append(obs, self.i_phasor - 0.5)
+        #obs = np.append(obs, self.i_phasor - 0.5)
         obs = np.append(obs, error)
-        obs = np.append(obs, delta_i_lim_i_phasor)
+        #obs = np.append(obs, delta_i_lim_i_phasor)
 
         """
         Add used action to the NN input to learn delay
         """
-        obs = np.append(obs, self.used_action)
+        #obs = np.append(obs, self.used_action)
 
         return obs
 
@@ -286,7 +286,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
         plt.close()
 
     env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train-v0',
-                   reward_fun=rew.rew_fun_include_current,
+                   reward_fun=rew.rew_fun_dq0,
                    abort_reward=-1,
                    viz_cols=[
                        PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
@@ -305,12 +305,12 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                 style=[[None]]
                                 )
                    ],
-                   obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
-                               'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
-                               'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
+                   obs_output=[  # 'lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
+                       'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
+                       'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                    )
 
-    env = FeatureWrapper(env, number_of_features=8, training_episode_length=training_episode_length,
+    env = FeatureWrapper(env, number_of_features=3, training_episode_length=training_episode_length,
                          recorder=mongo_recorder, n_trail=n_trail)
 
     n_actions = env.action_space.shape[-1]
@@ -390,7 +390,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     limit_exceeded_in_test = False
     limit_exceeded_penalty = 0
     env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v0',
-                        reward_fun=rew.rew_fun_include_current,
+                        reward_fun=rew.rew_fun_dq0,
                         abort_reward=-1,  # no needed if in rew no None is given back
                         # on_episode_reset_callback=cb.fire  # needed?
                         viz_cols=[
@@ -409,11 +409,11 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                      color=[['b', 'r', 'g']],
                                      style=[[None]]
                                      )],
-                        obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
-                                    'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
-                                    'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
+                        obs_output=[  # 'lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
+                            'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
+                            'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                         )
-    env_test = FeatureWrapper(env_test, number_of_features=8)
+    env_test = FeatureWrapper(env_test, number_of_features=3)
     obs = env_test.reset()
     phase_list = []
     phase_list.append(env_test.env.net.components[0].phase)

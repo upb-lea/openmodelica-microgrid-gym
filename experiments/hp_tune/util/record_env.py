@@ -1,7 +1,7 @@
 from stable_baselines3.common.callbacks import BaseCallback
 import matplotlib.pyplot as plt
 import time
-from experiments.hp_tune.env.vctrl_single_inv import folder_name
+from experiments.hp_tune.env.vctrl_dq0 import folder_name
 
 
 class RecordEnvCallback(BaseCallback):
