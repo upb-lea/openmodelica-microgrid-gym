@@ -12,7 +12,7 @@ from experiments.hp_tune.experiment_vctrl_single_inv_dq0 import experiment_fit_D
 PC2_LOCAL_PORT2PSQL = 11999
 DB_NAME = 'optuna'
 SERVER_LOCAL_PORT2PSQL = 5432
-STUDY_NAME = 'HIER_WAS_ANDERES'
+STUDY_NAME = 'DDPG_V_ctrl_dq0'
 
 cfg = dict(lea_vpn_nodes=['lea-skynet', 'lea-picard', 'lea-barclay',
                           'lea-cyberdyne', 'webbah-ThinkPad-L380'])
@@ -21,7 +21,7 @@ cfg = dict(lea_vpn_nodes=['lea-skynet', 'lea-picard', 'lea-barclay',
 def ddpg_objective(trial):
     number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
 
-    learning_rate = trial.suggest_loguniform("learning_rate", 1e-7, 5e-5)  # 0.0002#
+    learning_rate = trial.suggest_loguniform("learning_rate", 1e-10, 5e-2)  # 0.0002#
     gamma = 0.75  # trial.suggest_loguniform("gamma", 0.5, 0.99)
     weight_scale = 0.1  # trial.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
 
@@ -81,9 +81,13 @@ def optuna_optimize(objective, sampler=None, study_name='dummy'):
 
     node = platform.uname().node
 
-    # read db credentials
-    with open(f'{os.getenv("HOME")}/creds/optuna_psql', 'r') as f:
-        optuna_creds = ':'.join([s.strip() for s in f.readlines()])
+    if node in ('lea-picard', 'lea-barclay'):
+        with open('C:\\Users\\webbah\\Documents\\creds\\optuna_psql.txt', 'r') as f:
+            optuna_creds = ':'.join([s.strip() for s in f.readlines()])
+    else:
+        # read db credentials
+        with open(f'{os.getenv("HOME")}/creds/optuna_psql', 'r') as f:
+            optuna_creds = ':'.join([s.strip() for s in f.readlines()])
     # set trial to failed if it seems dead for 20 minutes
     # storage_kws = dict(heartbeat_interval=60*5, grace_period=60*20)
     if node in ('lea-cyberdyne', 'fe1'):
@@ -128,7 +132,7 @@ if __name__ == "__main__":
     # with tf.device('/cpu:0'):
     #    optuna_optimize(ddpg_objective, study_name=STUDY_NAME)
 
-    learning_rate = list(itertools.chain(*[[1e-8] * 1]))
+    learning_rate = list(itertools.chain(*[[1e-6] * 1]))
     # number_learning_steps = list(itertools.chain(*[[1100000] * 1]))
     # learning_rate = list(itertools.chain(*[[1e-3]*1, [1e-4]*1, [1e-5]*1, [1e-6]*1, [1e-7]*1, [1e-8]*1, [1e-9]*1]))
     search_space = {'learning_rate': learning_rate}  # , 'number_learning_steps': number_learning_steps}
