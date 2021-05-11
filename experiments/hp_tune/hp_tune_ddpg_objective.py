@@ -1,3 +1,5 @@
+import itertools
+
 import optuna
 import platform
 import argparse
@@ -17,42 +19,43 @@ cfg = dict(lea_vpn_nodes=['lea-skynet', 'lea-picard', 'lea-barclay',
 
 
 def ddpg_objective(trial):
-    number_learning_steps = 1000000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
+    number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
 
     learning_rate = trial.suggest_loguniform("learning_rate", 1e-7, 5e-5)  # 0.0002#
-    gamma = trial.suggest_loguniform("gamma", 0.5, 0.99)
-    weight_scale = trial.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
+    gamma = 0.75  # trial.suggest_loguniform("gamma", 0.5, 0.99)
+    weight_scale = 0.1  # trial.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
 
-    bias_scale = trial.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
-    alpha_relu_actor = trial.suggest_loguniform("alpha_relu_actor", 0.0001, 0.5)  # 0.005
-    alpha_relu_critic = trial.suggest_loguniform("alpha_relu_critic", 0.0001, 0.5)  # 0.005
+    bias_scale = 0.1  # trial.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
+    alpha_relu_actor = 0.1  # trial.suggest_loguniform("alpha_relu_actor", 0.0001, 0.5)  # 0.005
+    alpha_relu_critic = 0.1  # trial.suggest_loguniform("alpha_relu_critic", 0.0001, 0.5)  # 0.005
 
-    batch_size = trial.suggest_int("batch_size", 32, 1024)  # 128
-    buffer_size = trial.suggest_int("buffer_size", 10, 1000000)  # 128
+    batch_size = 1024  # trial.suggest_int("batch_size", 32, 1024)  # 128
+    buffer_size = int(1e6)  # trial.suggest_int("buffer_size", 10, 1000000)  # 128
 
-    actor_hidden_size = trial.suggest_int("actor_hidden_size", 10, 600)  # 100  # Using LeakyReLU
-    actor_number_layers = trial.suggest_int("actor_number_layers", 1, 4)
+    actor_hidden_size = 175  # trial.suggest_int("actor_hidden_size", 10, 600)  # 100  # Using LeakyReLU
+    actor_number_layers = 1  # trial.suggest_int("actor_number_layers", 1, 4)
 
-    critic_hidden_size = trial.suggest_int("critic_hidden_size", 10, 800)  # 100
-    critic_number_layers = trial.suggest_int("critic_number_layers", 1, 5)
+    critic_hidden_size = 140  # trial.suggest_int("critic_hidden_size", 10, 800)  # 100
+    critic_number_layers = 2  # trial.suggest_int("critic_number_layers", 1, 5)
 
     n_trail = str(trial.number)
     use_gamma_in_rew = 1
-    noise_var = trial.suggest_loguniform("noise_var", 0.01, 4)  # 2
+    noise_var = 2  # trial.suggest_loguniform("noise_var", 0.01, 4)  # 2
     # min var, action noise is reduced to (depends on noise_var)
     noise_var_min = 0.0013  # trial.suggest_loguniform("noise_var_min", 0.0000001, 2)
     # min var, action noise is reduced to (depends on training_episode_length)
     noise_steps_annealing = int(
         0.25 * number_learning_steps)  # trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
     # number_learning_steps)
-    noise_theta = trial.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
-    error_exponent = trial.suggest_loguniform("error_exponent", 0.01, 4)
+    noise_theta = 25  # trial.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
+    error_exponent = 0.5  # trial.suggest_loguniform("error_exponent", 0.01, 4)
 
-    training_episode_length = trial.suggest_int("training_episode_length", 200, 5000)  # 128
-    learning_starts = trial.suggest_loguniform("learning_starts", 0.1, 2)  # 128
-    tau = trial.suggest_loguniform("tau", 0.0001, 0.2)  # 2
+    training_episode_length = 2000  # trial.suggest_int("training_episode_length", 200, 5000)  # 128
+    learning_starts = 0.32  # trial.suggest_loguniform("learning_starts", 0.1, 2)  # 128
+    tau = 0.00033  # trial.suggest_loguniform("tau", 0.0001, 0.2)  # 2
 
-    trail_config_mongo = {"Name": "Config"}
+    trail_config_mongo = {"Name": "Config",
+                          "Number_learning_Steps": number_learning_steps}
     trail_config_mongo.update(trial.params)
     mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, trail_config_mongo)
 
@@ -124,4 +127,10 @@ def optuna_optimize(objective, sampler=None, study_name='dummy'):
 if __name__ == "__main__":
     # with tf.device('/cpu:0'):
     #    optuna_optimize(ddpg_objective, study_name=STUDY_NAME)
-    optuna_optimize(ddpg_objective, study_name=STUDY_NAME)
+
+    learning_rate = list(itertools.chain(*[[1e-8] * 1]))
+    # number_learning_steps = list(itertools.chain(*[[1100000] * 1]))
+    # learning_rate = list(itertools.chain(*[[1e-3]*1, [1e-4]*1, [1e-5]*1, [1e-6]*1, [1e-7]*1, [1e-8]*1, [1e-9]*1]))
+    search_space = {'learning_rate': learning_rate}  # , 'number_learning_steps': number_learning_steps}
+
+    optuna_optimize(ddpg_objective, study_name=STUDY_NAME, sampler=optuna.samplers.GridSampler(search_space))

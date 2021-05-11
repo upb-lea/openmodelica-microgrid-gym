@@ -6,6 +6,7 @@ import gym
 import matplotlib.pyplot as plt
 import numpy as np
 import optuna
+import sshtunnel
 import torch as th
 from stable_baselines3 import DDPG
 from stable_baselines3.common.callbacks import EveryNTimesteps
@@ -17,27 +18,33 @@ from stable_baselines3.common.type_aliases import GymStepReturn
 from experiments.hp_tune.agents.my_ddpg import myDDPG
 # from agents.my_ddpg import myDDPG
 from experiments.hp_tune.env.rewards import Reward
-from experiments.hp_tune.env.vctrl_single_inv import net, folder_name
+from experiments.hp_tune.env.vctrl_dq0 import net, folder_name
 from experiments.hp_tune.util.action_noise_wrapper import myOrnsteinUhlenbeckActionNoise
 from experiments.hp_tune.util.record_env import RecordEnvCallback
 from experiments.hp_tune.util.recorder import Recorder
 from experiments.hp_tune.util.training_recorder import TrainRecorder
 from openmodelica_microgrid_gym.env import PlotTmpl
-from openmodelica_microgrid_gym.util import abc_to_alpha_beta
+from openmodelica_microgrid_gym.util import abc_to_alpha_beta, dq0_to_abc, abc_to_dq0
 
 np.random.seed(0)
 
-# number_learning_steps = 300000
+number_learning_steps1 = 600000
 number_plotting_steps = 100000
 number_trails = 200
 
 params_change = []
 
-mongo_recorder = Recorder(database_name=folder_name)
+# mongo_recorder = Recorder(database_name=folder_name)
 
 
 # mongo_recorder = Recorder(URI='mongodb://localhost:12001/',
 #                          database_name=folder_name)  # store to port 12001 for ssh data to cyberdyne
+# mongo_recorder = Recorder(database_name=folder_name)
+
+mongo_tunnel = sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001))
+mongo_tunnel.start()
+mongo_recorder = Recorder(URI=f'mongodb://localhost:{mongo_tunnel.local_bind_port}/',
+                          database_name=folder_name)  # store to port 12001 for ssh data to cyberdyne
 
 
 class FeatureWrapper(Monitor):
@@ -74,6 +81,7 @@ class FeatureWrapper(Monitor):
         self.v_phasor_training = []
         self.reward_episode_mean = []
         self.n_trail = n_trail
+        self.phase = []
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
         """
@@ -81,7 +89,10 @@ class FeatureWrapper(Monitor):
         Triggers the env to reset without done=True every training_episode_length steps
         """
 
-        obs, reward, done, info = super().step(action)
+        action_abc = dq0_to_abc(action, self.env.net.components[0].phase)
+
+        # clipping?
+        obs, reward, done, info = super().step(action_abc)
 
         self._n_training_steps += 1
 
@@ -109,6 +120,7 @@ class FeatureWrapper(Monitor):
         self.v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
         self.v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
         self.v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
+        self.phase.append(self.env.net.components[0].phase)
 
         if done:
             self.reward_episode_mean.append(np.mean(self.rewards))
@@ -124,7 +136,8 @@ class FeatureWrapper(Monitor):
                             "v_b_training": self.v_b,
                             "v_c_training": self.v_c,
                             "v_phasor_training": self.v_phasor_training,
-                            "Rewards": self.rewards
+                            "Rewards": self.rewards,
+                            "Phase": self.phase
                             }
 
             """
@@ -143,7 +156,12 @@ class FeatureWrapper(Monitor):
             self.v_a = []
             self.v_b = []
             self.v_c = []
+            self.phase = []
             self.n_episode += 1
+
+        # if setpoint in dq: Transform measurement to dq0!!!!
+        obs[3:6] = abc_to_dq0(obs[3:6], self.env.net.components[0].phase)
+        obs[0:3] = abc_to_dq0(obs[0:3], self.env.net.components[0].phase)
 
         """
         Feature control error: v_setpoint - v_mess
@@ -153,21 +171,21 @@ class FeatureWrapper(Monitor):
         """
         Feature delta to current limit
         """
-        delta_i_lim_i_phasor = 1 - self.i_phasor
+        #delta_i_lim_i_phasor = 1 - self.i_phasor
 
         """
         Following maps the return to the range of [-0.5, 0.5] in
         case of magnitude = [-lim, lim] using (phasor_mag) - 0.5. 0.5 can be exceeded in case of the magnitude
         exceeds the limit (no extra env interruption here!, all phases should be validated separately)
         """
-        obs = np.append(obs, self.i_phasor - 0.5)
+        #obs = np.append(obs, self.i_phasor - 0.5)
         obs = np.append(obs, error)
-        obs = np.append(obs, delta_i_lim_i_phasor)
+        #obs = np.append(obs, delta_i_lim_i_phasor)
 
         """
         Add used action to the NN input to learn delay
         """
-        obs = np.append(obs, self.used_action)
+        #obs = np.append(obs, self.used_action)
 
         return obs, reward, done, info
 
@@ -193,7 +211,11 @@ class FeatureWrapper(Monitor):
         self.v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
         self.v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
         self.v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
+        self.phase.append(self.env.net.components[0].phase)
 
+        # if setpoint in dq: Transform measurement to dq0!!!!
+        obs[3:6] = abc_to_dq0(obs[3:6], self.env.net.components[0].phase)
+        obs[0:3] = abc_to_dq0(obs[0:3], self.env.net.components[0].phase)
         """
         Feature control error: v_setpoint - v_mess
         """
@@ -204,14 +226,14 @@ class FeatureWrapper(Monitor):
         """
         delta_i_lim_i_phasor = 1 - self.i_phasor
 
-        obs = np.append(obs, self.i_phasor - 0.5)
+        #obs = np.append(obs, self.i_phasor - 0.5)
         obs = np.append(obs, error)
-        obs = np.append(obs, delta_i_lim_i_phasor)
+        #obs = np.append(obs, delta_i_lim_i_phasor)
 
         """
         Add used action to the NN input to learn delay
         """
-        obs = np.append(obs, self.used_action)
+        #obs = np.append(obs, self.used_action)
 
         return obs
 
@@ -272,8 +294,8 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
         plt.close()
 
     env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train-v0',
-                   reward_fun=rew.rew_fun_include_current,
-                   abort_reward=-(1 - rew.gamma),
+                   reward_fun=rew.rew_fun_dq0,
+                   abort_reward=-1,
                    viz_cols=[
                        PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
                                 callback=xylables_v,
@@ -296,19 +318,19 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
                                'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                    )
 
-    env = FeatureWrapper(env, number_of_features=8, training_episode_length=training_episode_length,
+    env = FeatureWrapper(env, number_of_features=6, training_episode_length=training_episode_length,
                          recorder=mongo_recorder, n_trail=n_trail)
 
     n_actions = env.action_space.shape[-1]
     noise_var = noise_var  # 20#0.2
     noise_theta = noise_theta  # 50 # stiffness of OU
-    # action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
-    #                                            sigma=noise_var * np.ones(n_actions), dt=net.ts)
+    action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
+                                                sigma=noise_var * np.ones(n_actions), dt=net.ts)
 
-    action_noise = myOrnsteinUhlenbeckActionNoise(n_steps_annealing=noise_steps_annealing,
-                                                  sigma_min=noise_var * np.ones(n_actions) * noise_var_min,
-                                                  mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
-                                                  sigma=noise_var * np.ones(n_actions), dt=net.ts)
+    # action_noise = myOrnsteinUhlenbeckActionNoise(n_steps_annealing=noise_steps_annealing,
+    #                                              sigma_min=noise_var * np.ones(n_actions) * noise_var_min,
+    #                                              mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
+    #                                              sigma=noise_var * np.ones(n_actions), dt=net.ts)
 
     policy_kwargs = dict(activation_fn=th.nn.LeakyReLU, net_arch=dict(pi=[actor_hidden_size] * actor_number_layers
                                                                       , qf=[critic_hidden_size] * critic_number_layers))
@@ -378,7 +400,7 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
     limit_exceeded_in_test = False
     limit_exceeded_penalty = 0
     env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v0',
-                        reward_fun=rew.rew_fun_include_current,
+                        reward_fun=rew.rew_fun_dq0,
                         abort_reward=-1,  # no needed if in rew no None is given back
                         # on_episode_reset_callback=cb.fire  # needed?
                         viz_cols=[
@@ -401,14 +423,17 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
                                     'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
                                     'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                         )
-    env_test = FeatureWrapper(env_test, number_of_features=1)
+    env_test = FeatureWrapper(env_test, number_of_features=6)
     obs = env_test.reset()
+    phase_list = []
+    phase_list.append(env_test.env.net.components[0].phase)
 
     rew_list = []
 
     while True:
         action, _states = model.predict(obs, deterministic=True)
         obs, rewards, done, info = env_test.step(action)
+        phase_list.append(env_test.env.net.components[0].phase)
 
         if rewards == -1 and not limit_exceeded_in_test:
             # Set addidional penalty of -1 if limit is exceeded once in the test case
@@ -426,7 +451,9 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
     ts = time.gmtime()
     test_after_training = {"Name": "Test",
                            "time": ts,
-                           "Reward": rew_list}
+                           "Reward": rew_list,
+                           "Phase": phase_list,
+                           "Info": "No delay, obs=[v_mess,sp_dq0, i_mess_dq0, error_mess_sp]"}
 
     # Add v-&i-measurements
     test_after_training.update({env_test.viz_col_tmpls[j].vars[i].replace(".", "_"): env_test.history[
