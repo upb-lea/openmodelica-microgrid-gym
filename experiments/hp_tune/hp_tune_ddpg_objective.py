@@ -12,17 +12,17 @@ from experiments.hp_tune.experiment_vctrl_single_inv_dq0 import experiment_fit_D
 PC2_LOCAL_PORT2PSQL = 11999
 DB_NAME = 'optuna'
 SERVER_LOCAL_PORT2PSQL = 5432
-STUDY_NAME = 'DDPG_V_ctrl_dq0'
+STUDY_NAME = 'HP_opt_DDPG_V_ctrl_dq0_noDelay'
 
 cfg = dict(lea_vpn_nodes=['lea-skynet', 'lea-picard', 'lea-barclay',
                           'lea-cyberdyne', 'webbah-ThinkPad-L380'])
 
 
 def ddpg_objective(trial):
-    number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
+    number_learning_steps = 600000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
 
     learning_rate = trial.suggest_loguniform("learning_rate", 1e-10, 5e-2)  # 0.0002#
-    gamma = 0.75  # trial.suggest_loguniform("gamma", 0.5, 0.99)
+    gamma = trial.suggest_loguniform("gamma", 0.5, 0.99)
     weight_scale = 0.1  # trial.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
 
     bias_scale = 0.1  # trial.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
@@ -40,19 +40,19 @@ def ddpg_objective(trial):
 
     n_trail = str(trial.number)
     use_gamma_in_rew = 1
-    noise_var = 2  # trial.suggest_loguniform("noise_var", 0.01, 4)  # 2
+    noise_var = trial.suggest_loguniform("noise_var", 0.01, 4)  # 2
     # min var, action noise is reduced to (depends on noise_var)
     noise_var_min = 0.0013  # trial.suggest_loguniform("noise_var_min", 0.0000001, 2)
     # min var, action noise is reduced to (depends on training_episode_length)
     noise_steps_annealing = int(
         0.25 * number_learning_steps)  # trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
     # number_learning_steps)
-    noise_theta = 25  # trial.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
+    noise_theta = trial.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
     error_exponent = 0.5  # trial.suggest_loguniform("error_exponent", 0.01, 4)
 
     training_episode_length = 2000  # trial.suggest_int("training_episode_length", 200, 5000)  # 128
     learning_starts = 0.32  # trial.suggest_loguniform("learning_starts", 0.1, 2)  # 128
-    tau = 0.00033  # trial.suggest_loguniform("tau", 0.0001, 0.2)  # 2
+    tau = 0.005  # trial.suggest_loguniform("tau", 0.0001, 0.2)  # 2
 
     trail_config_mongo = {"Name": "Config",
                           "Number_learning_Steps": number_learning_steps}
@@ -72,7 +72,7 @@ def ddpg_objective(trial):
 
 def optuna_optimize(objective, sampler=None, study_name='dummy'):
     parser = argparse.ArgumentParser(description='Train DDPG Single Inverter V-ctrl')
-    parser.add_argument('-n', '--n_trials', default=1, required=False,
+    parser.add_argument('-n', '--n_trials', default=10, required=False,
                         help='number of trials to execute', type=int)
     args = parser.parse_args()
     n_trials = args.n_trials or 10
@@ -101,7 +101,8 @@ def optuna_optimize(objective, sampler=None, study_name='dummy'):
         study = optuna.create_study(
             storage=f'postgresql://{optuna_creds}@localhost:{port}/{DB_NAME}',
             sampler=sampler, study_name=study_name,
-            load_if_exists=True)
+            load_if_exists=True,
+            direction='maximize')
         study.optimize(objective, n_trials=n_trials)
     else:
         if node in cfg['lea_vpn_nodes']:
@@ -124,7 +125,8 @@ def optuna_optimize(objective, sampler=None, study_name='dummy'):
                 storage=f'postgresql://{optuna_creds}'
                         f'@localhost:{tun.local_bind_port}/{DB_NAME}',
                 sampler=sampler, study_name=study_name,
-                load_if_exists=True)
+                load_if_exists=True,
+                direction='maximize')
             study.optimize(objective, n_trials=n_trials)
 
 
@@ -132,9 +134,9 @@ if __name__ == "__main__":
     # with tf.device('/cpu:0'):
     #    optuna_optimize(ddpg_objective, study_name=STUDY_NAME)
 
-    learning_rate = list(itertools.chain(*[[1e-6] * 1]))
+    learning_rate = list(itertools.chain(*[[1e-9] * 1]))
     # number_learning_steps = list(itertools.chain(*[[1100000] * 1]))
     # learning_rate = list(itertools.chain(*[[1e-3]*1, [1e-4]*1, [1e-5]*1, [1e-6]*1, [1e-7]*1, [1e-8]*1, [1e-9]*1]))
     search_space = {'learning_rate': learning_rate}  # , 'number_learning_steps': number_learning_steps}
 
-    optuna_optimize(ddpg_objective, study_name=STUDY_NAME, sampler=optuna.samplers.GridSampler(search_space))
+    optuna_optimize(ddpg_objective, study_name=STUDY_NAME)#, sampler=optuna.samplers.GridSampler(search_space))
