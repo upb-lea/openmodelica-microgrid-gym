@@ -19,7 +19,7 @@ from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import RandProcess
 from gym.envs.registration import register
 
-folder_name = 'DDPG_V_ctrl_dq0'
+folder_name = 'HP_opt_DDPG_V_ctrl_dq0_Delay'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'plots'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
@@ -163,7 +163,7 @@ register(id='vctrl_single_inv_train-v0',
              model_path='omg_grid/grid.paper_loadstep.fmu',
              on_episode_reset_callback=cb.fire,
              is_normalized=True,
-             action_time_delay=0
+             action_time_delay=1
          )
          )
 
@@ -198,7 +198,7 @@ register(id='vctrl_single_inv_test-v0',
              #             )
              # ],
              viz_mode='episode',
-             max_episode_steps=2000,
+             max_episode_steps=20000,
              model_params={'lc.resistor1.R': R_filter,
                            'lc.resistor2.R': R_filter,
                            'lc.resistor3.R': R_filter,
@@ -219,6 +219,6 @@ register(id='vctrl_single_inv_test-v0',
              model_path='omg_grid/grid.paper_loadstep.fmu',
              on_episode_reset_callback=cb.fire,
              is_normalized=True,
-             action_time_delay=0
+             action_time_delay=1
          )
          )

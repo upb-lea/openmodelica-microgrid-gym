@@ -185,7 +185,7 @@ class FeatureWrapper(Monitor):
         """
         Add used action to the NN input to learn delay
         """
-        #obs = np.append(obs, self.used_action)
+        obs = np.append(obs, self.used_action)
 
         return obs, reward, done, info
 
@@ -233,7 +233,7 @@ class FeatureWrapper(Monitor):
         """
         Add used action to the NN input to learn delay
         """
-        #obs = np.append(obs, self.used_action)
+        obs = np.append(obs, self.used_action)
 
         return obs
 
@@ -318,7 +318,7 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
                                'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                    )
 
-    env = FeatureWrapper(env, number_of_features=3, training_episode_length=training_episode_length,
+    env = FeatureWrapper(env, number_of_features=6, training_episode_length=training_episode_length,
                          recorder=mongo_recorder, n_trail=n_trail)
 
     n_actions = env.action_space.shape[-1]
@@ -423,7 +423,7 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
                                     'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
                                     'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                         )
-    env_test = FeatureWrapper(env_test, number_of_features=3)
+    env_test = FeatureWrapper(env_test, number_of_features=6)
     obs = env_test.reset()
     phase_list = []
     phase_list.append(env_test.env.net.components[0].phase)
@@ -453,7 +453,7 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
                            "time": ts,
                            "Reward": rew_list,
                            "Phase": phase_list,
-                           "Info": "No delay, obs=[v_mess,sp_dq0, i_mess_dq0, error_mess_sp]"}
+                           "Info": "No delay, obs=[v_mess,sp_dq0, i_mess_dq0, error_mess_sp, last_action]"}
 
     # Add v-&i-measurements
     test_after_training.update({env_test.viz_col_tmpls[j].vars[i].replace(".", "_"): env_test.history[

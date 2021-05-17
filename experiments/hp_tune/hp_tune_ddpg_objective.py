@@ -12,16 +12,16 @@ from experiments.hp_tune.experiment_vctrl_single_inv_dq0 import experiment_fit_D
 PC2_LOCAL_PORT2PSQL = 11999
 DB_NAME = 'optuna'
 SERVER_LOCAL_PORT2PSQL = 5432
-STUDY_NAME = 'HP_opt_DDPG_V_ctrl_dq0_noDelay'
+STUDY_NAME = 'HP_opt_DDPG_V_ctrl_dq0_Delay'
 
 cfg = dict(lea_vpn_nodes=['lea-skynet', 'lea-picard', 'lea-barclay',
                           'lea-cyberdyne', 'webbah-ThinkPad-L380'])
 
 
 def ddpg_objective(trial):
-    number_learning_steps = 600000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
+    number_learning_steps = 1000000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
 
-    learning_rate = trial.suggest_loguniform("learning_rate", 1e-10, 5e-2)  # 0.0002#
+    learning_rate = trial.suggest_loguniform("learning_rate", 1e-8, 5e-2)  # 0.0002#
     gamma = trial.suggest_loguniform("gamma", 0.5, 0.99)
     weight_scale = 0.1  # trial.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
 
@@ -32,11 +32,11 @@ def ddpg_objective(trial):
     batch_size = 1024  # trial.suggest_int("batch_size", 32, 1024)  # 128
     buffer_size = int(1e6)  # trial.suggest_int("buffer_size", 10, 1000000)  # 128
 
-    actor_hidden_size = 175  # trial.suggest_int("actor_hidden_size", 10, 600)  # 100  # Using LeakyReLU
-    actor_number_layers = 1  # trial.suggest_int("actor_number_layers", 1, 4)
+    actor_hidden_size =  trial.suggest_int("actor_hidden_size", 10, 200)  # 100  # Using LeakyReLU
+    actor_number_layers = trial.suggest_int("actor_number_layers", 1, 3)
 
-    critic_hidden_size = 140  # trial.suggest_int("critic_hidden_size", 10, 800)  # 100
-    critic_number_layers = 2  # trial.suggest_int("critic_number_layers", 1, 5)
+    critic_hidden_size =  trial.suggest_int("critic_hidden_size", 10, 300)  # 100
+    critic_number_layers = trial.suggest_int("critic_number_layers", 1, 4)
 
     n_trail = str(trial.number)
     use_gamma_in_rew = 1
