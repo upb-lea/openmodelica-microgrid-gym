@@ -129,6 +129,7 @@ class MasterInverter(Inverter):
         self.qdroop_ctl = DroopController(DroopParams(nom_value=self.net.v_nom, **qdroop), self.net.ts)
         self.dds = DDS(self.net.ts)
         self.phase = 0.0
+        self.v_refdq0 = np.array([0, 0, 0])
 
     def reset(self):
         super().reset()
@@ -136,6 +137,7 @@ class MasterInverter(Inverter):
         self.qdroop_ctl.reset()
         self.dds.reset()
         self.phase = 0.0
+        self.v_refdq0 = np.array([0, 0, 0])
 
     def calculate(self):
         super().calculate()
@@ -146,9 +148,9 @@ class MasterInverter(Inverter):
 
         instQ = -inst_reactive(self.v, self.i)
         v_refd = self.qdroop_ctl.step(instQ)
-        v_refdq0 = np.array([v_refd, 0, 0]) * self.v_ref
+        self.v_refdq0 = np.array([v_refd, 0, 0]) * self.v_ref
 
-        return dict(i_ref=dq0_to_abc(self.i_ref, self.phase), v_ref=dq0_to_abc(v_refdq0, self.phase),
+        return dict(i_ref=dq0_to_abc(self.i_ref, self.phase), v_ref=dq0_to_abc(self.v_refdq0, self.phase),
                     phase=np.array([self.phase]))
 
     def normalize(self, calc_data):
@@ -161,19 +163,11 @@ class MasterInverter_dq0(MasterInverter):
     MasterInverter that returns observaton in dq0
     """
 
-
     def calculate(self):
         super().calculate()
-        instPow = -inst_power(self.v, self.i)
-        freq = self.pdroop_ctl.step(instPow)
-        # Get the next phase rotation angle to implement
-        self.phase = self.dds.step(freq)
 
-        instQ = -inst_reactive(self.v, self.i)
-        v_refd = self.qdroop_ctl.step(instQ)
-        v_refdq0 = np.array([v_refd, 0, 0]) * self.v_ref
-
-        return dict(i_ref=np.array(self.i_ref), v_ref=v_refdq0, phase=np.array([self.phase]))  # hier die phase mit rein
+        return dict(i_ref=np.array(self.i_ref), v_ref=self.v_refdq0,
+                    phase=np.array([self.phase]))  # hier die phase mit rein
 
 
 class MasterInverterCurrentSourcing(Inverter):
