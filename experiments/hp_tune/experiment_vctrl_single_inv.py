@@ -6,6 +6,7 @@ import gym
 import matplotlib.pyplot as plt
 import numpy as np
 import optuna
+import sshtunnel
 import torch as th
 from stable_baselines3 import DDPG
 from stable_baselines3.common.callbacks import EveryNTimesteps
@@ -33,8 +34,10 @@ number_trails = 200
 
 params_change = []
 
+mongo_tunnel = sshtunnel.open_tunnel('lea38', {'remote_bind_address': ('127.0.0.1', 12001)})
+
 # mongo_recorder = Recorder(database_name=folder_name)
-mongo_recorder = Recorder(URI='mongodb://localhost:12001/',
+mongo_recorder = Recorder(URI=f'mongodb://localhost:{mongo_tunnel.local_bind_port}/',
                           database_name=folder_name)  # store to port 12001 for ssh data to cyberdyne
 
 

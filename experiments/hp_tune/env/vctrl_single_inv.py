@@ -160,7 +160,7 @@ register(id='vctrl_single_inv_train-v0',
                                                                          high=i_nom) if t == -1 else None,
                            },
              net=net,
-             model_path='omg_grid/grid.paper_loadstepWIN.fmu',
+             model_path='omg_grid/grid.paper_loadstep.fmu',
              on_episode_reset_callback=cb.fire,
              is_normalized=True,
              action_time_delay=1
@@ -216,7 +216,7 @@ register(id='vctrl_single_inv_test-v0',
                            'r_load.resistor3.R': partial(rand_load_test.give_dataframe_value, col='r_load.resistor3.R')
                            },
              net=net,
-             model_path='omg_grid/grid.paper_loadstepWIN.fmu',
+             model_path='omg_grid/grid.paper_loadstep.fmu',
              on_episode_reset_callback=cb.fire,
              is_normalized=True,
              action_time_delay=1

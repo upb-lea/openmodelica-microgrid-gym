@@ -149,13 +149,13 @@ class FeatureWrapper(Monitor):
             self.n_episode += 1
 
         # if setpoint in dq: Transform measurement to dq0!!!!
-        #obs[3:6] = abc_to_dq0(obs[3:6], self.env.net.components[0].phase)
+        obs[3:6] = abc_to_dq0(obs[3:6], self.env.net.components[0].phase)
         obs[0:3] = abc_to_dq0(obs[0:3], self.env.net.components[0].phase)
 
         """
         Feature control error: v_setpoint - v_mess
         """
-        error = obs[3:6] - obs[0:3]
+        error = obs[6:9] - obs[3:6]
 
         """
         Feature delta to current limit
@@ -206,7 +206,7 @@ class FeatureWrapper(Monitor):
         self.phase.append(self.env.net.components[0].phase)
 
         # if setpoint in dq: Transform measurement to dq0!!!!
-        #obs[3:6] = abc_to_dq0(obs[3:6], self.env.net.components[0].phase)
+        obs[3:6] = abc_to_dq0(obs[3:6], self.env.net.components[0].phase)
         obs[0:3] = abc_to_dq0(obs[0:3], self.env.net.components[0].phase)
         """
         Feature control error: v_setpoint - v_mess
@@ -305,9 +305,10 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                 style=[[None]]
                                 )
                    ],
-                   obs_output=[  # 'lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
-                       'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
-                       'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
+                   obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
+                               'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
+                               'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2',
+                               'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i']
                    )
 
     env = FeatureWrapper(env, number_of_features=3, training_episode_length=training_episode_length,
@@ -411,7 +412,9 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                      )],
                         obs_output=[  # 'lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
                             'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
-                            'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
+                            'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2',
+                            'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i'
+                        ]
                         )
     env_test = FeatureWrapper(env_test, number_of_features=3)
     obs = env_test.reset()
@@ -508,8 +511,8 @@ def objective(trail):
 
 
 # for gamma grid search:
-learning_rate = list(itertools.chain(*[[1e-8]*1]))
-number_learning_steps = list(itertools.chain(*[[1100000]*1]))
+learning_rate = list(itertools.chain(*[[1e-8] * 1]))
+number_learning_steps = list(itertools.chain(*[[1500] * 1]))
 #learning_rate = list(itertools.chain(*[[1e-3]*1, [1e-4]*1, [1e-5]*1, [1e-6]*1, [1e-7]*1, [1e-8]*1, [1e-9]*1]))
 search_space = {'learning_rate': learning_rate, 'number_learning_steps': number_learning_steps}
 
@@ -525,4 +528,4 @@ study = optuna.create_study(study_name=folder_name,
                             sampler=optuna.samplers.GridSampler(search_space)
                             )
 
-study.optimize(objective, n_trials=3, n_jobs=1)
+study.optimize(objective, n_trials=1, n_jobs=1)
