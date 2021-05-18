@@ -2,6 +2,34 @@
 History
 =======
 
+Next
+-------
+
+0.4.0 (2021-04-07)
+------------------
+Changes
+^^^^^^^
+* ModelicaEnv:
+    - Introduced action clipping
+    - model_params: None values are not passed to the OpenModelica env to allow initialization
+    - model_params: negative time values are introduced for initialization (fix)
+    - Introduced abort reward in env if episode is terminated
+    - Introduced obs_output to define a subset of history given as observation to the agent
+
+Fix
+^^^
+* omg.net.MasterInverter:
+    - default values used to overwrite passed values
+
+Add
+^^^
+* Random Process wrapper
+* ObsTempl test
+* reset test for initialized env
+
+
+
+
 0.3.0 (2020-12-18)
 ------------------
 

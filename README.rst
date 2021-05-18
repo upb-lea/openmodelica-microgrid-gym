@@ -54,6 +54,15 @@ learning algorithms to train agents controlling power electronic converters in m
 * Documentation: https://upb-lea.github.io/openmodelica-microgrid-gym
 
 
+Video Tutorial
+--------------
+
+Following is a short YouTube video introduction, to get a fist impression how to use OMG.
+
+
+
+- https://www.youtube.com/watch?v=rwBNFvCi_dY
+
 Installation
 ------------
 
@@ -101,16 +110,16 @@ The environment is initialized and run like any other OpenAI Gym
     import gym
 
     if __name__ == '__main__':
-    env = gym.make('openmodelica_microgrid_gym:ModelicaEnv-v1',
+        env = gym.make('openmodelica_microgrid_gym:ModelicaEnv-v1',
                    max_episode_steps=None,
                    net='../net/net.yaml',
                    model_path='../omg_grid/grid.network.fmu')
 
-    env.reset()
-    for _ in range(1000):
-        env.render()
-        env.step(env.action_space.sample())  # take a random action
-    env.close()
+        env.reset()
+        for _ in range(1000):
+            env.render()
+            env.step(env.action_space.sample())  # take a random action
+        env.close()
 
 
 
@@ -127,6 +136,8 @@ You can either use one of the provided FMUs (Windows and Linux, 64-bit, both inc
 
     openmodelica_microgrid_gym\fmu> omc create_fmu.mos
 
+Windows users might need to open the terminal out of OpenModelica by clicking 'tools' => 'OpenModelica Command Prompt' to make sure that the command 'omc' gets recognized.
+
 Running the ``staticctrl.py`` starts a simulation with a manually tuned cascaded PIPI controller
 
 .. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/raw/master/docs/pictures/control.jpg
@@ -138,6 +149,16 @@ A save Bayesian approach of a reinforcement learning agent is provided under exa
 .. figure:: https://github.com/upb-lea/openmodelica-microgrid-gym/raw/master/docs/pictures/kp_kp_J.png
     :figwidth: 60%
     :align: center
+
+Using pytest
+^^^^^^^^^^^^
+
+OMG provides a big range of tests to ensure correct working toolbox after changes are done.
+On some windows machines, the tests can only be started from the terminal via 'pytest'.
+
+The standard test OS for the development is Linux. In some cases, we have noticed that the test_modelica.py on windows PCs might throw an error.
+Since on Linux everything works fine, it seems to be a numerical issue connected with the FMUs.
+
 
 Citation & white paper
 ----------------------

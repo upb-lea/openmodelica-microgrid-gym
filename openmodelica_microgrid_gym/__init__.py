@@ -7,7 +7,7 @@ from openmodelica_microgrid_gym.env import ModelicaEnv
 from openmodelica_microgrid_gym.execution import Runner
 
 __all__ = ['Agent', 'Runner']
-__version__ = '0.3.0'
+__version__ = '0.4.0'
 
 register(
     id='ModelicaEnv_test-v1',

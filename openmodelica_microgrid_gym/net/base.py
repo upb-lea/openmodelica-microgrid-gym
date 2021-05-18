@@ -1,5 +1,4 @@
 from importlib import import_module
-from itertools import chain
 from typing import List, Dict, Optional, Union, Tuple
 
 import numexpr as ne
@@ -12,7 +11,6 @@ class Component:
     def __init__(self, net: 'Network', id=None, in_vars=None, out_vars=None, out_calc=None):
         """
 
-
         :param net: Network to which component belongs to
         :param id: Component ID
         :param in_vars: Input variables to component
@@ -21,15 +19,17 @@ class Component:
         """
         self.net = net
         self.id = id
-        for attr in chain.from_iterable((f.keys() for f in filter(None, (in_vars, out_vars)))):
-            if not hasattr(self, attr):
-                raise AttributeError(f'{self.__class__} no such attribute: {attr}')
         self.in_vars = in_vars
         self.in_idx = None  # type: Optional[dict]
 
         self.out_calc = out_calc or {}
         self.out_vars = out_vars
         self.out_idx = None  # type: Optional[dict]
+
+        # has to be set via the network class
+        # net['inverter2'].post_calculate_hook = callable_func # type: Callable[[Component, float], dict]
+        # gets the component object and the current timestep
+        self.post_calculate_hook = None
 
     def reset(self):
         pass
@@ -70,14 +70,11 @@ class Component:
             raise ValueError('call set_tmplidx before fill_tmpl. the keys must be converted to indices for efficiency')
         for attr, idxs in self.out_idx.items():
             # set object variables to the respective state variables
-            if hasattr(self, attr):
-                setattr(self, attr, state[idxs])
-            else:
-                raise AttributeError(f'{self.__class__} has no such attribute: {attr}')
+            setattr(self, attr, state[idxs])
 
     def set_outidx(self, keys):
         # This pre-calculation is done mainly for performance reasons
-        keyidx = {v: i for i, v in enumerate(keys)}
+        keyidx = {val: idx for idx, val in enumerate(keys)}
         self.out_idx = {}
         try:
             for var, keys in self.out_vars.items():
@@ -120,15 +117,18 @@ class Component:
         """
         pass
 
-    def augment(self, state: np.ndarray):
+    def augment(self, state: np.ndarray, t: float):
         """
         Stateful function that calculates additional values given the state of the environment.
 
+        :param t: timestamp from the environment
         :param state:  state array to augment and normalize
         :return: augmented state as tuple of raw and normalized
         """
         self.fill_tmpl(state)
         calc_data = self.calculate()
+        if callable(self.post_calculate_hook):
+            calc_data = {**calc_data, **self.post_calculate_hook(self, t)}
         raw_data = self.extract_data(calc_data)
 
         self.normalize(calc_data)
@@ -137,12 +137,22 @@ class Component:
         return raw_data, norm_data
 
     def extract_data(self, calc_data):
+        """
+        merge data from field variables (out_idx) and additional values (out_calc)
+        :param calc_data:
+        :return:
+        """
         attr = ''
         try:
-            new_vals = []
-            for attr, n in self.out_calc.items():
-                new_vals.extend([calc_data[attr][i] for i in range(n)])
-            return np.hstack([getattr(self, attr) for attr in self.out_idx.keys()] + new_vals)
+            # concatenate internal values (like voltage) and newly calculated ones (like ref)
+            out_vals = [getattr(self, attr)
+                        for attr in self.out_idx.keys()]
+
+            # prepare newly calculated values
+            new_vals = [[calc_data[attr][i] for i in range(n)]
+                        for attr, n in self.out_calc.items()]
+
+            return np.hstack(out_vals + new_vals)
         except KeyError as e:
             raise ValueError(
                 f'{self.__class__} missing return key: {e!s}. did you forget to set it in the calculate method?')
@@ -253,17 +263,18 @@ class Network:
             d.update(params)
         return d
 
-    def augment(self, state: np.ndarray) -> Tuple[np.ndarray]:
+    def augment(self, state: np.ndarray, t: float) -> Tuple[np.ndarray]:
         """
         Allows the network to provide additional output variables in order to provide measurements and reference
         information the RL agent needs to understand its rewards.
 
         The function is stateful!
 
+        :param t: timestamp from the environment
         :param state: raw state as recieved form the environment. must match the expected shape specified by :code:`in_vars()`
         :return: augmented state in raw and normalized
         """
-        return tuple([np.hstack(data) for data in zip(*[comp.augment(state) for comp in self.components])])
+        return tuple([np.hstack(data) for data in zip(*[comp.augment(state, t) for comp in self.components])])
 
     def in_vars(self):
         return list(collapse([comp.get_in_vars() for comp in self.components]))

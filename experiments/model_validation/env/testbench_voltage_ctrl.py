@@ -154,31 +154,31 @@ class TestbenchEnvVoltage(gym.Env):
                 print('I Try!')
                 self.ssh.connect(self.host, username=self.username, password=self.password)
                 connected =  True
-                #return True
-            except:# (BadHostKeyException, AuthenticationException,
-                    #SSHException, socket.gaierror) as e:
-                #print(e)
+                # return True
+            except:  # (BadHostKeyException, AuthenticationException,
+                # SSHException, socket.gaierror) as e:
+                # print(e)
                 print('Argh')
                 sleep(1)
 
         if count_retries == 10:
-            print( 'SSH FUCKED UP!')
+            print('SSH FUCKED UP!')
 
-
-
-        #toDo: get SP and kP/I from agent?
-        #str_command = './{} {} {} {} {} {}'.format(self.executable_script_name, self.max_episode_steps, self.kP, self.kI,
+        # toDo: get SP and kP/I from agent?
+        # str_command = './{} {} {} {} {} {}'.format(self.executable_script_name, self.max_episode_steps, self.kP, self.kI,
         #                                           self.i_ref, self.f_nom)
 
-        str_command = './{} {} {} {} {} {} {} {} {} {}'.format(self.executable_script_name, self.max_episode_steps, np.int(self.max_episode_steps/3-220),
-                                                               np.int(self.max_episode_steps *2/ 3-520),
-                                                      self.kP, self.kI, self.kPV, self.kIV,
-                                                   self.v_nominal,   self.f_nom)
+        str_command = './{} -u 100 -n {} -v {} -f {} -1 {} -2 {} -4 {} -5 {} -L -E'.format(self.executable_script_name,
+                                                                                           self.max_episode_steps,
+                                                                                           self.v_nominal, self.f_nom,
+                                                                                           self.kP, self.kI, self.kPV,
+                                                                                           self.kIV
+                                                                                           )
 
         ssh_stdin, ssh_stdout, ssh_stderr = self.ssh.exec_command(str_command)
 
         self.data, self.data_obs = self.__decode_result(ssh_stdout)
-        #self.data_obs = self.__decode_result_obs(ssh_stdout)
+        # self.data_obs = self.__decode_result_obs(ssh_stdout)
 
         self.current_step = 0
         self.done = False
@@ -341,10 +341,9 @@ class TestbenchEnvVoltage(gym.Env):
         Vc_B = self.data[:, 35];
         Vc_C = self.data[:, 36];
         """
-        Io_A = self.data_obs[:, 6]
-        Io_B = self.data_obs[:, 7]
-        Io_C = self.data_obs[:, 8]
-
+        #        Io_A = self.data_obs[:, 6]
+        #        Io_B = self.data_obs[:, 7]
+        #        Io_C = self.data_obs[:, 8]
 
         # store measurment to dataframe
         df = pd.DataFrame({'V_A': self.data[:, 0],
@@ -463,17 +462,16 @@ class TestbenchEnvVoltage(gym.Env):
         time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         """
 
-
-        fig = plt.figure()
-        plt.plot(t, Io_A, 'b', label=r'$i_{\mathrm{a}}$')
-        plt.plot(t, Io_B, 'g')
-        plt.plot(t, Io_C, 'r')
-        # plt.plot(t, SP_A, 'b--', label = r'$i_{\mathrm{a}}$')
-        # plt.plot(t, SP_B, 'g--')
-        # plt.plot(t, SP_C, 'r--')
-        plt.xlabel(r'$t\,/\,\mathrm{s}$')
-        plt.ylabel('$i_{\mathrm{abc,est}}\,/\,\mathrm{A}$')
-        # plt.title('{}'.format(J))
-        plt.grid()
-        plt.legend()
-        plt.show()
+#       fig = plt.figure()
+#       plt.plot(t, Io_A, 'b', label=r'$i_{\mathrm{a}}$')
+#       plt.plot(t, Io_B, 'g')
+#       plt.plot(t, Io_C, 'r')
+#       # plt.plot(t, SP_A, 'b--', label = r'$i_{\mathrm{a}}$')
+#       # plt.plot(t, SP_B, 'g--')
+#       # plt.plot(t, SP_C, 'r--')
+#       plt.xlabel(r'$t\,/\,\mathrm{s}$')
+#       plt.ylabel('$i_{\mathrm{abc,est}}\,/\,\mathrm{A}$')
+#       # plt.title('{}'.format(J))
+#       plt.grid()
+#       plt.legend()
+#       plt.show()

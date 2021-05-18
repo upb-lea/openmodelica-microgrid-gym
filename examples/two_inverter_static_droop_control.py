@@ -37,13 +37,13 @@ logging.basicConfig()
 
 def load_step(t, gain):
     """
-    Defines a load step after 0.2 s
     Doubles the load parameters
     :param t:
     :param gain: device parameter
     :return: Dictionary with load parameters
     """
-    return 1 * gain if t < .02 else 2 * gain
+    # Defines a load step after 0.2 s
+    return 1 * gain if t < .2 else 2 * gain
 
 
 if __name__ == '__main__':

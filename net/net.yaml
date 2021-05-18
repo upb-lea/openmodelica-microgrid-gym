@@ -46,3 +46,5 @@ components:
     cls: Load
     out:
       i: [ .inductor1.i, .inductor2.i, .inductor3.i ]
+      R: [ .resistor1.R, .resistor2.R, .resistor3.R ]
+

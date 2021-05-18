@@ -20,7 +20,7 @@ Mac users are strongly encouraged to run OpenModelica as well as the OMG toolbox
 Creating Microgrids with OpenModelica
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The microgrids are created with a  user defined library. To start it, run the file *package.mo* directly in the folder *omg_grid*.
+The microgrids are created with a  user defined library. To start it, run the file *grid.mo* directly in the folder *omg_grid*.
 
 
 This package contains all components and required for
@@ -30,7 +30,7 @@ creating the power electronics driven microgrids, as well as some example networ
    :alt: 
 
 It contains several folders with predefined components,
-filters, loads etc. as well as microgrids for the FMU export to Python (*Grids*-Folder) and some stand-alone *Examples* which can be run directly in OpenModelica (G
+filters, loads etc. as well as microgrids for the FMU export to Python and some stand-alone examples which can be run directly in OpenModelica.
 
 
 

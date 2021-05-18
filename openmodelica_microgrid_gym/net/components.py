@@ -18,7 +18,7 @@ class Inverter(Component):
                  out_vars=None, **kwargs):
         """
 
-        :param u:
+        :param u: input variable
         :param i:
         :param i_noise: structured like: must contain the key 'fun',
         the key 'clip' is optional and no clipping is applied if omited
@@ -86,13 +86,16 @@ class Inverter(Component):
         self.v = self.v + self.v_noise()
         [integ.step(i) for i, integ in zip(self.i, self.limit_load_integrals)]
 
+        # no reference values or similar added
+        return None
+
 
 class SlaveInverter(Inverter):
     def __init__(self, pll=None, pdroop=None, qdroop=None, **kwargs):
         super().__init__(**kwargs)
 
-        pdroop = {**dict(gain=40000.0), **(pdroop or {})}
-        qdroop = {**dict(gain=50.0), **(qdroop or {})}
+        pdroop = {**dict(gain=0.0), **(pdroop or {})}
+        qdroop = {**dict(gain=0.0), **(qdroop or {})}
         pll = {**dict(kP=10, kI=200), **(pll or {})}
 
         # toDo: set time Constant for droop Filter correct
@@ -118,36 +121,53 @@ class SlaveInverter(Inverter):
 class MasterInverter(Inverter):
     def __init__(self, v_ref=(1, 0, 0), pdroop=None, qdroop=None, **kwargs):
         self.v_ref = v_ref
-        super().__init__(out_calc=dict(i_ref=3, v_ref=3), **kwargs)
-        pdroop = {**(pdroop or {}), **dict(gain=40000.0, tau=.005)}
-        qdroop = {**(qdroop or {}), **dict(gain=1000.0, tau=.002)}
+        super().__init__(out_calc=dict(i_ref=3, v_ref=3, phase=1), **kwargs)
+        pdroop = {**dict(gain=0.0, tau=.005), **(pdroop or {})}
+        qdroop = {**dict(gain=0.0, tau=.002), **(qdroop or {})}
 
         self.pdroop_ctl = DroopController(DroopParams(nom_value=self.net.freq_nom, **pdroop), self.net.ts)
         self.qdroop_ctl = DroopController(DroopParams(nom_value=self.net.v_nom, **qdroop), self.net.ts)
         self.dds = DDS(self.net.ts)
+        self.phase = 0.0
+        self.v_refdq0 = np.array([0, 0, 0])
 
     def reset(self):
         super().reset()
         self.pdroop_ctl.reset()
         self.qdroop_ctl.reset()
         self.dds.reset()
+        self.phase = 0.0
+        self.v_refdq0 = np.array([0, 0, 0])
 
     def calculate(self):
         super().calculate()
         instPow = -inst_power(self.v, self.i)
         freq = self.pdroop_ctl.step(instPow)
         # Get the next phase rotation angle to implement
-        phase = self.dds.step(freq)
+        self.phase = self.dds.step(freq)
 
         instQ = -inst_reactive(self.v, self.i)
         v_refd = self.qdroop_ctl.step(instQ)
-        v_refdq0 = np.array([v_refd, 0, 0]) * self.v_ref
+        self.v_refdq0 = np.array([v_refd, 0, 0]) * self.v_ref
 
-        return dict(i_ref=dq0_to_abc(self.i_ref, phase), v_ref=dq0_to_abc(v_refdq0, phase))
+        return dict(i_ref=dq0_to_abc(self.i_ref, self.phase), v_ref=dq0_to_abc(self.v_refdq0, self.phase),
+                    phase=np.array([self.phase]))
 
     def normalize(self, calc_data):
         super().normalize(calc_data),
         calc_data['v_ref'] /= self.v_lim
+
+
+class MasterInverter_dq0(MasterInverter):
+    """
+    MasterInverter that returns observaton in dq0
+    """
+
+    def calculate(self):
+        super().calculate()
+
+        return dict(i_ref=np.array(self.i_ref), v_ref=self.v_refdq0,
+                    phase=np.array([self.phase]))  # hier die phase mit rein
 
 
 class MasterInverterCurrentSourcing(Inverter):
@@ -155,16 +175,18 @@ class MasterInverterCurrentSourcing(Inverter):
         super().__init__(out_calc=dict(i_ref=3), **kwargs)
         self.dds = DDS(self.net.ts)
         self.f_nom = f_nom
+        self.phase = 0.0
 
     def reset(self):
         super().reset()
         self.dds.reset()
+        self.phase = 0.0
 
     def calculate(self):
         super().calculate()
         # Get the next phase rotation angle to implement
-        phase = self.dds.step(self.f_nom)
-        return dict(i_ref=dq0_to_abc(self.i_ref, phase))
+        self.phase = self.dds.step(self.f_nom)
+        return dict(i_ref=dq0_to_abc(self.i_ref, self.phase))
 
 
 class Load(Component):

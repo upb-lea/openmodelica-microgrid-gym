@@ -45,12 +45,12 @@ os.makedirs(save_folder, exist_ok=True)
 
 def load_step(t, gain):
     """
-    Defines a load step after 0.15 s
     Increases the load parameters by a factor of 5
     :param t: time
     :param gain: device parameter
     :return: Dictionary with load parameters
     """
+    # Defines a load step after 0.15 s
     return 1 * gain if t < .15 else 5 * gain
 
 
@@ -149,9 +149,8 @@ if __name__ == '__main__':
     current_dqp_iparams = PI_params(kP=0.012, kI=90, limits=(-1, 1))
 
     # Define a current sourcing inverter as master inverter using the pi and droop parameters from above
-    ctrl.append(MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param_master,
-                                            qdroop_param_master,
-                                            undersampling=2, name='master'))
+    ctrl.append(MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, droop_param_master,
+                                            qdroop_param_master, ts_sim=delta_t, ts_ctrl=2 * delta_t, name='master'))
 
     ###############
     # define slave
@@ -161,8 +160,8 @@ if __name__ == '__main__':
     # Droop characteristic for the active power Watts/Hz, W.s/Hz
 
     # Add to dict
-    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, delta_t, i_lim, droop_param_slave,
-                                              qdroop_param_slave, name='slave'))
+    ctrl.append(MultiPhaseDQCurrentController(current_dqp_iparams, pll_params, i_lim, droop_param_slave,
+                                              qdroop_param_slave, ts_sim=delta_t, name='slave'))
 
     #####################################
     # Definition of the optimization agent
