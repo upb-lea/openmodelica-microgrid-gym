@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>omg.env.plot &mdash; OpenModelica Microgrid 2020 documentation</title>
+  <title>omg.util.randproc &mdash; OpenModelica Microgrid 2020 documentation</title>
   
 
   
@@ -39,8 +39,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="omg.env.plotmanager" href="omg.env.plotmanager.html" />
-    <link rel="prev" title="omg.env.pyfmi" href="omg.env.pyfmi.html" /> 
+    <link rel="next" title="omg.util.recorder" href="omg.util.recorder.html" />
+    <link rel="prev" title="omg.util.transforms" href="omg.util.transforms.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -98,16 +98,17 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="omg.agents.html">omg.agents</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omg.aux_ctl.html">omg.aux_ctl</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="omg.env.html">omg.env</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="omg.env.modelica.html">omg.env.modelica</a></li>
-<li class="toctree-l2"><a class="reference internal" href="omg.env.pyfmi.html">omg.env.pyfmi</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">omg.env.plot</a></li>
-<li class="toctree-l2"><a class="reference internal" href="omg.env.plotmanager.html">omg.env.plotmanager</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="omg.env.html">omg.env</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omg.execution.html">omg.execution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omg.net.html">omg.net</a></li>
-<li class="toctree-l1"><a class="reference internal" href="omg.util.html">omg.util</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="omg.util.html">omg.util</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="omg.util.fastqueue.html">omg.util.fastqueue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omg.util.itertools_.html">omg.util.itertools_</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omg.util.transforms.html">omg.util.transforms</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">omg.util.randproc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omg.util.recorder.html">omg.util.recorder</a></li>
+</ul>
+</li>
 </ul>
 
             
@@ -156,15 +157,15 @@
     
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="omg.env.html">omg.env</a> &raquo;</li>
+          <li><a href="omg.util.html">omg.util</a> &raquo;</li>
         
-      <li>omg.env.plot</li>
+      <li>omg.util.randproc</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/api/omg.env.plot.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/api/omg.util.randproc.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -177,43 +178,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-openmodelica_microgrid_gym.env.plot">
-<span id="omg-env-plot"></span><h1>omg.env.plot<a class="headerlink" href="#module-openmodelica_microgrid_gym.env.plot" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-openmodelica_microgrid_gym.util.randproc">
+<span id="omg-util-randproc"></span><h1>omg.util.randproc<a class="headerlink" href="#module-openmodelica_microgrid_gym.util.randproc" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="openmodelica_microgrid_gym.env.plot.PlotTmpl">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.env.plot.</code><code class="sig-name descname">PlotTmpl</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">variables</span></em>, <em class="sig-param"><span class="n">callback</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/env/plot.html#PlotTmpl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.env.plot.PlotTmpl" title="Permalink to this definition">¶</a></dt>
+<dt id="openmodelica_microgrid_gym.util.randproc.RandProcess">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.util.randproc.</code><code class="sig-name descname">RandProcess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">process_cls</span></em>, <em class="sig-param"><span class="n">proc_kwargs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">bounds</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">initial</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/randproc.html#RandProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.randproc.RandProcess" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Provides an iterable of variables and plot parameters like (‘induction1’, {‘color’:’green’, ‘style’: ‘–’}).
-It contains logic to automatically match up the variables and provided kwargs to allow for a simple syntax.</p>
-<p>e.g. when called with [[‘a’,’b’],[‘c’,’d’]] and style = [[‘.’, None],’–’] it will detect the grouping and apply
-the dotted style to ‘a’ and the dashed style to ‘c’ and ‘d’</p>
+<p>wrapper around stochastic processes to allow easier integration</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>vars</strong> – nested list of strings.
-Each string represents a variable of the FMU or a measurement that should be plotted by the environment.</p></li>
-<li><p><strong>callback</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Figure</span></code>], <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]]) – if provided, it is executed after the plot is finished.
-Will get the generated figure as parameter to allow further modifications.</p></li>
-<li><p><strong>kwargs</strong> – those arguments are merged (see omg.util.flatten_together) with the variables
-and than provided to the pd.DataFrame.plot(·) function</p></li>
+<li><p><strong>process_cls</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">BaseProcess</span></code>]) – class of the stochastic process</p></li>
+<li><p><strong>proc_kwargs</strong> – arguments passed to the class on initialization</p></li>
+<li><p><strong>bounds</strong> – boundaries of admissible values</p></li>
+<li><p><strong>initial</strong> – starting value of the process</p></li>
+<li><p><strong>gain</strong> – scale of the process output (of not set, results are between the clipped bounds)</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="openmodelica_microgrid_gym.env.plot.PlotTmpl.callback">
-<code class="sig-name descname">callback</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fig</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/env/plot.html#PlotTmpl.callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.env.plot.PlotTmpl.callback" title="Permalink to this definition">¶</a></dt>
-<dd><p>Will be called in the ModelicaEnv.render() once all plotting is finished.
-This function enables the user to specify more modifications to apply to the figure.
-The function will call the callable passed in the constructor.
-Additionally the figure is plotted by this function.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>fig</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Figure</span></code>) – Finished figure that is one might want to modify.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-</dl>
+<dt id="openmodelica_microgrid_gym.util.randproc.RandProcess.reserve">
+<em class="property">property </em><code class="sig-name descname">reserve</code><a class="headerlink" href="#openmodelica_microgrid_gym.util.randproc.RandProcess.reserve" title="Permalink to this definition">¶</a></dt>
+<dd><p>This variable is used to prepare for external loadsteps or other abrupt changes in the process’ variables.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.util.randproc.RandProcess.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">initial</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/randproc.html#RandProcess.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.randproc.RandProcess.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.util.randproc.RandProcess.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/randproc.html#RandProcess.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.randproc.RandProcess.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates time differential and calculates the change in the outputs of the process
+:param t: timestep
+:return: value at the timestep</p>
 </dd></dl>
 
 </dd></dl>
@@ -226,8 +225,8 @@ Additionally the figure is plotted by this function.</p>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="omg.env.plotmanager.html" class="btn btn-neutral float-right" title="omg.env.plotmanager" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="omg.env.pyfmi.html" class="btn btn-neutral float-left" title="omg.env.pyfmi" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="omg.util.recorder.html" class="btn btn-neutral float-right" title="omg.util.recorder" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="omg.util.transforms.html" class="btn btn-neutral float-left" title="omg.util.transforms" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

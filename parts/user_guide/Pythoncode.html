@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Toolbox Installation and General Remarks &mdash; OpenModelica Microgrid 2020 documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -51,7 +54,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
+            <a href="../../index.html" class="icon icon-home"> OpenModelica Microgrid
           
 
           
@@ -139,6 +142,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -150,7 +155,7 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
+          
             <a href="../../_sources/parts/user_guide/Pythoncode.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -179,26 +184,27 @@ toolbox is presented.</p>
 requirements is provided in the
 home-directory.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## created with pipreqs</span>
-<span class="n">gym</span><span class="o">&gt;=</span><span class="mf">0.15</span><span class="o">.</span><span class="mi">3</span>
-<span class="n">numpy</span><span class="o">&gt;=</span><span class="mf">1.17</span><span class="o">.</span><span class="mi">2</span>
-<span class="n">matplotlib</span><span class="o">&gt;=</span><span class="mf">3.1</span><span class="o">.</span><span class="mi">1</span>
-<span class="n">scipy</span><span class="o">&gt;=</span><span class="mf">1.3</span><span class="o">.</span><span class="mi">1</span>
-<span class="n">pandas</span><span class="o">&gt;=</span><span class="mf">1.0</span><span class="o">.</span><span class="mi">1</span>
+<span class="n">gym</span><span class="o">&gt;=</span><span class="mf">0.15.3</span>
+<span class="n">numpy</span><span class="o">&gt;=</span><span class="mf">1.17.2</span>
+<span class="n">matplotlib</span><span class="o">&gt;=</span><span class="mf">3.1.1</span>
+<span class="n">scipy</span><span class="o">&gt;=</span><span class="mf">1.3.1</span>
+<span class="n">pandas</span><span class="o">&gt;=</span><span class="mf">1.0.1</span>
 <span class="n">tqdm</span><span class="o">&gt;=</span><span class="mi">4</span>
 <span class="n">more_itertools</span><span class="o">&gt;=</span><span class="mi">7</span>
-<span class="n">numexpr</span><span class="o">&gt;=</span><span class="mf">2.7</span><span class="o">.</span><span class="mi">1</span>
-<span class="n">tables</span><span class="o">&gt;=</span><span class="mf">3.6</span><span class="o">.</span><span class="mi">1</span>
+<span class="n">numexpr</span><span class="o">&gt;=</span><span class="mf">2.7.1</span>
+<span class="n">tables</span><span class="o">&gt;=</span><span class="mf">3.6.1</span>
+<span class="n">stochastic</span><span class="o">&gt;=</span><span class="mf">0.6.0</span>
 
-<span class="n">pyyaml</span><span class="o">~=</span><span class="mf">5.3</span><span class="o">.</span><span class="mi">1</span>
+<span class="n">pyyaml</span><span class="o">~=</span><span class="mf">5.4</span>
 
 <span class="n">PyFMI</span><span class="o">&gt;=</span><span class="mf">2.5</span>
 
 <span class="n">safeopt</span><span class="o">&gt;=</span><span class="mf">0.16</span>
-<span class="n">GPy</span><span class="o">&gt;=</span><span class="mf">1.9</span><span class="o">.</span><span class="mi">9</span>
+<span class="n">GPy</span><span class="o">&gt;=</span><span class="mf">1.9.9</span>
 
-<span class="n">future</span><span class="o">~=</span><span class="mf">0.18</span><span class="o">.</span><span class="mi">2</span>
-<span class="n">pytest</span><span class="o">~=</span><span class="mf">5.4</span><span class="o">.</span><span class="mi">3</span>
-<span class="n">setuptools</span><span class="o">~=</span><span class="mf">47.1</span><span class="o">.</span><span class="mi">1</span>
+<span class="n">future</span><span class="o">~=</span><span class="mf">0.18.2</span>
+<span class="n">pytest</span><span class="o">~=</span><span class="mf">5.4.3</span>
+<span class="n">setuptools</span><span class="o">~=</span><span class="mf">47.1.1</span>
 </pre></div>
 </div>
 <p><strong>Hint:</strong> If you are running a windows, PyFMI might throw some errors
@@ -235,7 +241,7 @@ Also usable for loadsteps as replacement for
 <p>Example which increases the resistors in the load after 0.2 seconds from
 20 Ohm to 40 Ohm:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
-    <span class="k">return</span> <span class="mi">20</span> <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="o">.</span><span class="mi">2</span> <span class="k">else</span> <span class="mi">40</span>
+    <span class="k">return</span> <span class="mi">20</span> <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="mf">.2</span> <span class="k">else</span> <span class="mi">40</span>
 
 <span class="n">model_params</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;rl.resistor1.R&#39;</span><span class="p">:</span> <span class="n">f</span><span class="p">,</span> <span class="s1">&#39;rl.resistor.R&#39;</span><span class="p">:</span> <span class="n">f</span><span class="p">,</span> <span class="s1">&#39;rl.resistor.R&#39;</span><span class="p">:</span> <span class="n">f</span><span class="p">},</span>
 </pre></div>
@@ -279,37 +285,29 @@ standard library</a>.</p>
            
           </div>
           <footer>
-  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="fmu.html" class="btn btn-neutral float-left" title="Functional Mock-up Unit (FMU)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+        <a href="examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="fmu.html" class="btn btn-neutral float-left" title="Functional Mock-up Unit (FMU)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
+        &#169; Copyright 2020, Bode, Heid, Wallscheid, Weber.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 

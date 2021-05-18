@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>omg.util &mdash; OpenModelica Microgrid 2020 documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -51,7 +54,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
+            <a href="../index.html" class="icon icon-home"> OpenModelica Microgrid
           
 
           
@@ -102,6 +105,7 @@
 <li class="toctree-l2"><a class="reference internal" href="omg.util.fastqueue.html">omg.util.fastqueue</a></li>
 <li class="toctree-l2"><a class="reference internal" href="omg.util.itertools_.html">omg.util.itertools_</a></li>
 <li class="toctree-l2"><a class="reference internal" href="omg.util.transforms.html">omg.util.transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="omg.util.randproc.html">omg.util.randproc</a></li>
 <li class="toctree-l2"><a class="reference internal" href="omg.util.recorder.html">omg.util.recorder</a></li>
 </ul>
 </li>
@@ -145,6 +149,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -156,7 +162,7 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
+          
             <a href="../_sources/api/omg.util.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -179,6 +185,7 @@
 <li class="toctree-l1"><a class="reference internal" href="omg.util.fastqueue.html">omg.util.fastqueue</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omg.util.itertools_.html">omg.util.itertools_</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omg.util.transforms.html">omg.util.transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omg.util.randproc.html">omg.util.randproc</a></li>
 <li class="toctree-l1"><a class="reference internal" href="omg.util.recorder.html">omg.util.recorder</a></li>
 </ul>
 </div>
@@ -231,7 +238,8 @@ This class will not actually store any data</p>
 <dt id="openmodelica_microgrid_gym.util.Fastqueue">
 <em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">Fastqueue</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size</span></em>, <em class="sig-param"><span class="n">dim</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/fastqueue.html#Fastqueue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.Fastqueue" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Efficient numpy implementation of constant sized queue
+<p>Efficient numpy implementation of constant sized queue without queue-shifting (indices-based value selection).
+Queue size of n leads to a delay of n-1.
 :type size: <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>
 :param size: Size of queue</p>
 <dl class="py method">
@@ -244,6 +252,11 @@ This class will not actually store any data</p>
 <code class="sig-name descname">shift</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">val</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/fastqueue.html#Fastqueue.shift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.Fastqueue.shift" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pushes val into buffer and returns popped last element</p>
 </dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.util.Fastqueue.wrap_index">
+<code class="sig-name descname">wrap_index</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/fastqueue.html#Fastqueue.wrap_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.Fastqueue.wrap_index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -289,6 +302,90 @@ This class will not actually store any data</p>
 <dt id="openmodelica_microgrid_gym.util.FullHistory.reset">
 <code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/recorder.html#FullHistory.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.FullHistory.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes all data, but keeps the columns.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="openmodelica_microgrid_gym.util.ObsTempl">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">ObsTempl</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">varnames</span></em>, <em class="sig-param"><span class="n">simple_tmpl</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/obs_template.html#ObsTempl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.ObsTempl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Internal dataclass to handle the conversion of dynamic observation templates for the StaticControlAgent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>varnames</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – list of variable names</p></li>
+<li><p><strong>simple_tmpl</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]]]) – <p>list of:
+- list of strings</p>
+<blockquote>
+<div><ul>
+<li><p>matching variable names of the state</p></li>
+<li><p>must match self.obs_varnames</p></li>
+<li><p>will be substituted by the values on runtime</p></li>
+<li><p>will be passed as an np.array of floats to the controller</p></li>
+</ul>
+</div></blockquote>
+<ul>
+<li><p>np.array of floats (to be passed statically to the controller)</p></li>
+<li><p>a mixture of static and dynamic values in one parameter is not supported for performance reasons.</p></li>
+</ul>
+<p>If None: self.fill() will not filter and return its input wrapped into a list</p>
+</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.util.ObsTempl.fill">
+<code class="sig-name descname">fill</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/obs_template.html#ObsTempl.fill"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.ObsTempl.fill" title="Permalink to this definition">¶</a></dt>
+<dd><p>generates a list of parameters by filling the dynamic values and passing the static values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>obs</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – np.ndarray of values</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="openmodelica_microgrid_gym.util.RandProcess">
+<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.util.</code><code class="sig-name descname">RandProcess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">process_cls</span></em>, <em class="sig-param"><span class="n">proc_kwargs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">bounds</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">initial</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/randproc.html#RandProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.RandProcess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>wrapper around stochastic processes to allow easier integration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>process_cls</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">BaseProcess</span></code>]) – class of the stochastic process</p></li>
+<li><p><strong>proc_kwargs</strong> – arguments passed to the class on initialization</p></li>
+<li><p><strong>bounds</strong> – boundaries of admissible values</p></li>
+<li><p><strong>initial</strong> – starting value of the process</p></li>
+<li><p><strong>gain</strong> – scale of the process output (of not set, results are between the clipped bounds)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.util.RandProcess.reserve">
+<em class="property">property </em><code class="sig-name descname">reserve</code><a class="headerlink" href="#openmodelica_microgrid_gym.util.RandProcess.reserve" title="Permalink to this definition">¶</a></dt>
+<dd><p>This variable is used to prepare for external loadsteps or other abrupt changes in the process’ variables.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.util.RandProcess.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">initial</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/randproc.html#RandProcess.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.RandProcess.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="openmodelica_microgrid_gym.util.RandProcess.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/randproc.html#RandProcess.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.RandProcess.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates time differential and calculates the change in the outputs of the process
+:param t: timestep
+:return: value at the timestep</p>
 </dd></dl>
 
 </dd></dl>
@@ -674,37 +771,29 @@ Determines the instantaneous RMS value of the 3 waveforms</p>
            
           </div>
           <footer>
-  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="omg.util.fastqueue.html" class="btn btn-neutral float-right" title="omg.util.fastqueue" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="omg.net.components.html" class="btn btn-neutral float-left" title="omg.net.components" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+        <a href="omg.util.fastqueue.html" class="btn btn-neutral float-right" title="omg.util.fastqueue" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="omg.net.components.html" class="btn btn-neutral float-left" title="omg.net.components" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
+        &#169; Copyright 2020, Bode, Heid, Wallscheid, Weber.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 

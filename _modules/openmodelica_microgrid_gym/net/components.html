@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>openmodelica_microgrid_gym.net.components &mdash; OpenModelica Microgrid 2020 documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -49,7 +52,7 @@
           
 
           
-            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
+            <a href="../../../index.html" class="icon icon-home"> OpenModelica Microgrid
           
 
           
@@ -137,6 +140,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -181,7 +186,7 @@
                  <span class="n">out_vars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="sd">        :param u:</span>
+<span class="sd">        :param u: input variable</span>
 <span class="sd">        :param i:</span>
 <span class="sd">        :param i_noise: structured like: must contain the key &#39;fun&#39;,</span>
 <span class="sd">        the key &#39;clip&#39; is optional and no clipping is applied if omited</span>
@@ -247,15 +252,18 @@
 <div class="viewcode-block" id="Inverter.calculate"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.Inverter.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">i_noise</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_noise</span><span class="p">()</span>
-        <span class="p">[</span><span class="n">integ</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">integ</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">limit_load_integrals</span><span class="p">)]</span></div></div>
+        <span class="p">[</span><span class="n">integ</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">integ</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">limit_load_integrals</span><span class="p">)]</span>
+
+        <span class="c1"># no reference values or similar added</span>
+        <span class="k">return</span> <span class="kc">None</span></div></div>
 
 
 <div class="viewcode-block" id="SlaveInverter"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.SlaveInverter">[docs]</a><span class="k">class</span> <span class="nc">SlaveInverter</span><span class="p">(</span><span class="n">Inverter</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pll</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pdroop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">qdroop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="n">pdroop</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">gain</span><span class="o">=</span><span class="mf">40000.0</span><span class="p">),</span> <span class="o">**</span><span class="p">(</span><span class="n">pdroop</span> <span class="ow">or</span> <span class="p">{})}</span>
-        <span class="n">qdroop</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">gain</span><span class="o">=</span><span class="mf">50.0</span><span class="p">),</span> <span class="o">**</span><span class="p">(</span><span class="n">qdroop</span> <span class="ow">or</span> <span class="p">{})}</span>
+        <span class="n">pdroop</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">gain</span><span class="o">=</span><span class="mf">0.0</span><span class="p">),</span> <span class="o">**</span><span class="p">(</span><span class="n">pdroop</span> <span class="ow">or</span> <span class="p">{})}</span>
+        <span class="n">qdroop</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">gain</span><span class="o">=</span><span class="mf">0.0</span><span class="p">),</span> <span class="o">**</span><span class="p">(</span><span class="n">qdroop</span> <span class="ow">or</span> <span class="p">{})}</span>
         <span class="n">pll</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">kP</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">kI</span><span class="o">=</span><span class="mi">200</span><span class="p">),</span> <span class="o">**</span><span class="p">(</span><span class="n">pll</span> <span class="ow">or</span> <span class="p">{})}</span>
 
         <span class="c1"># toDo: set time Constant for droop Filter correct</span>
@@ -281,36 +289,53 @@
 <div class="viewcode-block" id="MasterInverter"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.MasterInverter">[docs]</a><span class="k">class</span> <span class="nc">MasterInverter</span><span class="p">(</span><span class="n">Inverter</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v_ref</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">pdroop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">qdroop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v_ref</span> <span class="o">=</span> <span class="n">v_ref</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">out_calc</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">i_ref</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">v_ref</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">pdroop</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="p">(</span><span class="n">pdroop</span> <span class="ow">or</span> <span class="p">{}),</span> <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">gain</span><span class="o">=</span><span class="mf">40000.0</span><span class="p">,</span> <span class="n">tau</span><span class="o">=.</span><span class="mi">005</span><span class="p">)}</span>
-        <span class="n">qdroop</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="p">(</span><span class="n">qdroop</span> <span class="ow">or</span> <span class="p">{}),</span> <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">gain</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span> <span class="n">tau</span><span class="o">=.</span><span class="mi">002</span><span class="p">)}</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">out_calc</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">i_ref</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">v_ref</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">phase</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">pdroop</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">gain</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tau</span><span class="o">=</span><span class="mf">.005</span><span class="p">),</span> <span class="o">**</span><span class="p">(</span><span class="n">pdroop</span> <span class="ow">or</span> <span class="p">{})}</span>
+        <span class="n">qdroop</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">gain</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tau</span><span class="o">=</span><span class="mf">.002</span><span class="p">),</span> <span class="o">**</span><span class="p">(</span><span class="n">qdroop</span> <span class="ow">or</span> <span class="p">{})}</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">pdroop_ctl</span> <span class="o">=</span> <span class="n">DroopController</span><span class="p">(</span><span class="n">DroopParams</span><span class="p">(</span><span class="n">nom_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">freq_nom</span><span class="p">,</span> <span class="o">**</span><span class="n">pdroop</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">ts</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">qdroop_ctl</span> <span class="o">=</span> <span class="n">DroopController</span><span class="p">(</span><span class="n">DroopParams</span><span class="p">(</span><span class="n">nom_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">v_nom</span><span class="p">,</span> <span class="o">**</span><span class="n">qdroop</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">ts</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dds</span> <span class="o">=</span> <span class="n">DDS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">ts</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_refdq0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
 
 <div class="viewcode-block" id="MasterInverter.reset"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.MasterInverter.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pdroop_ctl</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">qdroop_ctl</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dds</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dds</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_refdq0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="MasterInverter.calculate"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.MasterInverter.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">calculate</span><span class="p">()</span>
         <span class="n">instPow</span> <span class="o">=</span> <span class="o">-</span><span class="n">inst_power</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">)</span>
         <span class="n">freq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdroop_ctl</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">instPow</span><span class="p">)</span>
         <span class="c1"># Get the next phase rotation angle to implement</span>
-        <span class="n">phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dds</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dds</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
 
         <span class="n">instQ</span> <span class="o">=</span> <span class="o">-</span><span class="n">inst_reactive</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span><span class="p">)</span>
         <span class="n">v_refd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qdroop_ctl</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">instQ</span><span class="p">)</span>
-        <span class="n">v_refdq0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">v_refd</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_ref</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_refdq0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">v_refd</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_ref</span>
 
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">i_ref</span><span class="o">=</span><span class="n">dq0_to_abc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i_ref</span><span class="p">,</span> <span class="n">phase</span><span class="p">),</span> <span class="n">v_ref</span><span class="o">=</span><span class="n">dq0_to_abc</span><span class="p">(</span><span class="n">v_refdq0</span><span class="p">,</span> <span class="n">phase</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">i_ref</span><span class="o">=</span><span class="n">dq0_to_abc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i_ref</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">),</span> <span class="n">v_ref</span><span class="o">=</span><span class="n">dq0_to_abc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v_refdq0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">),</span>
+                    <span class="n">phase</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">]))</span></div>
 
 <div class="viewcode-block" id="MasterInverter.normalize"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.MasterInverter.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calc_data</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">calc_data</span><span class="p">),</span>
         <span class="n">calc_data</span><span class="p">[</span><span class="s1">&#39;v_ref&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_lim</span></div></div>
+
+
+<div class="viewcode-block" id="MasterInverter_dq0"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.MasterInverter_dq0">[docs]</a><span class="k">class</span> <span class="nc">MasterInverter_dq0</span><span class="p">(</span><span class="n">MasterInverter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    MasterInverter that returns observaton in dq0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MasterInverter_dq0.calculate"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.MasterInverter_dq0.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">calculate</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">i_ref</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i_ref</span><span class="p">),</span> <span class="n">v_ref</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">v_refdq0</span><span class="p">,</span>
+                    <span class="n">phase</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">]))</span>  <span class="c1"># hier die phase mit rein</span></div></div>
 
 
 <div class="viewcode-block" id="MasterInverterCurrentSourcing"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.MasterInverterCurrentSourcing">[docs]</a><span class="k">class</span> <span class="nc">MasterInverterCurrentSourcing</span><span class="p">(</span><span class="n">Inverter</span><span class="p">):</span>
@@ -318,16 +343,18 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">out_calc</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">i_ref</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dds</span> <span class="o">=</span> <span class="n">DDS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">ts</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">f_nom</span> <span class="o">=</span> <span class="n">f_nom</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase</span> <span class="o">=</span> <span class="mf">0.0</span>
 
 <div class="viewcode-block" id="MasterInverterCurrentSourcing.reset"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.MasterInverterCurrentSourcing.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dds</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dds</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase</span> <span class="o">=</span> <span class="mf">0.0</span></div>
 
 <div class="viewcode-block" id="MasterInverterCurrentSourcing.calculate"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.MasterInverterCurrentSourcing.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">calculate</span><span class="p">()</span>
         <span class="c1"># Get the next phase rotation angle to implement</span>
-        <span class="n">phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dds</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_nom</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">i_ref</span><span class="o">=</span><span class="n">dq0_to_abc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i_ref</span><span class="p">,</span> <span class="n">phase</span><span class="p">))</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dds</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_nom</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">i_ref</span><span class="o">=</span><span class="n">dq0_to_abc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i_ref</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">))</span></div></div>
 
 
 <div class="viewcode-block" id="Load"><a class="viewcode-back" href="../../../api/omg.net.components.html#openmodelica_microgrid_gym.net.Load">[docs]</a><span class="k">class</span> <span class="nc">Load</span><span class="p">(</span><span class="n">Component</span><span class="p">):</span>
@@ -344,28 +371,25 @@
            
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
+        &#169; Copyright 2020, Bode, Heid, Wallscheid, Weber.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 

@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>openmodelica_microgrid_gym.env.modelica &mdash; OpenModelica Microgrid 2020 documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -49,7 +52,7 @@
           
 
           
-            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
+            <a href="../../../index.html" class="icon icon-home"> OpenModelica Microgrid
           
 
           
@@ -137,6 +140,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -177,7 +182,7 @@
 <span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.env.plot</span> <span class="kn">import</span> <span class="n">PlotTmpl</span>
 <span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.env.pyfmi</span> <span class="kn">import</span> <span class="n">PyFMI_Wrapper</span>
 <span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.net.base</span> <span class="kn">import</span> <span class="n">Network</span>
-<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.util</span> <span class="kn">import</span> <span class="n">FullHistory</span><span class="p">,</span> <span class="n">EmptyHistory</span><span class="p">,</span> <span class="n">Fastqueue</span>
+<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.util</span> <span class="kn">import</span> <span class="n">FullHistory</span><span class="p">,</span> <span class="n">EmptyHistory</span><span class="p">,</span> <span class="n">Fastqueue</span><span class="p">,</span> <span class="n">ObsTempl</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -192,13 +197,16 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">net</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Network</span><span class="p">],</span> <span class="n">time_start</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                  <span class="n">reward_fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">cols</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">risk</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="n">abort_reward</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
                  <span class="n">is_normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">log_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="n">solver_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;LSODA&#39;</span><span class="p">,</span> <span class="n">max_episode_steps</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
-                 <span class="n">model_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">model_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span> <span class="nb">float</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;../omg_grid/grid.network.fmu&#39;</span><span class="p">,</span>
                  <span class="n">viz_mode</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;episode&#39;</span><span class="p">,</span> <span class="n">viz_cols</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PlotTmpl</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">history</span><span class="p">:</span> <span class="n">EmptyHistory</span> <span class="o">=</span> <span class="n">FullHistory</span><span class="p">(),</span>
-                 <span class="n">action_time_delay</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+                 <span class="n">action_time_delay</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                 <span class="n">on_episode_reset_callback</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">obs_output</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the Environment.</span>
 <span class="sd">        The environment can only be used after reset() is called.</span>
@@ -211,17 +219,28 @@
 <span class="sd">            It must return the reward of this timestep as float.</span>
 <span class="sd">            It should return np.nan or -np.inf or None in case of a failiure.</span>
 <span class="sd">            It should have no side-effects</span>
+<span class="sd">        :param abort_reward: reward returned on episode abort</span>
 <span class="sd">        :param log_level: logging granularity. see logging in stdlib</span>
 <span class="sd">        :param solver_method: solver of the scipy.integrate.solve_ivp function</span>
 <span class="sd">        :param max_episode_steps: maximum number of episode steps.</span>
+<span class="sd">            After one episodes there are max_episode_steps+1 states available (one additionally caused by the reset)</span>
+<span class="sd">            and max_episode_steps actions, so the env.step() is executed max_episode_steps-times</span>
 <span class="sd">            The end time of the episode is calculated by the time resolution and the number of steps.</span>
 
 <span class="sd">            If set to None, the environment will never finish because of step sizes, but it might still stop because of</span>
 <span class="sd">            system failure (-inf reward)</span>
 <span class="sd">        :param model_params: parameters of the FMU.</span>
 <span class="sd">            dictionary of variable names and scalars or callables.</span>
-<span class="sd">            If a callable is provided it is called every time step with the current time.</span>
-<span class="sd">            This callable must return a float that is passed to the fmu.</span>
+<span class="sd">            If a callable is provided it is called on reset with t==-1 and in every time step with the current time.</span>
+<span class="sd">            This callable must return a float or None</span>
+<span class="sd">            The float is passed to the fmu, None values are discarded.</span>
+<span class="sd">            This allows setting initial values using like::</span>
+
+<span class="sd">                model_params={&#39;lc1.capacitor1.v&#39;: lambda t: -10 if t==-1 else None}</span>
+
+<span class="sd">            as well as continuosly changing values using like::</span>
+
+<span class="sd">                model_params={&#39;lc1.capacitor1.v&#39;: lambda t: np.random.random()}</span>
 <span class="sd">        :param net: Path to the network configuration file passed to the net.Network.load() function</span>
 <span class="sd">        :param model_path: Path to the FMU</span>
 <span class="sd">        :param viz_mode: specifies how and if to render</span>
@@ -237,7 +256,13 @@
 <span class="sd">                                to match all data series ending with &quot;.i&quot;.</span>
 <span class="sd">             - list of PlotTmpl: Each template will result in a plot</span>
 <span class="sd">        :param history: history to store observations and measurement (from the agent) after each step</span>
-<span class="sd">        :param action_time_delay: Defines how many time steps the controller needs before the action is applied; action is buffered in an array</span>
+<span class="sd">        :param action_time_delay: Defines how many time steps the controller needs before the action is applied; action</span>
+<span class="sd">            is buffered in an array</span>
+<span class="sd">        :param on_episode_reset_callback: Callable which is executed during the environment reset. Can be used for</span>
+<span class="sd">            example to reset external processes like random process used in model params and to synchronize their reset</span>
+<span class="sd">            to the env reset</span>
+<span class="sd">        :param obs_output: List of strings of observations given to the agent. obs_output is compared to history.cols (</span>
+<span class="sd">            variable names have to fit)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">viz_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">viz_modes</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Please select one of the following viz_modes: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">viz_modes</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -252,10 +277,14 @@
 
         <span class="c1"># if you reward policy is different from just reward/penalty - implement custom step method</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reward</span> <span class="o">=</span> <span class="n">reward_fun</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abort_reward</span> <span class="o">=</span> <span class="n">abort_reward</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_failed</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="c1"># Parameters required by this implementation</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_episode_steps</span> <span class="o">=</span> <span class="n">max_episode_steps</span>
+        <span class="k">if</span> <span class="n">time_start</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Starttime must not negative! -1 is used for initialization of model params functions!&#39;</span>
+                               <span class="s1">&#39; See ModelicaEnv.__init__() parameter &quot;model_params&quot;.&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_start</span> <span class="o">=</span> <span class="n">time_start</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">Network</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">net</span>
@@ -263,7 +292,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_step_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">ts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_end</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">if</span> <span class="n">max_episode_steps</span> <span class="ow">is</span> <span class="kc">None</span> \
-            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_start</span> <span class="o">+</span> <span class="n">max_episode_steps</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step_size</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_start</span> <span class="o">+</span> <span class="p">(</span><span class="n">max_episode_steps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step_size</span>  <span class="c1"># + 1 to execute env.step()</span>
+        <span class="c1"># max_episode_step-times</span>
 
         <span class="c1"># if there are parameters, we will convert all scalars to constant functions.</span>
         <span class="n">model_params</span> <span class="o">=</span> <span class="n">model_params</span> <span class="ow">or</span> <span class="nb">dict</span><span class="p">()</span>
@@ -311,12 +341,27 @@
                              <span class="sa">f</span><span class="s1">&#39;and not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">viz_cols</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
         <span class="c1"># OpenAI Gym requirements</span>
-        <span class="n">d_i</span><span class="p">,</span> <span class="n">d_o</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_input_names</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">cols</span><span class="p">)</span>
+        <span class="n">d_i</span><span class="p">,</span> <span class="n">d_o</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_input_names</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">obs_output</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">cols</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">d_i</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">high</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">d_i</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">observation_space</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">d_o</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span> <span class="n">high</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">d_o</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">))</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">used_action</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">action_time_delay</span> <span class="o">=</span> <span class="n">action_time_delay</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">delay_buffer</span> <span class="o">=</span> <span class="n">Fastqueue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_time_delay</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_time_delay</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delay_buffer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delay_buffer</span> <span class="o">=</span> <span class="n">Fastqueue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_time_delay</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">on_episode_reset_callback</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_episode_reset_callback</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_episode_reset_callback</span> <span class="o">=</span> <span class="n">on_episode_reset_callback</span>
+
+        <span class="k">if</span> <span class="n">obs_output</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># if not defined all hist.cols are used as observations</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_out_obs_tmpl</span> <span class="o">=</span> <span class="n">ObsTempl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_out_obs_tmpl</span> <span class="o">=</span> <span class="n">ObsTempl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="p">[</span><span class="n">obs_output</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="nf">_calc_jac</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>  <span class="c1"># noqa</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -390,10 +435,12 @@
 <span class="sd">                - Using the parameters defined in self.model_parameters</span>
 <span class="sd">            * initializes the model</span>
 
-<span class="sd">        :return: state of the environment after resetting.</span>
+<span class="sd">        :return: state of the environment after resetting. If self.ob_output is not None, the there defined outputs are</span>
+<span class="sd">            returned.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Experiment reset was called. Resetting the model.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_episode_reset_callback</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">sim_time_interval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">time_start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_start</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step_size</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_output_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span><span class="p">)</span>
@@ -401,9 +448,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_failed</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_register_render</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">delay_buffer</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-        <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_state</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">outputs</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">used_action</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay_buffer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delay_buffer</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_state</span><span class="p">(</span><span class="n">is_init</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_out_obs_tmpl</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">outputs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="ModelicaEnv.step"><a class="viewcode-back" href="../../../api/omg.env.modelica.html#openmodelica_microgrid_gym.env.ModelicaEnv.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -437,19 +486,26 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
+        <span class="n">action</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">high</span><span class="p">)</span>
+
         <span class="c1"># enqueue action and get delayed/last action</span>
-        <span class="n">delayed_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay_buffer</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay_buffer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">used_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay_buffer</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">used_action</span> <span class="o">=</span> <span class="n">action</span>
 
         <span class="c1"># Set input values of the model</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;model input: </span><span class="si">%s</span><span class="s1">, values: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_input_names</span><span class="p">,</span> <span class="n">delayed_action</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_input_names</span><span class="p">,</span> <span class="n">delayed_action</span><span class="p">)))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;model input: </span><span class="si">%s</span><span class="s1">, values: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_input_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">used_action</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_input_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">used_action</span><span class="p">)))</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span><span class="p">:</span>
             <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim_time_interval</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">values</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="n">delayed_action</span><span class="p">)}</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">values</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">used_action</span><span class="p">)}</span>
+        <span class="c1"># delete None values to make model initialization possible (take care in model_params definition!)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
         <span class="k">if</span> <span class="n">params</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
         <span class="n">risk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">risk</span><span class="p">()</span>
@@ -468,15 +524,24 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Experiment step done, experiment done.&quot;</span><span class="p">)</span>
 
         <span class="n">reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">risk</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_failed</span> <span class="o">=</span> <span class="n">risk</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span> <span class="ow">and</span> <span class="n">reward</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">reward</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_failed</span> <span class="o">=</span> <span class="n">risk</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">reward</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span> <span class="ow">and</span> <span class="n">reward</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_failed</span><span class="p">:</span>
+            <span class="n">reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">abort_reward</span>
 
         <span class="c1"># only return the state, the agent does not need the measurement</span>
-        <span class="k">return</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_done</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">risk</span><span class="o">=</span><span class="n">risk</span><span class="p">)</span></div>
+        <span class="c1"># if self.obs_output is defined, obs_tmpl is used to filter out wanted observations, otherwise all states are</span>
+        <span class="c1"># passed</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_out_obs_tmpl</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">outputs</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">reward</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_done</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">risk</span><span class="o">=</span><span class="n">risk</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_create_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_create_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_init</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="c1"># Simulate and observe result state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simulate</span><span class="p">()</span>
-        <span class="n">raw</span><span class="p">,</span> <span class="n">normalized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">augment</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_init</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">obs</span>
+            <span class="n">raw</span><span class="p">,</span> <span class="n">normalized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">augment</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simulate</span><span class="p">()</span>
+            <span class="n">raw</span><span class="p">,</span> <span class="n">normalized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">augment</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim_time_interval</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">outputs</span> <span class="o">=</span> <span class="n">normalized</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_normalized</span> <span class="k">else</span> <span class="n">raw</span>
         <span class="n">measurements</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
 
@@ -551,28 +616,25 @@
            
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
+        &#169; Copyright 2020, Bode, Heid, Wallscheid, Weber.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 

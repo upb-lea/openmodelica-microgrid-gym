@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>openmodelica_microgrid_gym.agents.staticctrl &mdash; OpenModelica Microgrid 2020 documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -49,7 +52,7 @@
           
 
           
-            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> OpenModelica Microgrid
+            <a href="../../../index.html" class="icon icon-home"> OpenModelica Microgrid
           
 
           
@@ -137,6 +140,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -169,48 +174,7 @@
 <span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.agents</span> <span class="kn">import</span> <span class="n">Agent</span>
 <span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.agents.util</span> <span class="kn">import</span> <span class="n">MutableParams</span>
 <span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.aux_ctl</span> <span class="kn">import</span> <span class="n">Controller</span>
-
-
-<div class="viewcode-block" id="ObsTempl"><a class="viewcode-back" href="../../../api/omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.ObsTempl">[docs]</a><span class="k">class</span> <span class="nc">ObsTempl</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varnames</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">simple_tmpl</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Internal dataclass to handle the conversion of dynamic observation templates for the StaticControlAgent</span>
-
-<span class="sd">        :param varnames: list of variable names</span>
-<span class="sd">        :param simple_tmpl: list of:</span>
-<span class="sd">                - list of strings</span>
-<span class="sd">                    - matching variable names of the state</span>
-<span class="sd">                    - must match self.obs_varnames</span>
-<span class="sd">                    - will be substituted by the values on runtime</span>
-<span class="sd">                    - will be passed as an np.array of floats to the controller</span>
-<span class="sd">                - np.array of floats (to be passed statically to the controller)</span>
-<span class="sd">                - a mixture of static and dynamic values in one parameter is not supported for performance reasons.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">idx</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">varnames</span><span class="p">)}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_static_params</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="p">[]</span>
-
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">tmpl</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">simple_tmpl</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tmpl</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tmpl</span><span class="p">,</span> <span class="n">MutableParams</span><span class="p">):</span>
-                <span class="c1"># all np.ndarrays are considered static parameters</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_static_params</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmpl</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># else we save the indices of the variables into an indexarray</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">idx</span><span class="p">[</span><span class="n">varname</span><span class="p">]</span> <span class="k">for</span> <span class="n">varname</span> <span class="ow">in</span> <span class="n">tmpl</span><span class="p">]))</span>
-
-<div class="viewcode-block" id="ObsTempl.fill"><a class="viewcode-back" href="../../../api/omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.ObsTempl.fill">[docs]</a>    <span class="k">def</span> <span class="nf">fill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        generates a list of parameters by filling the dynamic values and passing the static values</span>
-
-<span class="sd">        :param obs: np.ndarray of values</span>
-<span class="sd">        :return: list of parameters</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">arr</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">):</span>
-            <span class="c1"># append static data or use dynamic data with indexing</span>
-            <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arr</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_static_params</span> <span class="k">else</span> <span class="n">obs</span><span class="p">[</span><span class="n">arr</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">params</span></div></div>
+<span class="kn">from</span> <span class="nn">openmodelica_microgrid_gym.util</span> <span class="kn">import</span> <span class="n">ObsTempl</span>
 
 
 <div class="viewcode-block" id="StaticControlAgent"><a class="viewcode-back" href="../../../api/omg.agents.staticctrl.html#openmodelica_microgrid_gym.agents.StaticControlAgent">[docs]</a><span class="k">class</span> <span class="nc">StaticControlAgent</span><span class="p">(</span><span class="n">Agent</span><span class="p">):</span>
@@ -325,28 +289,25 @@
            
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2020, Bode, Heid, Wallscheid, Weber
+        &#169; Copyright 2020, Bode, Heid, Wallscheid, Weber.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 
