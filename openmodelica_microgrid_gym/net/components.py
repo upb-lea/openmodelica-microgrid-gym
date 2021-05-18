@@ -94,8 +94,8 @@ class SlaveInverter(Inverter):
     def __init__(self, pll=None, pdroop=None, qdroop=None, **kwargs):
         super().__init__(**kwargs)
 
-        pdroop = {**dict(gain=40000.0), **(pdroop or {})}
-        qdroop = {**dict(gain=50.0), **(qdroop or {})}
+        pdroop = {**dict(gain=0.0), **(pdroop or {})}
+        qdroop = {**dict(gain=0.0), **(qdroop or {})}
         pll = {**dict(kP=10, kI=200), **(pll or {})}
 
         # toDo: set time Constant for droop Filter correct
