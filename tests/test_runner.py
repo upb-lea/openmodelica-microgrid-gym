@@ -138,13 +138,13 @@ def test_main_paramchange(agent, env):
     runner.run(1)
 
     # env.history.df.to_hdf('tests/test_main2.hd5', 'hist')
-    df = env.history.df.head(50)
+    df = env.history.df.head(20)
     df = df.reindex(sorted(df.columns), axis=1)
-    df2 = pd.read_hdf('tests/test_main.hd5', 'hist').head(50)  # noqa
+    df2 = pd.read_hdf('tests/test_main.hd5', 'hist').head(20)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
     assert df[out_params].to_numpy() != approx(df2[out_params].to_numpy(), 5e-3)
 
-    df2 = pd.read_hdf('tests/test_main2.hd5', 'hist').head(50)  # noqa
+    df2 = pd.read_hdf('tests/test_main2.hd5', 'hist').head(20)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
     assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-3)
 
@@ -155,9 +155,9 @@ def test_main_undersample(agent_undersample, env):
     runner.run(1)
 
     # env.history.df.to_hdf('tests/test_main4.hd5', 'hist')
-    df = env.history.df.head(100)
+    df = env.history.df.head(11)
     df = df.reindex(sorted(df.columns), axis=1)
-    df2 = pd.read_hdf('tests/test_main4.hd5', 'hist').head(100)  # noqa
+    df2 = pd.read_hdf('tests/test_main4.hd5', 'hist').head(11)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
     assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-2)
 
@@ -175,8 +175,8 @@ def test_simpleagent(env):
     runner.run(1)
 
     # env.history.df.to_hdf('tests/test_main3.hd5', 'hist')
-    df = env.history.df.head(40)
+    df = env.history.df.head(23)
     df = df.reindex(sorted(df.columns), axis=1)
-    df2 = pd.read_hdf('tests/test_main3.hd5', 'hist').head(40)  # noqa
+    df2 = pd.read_hdf('tests/test_main3.hd5', 'hist').head(23)  # noqa
     df2 = df2.reindex(sorted(df2.columns), axis=1)
     assert df[out_params].to_numpy() == approx(df2[out_params].to_numpy(), 5e-4)
