@@ -19,7 +19,7 @@ from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import RandProcess
 from gym.envs.registration import register
 
-folder_name = 'HP_opt_DDPG_V_ctrl_dq0_Delay_60Hz'
+folder_name = 'DDPG_Lr_investigation'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'plots'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
