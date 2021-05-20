@@ -26,11 +26,12 @@ def ddpg_objective(trial):
     learning_rate = trial.suggest_loguniform("learning_rate", 1e-8, 5e-2)  # 0.0002#
 
     lr_decay_start = trial.suggest_loguniform("lr_decay_start", 0.00001, 1)  # 3000  # 0.2 * number_learning_steps?
-    lr_decay_duration = trial.suggest_loguniform("lr_decay_end", 0.00001, 1)  # 3000  # 0.2 * number_learning_steps?
+    lr_decay_duration = trial.suggest_loguniform("lr_decay_duration", 0.00001,
+                                                 1)  # 3000  # 0.2 * number_learning_steps?
     t_start = int(lr_decay_start * number_learning_steps)
     t_end = int(np.minimum(lr_decay_start * number_learning_steps + lr_decay_duration * number_learning_steps,
                            number_learning_steps))
-    final_lr = trial.suggest_loguniform("lr_decay_start", 0.00001, 1)
+    final_lr = trial.suggest_loguniform("final_lr", 0.00001, 1)
 
     gamma = trial.suggest_loguniform("gamma", 0.5, 0.99)
     weight_scale = 0.1  # trial.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
@@ -87,7 +88,7 @@ def ddpg_objective(trial):
 
 def optuna_optimize(objective, sampler=None, study_name='dummy'):
     parser = argparse.ArgumentParser(description='Train DDPG Single Inverter V-ctrl')
-    parser.add_argument('-n', '--n_trials', default=10, required=False,
+    parser.add_argument('-n', '--n_trials', default=50, required=False,
                         help='number of trials to execute', type=int)
     args = parser.parse_args()
     n_trials = args.n_trials or 10
