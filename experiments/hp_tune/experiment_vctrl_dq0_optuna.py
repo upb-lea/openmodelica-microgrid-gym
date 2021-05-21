@@ -1,6 +1,6 @@
 import itertools
 import time
-from typing import Union
+from typing import Union, Callable
 
 import gym
 import matplotlib.pyplot as plt
@@ -21,6 +21,7 @@ from experiments.hp_tune.env.vctrl_dq0 import net, folder_name
 from experiments.hp_tune.util.action_noise_wrapper import myOrnsteinUhlenbeckActionNoise
 from experiments.hp_tune.util.record_env import RecordEnvCallback
 from experiments.hp_tune.util.recorder import Recorder
+from experiments.hp_tune.util.scheduler import linear_schedule, exopnential_schedule
 from experiments.hp_tune.util.training_recorder import TrainRecorder
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.util import abc_to_alpha_beta, dq0_to_abc, abc_to_dq0
@@ -307,8 +308,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                    ],
                    obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
                                'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
-                               'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2',
-                               'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i']
+                               'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
+                   # 'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i']
                    )
 
     env = FeatureWrapper(env, number_of_features=3, training_episode_length=training_episode_length,
@@ -412,8 +413,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                      )],
                         obs_output=[  # 'lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
                             'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
-                            'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2',
-                            'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i'
+                            'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2'
+                            # 'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i'
                         ]
                         )
     env_test = FeatureWrapper(env_test, number_of_features=3)
@@ -462,9 +463,17 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
 
 def objective(trail):
-    number_learning_steps = trail.suggest_int("number_learning_steps", 1000, 1500000)
+    number_learning_steps = 5000  # trail.suggest_int("number_learning_steps", 1000, 1500000)
 
-    learning_rate = trail.suggest_loguniform("learning_rate", 1e-10, 1e-2)  # 0.0002#
+    learning_rate = 0.0001  # trail.suggest_loguniform("learning_rate", 1e-10, 1e-2)  # 0.0002#
+
+    lr_decay_start = 1  # trial.suggest_loguniform("lr_decay_start", 0, 1)  # 3000  # 0.2 * number_learning_steps?
+    lr_decay_duration = 0.1  # trial.suggest_loguniform("lr_decay_end", 0, 1)  # 3000  # 0.2 * number_learning_steps?
+    t_start = int(lr_decay_start * number_learning_steps)
+    t_end = int(np.minimum(lr_decay_start * number_learning_steps + lr_decay_duration * number_learning_steps,
+                           number_learning_steps))
+    final_lr = 0.5  # trial.suggest_loguniform("lr_decay_start", 0, 1)
+
     gamma = 0.75  # trail.suggest_loguniform("gamma", 0.1, 0.99)
     weight_scale = 0.1  # trail.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
 
@@ -494,8 +503,21 @@ def objective(trail):
     error_exponent = 0.5  # trail.suggest_loguniform("error_exponent", 0.01, 0.5)
 
     training_episode_length = 2000  # trail.suggest_int("training_episode_length", 200, 5000)  # 128
-    learning_starts = 0.32  # trail.suggest_loguniform("learning_starts", 0.1, 2)  # 128
+    learning_starts = 0.05  # trail.suggest_loguniform("learning_starts", 0.1, 2)  # 128
     tau = 0.00033  # trail.suggest_loguniform("tau", 0.0001, 0.2)  # 2
+
+    # learning_rate = linear_schedule(learning_rate, 0.5)
+    #    t_start = 3000       # 0.2 * number_learning_steps?
+    #    t_end = 5000
+    #    final_lr = 0.5
+    #    m = -(learning_rate - final_lr*learning_rate) / (t_end - t_start)
+    #    b = learning_rate + (t_start * (learning_rate - final_lr*learning_rate)) / (t_end - t_start)
+
+    # learning_rate = linear_schedule(initial_value=learning_rate, final_value=learning_rate*final_lr,
+    #                                m=m, b=b, total_timesteps=number_learning_steps)
+
+    learning_rate = linear_schedule(initial_value=learning_rate, final_value=learning_rate * final_lr, t_start=t_start,
+                                    t_end=t_end, total_timesteps=number_learning_steps)
 
     trail_config_mongo = {"Name": "Config"}
     trail_config_mongo.update(trail.params)
@@ -511,10 +533,10 @@ def objective(trail):
 
 
 # for gamma grid search:
-learning_rate = list(itertools.chain(*[[1e-8] * 1]))
-number_learning_steps = list(itertools.chain(*[[1500] * 1]))
-#learning_rate = list(itertools.chain(*[[1e-3]*1, [1e-4]*1, [1e-5]*1, [1e-6]*1, [1e-7]*1, [1e-8]*1, [1e-9]*1]))
-search_space = {'learning_rate': learning_rate, 'number_learning_steps': number_learning_steps}
+# learning_rate = list(itertools.chain(*[[1e-8] * 1]))
+# number_learning_steps = list(itertools.chain(*[[1500] * 1]))
+# learning_rate = list(itertools.chain(*[[1e-3]*1, [1e-4]*1, [1e-5]*1, [1e-6]*1, [1e-7]*1, [1e-8]*1, [1e-9]*1]))
+# search_space = {'learning_rate': learning_rate, 'number_learning_steps': number_learning_steps}
 
 # number_learning_steps_list = list(itertools.chain(*[[100000] * 3, [300000] * 3, [600000] * 3, [1000000] * 3]))
 # number_learning_steps_list = list(itertools.chain(*[[2000] * 3, [30000] * 3, [60000] * 3, [100000] * 3]))
@@ -525,7 +547,7 @@ study = optuna.create_study(study_name=folder_name,
                             direction='maximize',
                             storage=f'sqlite:///optuna_sqlite.sqlite',
                             load_if_exists=True,
-                            sampler=optuna.samplers.GridSampler(search_space)
+                            #sampler=optuna.samplers.GridSampler(search_space)
                             )
 
 study.optimize(objective, n_trials=1, n_jobs=1)

@@ -18,8 +18,9 @@ from openmodelica_microgrid_gym.net import Network
 
 from openmodelica_microgrid_gym.util import RandProcess
 from gym.envs.registration import register
+from experiments.hp_tune.hp_tune_ddpg_objective import STUDY_NAME
 
-folder_name = 'DDPG_Lr_investigation'
+folder_name = STUDY_NAME  # 'DDPG_Lr_investigation'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'plots'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
