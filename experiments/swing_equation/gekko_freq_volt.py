@@ -1,8 +1,8 @@
 from gekko import GEKKO
 import numpy as np
 import matplotlib.pyplot as plt
-import csv
-#Initialize Model
+#   import csv
+#   Initialize Model
 m = GEKKO(remote=False)
 
 #define parameter
@@ -11,25 +11,49 @@ Qdroop = 2000
 t_end = 1
 steps = 1000
 nomFreq = 50  # grid frequency / Hz
-nomVolt = value=230
+nomVolt = value = 230
 omega = 2*np.pi*nomFreq
+
+L_lcl_11 = 0.002
+L_lcl_12 = 0.002
+L_lcl_21 = 0.002
+L_lcl_22 = 0.002
+
+C_lcl_1 = 0.00003
+C_lcl_2 = 0.00003
+
+star_connection = False
 
 J = 0.0005
 J_Q = 0.00005
 
 R_lv_line_10km = 0.0
 L_lv_line_10km = 0.000589
-B_L_lv_line_10km = -(omega * L_lv_line_10km)/(R_lv_line_10km**2 + (omega*L_lv_line_10km)**2)
+
+if star_connection:
+    R_line_delta = 0    # (R_lv_line_10km * 6) / R_lv_line_10km
+    X_line_star = L_lv_line_10km * omega
+    X_line_delta = (X_line_star**2 + X_line_star**2 + X_line_star**2) / X_line_star     # Equation adapted due to singular value
+    B_L_lv_line_10km = -X_line_delta / (R_line_delta**2 + X_line_delta**2)
+    print(X_line_star)
+    print(X_line_delta)
+else:
+    B_L_lv_line_10km = -(omega * L_lv_line_10km)/(R_lv_line_10km**2 + (omega*L_lv_line_10km)**2)
+
+
+print(B_L_lv_line_10km)
 
 step = np.zeros(steps)
 step[0:499] = 6.22
-step[500:]  = 6.22/2
+step[500:] = 6.22/2
 
 step_l = np.zeros(steps)
-step_l[0:499] = 0.00495 # in Henry
-step_l[500:]  = 0.00495/2 # in Henry
+step_l[0:499] = 0.00495    # in Henry
+step_l[500:] = 0.00495/2    # in Henry
+
 #step_l[0:499] = 3.5267/omega # in Henry
 #step_l[500:]  = 3.5267/(omega*2) # in Henry
+
 
 
 R_load = m.Param(value=step)
@@ -56,7 +80,7 @@ G = np.array([[0, 0, 0],
 #constants
 
 p_offset = [00, 00, 0]
-q_offset = [50, 50, 0]
+q_offset = [50, 50, 50]
 
 #variables
 
@@ -119,9 +143,9 @@ m.Equation(u3 * u1 * (G[2][0] * m.sin(theta3 - theta1) - B[2][0] * m.cos(theta3 
 # Equations
 
 # define omega
-m.Equation(theta1.dt()==w1)
-m.Equation(theta2.dt()==w2)
-m.Equation(theta3.dt()==w3)
+m.Equation(theta1.dt() == w1)
+m.Equation(theta2.dt() == w2)
+m.Equation(theta3.dt() == w3)
 
 #Power ODE
 
@@ -176,7 +200,7 @@ m.options.IMODE = 7
 #steady state optimization
 #m.options.NODES = 1
 
-m.time = np.linspace(0,t_end,steps) # time points
+m.time = np.linspace(0, t_end, steps) # time points
 
 
 #Solve simulation
@@ -187,31 +211,33 @@ m.solve()
 
 #Results
 
-f1 = np.divide(w1,(2*np.pi))
-f2 = np.divide(w2,(2*np.pi))
-f3 = np.divide(w3,(2*np.pi))
+f1 = np.divide(w1, (2*np.pi))
+f2 = np.divide(w2, (2*np.pi))
+f3 = np.divide(w3, (2*np.pi))
 
 print(f1[400])
 print(B)
 
-plt.plot(m.time,f1,'r')
-plt.plot(m.time,f2,'b')
-plt.plot(m.time,f3,'--g')
+plt.plot(m.time, f1, 'r', label='f1')
+plt.plot(m.time, f2, 'b', label='f2')
+plt.plot(m.time, f3, '--g', label='f3')
 plt.xlabel('Time (s)')
 plt.ylabel('Frequency (Hz)')
 plt.ylim(49.5, 50.5)
+plt.legend()
 plt.show()
 
-plt.plot(m.time,theta1,'r')
-plt.plot(m.time,theta2,'b')
-plt.plot(m.time,theta3,'--g')
+plt.plot(m.time, theta1, 'r', label='theta 1')
+plt.plot(m.time, theta2, 'b', label='theta 2')
+plt.plot(m.time, theta3, '--g', label='theta 3')
 plt.xlabel('Time (s)')
 plt.ylabel('Theta')
+plt.legend()
 plt.show()
 
-plt.plot(m.time,u1, 'r')
-plt.plot(m.time,u2, 'b')
-plt.plot(m.time,u3,'--g')
+plt.plot(m.time, u1, 'r', label='V1')
+plt.plot(m.time, u2, 'b', label='V2')
+plt.plot(m.time, u3, '--g', label='V3')
 plt.xlabel('Time (s)')
 plt.ylabel('Voltage (V)')
 plt.ylim(220, 240)
@@ -219,21 +245,21 @@ plt.legend()
 plt.show()
 
 
-plt.plot(m.time,P1, 'r', label='P1')
-plt.plot(m.time,P2, '--b', label='P2')
-plt.plot(m.time,P3, 'g', label='P3')
+plt.plot(m.time, P1, 'r', label='P1')
+plt.plot(m.time, P2, '--b', label='P2')
+plt.plot(m.time, P3, 'g', label='P3')
 plt.xlabel('Time (s)')
 plt.ylabel('Active Power (W)')
 plt.legend()
 plt.show()
 
 
-plt.plot(m.time,Q1,'r', label='Q1')
-plt.plot(m.time,Q2,'--b', label='Q2')
-plt.plot(m.time,Q3,'g', label='Q3')
+plt.plot(m.time, Q1, 'r', label='Q1')
+plt.plot(m.time, Q2, '--b', label='Q2')
+plt.plot(m.time, Q3, 'g', label='Q3')
 plt.xlabel('Time (s)')
 plt.ylabel('Reactive Power (VAr)')
-#plt.ylim(-100, 100)
+#plt.ylim(-100, 2000)
 plt.legend()
 plt.show()
 
