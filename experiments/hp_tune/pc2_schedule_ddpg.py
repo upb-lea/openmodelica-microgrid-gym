@@ -19,7 +19,7 @@ job_resource_plan = {
     'vmemory': 16,
 }
 
-MAX_WORKERS = ALLOWED_MAX_CPU_CORES // job_resource_plan['ncpus']
+MAX_WORKERS = 1  # ALLOWED_MAX_CPU_CORES // job_resource_plan['ncpus']
 
 
 def main():
@@ -53,7 +53,7 @@ def main():
                 res_plan = pc2.calculate_resources(**job_resource_plan)
 
                 execution_line = "PYTHONPATH=. " \
-                                 "python hp_tune_ddpg_objective.py -n 1"
+                                 "python experiments/hp_tune/hp_tune_ddpg_objective.py -n 1"
 
                 print(f'Start job {jobid} ..')
                 pc2.create_n_run_script(
