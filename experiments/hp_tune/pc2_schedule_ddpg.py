@@ -5,7 +5,7 @@ import os
 import pathlib
 import uuid
 import time
-from experiments.hp_tune.PC2 import pc2
+from experiments.hp_tune import pc2
 
 # config
 USER = os.getenv('USER')
