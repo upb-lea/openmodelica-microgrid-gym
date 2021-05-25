@@ -1,4 +1,5 @@
 import itertools
+import platform
 import time
 from typing import Union
 
@@ -453,6 +454,7 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
                            "time": ts,
                            "Reward": rew_list,
                            "Phase": phase_list,
+                           "Node": platform.uname().node,
                            "Info": "No delay, obs=[v_mess,sp_dq0, i_mess_dq0, error_mess_sp, last_action]"}
 
     # Add v-&i-measurements
