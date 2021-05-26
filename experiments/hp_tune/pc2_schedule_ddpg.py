@@ -15,8 +15,8 @@ ALLOWED_MAX_CPU_CORES = 512
 job_resource_plan = {
     'duration': 30,  # in hours
     'ncpus': 8,
-    'memory': 12,
-    'vmemory': 16,
+    'memory': 16,
+    'vmemory': 0,
 }
 
 MAX_WORKERS = 1  # ALLOWED_MAX_CPU_CORES // job_resource_plan['ncpus']
