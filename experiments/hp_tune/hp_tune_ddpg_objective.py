@@ -14,7 +14,7 @@ from experiments.hp_tune.util.scheduler import linear_schedule
 PC2_LOCAL_PORT2PSQL = 11999
 DB_NAME = 'optuna'
 SERVER_LOCAL_PORT2PSQL = 5432
-STUDY_NAME = 'DDPG_Lr_gamma_Anoise'
+STUDY_NAME = 'PC2_test'
 
 cfg = dict(lea_vpn_nodes=['lea-skynet', 'lea-picard', 'lea-barclay',
                           'lea-cyberdyne', 'webbah-ThinkPad-L380'])
