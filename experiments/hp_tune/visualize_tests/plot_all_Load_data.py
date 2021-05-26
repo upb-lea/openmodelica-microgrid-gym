@@ -15,9 +15,9 @@ mongo_recorder = MongoClient(
 
 # client = MongoClient('mongodb://localhost:27017/')
 
-db = mongo_recorder['HP_opt_DDPG_V_ctrl_dq0_Delay']
+db = mongo_recorder['HP_opt_DDPG_V_ctrl_dq0_Delay_60Hz']
 
-trail = db.Trail_number_25
+trail = db.Trail_number_3
 
 R_load = []
 i_a = []
@@ -31,7 +31,7 @@ phase = []
 
 for ii in range(1):
     # test_data = trail.find_one({"Name": "On_Training"})
-    test_data = trail.find_one({"Episode_number": 8})
+    test_data = trail.find_one({"Episode_number": 459})
 
     # R_load.append(test_data['R_load_training'][:])
     R_load = R_load + test_data['R_load_training']
