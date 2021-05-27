@@ -1,4 +1,5 @@
 import itertools
+import time
 
 import optuna
 import platform
@@ -75,7 +76,8 @@ def ddpg_objective(trial):
 
     trail_config_mongo = {"Name": "Config",
                           "Node": platform.uname().node,
-                          "Number_learning_Steps": number_learning_steps}
+                          "Number_learning_Steps": number_learning_steps,
+                          "Start time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime())}
     trail_config_mongo.update(trial.params)
     mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, trail_config_mongo)
 
