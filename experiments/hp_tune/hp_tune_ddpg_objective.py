@@ -17,7 +17,7 @@ from experiments.hp_tune.util.scheduler import linear_schedule
 PC2_LOCAL_PORT2PSQL = 11999
 DB_NAME = 'optuna'
 SERVER_LOCAL_PORT2PSQL = 5432
-STUDY_NAME = 'PC2_test'
+STUDY_NAME = 'DDPG_Lr_gamma_Anoise'
 
 
 # cfg = dict(lea_vpn_nodes=['lea-skynet', 'lea-picard', 'lea-barclay',
@@ -25,7 +25,7 @@ STUDY_NAME = 'PC2_test'
 
 
 def ddpg_objective(trial):
-    number_learning_steps = 10000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
+    number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
 
     learning_rate = trial.suggest_loguniform("learning_rate", 1e-8, 5e-2)  # 0.0002#
 

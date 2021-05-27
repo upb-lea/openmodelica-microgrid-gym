@@ -19,7 +19,7 @@ from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import RandProcess
 from gym.envs.registration import register
 
-folder_name = 'PC2_test'
+folder_name = 'DDPG_Lr_gamma_Anoise'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'plots'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
@@ -199,7 +199,7 @@ register(id='vctrl_single_inv_test_dq0-v0',
              #             )
              # ],
              viz_mode='episode',
-             max_episode_steps=2000,
+             max_episode_steps=20000,
              model_params={'lc.resistor1.R': R_filter,
                            'lc.resistor2.R': R_filter,
                            'lc.resistor3.R': R_filter,

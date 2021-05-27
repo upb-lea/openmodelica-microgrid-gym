@@ -19,7 +19,7 @@ job_resource_plan = {
     'vmemory': 16,
 }
 
-MAX_WORKERS = 3  # ALLOWED_MAX_CPU_CORES // job_resource_plan['ncpus']
+MAX_WORKERS = ALLOWED_MAX_CPU_CORES // job_resource_plan['ncpus']
 
 
 def main():
