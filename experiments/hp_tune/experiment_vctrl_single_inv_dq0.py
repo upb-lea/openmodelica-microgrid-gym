@@ -315,7 +315,7 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
         fig.savefig(f'{folder_name}/{n_trail}/Load{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
         plt.close()
 
-    env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train-v0',
+    env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train_dq0-v0',
                    reward_fun=rew.rew_fun_dq0,
                    abort_reward=-1,
                    viz_cols=[
@@ -421,7 +421,7 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
     rew.exponent = 0.5  # 1
     limit_exceeded_in_test = False
     limit_exceeded_penalty = 0
-    env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v0',
+    env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test_dq0-v0',
                         reward_fun=rew.rew_fun_dq0,
                         abort_reward=-1,  # no needed if in rew no None is given back
                         # on_episode_reset_callback=cb.fire  # needed?

@@ -106,7 +106,7 @@ cb = CallbackList()
 cb.append(partial(gen.reset))  # , initial=np.random.uniform(low=lower_bound_load, high=upper_bound_load)))
 cb.append(rand_load_train.reset)
 
-register(id='vctrl_single_inv_train-v0',
+register(id='vctrl_single_inv_train_dq0-v0',
          entry_point='openmodelica_microgrid_gym.env:ModelicaEnv',
          kwargs=dict(  # reward_fun=rew.rew_fun,
              # viz_cols=[
@@ -177,7 +177,7 @@ rand_load_test = RandomLoad(max_episode_steps, net.ts, gen,
 #    return R_load_test_case['r_load.resistor1.R'][int(t/net.ts)]
 
 
-register(id='vctrl_single_inv_test-v0',
+register(id='vctrl_single_inv_test_dq0-v0',
          entry_point='openmodelica_microgrid_gym.env:ModelicaEnv',
          kwargs=dict(  # reward_fun=rew.rew_fun,
              # viz_cols=[
