@@ -52,7 +52,7 @@ def main():
                 job_name = job_files_path / f"pc2_job_{jobid}.sh"
                 res_plan = pc2.calculate_resources(**job_resource_plan)
 
-                execution_line = "PYTHONPATH=. " \
+                execution_line = "PYTHONPATH=$HOME/openmodelica-microgrid-gym/ " \
                                  "python $HOME/openmodelica-microgrid-gym/experiments/hp_tune/hp_tune_ddpg_objective.py -n 1"
 
                 print(f'Start job {jobid} ..')
