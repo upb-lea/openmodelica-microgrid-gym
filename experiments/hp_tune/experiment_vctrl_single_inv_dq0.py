@@ -159,7 +159,8 @@ class FeatureWrapper(Monitor):
                             "v_phasor_training": self.v_phasor_training,
                             "Rewards": self.rewards,
                             "Phase": self.phase,
-                            "Node": platform.uname().node
+                            "Node": platform.uname().node,
+                            "Reward function": 'rew.rew_fun_dq0',
                             }
 
             """
@@ -477,6 +478,7 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
                            "Phase": phase_list,
                            "Node": platform.uname().node,
                            "End time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime()),
+                           "Reward function": 'rew.rew_fun_dq0',
                            "Info": "No delay, obs=[v_mess,sp_dq0, i_mess_dq0, error_mess_sp, last_action]"}
 
     # Add v-&i-measurements
