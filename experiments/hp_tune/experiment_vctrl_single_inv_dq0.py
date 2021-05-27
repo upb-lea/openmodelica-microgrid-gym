@@ -26,7 +26,7 @@ from experiments.hp_tune.util.recorder import Recorder
 from experiments.hp_tune.util.training_recorder import TrainRecorder
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.util import abc_to_alpha_beta, dq0_to_abc, abc_to_dq0
-
+import experiments.hp_tune.util.config as cfg
 np.random.seed(0)
 
 number_learning_steps1 = 600000
@@ -42,17 +42,21 @@ params_change = []
 #                          database_name=folder_name)  # store to port 12001 for ssh data to cyberdyne
 # mongo_recorder = Recorder(database_name=folder_name)
 
+
 node = platform.uname().node
 
-if node == 'fe1':
+if node in cfg['lea_vpn_nodes']:
+    server_name = 'lea38'
+    tun_cfg = {'remote_bind_address': ('127.0.0.1',
+                                       12001)}
+
+else:
+    # assume we are on a node of pc2 -> connect to frontend and put data on prt 12001
+    # from there they can be grep via permanent tunnel from cyberdyne
     server_name = 'fe.pc2.uni-paderborn.de'
     tun_cfg = {'remote_bind_address': ('127.0.0.1',
                                        12001),
                'ssh_username': 'webbah'}
-else:
-    server_name = 'lea38'
-    tun_cfg = {'remote_bind_address': ('127.0.0.1',
-                                       12001)}
 
 mongo_tunnel = sshtunnel.open_tunnel(server_name, **tun_cfg)
 

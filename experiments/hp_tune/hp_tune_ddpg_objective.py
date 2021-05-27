@@ -6,6 +6,7 @@ import argparse
 import sshtunnel
 import os
 import numpy as np
+import experiments.hp_tune.util.config as cfg
 
 # from experiments.hp_tune.experiment_vctrl_single_inv import experiment_fit_DDPG, mongo_recorder
 from experiments.hp_tune.experiment_vctrl_single_inv_dq0 import experiment_fit_DDPG_dq0, mongo_recorder
@@ -16,8 +17,9 @@ DB_NAME = 'optuna'
 SERVER_LOCAL_PORT2PSQL = 5432
 STUDY_NAME = 'PC2_test'
 
-cfg = dict(lea_vpn_nodes=['lea-skynet', 'lea-picard', 'lea-barclay',
-                          'lea-cyberdyne', 'webbah-ThinkPad-L380'])
+
+# cfg = dict(lea_vpn_nodes=['lea-skynet', 'lea-picard', 'lea-barclay',
+#                          'lea-cyberdyne', 'webbah-ThinkPad-L380'])
 
 
 def ddpg_objective(trial):
