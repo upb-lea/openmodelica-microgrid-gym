@@ -106,6 +106,9 @@ cb = CallbackList()
 cb.append(partial(gen.reset))  # , initial=np.random.uniform(low=lower_bound_load, high=upper_bound_load)))
 cb.append(rand_load_train.reset)
 
+rand_load_test = RandomLoad(max_episode_steps, net.ts, gen,
+                            load_curve=pd.read_pickle('experiments/hp_tune/R_load_test_case_2_seconds'))
+
 register(id='vctrl_single_inv_train_dq0-v0',
          entry_point='openmodelica_microgrid_gym.env:ModelicaEnv',
          kwargs=dict(  # reward_fun=rew.rew_fun,
@@ -143,7 +146,8 @@ register(id='vctrl_single_inv_train_dq0-v0',
                            # 'r_load.resistor1.R': partial(rand_load_train.load_step, gain=R),
                            # 'r_load.resistor2.R': partial(rand_load_train.load_step, gain=R),
                            # 'r_load.resistor3.R': partial(rand_load_train.load_step, gain=R),
-                           'r_load.resistor1.R': rand_load_train.random_load_step,
+                           # 'r_load.resistor1.R': rand_load_train.random_load_step,
+                           'r_load.resistor1.R': partial(rand_load_test.give_dataframe_value, col='r_load.resistor1.R'),
                            'r_load.resistor2.R': rand_load_train.random_load_step,
                            'r_load.resistor3.R': rand_load_train.random_load_step,
                            'lc.capacitor1.v': lambda t: np.random.uniform(low=-v_nom,
@@ -166,9 +170,6 @@ register(id='vctrl_single_inv_train_dq0-v0',
              action_time_delay=1
          )
          )
-
-rand_load_test = RandomLoad(max_episode_steps, net.ts, gen,
-                            load_curve=pd.read_pickle('experiments/hp_tune/R_load_test_case_2_seconds'))
 
 # R_load_test_case = pd.read_pickle('R_load_test_case')
 # R_load_test_case['r_load.resistor1.R'][2]
