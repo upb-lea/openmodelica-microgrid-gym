@@ -26,7 +26,9 @@ from experiments.hp_tune.util.recorder import Recorder
 from experiments.hp_tune.util.training_recorder import TrainRecorder
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.util import abc_to_alpha_beta, dq0_to_abc, abc_to_dq0
-import experiments.hp_tune.util.config as cfg
+# import experiments.hp_tune.util.config as cfg
+from experiments.hp_tune.util.config import cfg
+
 np.random.seed(0)
 
 number_learning_steps1 = 600000

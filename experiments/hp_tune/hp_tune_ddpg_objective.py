@@ -6,7 +6,8 @@ import argparse
 import sshtunnel
 import os
 import numpy as np
-import experiments.hp_tune.util.config as cfg
+# import experiments.hp_tune.util.config as cfg
+from experiments.hp_tune.util.config import cfg
 
 # from experiments.hp_tune.experiment_vctrl_single_inv import experiment_fit_DDPG, mongo_recorder
 from experiments.hp_tune.experiment_vctrl_single_inv_dq0 import experiment_fit_DDPG_dq0, mongo_recorder
