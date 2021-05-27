@@ -24,7 +24,7 @@ STUDY_NAME = 'PC2_test'
 
 
 def ddpg_objective(trial):
-    number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
+    number_learning_steps = 10000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
 
     learning_rate = trial.suggest_loguniform("learning_rate", 1e-8, 5e-2)  # 0.0002#
 
@@ -74,6 +74,7 @@ def ddpg_objective(trial):
                                     total_timesteps=number_learning_steps)
 
     trail_config_mongo = {"Name": "Config",
+                          "Node": platform.uname().node,
                           "Number_learning_Steps": number_learning_steps}
     trail_config_mongo.update(trial.params)
     mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, trail_config_mongo)

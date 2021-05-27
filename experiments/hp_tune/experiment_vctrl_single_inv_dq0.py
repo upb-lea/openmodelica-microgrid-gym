@@ -158,7 +158,8 @@ class FeatureWrapper(Monitor):
                             "v_c_training": self.v_c,
                             "v_phasor_training": self.v_phasor_training,
                             "Rewards": self.rewards,
-                            "Phase": self.phase
+                            "Phase": self.phase,
+                            "Node": platform.uname().node
                             }
 
             """
