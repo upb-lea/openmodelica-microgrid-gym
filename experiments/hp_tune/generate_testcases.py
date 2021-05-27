@@ -146,4 +146,4 @@ if __name__ == '__main__':
     env.close()
 
     df_store = env.history.df[['r_load.resistor1.R', 'r_load.resistor2.R', 'r_load.resistor3.R']]
-    #df_store.to_pickle('R_load_test_case_2_seconds')
+    # df_store.to_pickle('R_load_test_case_2_seconds.pkl')

@@ -217,7 +217,7 @@ def run_experiment():
                               show_plots=show_plots)
 
         rand_load_test = RandomLoad(max_episode_steps, net.ts, gen,
-                                    load_curve=pd.read_pickle('R_load_test_case_2_seconds'))
+                                    load_curve=pd.read_pickle('R_load_test_case_2_seconds.pkl'))
 
         def xylables_R(fig):
             ax = fig.gca()

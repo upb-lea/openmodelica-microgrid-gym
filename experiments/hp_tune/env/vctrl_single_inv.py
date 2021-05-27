@@ -168,7 +168,7 @@ register(id='vctrl_single_inv_train-v0',
          )
 
 rand_load_test = RandomLoad(max_episode_steps, net.ts, gen,
-                            load_curve=pd.read_pickle('experiments/hp_tune/R_load_test_case_2_seconds'))
+                            load_curve=pd.read_pickle('experiments/hp_tune/R_load_test_case_2_seconds.pkl'))
 
 # R_load_test_case = pd.read_pickle('R_load_test_case')
 # R_load_test_case['r_load.resistor1.R'][2]
