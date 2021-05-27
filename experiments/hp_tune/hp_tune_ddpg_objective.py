@@ -98,12 +98,12 @@ def optuna_optimize(objective, sampler=None, study_name='dummy'):
     node = platform.uname().node
 
     if node in ('lea-picard', 'lea-barclay'):
-        with open('C:\\Users\\webbah\\Documents\\creds\\optuna_psql.txt', 'r') as f:
-            optuna_creds = ':'.join([s.strip() for s in f.readlines()])
+        creds_path = 'C:\\Users\\webbah\\Documents\\creds\\optuna_psql.txt'
     else:
         # read db credentials
-        with open(f'{os.getenv("HOME")}/creds/optuna_psql', 'r') as f:
-            optuna_creds = ':'.join([s.strip() for s in f.readlines()])
+        creds_path = f'{os.getenv("HOME")}/creds/optuna_psql'
+    with open(creds_path, 'r') as f:
+        optuna_creds = ':'.join([s.strip(' \n') for s in f.readlines()])
     # set trial to failed if it seems dead for 20 minutes
     # storage_kws = dict(heartbeat_interval=60*5, grace_period=60*20)
     if node in ('lea-cyberdyne', 'fe1'):

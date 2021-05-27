@@ -42,7 +42,21 @@ params_change = []
 #                          database_name=folder_name)  # store to port 12001 for ssh data to cyberdyne
 # mongo_recorder = Recorder(database_name=folder_name)
 
-mongo_tunnel = sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001))
+node = platform.uname().node
+
+if node == 'fe1':
+    server_name = 'fe.pc2.uni-paderborn.de'
+    tun_cfg = {'remote_bind_address': ('127.0.0.1',
+                                       12001),
+               'ssh_username': 'webbah'}
+else:
+    server_name = 'lea38'
+    tun_cfg = {'remote_bind_address': ('127.0.0.1',
+                                       12001)}
+
+mongo_tunnel = sshtunnel.open_tunnel(server_name, **tun_cfg)
+
+# mongo_tunnel = sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001))
 mongo_tunnel.start()
 mongo_recorder = Recorder(URI=f'mongodb://localhost:{mongo_tunnel.local_bind_port}/',
                           database_name=folder_name)  # store to port 12001 for ssh data to cyberdyne
