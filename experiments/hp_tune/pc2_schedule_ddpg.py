@@ -13,8 +13,8 @@ ALLOWED_MAX_CPU_CORES = 512
 
 # resources request
 job_resource_plan = {
-    'duration': 30,  # in hours
-    'ncpus': 8,
+    'duration': 12,  # in hours
+    'ncpus': 2,
     'memory': 12,
     'vmemory': 16,
 }

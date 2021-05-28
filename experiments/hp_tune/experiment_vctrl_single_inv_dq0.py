@@ -26,8 +26,6 @@ from experiments.hp_tune.util.recorder import Recorder
 from experiments.hp_tune.util.training_recorder import TrainRecorder
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.util import abc_to_alpha_beta, dq0_to_abc, abc_to_dq0
-# import experiments.hp_tune.util.config as cfg
-from experiments.hp_tune.util.config import cfg
 
 np.random.seed(0)
 
@@ -37,35 +35,10 @@ number_trails = 200
 
 params_change = []
 
-# mongo_recorder = Recorder(database_name=folder_name)
-
-
-# mongo_recorder = Recorder(URI='mongodb://localhost:12001/',
-#                          database_name=folder_name)  # store to port 12001 for ssh data to cyberdyne
-# mongo_recorder = Recorder(database_name=folder_name)
-
-
 node = platform.uname().node
 
-if node in cfg['lea_vpn_nodes']:
-    server_name = 'lea38'
-    tun_cfg = {'remote_bind_address': ('127.0.0.1',
-                                       12001)}
-
-else:
-    # assume we are on a node of pc2 -> connect to frontend and put data on prt 12001
-    # from there they can be grep via permanent tunnel from cyberdyne
-    server_name = 'fe.pc2.uni-paderborn.de'
-    tun_cfg = {'remote_bind_address': ('127.0.0.1',
-                                       12001),
-               'ssh_username': 'webbah'}
-
-mongo_tunnel = sshtunnel.open_tunnel(server_name, **tun_cfg)
-
-# mongo_tunnel = sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001))
-mongo_tunnel.start()
-mongo_recorder = Recorder(URI=f'mongodb://localhost:{mongo_tunnel.local_bind_port}/',
-                          database_name=folder_name)  # store to port 12001 for ssh data to cyberdyne
+# mongo_recorder = Recorder(database_name=folder_name)
+mongo_recorder = Recorder(node=node, database_name=folder_name)  # store to port 12001 for ssh data to cyberdyne
 
 
 class FeatureWrapper(Monitor):
@@ -167,7 +140,7 @@ class FeatureWrapper(Monitor):
             add here "model_params_change": callback.params_change, from training_recorder?
             """
 
-            mongo_recorder.save_to_mongodb('Trail_number_' + self.n_trail, episode_data)
+            mongo_recorder.save_to_mongodb('Trial_number_' + self.n_trail, episode_data)
 
             # clear lists
             self.R_training = []
@@ -410,7 +383,7 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
                   "Sum_eps_reward": env.get_episode_rewards()
                   }
 
-    mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, train_data)
+    mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, train_data)
 
     model.save(f'{folder_name}/{n_trail}/model.zip')  # Hier woanders speichern!
     # model.save(f'/scratch/hpc-prf-reinfl/weber/OMG/{folder_name}/{n_trail}/model.zip')  #Hier woanders speichern!
@@ -490,6 +463,6 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
         env_test.viz_col_tmpls[2].vars[i]].copy().tolist() for i in range(3)
                                 })
 
-    mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, test_after_training)
+    mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, test_after_training)
 
     return (return_sum / env_test.max_episode_steps + limit_exceeded_penalty)

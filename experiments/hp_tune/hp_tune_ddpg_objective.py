@@ -79,7 +79,7 @@ def ddpg_objective(trial):
                           "Number_learning_Steps": number_learning_steps,
                           "Start time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime())}
     trail_config_mongo.update(trial.params)
-    mongo_recorder.save_to_mongodb('Trail_number_' + n_trail, trail_config_mongo)
+    mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
 
     loss = experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
                                    batch_size,
