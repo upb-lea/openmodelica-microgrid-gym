@@ -16,7 +16,7 @@ from experiments.hp_tune.util.scheduler import linear_schedule
 
 PC2_LOCAL_PORT2PSQL = 11999
 DB_NAME = 'optuna'
-SERVER_LOCAL_PORT2PSQL = 5432
+SERVER_LOCAL_PORT2PSQL = 6432
 STUDY_NAME = 'DDPG_Lr_gamma_Anoise'
 
 
