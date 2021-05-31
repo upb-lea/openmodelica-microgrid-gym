@@ -142,7 +142,7 @@ def optuna_optimize(objective, sampler=None, study_name='dummy'):
         else:
             port = SERVER_LOCAL_PORT2PSQL
 
-        storage = get_storage(f'postgresql://{optuna_creds}@localhost:{port}/{DB_NAME}', **storage_kws)
+        storage = get_storage(f'postgresql://{optuna_creds}@localhost:{port}/{DB_NAME}', storage_kws=storage_kws)
 
         study = optuna.create_study(
             storage=storage,
@@ -166,8 +166,7 @@ def optuna_optimize(objective, sampler=None, study_name='dummy'):
         with sshtunnel.open_tunnel(server_name, **tun_cfg) as tun:
 
             storage = get_storage(url=f'postgresql://{optuna_creds}'
-                                      f'@localhost:{tun.local_bind_port}/{DB_NAME}',
-                                  **storage_kws)
+                                      f'@localhost:{tun.local_bind_port}/{DB_NAME}', storage_kws=storage_kws)
 
             # storage = optuna.storages.RDBStorage(
             #    url=f'postgresql://{optuna_creds}'
