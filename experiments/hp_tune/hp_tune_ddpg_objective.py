@@ -111,7 +111,7 @@ def optuna_optimize(objective, sampler=None, study_name='dummy'):
     with open(creds_path, 'r') as f:
         optuna_creds = ':'.join([s.strip(' \n') for s in f.readlines()])
     # set trial to failed if it seems dead for 20 minutes
-    storage_kws = dict(engine_kwargs={"connect_args": {"timeout": 600}})
+    storage_kws = dict(engine_kwargs={"pool_timeout": 600})
     if node in ('lea-cyberdyne', 'fe1'):
         if node == 'fe1':
             port = PC2_LOCAL_PORT2PSQL
