@@ -111,17 +111,18 @@ def optuna_optimize(objective, sampler=None, study_name='dummy'):
     with open(creds_path, 'r') as f:
         optuna_creds = ':'.join([s.strip(' \n') for s in f.readlines()])
     # set trial to failed if it seems dead for 20 minutes
-    # storage_kws = dict(heartbeat_interval=60*5, grace_period=60*20)
+    storage_kws = dict(engine_kwargs={"connect_args": {"timeout": 600}})
     if node in ('lea-cyberdyne', 'fe1'):
         if node == 'fe1':
             port = PC2_LOCAL_PORT2PSQL
         else:
             port = SERVER_LOCAL_PORT2PSQL
-        """storage = optuna.storages.RDBStorage(
+        storage = optuna.storages.RDBStorage(
             url=f'postgresql://{optuna_creds}@localhost:{port}/{DB_NAME}',
-            **storage_kws)"""
+            **storage_kws)
         study = optuna.create_study(
-            storage=f'postgresql://{optuna_creds}@localhost:{port}/{DB_NAME}',
+            storage=storage,
+            # storage=f'postgresql://{optuna_creds}@localhost:{port}/{DB_NAME}',
             sampler=sampler, study_name=study_name,
             load_if_exists=True,
             direction='maximize')
@@ -139,13 +140,14 @@ def optuna_optimize(objective, sampler=None, study_name='dummy'):
                                                PC2_LOCAL_PORT2PSQL),
                        'ssh_username': 'webbah'}
         with sshtunnel.open_tunnel(server_name, **tun_cfg) as tun:
-            """storage = optuna.storages.RDBStorage(
+            storage = optuna.storages.RDBStorage(
                 url=f'postgresql://{optuna_creds}'
                     f'@localhost:{tun.local_bind_port}/{DB_NAME}',
-                **storage_kws)"""
+                **storage_kws)
             study = optuna.create_study(
-                storage=f'postgresql://{optuna_creds}'
-                        f'@localhost:{tun.local_bind_port}/{DB_NAME}',
+                storage=storage,
+                # storage=f'postgresql://{optuna_creds}'
+                #        f'@localhost:{tun.local_bind_port}/{DB_NAME}',
                 sampler=sampler, study_name=study_name,
                 load_if_exists=True,
                 direction='maximize')
