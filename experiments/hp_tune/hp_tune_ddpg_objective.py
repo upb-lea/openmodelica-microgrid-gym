@@ -3,6 +3,8 @@ import time
 
 import os
 
+import sqlalchemy
+
 os.environ['PGOPTIONS'] = '-c statement_timeout=1000'
 
 import optuna
@@ -95,6 +97,25 @@ def ddpg_objective(trial):
     return loss
 
 
+def get_storage(url, storage_kws):
+    successfull = False
+    retry_counter = 0
+
+    while not successfull:
+        try:
+            storage = optuna.storages.RDBStorage(
+                url=url, **storage_kws)
+        except sqlalchemy.exc.OperationalError as e:
+            wait_time = np.random.randint(60, 300)
+            retry_counter += 1
+            if retry_counter > 10:
+                print('Stopped after 10 connection attempts!')
+                raise e
+            print(f'Could not connect, retry in {wait_time} s')
+
+    return storage
+
+
 def optuna_optimize(objective, sampler=None, study_name='dummy'):
     parser = argparse.ArgumentParser(description='Train DDPG Single Inverter V-ctrl')
     parser.add_argument('-n', '--n_trials', default=50, required=False,
@@ -120,9 +141,9 @@ def optuna_optimize(objective, sampler=None, study_name='dummy'):
             port = PC2_LOCAL_PORT2PSQL
         else:
             port = SERVER_LOCAL_PORT2PSQL
-        storage = optuna.storages.RDBStorage(
-            url=f'postgresql://{optuna_creds}@localhost:{port}/{DB_NAME}',
-            **storage_kws)
+
+        storage = get_storage(f'postgresql://{optuna_creds}@localhost:{port}/{DB_NAME}', **storage_kws)
+
         study = optuna.create_study(
             storage=storage,
             # storage=f'postgresql://{optuna_creds}@localhost:{port}/{DB_NAME}',
@@ -143,10 +164,16 @@ def optuna_optimize(objective, sampler=None, study_name='dummy'):
                                                PC2_LOCAL_PORT2PSQL),
                        'ssh_username': 'webbah'}
         with sshtunnel.open_tunnel(server_name, **tun_cfg) as tun:
-            storage = optuna.storages.RDBStorage(
-                url=f'postgresql://{optuna_creds}'
-                    f'@localhost:{tun.local_bind_port}/{DB_NAME}',
-                **storage_kws)
+
+            storage = get_storage(url=f'postgresql://{optuna_creds}'
+                                      f'@localhost:{tun.local_bind_port}/{DB_NAME}',
+                                  **storage_kws)
+
+            # storage = optuna.storages.RDBStorage(
+            #    url=f'postgresql://{optuna_creds}'
+            #        f'@localhost:{tun.local_bind_port}/{DB_NAME}',
+            #    **storage_kws)
+
             study = optuna.create_study(
                 storage=storage,
                 # storage=f'postgresql://{optuna_creds}'
