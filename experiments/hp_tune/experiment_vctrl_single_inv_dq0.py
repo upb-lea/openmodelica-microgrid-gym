@@ -27,7 +27,7 @@ from experiments.hp_tune.util.training_recorder import TrainRecorder
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.util import abc_to_alpha_beta, dq0_to_abc, abc_to_dq0
 
-np.random.seed(0)
+# np.random.seed(0)
 
 number_learning_steps1 = 600000
 number_plotting_steps = 100000
