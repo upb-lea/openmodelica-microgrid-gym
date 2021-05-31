@@ -105,13 +105,15 @@ def get_storage(url, storage_kws):
         try:
             storage = optuna.storages.RDBStorage(
                 url=url, **storage_kws)
-        except sqlalchemy.exc.OperationalError as e:
+            successfull = True
+        except (sqlalchemy.exc.OperationalError, sqlalchemy.exc.DatabaseError) as e:
             wait_time = np.random.randint(60, 300)
             retry_counter += 1
             if retry_counter > 10:
                 print('Stopped after 10 connection attempts!')
                 raise e
             print(f'Could not connect, retry in {wait_time} s')
+            time.sleep(wait_time)
 
     return storage
 
