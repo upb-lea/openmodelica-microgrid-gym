@@ -17,13 +17,19 @@ with sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001)) as
     with MongoClient(f'mongodb://localhost:{tun.local_bind_port}/') as client:
         db = client[db_name]
 
-        trial = db.Trail_number_232
-        # trial = db.Trial_number_3200
+        # trial = db.Trail_number_232
+        trial = db.Trial_number_3849
 
         trial_config = trial.find_one({"Name": "Config"})
         trial_test = trial.find_one({"Name": "Test"})
         train_data = trial.find_one({"Name": "After_Training"})
         train_episode_data = trial.find_one({"Episode_number": show_episode_number})
+
+        print(f'Starttime = {trial_config["Start time"]}')
+        print(f'Starttime = {trial_test["End time"]}')
+        print(' ')
+        print(f'Node = {trial_config["Node"]}')
+        print(' ')
 
         print('Config-Params:')
         print(*trial_config.items(), sep='\n')
