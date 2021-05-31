@@ -1,11 +1,14 @@
 import itertools
 import time
 
+import os
+
+os.environ['PGOPTIONS'] = '-c statement_timeout=1000'
+
 import optuna
 import platform
 import argparse
 import sshtunnel
-import os
 import numpy as np
 # import experiments.hp_tune.util.config as cfg
 from experiments.hp_tune.util.config import cfg
