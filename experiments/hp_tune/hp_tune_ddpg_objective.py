@@ -4,6 +4,7 @@ import time
 import os
 
 import sqlalchemy
+from optuna.samplers import TPESampler
 
 os.environ['PGOPTIONS'] = '-c statement_timeout=1000'
 
@@ -22,7 +23,7 @@ from experiments.hp_tune.util.scheduler import linear_schedule
 PC2_LOCAL_PORT2PSQL = 11999
 DB_NAME = 'optuna'
 SERVER_LOCAL_PORT2PSQL = 6432
-STUDY_NAME = 'DDPG_Lr_gamma_Anoise'
+STUDY_NAME = 'DDPG_Lr_gamma_Anoise_sqlite'
 
 
 # cfg = dict(lea_vpn_nodes=['lea-skynet', 'lea-picard', 'lea-barclay',
@@ -118,6 +119,24 @@ def get_storage(url, storage_kws):
     return storage
 
 
+def optuna_optimize_sqlite(objective, sampler=None, study_name='dummy'):
+    parser = argparse.ArgumentParser(description='Train DDPG Single Inverter V-ctrl')
+    parser.add_argument('-n', '--n_trials', default=50, required=False,
+                        help='number of trials to execute', type=int)
+    args = parser.parse_args()
+    n_trials = args.n_trials or 10
+
+    print(n_trials)
+
+    study = optuna.create_study(study_name=study_name,
+                                direction='maximize',
+                                storage=f'sqlite:///optuna_sqlite.sqlite',
+                                load_if_exists=True,
+                                sampler=sampler
+                                )
+    study.optimize(objective, n_trials=n_trials)
+
+
 def optuna_optimize(objective, sampler=None, study_name='dummy'):
     parser = argparse.ArgumentParser(description='Train DDPG Single Inverter V-ctrl')
     parser.add_argument('-n', '--n_trials', default=50, required=False,
@@ -189,9 +208,13 @@ if __name__ == "__main__":
     # with tf.device('/cpu:0'):
     #    optuna_optimize(ddpg_objective, study_name=STUDY_NAME)
 
-    learning_rate = list(itertools.chain(*[[1e-9] * 1]))
+    # learning_rate = list(itertools.chain(*[[1e-9] * 1]))
     # number_learning_steps = list(itertools.chain(*[[1100000] * 1]))
     # learning_rate = list(itertools.chain(*[[1e-3]*1, [1e-4]*1, [1e-5]*1, [1e-6]*1, [1e-7]*1, [1e-8]*1, [1e-9]*1]))
-    search_space = {'learning_rate': learning_rate}  # , 'number_learning_steps': number_learning_steps}
+    # search_space = {'learning_rate': learning_rate}  # , 'number_learning_steps': number_learning_steps}
 
-    optuna_optimize(ddpg_objective, study_name=STUDY_NAME)#, sampler=optuna.samplers.GridSampler(search_space))
+    TPE_sampler = TPESampler(n_startup_trials=50)
+
+    optuna_optimize_sqlite(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
+
+    # optuna_optimize(ddpg_objective, study_name=STUDY_NAME)#, sampler=optuna.samplers.GridSampler(search_space))
