@@ -133,7 +133,7 @@ def optuna_optimize_sqlite(objective, sampler=None, study_name='dummy'):
 
     study = optuna.create_study(study_name=study_name,
                                 direction='maximize',
-                                storage=f'sqlite:///optuna_sqlite.sqlite',
+                                storage=f'sqlite:///optuna.sqlite',
                                 load_if_exists=True,
                                 sampler=sampler
                                 )
