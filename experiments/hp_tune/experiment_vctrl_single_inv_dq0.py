@@ -452,7 +452,7 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
                            "Node": platform.uname().node,
                            "End time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime()),
                            "Reward function": 'rew.rew_fun_dq0',
-                           "Info": "No delay, obs=[v_mess,sp_dq0, i_mess_dq0, error_mess_sp, last_action]"}
+                           "Info": "Delay, obs=[v_mess,sp_dq0, i_mess_dq0, error_mess_sp, last_action]; Reward = MRE, without abort! (risk=0 manullay in env)"}
 
     # Add v-&i-measurements
     test_after_training.update({env_test.viz_col_tmpls[j].vars[i].replace(".", "_"): env_test.history[
