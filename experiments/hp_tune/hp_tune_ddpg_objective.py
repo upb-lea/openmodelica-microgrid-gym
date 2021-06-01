@@ -23,7 +23,7 @@ from experiments.hp_tune.util.scheduler import linear_schedule
 PC2_LOCAL_PORT2PSQL = 11999
 DB_NAME = 'optuna'
 SERVER_LOCAL_PORT2PSQL = 6432
-STUDY_NAME = 'DDPG_Lr_gamma_Anoise_sqlite'
+STUDY_NAME = 'DDPG_MRE_sqlite_PC2'
 
 
 # cfg = dict(lea_vpn_nodes=['lea-skynet', 'lea-picard', 'lea-barclay',
@@ -127,6 +127,9 @@ def optuna_optimize_sqlite(objective, sampler=None, study_name='dummy'):
     n_trials = args.n_trials or 10
 
     print(n_trials)
+    print('Local optimization is run but measurement data is logged to MongoDB on Cyberdyne!')
+    print('Take care, trail numbers can double if local opt. is run on 2 machines and are stored in '
+          'the same MongoDB Collection!!!')
 
     study = optuna.create_study(study_name=study_name,
                                 direction='maximize',
