@@ -19,13 +19,14 @@ from stable_baselines3.common.type_aliases import GymStepReturn
 from experiments.hp_tune.agents.my_ddpg import myDDPG
 # from agents.my_ddpg import myDDPG
 from experiments.hp_tune.env.rewards import Reward
-from experiments.hp_tune.env.vctrl_dq0 import net, folder_name
+from experiments.hp_tune.env.vctrl_dq0 import net  # , folder_name
 from experiments.hp_tune.util.action_noise_wrapper import myOrnsteinUhlenbeckActionNoise
 from experiments.hp_tune.util.record_env import RecordEnvCallback
 from experiments.hp_tune.util.recorder import Recorder
 from experiments.hp_tune.util.training_recorder import TrainRecorder
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.util import abc_to_alpha_beta, dq0_to_abc, abc_to_dq0
+from experiments.hp_tune.util.config import cfg
 
 # np.random.seed(0)
 
@@ -34,6 +35,8 @@ number_plotting_steps = 100000
 number_trails = 200
 
 params_change = []
+
+folder_name = cfg['STUDY_NAME']
 
 node = platform.uname().node
 
@@ -133,6 +136,8 @@ class FeatureWrapper(Monitor):
                             "Rewards": self.rewards,
                             "Phase": self.phase,
                             "Node": platform.uname().node,
+                            "Trial number": self.n_trail,
+                            "Database name": folder_name,
                             "Reward function": 'rew.rew_fun_dq0',
                             }
 
@@ -140,7 +145,7 @@ class FeatureWrapper(Monitor):
             add here "model_params_change": callback.params_change, from training_recorder?
             """
 
-            mongo_recorder.save_to_mongodb('Trial_number_' + self.n_trail, episode_data)
+            mongo_recorder.save_to_json('Trial_number_' + self.n_trail, episode_data)
 
             # clear lists
             self.R_training = []
@@ -265,8 +270,8 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
         ax.grid(which='both')
         # ax.set_xlim([0, 0.005])
         ts = time.gmtime()
-        fig.savefig(
-            f'{folder_name}/{n_trail}/Capacitor_voltages{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
+        # fig.savefig(
+        #    f'{folder_name}/{n_trail}/Capacitor_voltages{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
         plt.close()
 
     def xylables_i(fig):
@@ -275,8 +280,8 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
         ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
         ax.grid(which='both')
         ts = time.gmtime()
-        fig.savefig(
-            f'{folder_name}/{n_trail}/Inductor_currents{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
+        # fig.savefig(
+        #    f'{folder_name}/{n_trail}/Inductor_currents{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
         plt.close()
 
     def xylables_R(fig):
@@ -286,7 +291,7 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
         ax.grid(which='both')
         # ax.set_ylim([lower_bound_load - 2, upper_bound_load + 2])
         ts = time.gmtime()
-        fig.savefig(f'{folder_name}/{n_trail}/Load{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
+        #fig.savefig(f'{folder_name}/{n_trail}/Load{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
         plt.close()
 
     env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train_dq0-v0',
@@ -380,10 +385,12 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
 
     train_data = {"Name": "After_Training",
                   "Mean_eps_reward": env.reward_episode_mean,
+                  "Trial number": n_trail,
+                  "Database name": folder_name,
                   "Sum_eps_reward": env.get_episode_rewards()
                   }
 
-    mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, train_data)
+    mongo_recorder.save_to_json('Trial_number_' + n_trail, train_data)
 
     model.save(f'{folder_name}/{n_trail}/model.zip')  # Hier woanders speichern!
     # model.save(f'/scratch/hpc-prf-reinfl/weber/OMG/{folder_name}/{n_trail}/model.zip')  #Hier woanders speichern!
@@ -452,6 +459,8 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
                            "Node": platform.uname().node,
                            "End time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime()),
                            "Reward function": 'rew.rew_fun_dq0',
+                           "Trial number": n_trail,
+                           "Database name": folder_name,
                            "Info": "Delay, obs=[v_mess,sp_dq0, i_mess_dq0, error_mess_sp, last_action]; Reward = MRE, without abort! (risk=0 manullay in env)"}
 
     # Add v-&i-measurements
@@ -463,6 +472,6 @@ def experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale
         env_test.viz_col_tmpls[2].vars[i]].copy().tolist() for i in range(3)
                                 })
 
-    mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, test_after_training)
+    mongo_recorder.save_to_json('Trial_number_' + n_trail, test_after_training)
 
     return (return_sum / env_test.max_episode_steps + limit_exceeded_penalty)

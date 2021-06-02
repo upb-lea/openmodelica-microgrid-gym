@@ -18,8 +18,9 @@ from openmodelica_microgrid_gym.net import Network
 
 from openmodelica_microgrid_gym.util import RandProcess
 from gym.envs.registration import register
+from experiments.hp_tune.util.config import cfg
 
-folder_name = 'DDPG_MRE_sqlite_PC2'
+folder_name = cfg['STUDY_NAME']  # 'DDPG_MRE_sqlite_PC2'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'plots'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')

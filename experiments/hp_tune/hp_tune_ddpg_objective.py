@@ -13,7 +13,6 @@ import platform
 import argparse
 import sshtunnel
 import numpy as np
-# import experiments.hp_tune.util.config as cfg
 from experiments.hp_tune.util.config import cfg
 
 # from experiments.hp_tune.experiment_vctrl_single_inv import experiment_fit_DDPG, mongo_recorder
@@ -23,12 +22,9 @@ from experiments.hp_tune.util.scheduler import linear_schedule
 PC2_LOCAL_PORT2PSQL = 11999
 DB_NAME = 'optuna'
 SERVER_LOCAL_PORT2PSQL = 6432
-STUDY_NAME = 'DDPG_MRE_sqlite_PC2'
+STUDY_NAME = cfg['STUDY_NAME']  # 'DDPG_MRE_sqlite_PC2'
 
-
-# cfg = dict(lea_vpn_nodes=['lea-skynet', 'lea-picard', 'lea-barclay',
-#                          'lea-cyberdyne', 'webbah-ThinkPad-L380'])
-
+node = platform.uname().node
 
 def ddpg_objective(trial):
     number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
@@ -81,11 +77,14 @@ def ddpg_objective(trial):
                                     total_timesteps=number_learning_steps)
 
     trail_config_mongo = {"Name": "Config",
-                          "Node": platform.uname().node,
+                          "Node": node,
                           "Number_learning_Steps": number_learning_steps,
+                          "Trial number": n_trail,
+                          "Database name": cfg['STUDY_NAME'],
                           "Start time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime())}
     trail_config_mongo.update(trial.params)
-    mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
+    # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
+    mongo_recorder.save_to_json('Trial_number_' + n_trail, trail_config_mongo)
 
     loss = experiment_fit_DDPG_dq0(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
                                    batch_size,
@@ -130,10 +129,20 @@ def optuna_optimize_sqlite(objective, sampler=None, study_name='dummy'):
     print('Local optimization is run but measurement data is logged to MongoDB on Cyberdyne!')
     print('Take care, trail numbers can double if local opt. is run on 2 machines and are stored in '
           'the same MongoDB Collection!!!')
+    print('Measurment data is stored to cfg[meas_data_folder] as json, from there it is grept via reporter to '
+          'safely store it to ssh port for cyberdyne connection to mongodb')
+
+    if node in cfg['lea_vpn_nodes']:
+        optuna_path = './optuna/'
+    else:
+        # assume we are on not of pc2 -> store to project folder
+        optuna_path = '/scratch/hpc-prf-reinfl/weber/OMG/optuna/'
+
+    os.makedirs(optuna_path, exist_ok=True)
 
     study = optuna.create_study(study_name=study_name,
                                 direction='maximize',
-                                storage=f'sqlite:///optuna.sqlite',
+                                storage=f'sqlite:///{optuna_path}optuna.sqlite',
                                 load_if_exists=True,
                                 sampler=sampler
                                 )
@@ -216,7 +225,7 @@ if __name__ == "__main__":
     # learning_rate = list(itertools.chain(*[[1e-3]*1, [1e-4]*1, [1e-5]*1, [1e-6]*1, [1e-7]*1, [1e-8]*1, [1e-9]*1]))
     # search_space = {'learning_rate': learning_rate}  # , 'number_learning_steps': number_learning_steps}
 
-    TPE_sampler = TPESampler(n_startup_trials=50)
+    TPE_sampler = TPESampler(n_startup_trials=2)
 
     optuna_optimize_sqlite(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
 
