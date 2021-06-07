@@ -104,61 +104,62 @@ class FeatureWrapper(Monitor):
         self.i_phasor = self.cal_phasor_magnitude(obs[0:3])
         self.v_phasor = self.cal_phasor_magnitude(obs[3:6])
 
-        # todo: delta (ref-mess), letzte aktion, beides, delta i_phasor zur stromgrenze
+        if cfg['loglevel'] == 'train':
+            self.R_training.append(self.env.history.df['r_load.resistor1.R'].iloc[-1])
+            self.i_phasor_training.append((self.i_phasor) * self.env.net['inverter1'].i_lim)
+            self.v_phasor_training.append((self.v_phasor) * self.env.net['inverter1'].v_lim)
 
-        self.R_training.append(self.env.history.df['r_load.resistor1.R'].iloc[-1])
-        self.i_phasor_training.append((self.i_phasor) * self.env.net['inverter1'].i_lim)
-        self.v_phasor_training.append((self.v_phasor) * self.env.net['inverter1'].v_lim)
+            self.i_a.append(self.env.history.df['lc.inductor1.i'].iloc[-1])
+            self.i_b.append(self.env.history.df['lc.inductor2.i'].iloc[-1])
+            self.i_c.append(self.env.history.df['lc.inductor3.i'].iloc[-1])
 
-        self.i_a.append(self.env.history.df['lc.inductor1.i'].iloc[-1])
-        self.i_b.append(self.env.history.df['lc.inductor2.i'].iloc[-1])
-        self.i_c.append(self.env.history.df['lc.inductor3.i'].iloc[-1])
-
-        self.v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
-        self.v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
-        self.v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
-        self.phase.append(self.env.net.components[0].phase)
+            self.v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
+            self.v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
+            self.v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
+            self.phase.append(self.env.net.components[0].phase)
 
         if done:
             self.reward_episode_mean.append(np.mean(self.rewards))
-            episode_data = {"Name": "On_Training",
-                            "Episode_number": self.n_episode,
-                            "Episode_length": self._n_training_steps,
-                            "R_load_training": self.R_training,
-                            "i_phasor_training": self.i_phasor_training,
-                            "i_a_training": self.i_a,
-                            "i_b_training": self.i_b,
-                            "i_c_training": self.i_c,
-                            "v_a_training": self.v_a,
-                            "v_b_training": self.v_b,
-                            "v_c_training": self.v_c,
-                            "v_phasor_training": self.v_phasor_training,
-                            "Rewards": self.rewards,
-                            "Phase": self.phase,
-                            "Node": platform.uname().node,
-                            "Trial number": self.n_trail,
-                            "Database name": folder_name,
-                            "Reward function": 'rew.rew_fun_dq0',
-                            }
-
-            """
-            add here "model_params_change": callback.params_change, from training_recorder?
-            """
-
-            mongo_recorder.save_to_json('Trial_number_' + self.n_trail, episode_data)
-
-            # clear lists
-            self.R_training = []
-            self.i_phasor_training = []
-            self.v_phasor_training = []
-            self.i_a = []
-            self.i_b = []
-            self.i_c = []
-            self.v_a = []
-            self.v_b = []
-            self.v_c = []
-            self.phase = []
             self.n_episode += 1
+
+            if cfg['loglevel'] == 'train':
+                episode_data = {"Name": "On_Training",
+                                "Episode_number": self.n_episode,
+                                "Episode_length": self._n_training_steps,
+                                "R_load_training": self.R_training,
+                                "i_phasor_training": self.i_phasor_training,
+                                "i_a_training": self.i_a,
+                                "i_b_training": self.i_b,
+                                "i_c_training": self.i_c,
+                                "v_a_training": self.v_a,
+                                "v_b_training": self.v_b,
+                                "v_c_training": self.v_c,
+                                "v_phasor_training": self.v_phasor_training,
+                                "Rewards": self.rewards,
+                                "Phase": self.phase,
+                                "Node": platform.uname().node,
+                                "Trial number": self.n_trail,
+                                "Database name": folder_name,
+                                "Reward function": 'rew.rew_fun_dq0',
+                                }
+
+                """
+                add here "model_params_change": callback.params_change, from training_recorder?
+                """
+
+                mongo_recorder.save_to_json('Trial_number_' + self.n_trail, episode_data)
+
+                # clear lists
+                self.R_training = []
+                self.i_phasor_training = []
+                self.v_phasor_training = []
+                self.i_a = []
+                self.i_b = []
+                self.i_c = []
+                self.v_a = []
+                self.v_b = []
+                self.v_c = []
+                self.phase = []
 
         # if setpoint in dq: Transform measurement to dq0!!!!
         obs[3:6] = abc_to_dq0(obs[3:6], self.env.net.components[0].phase)
@@ -201,18 +202,19 @@ class FeatureWrapper(Monitor):
         self.i_phasor = self.cal_phasor_magnitude(obs[0:3])
         self.v_phasor = self.cal_phasor_magnitude(obs[3:6])
 
-        self.R_training.append(self.env.history.df['r_load.resistor1.R'].iloc[-1])
-        self.i_phasor_training.append((self.i_phasor) * self.env.net['inverter1'].i_lim)
-        self.v_phasor_training.append((self.v_phasor) * self.env.net['inverter1'].v_lim)
+        if cfg['loglevel'] == 'train':
+            self.R_training.append(self.env.history.df['r_load.resistor1.R'].iloc[-1])
+            self.i_phasor_training.append((self.i_phasor) * self.env.net['inverter1'].i_lim)
+            self.v_phasor_training.append((self.v_phasor) * self.env.net['inverter1'].v_lim)
 
-        self.i_a.append(self.env.history.df['lc.inductor1.i'].iloc[-1])
-        self.i_b.append(self.env.history.df['lc.inductor2.i'].iloc[-1])
-        self.i_c.append(self.env.history.df['lc.inductor3.i'].iloc[-1])
+            self.i_a.append(self.env.history.df['lc.inductor1.i'].iloc[-1])
+            self.i_b.append(self.env.history.df['lc.inductor2.i'].iloc[-1])
+            self.i_c.append(self.env.history.df['lc.inductor3.i'].iloc[-1])
 
-        self.v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
-        self.v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
-        self.v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
-        self.phase.append(self.env.net.components[0].phase)
+            self.v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
+            self.v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
+            self.v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
+            self.phase.append(self.env.net.components[0].phase)
 
         # if setpoint in dq: Transform measurement to dq0!!!!
         obs[3:6] = abc_to_dq0(obs[3:6], self.env.net.components[0].phase)
