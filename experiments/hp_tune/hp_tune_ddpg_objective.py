@@ -225,8 +225,9 @@ if __name__ == "__main__":
     # learning_rate = list(itertools.chain(*[[1e-3]*1, [1e-4]*1, [1e-5]*1, [1e-6]*1, [1e-7]*1, [1e-8]*1, [1e-9]*1]))
     # search_space = {'learning_rate': learning_rate}  # , 'number_learning_steps': number_learning_steps}
 
-    TPE_sampler = TPESampler(n_startup_trials=256, constant_liar=True)
+    TPE_sampler = TPESampler(n_startup_trials=50)  # , constant_liar=True)
 
-    optuna_optimize_sqlite(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
+    #optuna_optimize_sqlite(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
 
-    # optuna_optimize(ddpg_objective, study_name=STUDY_NAME)#, sampler=optuna.samplers.GridSampler(search_space))
+    optuna_optimize(ddpg_objective, study_name=STUDY_NAME,
+                    sampler=TPE_sampler)  #, sampler=optuna.samplers.GridSampler(search_space))
