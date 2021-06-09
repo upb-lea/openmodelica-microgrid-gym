@@ -18,8 +18,9 @@ from openmodelica_microgrid_gym.net import Network
 
 from openmodelica_microgrid_gym.util import RandProcess
 from gym.envs.registration import register
+from experiments.hp_tune.util.config import cfg
 
-folder_name = 'Master_V_ctrl_abc_miniHPopt_TEST'
+folder_name = cfg['STUDY_NAME']  # 'DDPG_MRE_sqlite_PC2'
 # experiment_name = 'DDPG_VC_Reward_MRE_reward_NOT_NORMED'
 experiment_name = 'plots'
 timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
@@ -27,10 +28,16 @@ timestamp = datetime.now().strftime(f'_%Y.%b.%d_%X')
 makedirs(folder_name, exist_ok=True)
 # makedirs(folder_name + experiment_name, exist_ok=True)
 
-# toDo: give net and params via config from mail script
 
 # Simulation definitions
-net = Network.load('net/net_vctrl_single_inv.yaml')
+if not cfg['is_dq0']:
+    # load net using abc reference values
+    net = Network.load('net/net_vctrl_single_inv.yaml')
+else:
+    # load net using dq0 reference values
+    net = Network.load('net/net_vctrl_single_inv_dq0.yaml')
+
+# set high to not terminate env! Termination should be done in wrapper by env after episode-length-HP
 max_episode_steps = 1500000  # net.max_episode_steps  # number of simulation steps per episode
 
 i_lim = net['inverter1'].i_lim  # inverter current limit / A
@@ -38,26 +45,22 @@ i_nom = net['inverter1'].i_nom  # nominal inverter current / A
 v_nom = net.v_nom
 v_lim = net['inverter1'].v_lim
 v_DC = net['inverter1'].v_DC
-# plant
 
-# toDo: shift this to net?!
+# plant
 L_filter = 2.3e-3  # / H
 R_filter = 400e-3  # / Ohm
 C_filter = 10e-6  # / F
 # R = 40  # nomVoltPeak / 7.5   # / Ohm
-lower_bound_load = -10  # to allow maximal load that draws i_limit (toDo: let exceed?)
+lower_bound_load = -10  # to allow maximal load that draws i_limit
 upper_bound_load = 200  # to apply symmetrical load bounds
-lower_bound_load_clip = 14  # to allow maximal load that draws i_limit (toDo: let exceed?)
+lower_bound_load_clip = 14  # to allow maximal load that draws i_limit (let exceed?)
 upper_bound_load_clip = 200  # to apply symmetrical load bounds
 lower_bound_load_clip_std = 2
 upper_bound_load_clip_std = 0
 R = np.random.uniform(low=lower_bound_load, high=upper_bound_load)
 
-loadstep_timestep = max_episode_steps / 2
-
 gen = RandProcess(VasicekProcess, proc_kwargs=dict(speed=800, vol=40, mean=R), initial=R,
                   bounds=(lower_bound_load, upper_bound_load))
-
 
 class CallbackList(list):
     def fire(self, *args, **kwargs):
@@ -65,6 +68,7 @@ class CallbackList(list):
             listener(*args, **kwargs)
 
 
+# if save needed in dependence of trial ( -> foldername) shift to executive file?
 def xylables_i(fig):
     ax = fig.gca()
     ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
@@ -81,9 +85,9 @@ def xylables_v(fig):
     ax.grid(which='both')
     # ax.set_xlim([0, 0.005])
     ts = time.gmtime()
-    fig.savefig(
-        f'{folder_name + experiment_name}/Capacitor_voltages{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
-    plt.show()
+    # fig.savefig(
+    #    f'{folder_name + experiment_name}/Capacitor_voltages{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
+    plt.close()
 
 
 def xylables_R(fig):
@@ -92,12 +96,11 @@ def xylables_R(fig):
     ax.set_ylabel('$R_{\mathrm{abc}}\,/\,\mathrm{\Omega}$')
     ax.grid(which='both')
     # ax.set_ylim([lower_bound_load - 2, upper_bound_load + 2])
-    ts = time.gmtime()
-    fig.savefig(f'{folder_name + experiment_name}/Load{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
-    plt.show()
+    # ts = time.gmtime()
+    # fig.savefig(f'{folder_name + experiment_name}/Load{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
+    plt.close()
 
 
-# rew = Reward(v_nom, v_lim, v_DC, gamma, use_gamma_in_rew)
 rand_load_train = RandomLoad(max_episode_steps, net.ts, gen, bounds=(lower_bound_load_clip, upper_bound_load_clip),
                              bounds_std=(lower_bound_load_clip_std, upper_bound_load_clip_std))
 
@@ -109,23 +112,23 @@ cb.append(rand_load_train.reset)
 register(id='vctrl_single_inv_train-v0',
          entry_point='openmodelica_microgrid_gym.env:ModelicaEnv',
          kwargs=dict(  # reward_fun=rew.rew_fun,
-             # viz_cols=[
-             #    PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
-             #             callback=xylables_v,
-             #             color=[['b', 'r', 'g'], ['b', 'r', 'g']],
-             #             style=[[None], ['--']]
-             #             ),
-             #    PlotTmpl([[f'lc.inductor{i}.i' for i in '123'], [f'inverter1.i_ref.{k}' for k in '012']],
-             #             callback=xylables_i,
-             #             color=[['b', 'r', 'g'], ['b', 'r', 'g']],
-             #             style=[[None], ['--']]
-             #             ),
-             #    PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
-             #             callback=xylables_R,
-             #             color=[['b', 'r', 'g']],
-             #             style=[[None]]
-             #             )
-             # ],
+             viz_cols=[
+                 PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
+                          callback=xylables_v,
+                          color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+                          style=[[None], ['--']]
+                          ),
+                 PlotTmpl([[f'lc.inductor{i}.i' for i in '123'], [f'inverter1.i_ref.{k}' for k in '012']],
+                          callback=xylables_i,
+                          color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+                          style=[[None], ['--']]
+                          ),
+                 PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
+                          callback=xylables_R,
+                          color=[['b', 'r', 'g']],
+                          style=[[None]]
+                          )
+             ],
              viz_mode='episode',
              max_episode_steps=max_episode_steps,
              model_params={'lc.resistor1.R': R_filter,
@@ -170,33 +173,26 @@ register(id='vctrl_single_inv_train-v0',
 rand_load_test = RandomLoad(max_episode_steps, net.ts, gen,
                             load_curve=pd.read_pickle('experiments/hp_tune/R_load_test_case_2_seconds.pkl'))
 
-# R_load_test_case = pd.read_pickle('R_load_test_case')
-# R_load_test_case['r_load.resistor1.R'][2]
-
-# def give_R_value1(t):
-#    return R_load_test_case['r_load.resistor1.R'][int(t/net.ts)]
-
-
 register(id='vctrl_single_inv_test-v0',
          entry_point='openmodelica_microgrid_gym.env:ModelicaEnv',
          kwargs=dict(  # reward_fun=rew.rew_fun,
-             # viz_cols=[
-             #    PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
-             #             callback=xylables_v,
-             #             color=[['b', 'r', 'g'], ['b', 'r', 'g']],
-             #             style=[[None], ['--']]
-             #             ),
-             #    PlotTmpl([[f'lc.inductor{i}.i' for i in '123'], [f'inverter1.i_ref.{k}' for k in '012']],
-             #             callback=xylables_i,
-             #             color=[['b', 'r', 'g'], ['b', 'r', 'g']],
-             #             style=[[None], ['--']]
-             #             ),
-             #    PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
-             #             callback=xylables_R,
-             #             color=[['b', 'r', 'g']],
-             #             style=[[None]]
-             #             )
-             # ],
+             viz_cols=[
+                 PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
+                          callback=xylables_v,
+                          color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+                          style=[[None], ['--']]
+                          ),
+                 PlotTmpl([[f'lc.inductor{i}.i' for i in '123'], [f'inverter1.i_ref.{k}' for k in '012']],
+                          callback=xylables_i,
+                          color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+                          style=[[None], ['--']]
+                          ),
+                 PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
+                          callback=xylables_R,
+                          color=[['b', 'r', 'g']],
+                          style=[[None]]
+                          )
+             ],
              viz_mode='episode',
              max_episode_steps=20000,
              model_params={'lc.resistor1.R': R_filter,

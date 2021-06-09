@@ -17,7 +17,7 @@ from stable_baselines3.common.type_aliases import GymStepReturn
 from experiments.hp_tune.agents.my_ddpg import myDDPG
 # from agents.my_ddpg import myDDPG
 from experiments.hp_tune.env.rewards import Reward
-from experiments.hp_tune.env.vctrl_dq0 import net, folder_name
+from experiments.hp_tune.env.vctrl_single_inv import net, folder_name
 from experiments.hp_tune.util.action_noise_wrapper import myOrnsteinUhlenbeckActionNoise
 from experiments.hp_tune.util.record_env import RecordEnvCallback
 from experiments.hp_tune.util.recorder import Recorder
