@@ -174,7 +174,7 @@ def optuna_optimize_mysql_lea35(objective, sampler=None, study_name='dummy'):
 
 
             study = optuna.create_study(
-                storage=f"mysql://{optuna_creds}@127.0.0.1:{tun.local_bind_port}/{DB_NAME}",
+                storage=f"mysql+pymysql://{optuna_creds}@127.0.0.1:{tun.local_bind_port}/{DB_NAME}",
                 sampler=sampler, study_name=study_name,
                 load_if_exists=True,
                 direction='maximize')
