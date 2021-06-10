@@ -18,8 +18,10 @@ from experiments.hp_tune.experiment_vctrl_single_inv import experiment_fit_DDPG,
 from experiments.hp_tune.util.scheduler import linear_schedule
 
 PC2_LOCAL_PORT2PSQL = 11999
-DB_NAME = 'optuna'
 SERVER_LOCAL_PORT2PSQL = 6432
+DB_NAME = 'optuna'
+PC2_LOCAL_PORT2MYSQL = 11998
+SERVER_LOCAL_PORT2MYSQL = 3306
 STUDY_NAME = cfg['STUDY_NAME']  # 'DDPG_MRE_sqlite_PC2'
 
 node = platform.uname().node
@@ -115,6 +117,84 @@ def get_storage(url, storage_kws):
             time.sleep(wait_time)
 
     return storage
+
+
+def optuna_optimize_mysql_lea35(objective, sampler=None, study_name='dummy'):
+    parser = argparse.ArgumentParser(description='Train DDPG Single Inverter V-ctrl')
+    parser.add_argument('-n', '--n_trials', default=1, required=False,
+                        help='number of trials to execute', type=int)
+    args = parser.parse_args()
+    n_trials = args.n_trials or 10
+
+    print(n_trials)
+    print('Local optimization is run - logs to MYSQL but measurement data is logged to MongoDB on Cyberdyne!')
+    print('Take care, trail numbers can double if local opt. is run on 2 machines and are stored in '
+          'the same MongoDB Collection!!!')
+    print('Measurment data is stored to cfg[meas_data_folder] as json, from there it is grept via reporter to '
+          'safely store it to ssh port for cyberdyne connection to mongodb')
+
+    if node in ('lea-picard', 'lea-barclay'):
+        creds_path = 'C:\\Users\\webbah\\Documents\\creds\\optuna_mysql.txt'
+    else:
+        # read db credentials
+        creds_path = f'{os.getenv("HOME")}/creds/optuna_mysql'
+
+    with open(creds_path, 'r') as f:
+        optuna_creds = ':'.join([s.strip(' \n') for s in f.readlines()])
+
+    study = optuna.create_study(study_name=study_name,
+                                direction='maximize',
+                                storage=f"mysql://{optuna_creds}@localhost/{DB_NAME}",
+                                load_if_exists=True,
+                                sampler=sampler
+                                )
+    study.optimize(objective, n_trials=n_trials)
+
+    if node in ('LEA-WORK35', 'fe1'):
+        if node == 'fe1':
+            port = PC2_LOCAL_PORT2MYSQL
+        else:
+            port = SERVER_LOCAL_PORT2MYSQL
+
+        storage = get_storage(f'mysql://{optuna_creds}@localhost:{port}/{DB_NAME}')
+
+        study = optuna.create_study(
+            storage=storage,
+            # storage=f'postgresql://{optuna_creds}@localhost:{port}/{DB_NAME}',
+            sampler=sampler, study_name=study_name,
+            load_if_exists=True,
+            direction='maximize')
+        study.optimize(objective, n_trials=n_trials)
+    else:
+        if node in cfg['lea_vpn_nodes']:
+            # we are in LEA VPN
+            server_name = 'lea38'
+            tun_cfg = {'remote_bind_address': ('127.0.0.1',
+                                               SERVER_LOCAL_PORT2MYSQL)}
+        else:
+            # assume we are on a PC2 compute node
+            server_name = 'fe.pc2.uni-paderborn.de'
+            tun_cfg = {'remote_bind_address': ('127.0.0.1',
+                                               PC2_LOCAL_PORT2MYSQL),
+                       'ssh_username': 'webbah'}
+        with sshtunnel.open_tunnel(server_name, **tun_cfg) as tun:
+
+            storage = get_storage(url=f'mysql://{optuna_creds}'
+                                      f'@localhost:{tun.local_bind_port}/{DB_NAME}')
+
+            # storage = optuna.storages.RDBStorage(
+            #    url=f'postgresql://{optuna_creds}'
+            #        f'@localhost:{tun.local_bind_port}/{DB_NAME}',
+            #    **storage_kws)
+
+            study = optuna.create_study(
+                storage=storage,
+                # storage=f'postgresql://{optuna_creds}'
+                #        f'@localhost:{tun.local_bind_port}/{DB_NAME}',
+                sampler=sampler, study_name=study_name,
+                load_if_exists=True,
+                direction='maximize')
+            study.optimize(objective, n_trials=n_trials)
 
 
 def optuna_optimize_mysql(objective, sampler=None, study_name='dummy'):
@@ -251,7 +331,7 @@ if __name__ == "__main__":
 
     TPE_sampler = TPESampler(n_startup_trials=50, constant_liar=True)
 
-    optuna_optimize_mysql(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
+    optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
 
     # optuna_optimize_sqlite(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
     # optuna_optimize(ddpg_objective, study_name=STUDY_NAME,
