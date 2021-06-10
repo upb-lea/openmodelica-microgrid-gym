@@ -57,7 +57,7 @@ def main():
             res_plan = pc2.calculate_resources(**job_resource_plan)
 
             execution_line = "PYTHONPATH=$HOME/openmodelica-microgrid-gym/ " \
-                             "python $HOME/openmodelica-microgrid-gym/experiments/hp_tune/hp_tune_ddpg_objective.py -n 1"
+                             "python $HOME/openmodelica-microgrid-gym/experiments/hp_tune/hp_tune_ddpg_objective.py -n 3"
 
             print(f'Start job {jobid} ..')
             pc2.create_n_run_script(
@@ -74,7 +74,7 @@ def main():
 
         # print('sleep..', end='\r')
         # time.sleep(120)
-        print('Finished, need resatart to schedule again!..', end='\r')
+    print('Finished, need resatart to schedule again!..', end='\r')
 
 
 if __name__ == '__main__':
