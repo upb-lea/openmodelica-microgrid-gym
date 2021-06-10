@@ -133,7 +133,7 @@ if __name__ == '__main__':
                        PlotTmpl([f'r_load.resistor{i}.R' for i in '123'],
                                 callback=xylables
                                 )],
-                   model_path='../../omg_grid/grid.paper_loadstep.fmu',
+                   model_path='../../../omg_grid/grid.paper_loadstep.fmu',
                    max_episode_steps=max_episode_steps)
 
     env.reset()

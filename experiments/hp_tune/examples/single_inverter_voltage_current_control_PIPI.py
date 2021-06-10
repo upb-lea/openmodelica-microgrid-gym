@@ -217,7 +217,8 @@ def run_experiment():
                               show_plots=show_plots)
 
         rand_load_test = RandomLoad(max_episode_steps, net.ts, gen,
-                                    load_curve=pd.read_pickle('R_load_test_case_2_seconds.pkl'))
+                                    load_curve=pd.read_pickle(
+                                        'experiments/hp_tune/data/R_load_test_case_2_seconds.pkl'))
 
         def xylables_R(fig):
             ax = fig.gca()
@@ -292,7 +293,7 @@ def run_experiment():
                                                                    col='r_load.resistor3.R')
                                      },
                        net=net,
-                       model_path='../../omg_grid/grid.paper_loadstep.fmu',
+                       model_path='omg_grid/grid.paper_loadstep.fmu',
                        history=FullHistory(),
                        action_time_delay=1 * undersample
                        )

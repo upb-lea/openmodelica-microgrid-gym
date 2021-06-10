@@ -6,7 +6,7 @@ import pathlib
 import time
 import uuid
 
-from experiments.hp_tune import pc2
+from experiments.hp_tune.util import pc2
 # config
 from experiments.hp_tune.util.config import cfg
 

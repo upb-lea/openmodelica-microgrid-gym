@@ -171,7 +171,7 @@ register(id='vctrl_single_inv_train-v0',
          )
 
 rand_load_test = RandomLoad(max_episode_steps, net.ts, gen,
-                            load_curve=pd.read_pickle('experiments/hp_tune/R_load_test_case_2_seconds.pkl'))
+                            load_curve=pd.read_pickle('experiments/hp_tune/data/R_load_test_case_2_seconds.pkl'))
 
 register(id='vctrl_single_inv_test-v0',
          entry_point='openmodelica_microgrid_gym.env:ModelicaEnv',

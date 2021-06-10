@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import optuna
 import torch as th
+from stable_baselines3 import DDPG
 from stable_baselines3.common.callbacks import EveryNTimesteps
 from stable_baselines3.common.monitor import Monitor
 # imports net to define reward and executes script to register experiment
@@ -14,6 +15,7 @@ from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
 from stable_baselines3.common.type_aliases import GymStepReturn
 
 from experiments.hp_tune.agents.my_ddpg import myDDPG
+# from agents.my_ddpg import myDDPG
 from experiments.hp_tune.env.rewards import Reward
 from experiments.hp_tune.env.vctrl_single_inv import net, folder_name
 from experiments.hp_tune.util.action_noise_wrapper import myOrnsteinUhlenbeckActionNoise
@@ -21,15 +23,23 @@ from experiments.hp_tune.util.record_env import RecordEnvCallback
 from experiments.hp_tune.util.recorder import Recorder
 from experiments.hp_tune.util.training_recorder import TrainRecorder
 from openmodelica_microgrid_gym.env import PlotTmpl
-from openmodelica_microgrid_gym.util import abc_to_alpha_beta
+from openmodelica_microgrid_gym.util import abc_to_alpha_beta, dq0_to_abc
 
 np.random.seed(0)
 
-#number_learning_steps = 300000
+print('!!!!!!!!!!!!!')
+print('Old examplefile for standalone!')
+print('Still needs to be refactored using config -> is_dq0,...')
+print('Better use hp_tune + sqlite if local wanted')
+print('Here some examples for features in abc....')
+
+number_learning_steps1 = 500000
 number_plotting_steps = 100000
-number_trails = 200
+number_trails = 10
 
 params_change = []
+
+mongo_recorder = Recorder(database_name=folder_name)
 
 
 class FeatureWrapper(Monitor):
@@ -59,6 +69,7 @@ class FeatureWrapper(Monitor):
         self.v_a = []
         self.v_b = []
         self.v_c = []
+        self.phase = []
         self._v_pahsor = 0.0
         self.n_episode = 0
         self.R_training = []
@@ -73,6 +84,9 @@ class FeatureWrapper(Monitor):
         Triggers the env to reset without done=True every training_episode_length steps
         """
 
+        #action_abc = dq0_to_abc(action, self.env.net.components[0].phase)
+
+        # clipping?
         obs, reward, done, info = super().step(action)
 
         self._n_training_steps += 1
@@ -101,6 +115,7 @@ class FeatureWrapper(Monitor):
         self.v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
         self.v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
         self.v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
+        self.phase.append(self.env.net.components[0].phase)
 
         if done:
             self.reward_episode_mean.append(np.mean(self.rewards))
@@ -116,7 +131,8 @@ class FeatureWrapper(Monitor):
                             "v_b_training": self.v_b,
                             "v_c_training": self.v_c,
                             "v_phasor_training": self.v_phasor_training,
-                            "Rewards": self.rewards
+                            "Rewards": self.rewards,
+                            "Phase": self.phase
                             }
 
             """
@@ -135,7 +151,12 @@ class FeatureWrapper(Monitor):
             self.v_a = []
             self.v_b = []
             self.v_c = []
+            self.phase = []
             self.n_episode += 1
+
+        # if setpoint in dq: Transform measurement to dq0!!!!
+        #obs[3:6] = dq0_to_abc(obs[3:6], self.env.net.components[0].phase)
+        #obs[0:3] = dq0_to_abc(obs[0:3], self.env.net.components[0].phase)
 
         """
         Feature control error: v_setpoint - v_mess
@@ -156,10 +177,17 @@ class FeatureWrapper(Monitor):
         obs = np.append(obs, error)
         obs = np.append(obs, delta_i_lim_i_phasor)
 
+
+
         """
         Add used action to the NN input to learn delay
         """
         obs = np.append(obs, self.used_action)
+
+        # add sin/cos of phase to obs
+        obs = np.append(obs, 0.1*np.sin(self.env.net.components[0].phase))
+        obs = np.append(obs, 0.1*np.cos(self.env.net.components[0].phase))
+        obs = np.append(obs, (self.env.net.components[0].phase) / (2 * np.pi))
 
         return obs, reward, done, info
 
@@ -185,7 +213,11 @@ class FeatureWrapper(Monitor):
         self.v_a.append(self.env.history.df['lc.capacitor1.v'].iloc[-1])
         self.v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
         self.v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
+        self.phase.append(self.env.net.components[0].phase)
 
+        # if setpoint in dq: Transform measurement to dq0!!!!
+        obs[3:6] = dq0_to_abc(obs[3:6], self.env.net.components[0].phase)
+        obs[0:3] = dq0_to_abc(obs[0:3], self.env.net.components[0].phase)
         """
         Feature control error: v_setpoint - v_mess
         """
@@ -205,6 +237,11 @@ class FeatureWrapper(Monitor):
         """
         obs = np.append(obs, self.used_action)
 
+        # add sin/cos of phase to obs
+        obs = np.append(obs, 0.1 * np.sin(self.env.net.components[0].phase))
+        obs = np.append(obs, 0.1 * np.cos(self.env.net.components[0].phase))
+        obs = np.append(obs, (self.env.net.components[0].phase)/(2*np.pi))
+
         return obs
 
     def cal_phasor_magnitude(self, abc: np.array) -> float:
@@ -221,16 +258,14 @@ class FeatureWrapper(Monitor):
         return i_phasor_mag
 
 
-mongo_recorder = Recorder(database_name=folder_name)
-
-
 def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
                         batch_size,
                         actor_hidden_size, actor_number_layers, critic_hidden_size, critic_number_layers,
                         alpha_relu_critic,
                         noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
                         training_episode_length, buffer_size,
-                        learning_starts, tau, number_learning_steps, n_trail):
+                        learning_starts, tau, number_learning_steps, activation_function, n_trail):
+
     rew = Reward(net.v_nom, net['inverter1'].v_lim, net['inverter1'].v_DC, gamma,
                  use_gamma_normalization=use_gamma_in_rew, error_exponent=error_exponent, i_lim=net['inverter1'].i_lim,
                  i_nom=net['inverter1'].i_nom)
@@ -268,7 +303,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
     env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train-v0',
                    reward_fun=rew.rew_fun_include_current,
-                   abort_reward=-(1 - rew.gamma),
+                   # reward_fun=rew.rew_fun_dq0,
+                   abort_reward=-1,
                    viz_cols=[
                        PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
                                 callback=xylables_v,
@@ -291,7 +327,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                    )
 
-    env = FeatureWrapper(env, number_of_features=8, training_episode_length=training_episode_length,
+    env = FeatureWrapper(env, number_of_features=11, training_episode_length=training_episode_length,
                          recorder=mongo_recorder, n_trail=n_trail)
 
     n_actions = env.action_space.shape[-1]
@@ -300,13 +336,19 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
                                                 sigma=noise_var * np.ones(n_actions), dt=net.ts)
 
-    #action_noise = myOrnsteinUhlenbeckActionNoise(n_steps_annealing=noise_steps_annealing,
+    # action_noise = myOrnsteinUhlenbeckActionNoise(n_steps_annealing=noise_steps_annealing,
     #                                              sigma_min=noise_var * np.ones(n_actions) * noise_var_min,
     #                                              mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
     #                                              sigma=noise_var * np.ones(n_actions), dt=net.ts)
 
-    policy_kwargs = dict(activation_fn=th.nn.LeakyReLU, net_arch=dict(pi=[actor_hidden_size] * actor_number_layers
-                                                                      , qf=[critic_hidden_size] * critic_number_layers))
+    if activation_function == "LeakyReLU":
+        policy_kwargs = dict(activation_fn=th.nn.LeakyReLU, net_arch=dict(pi=[actor_hidden_size] * actor_number_layers
+                                                                          , qf=[
+                                                                                   critic_hidden_size] * critic_number_layers))
+
+    if activation_function == "Tanh":
+        policy_kwargs = dict(activation_fn=th.nn.Tanh, net_arch=dict(pi=[actor_hidden_size] * actor_number_layers
+                                                                     , qf=[critic_hidden_size] * critic_number_layers))
 
     callback = TrainRecorder()
 
@@ -394,14 +436,17 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                     'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
                                     'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                         )
-    env_test = FeatureWrapper(env_test, number_of_features=1)
+    env_test = FeatureWrapper(env_test, number_of_features=11)
     obs = env_test.reset()
+    phase_list = []
+    phase_list.append(env_test.env.net.components[0].phase)
 
     rew_list = []
 
     while True:
         action, _states = model.predict(obs, deterministic=True)
         obs, rewards, done, info = env_test.step(action)
+        phase_list.append(env_test.env.net.components[0].phase)
 
         if rewards == -1 and not limit_exceeded_in_test:
             # Set addidional penalty of -1 if limit is exceeded once in the test case
@@ -419,7 +464,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     ts = time.gmtime()
     test_after_training = {"Name": "Test",
                            "time": ts,
-                           "Reward": rew_list}
+                           "Reward": rew_list,
+                           "Phase": env_test.phase}
 
     # Add v-&i-measurements
     test_after_training.update({env_test.viz_col_tmpls[j].vars[i].replace(".", "_"): env_test.history[
@@ -436,40 +482,42 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
 
 def objective(trail):
+    number_learning_steps = number_learning_steps1  # trail.suggest_int("number_learning_steps", 1000, 1000000)
 
-    number_learning_steps = 300000 #trail.suggest_int("number_learning_steps", 100000, 1000000)
+    learning_rate = trail.suggest_loguniform("lr", 1e-9, 1e-3)  # 0.0002#
+    gamma = trail.suggest_loguniform("gamma", 0.6, 0.99)
+    weight_scale = 0.05  # trail.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
 
-    learning_rate = trail.suggest_loguniform("learning_rate", 1e-6, 5e-3)  # 0.0002#
-    gamma = 0.9#trail.suggest_loguniform("gamma", 0.1, 0.99)
-    weight_scale = 0.005#trail.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
+    bias_scale = 0.05  # trail.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
+    alpha_relu_actor = 0.1  # trail.suggest_loguniform("alpha_relu_actor", 0.0001, 0.5)  # 0.005
+    alpha_relu_critic = 0.1  # trail.suggest_loguniform("alpha_relu_critic", 0.0001, 0.5)  # 0.005
 
-    bias_scale = 0.005#trail.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
-    alpha_relu_actor = 0.05#trail.suggest_loguniform("alpha_relu_actor", 0.0001, 0.5)  # 0.005
-    alpha_relu_critic = 0.05#trail.suggest_loguniform("alpha_relu_critic", 0.0001, 0.5)  # 0.005
+    batch_size = 1024  # trail.suggest_int("batch_size", 32, 1024)  # 128
+    buffer_size = int(1e6)  # trail.suggest_int("buffer_size", 10, 20000)  # 128
 
-    batch_size = 1024#trail.suggest_int("batch_size", 32, 1024)  # 128
-    buffer_size = int(10e6)#trail.suggest_int("buffer_size", 10, 20000)  # 128
+    activation_function = trail.suggest_categorical("activation_functions", ["LeakyReLU", "Tanh"])
+    # activation_function = trail.suggest_categorical('activation_functions', ['linear', 'poly', 'rbf'])
 
-    actor_hidden_size = 200#trail.suggest_int("actor_hidden_size", 10, 200)  # 100  # Using LeakyReLU
-    actor_number_layers = 1#trail.suggest_int("actor_number_layers", 1, 2)
+    actor_hidden_size = trail.suggest_int("actor_hidden_size", 10, 500)  # 100  # Using LeakyReLU
+    actor_number_layers = trail.suggest_int("actor_number_layers", 1, 3)
 
-    critic_hidden_size = 200#trail.suggest_int("critic_hidden_size", 10, 200)  # 100
-    critic_number_layers = 2#trail.suggest_int("critic_number_layers", 1, 3)
+    critic_hidden_size = trail.suggest_int("critic_hidden_size", 10, 600)  # 100
+    critic_number_layers = trail.suggest_int("critic_number_layers", 1, 4)
 
     n_trail = str(trail.number)
     use_gamma_in_rew = 1
     noise_var = trail.suggest_loguniform("noise_var", 0.01, 4)  # 2
     # min var, action noise is reduced to (depends on noise_var)
-    noise_var_min = 0.0013#trail.suggest_loguniform("noise_var_min", 0.0000001, 2)
+    noise_var_min = trail.suggest_loguniform("noise_var_min", 0.0000001, 2)
     # min var, action noise is reduced to (depends on training_episode_length)
-    noise_steps_annealing = int(1 * number_learning_steps)# trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
-             #number_learning_steps)
+    noise_steps_annealing = trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
+     number_learning_steps)
     noise_theta = trail.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
-    error_exponent = 0.5#trail.suggest_loguniform("error_exponent", 0.01, 0.5)
+    error_exponent = 0.5  # trail.suggest_loguniform("error_exponent", 0.01, 0.5)
 
-    training_episode_length = 2000#trail.suggest_int("training_episode_length", 200, 5000)  # 128
-    learning_starts = 0.2#trail.suggest_loguniform("learning_starts", 0.1, 2)  # 128
-    tau = 0.005#trail.suggest_loguniform("tau", 0.0001, 0.2)  # 2
+    training_episode_length = 2000  # trail.suggest_int("training_episode_length", 200, 5000)  # 128
+    learning_starts = 0.32  # trail.suggest_loguniform("learning_starts", 0.1, 2)  # 128
+    tau = 0.005  # trail.suggest_loguniform("tau", 0.0001, 0.2)  # 2
 
     trail_config_mongo = {"Name": "Config"}
     trail_config_mongo.update(trail.params)
@@ -481,27 +529,23 @@ def objective(trail):
                                alpha_relu_critic,
                                noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
                                training_episode_length, buffer_size,
-                               learning_starts, tau, number_learning_steps, n_trail)
+                               learning_starts, tau, number_learning_steps, activation_function, n_trail)
 
 
 # for gamma grid search:
 # gamma_list = list(itertools.chain(*[[0.001]*5, [0.25]*5, [0.5]*5, [0.75]*5, [0.99]*5]))
 # search_space = {'gamma': gamma_list}
 
-learning_rate = list(itertools.chain(*[[1e-3]*1, [1e-4]*1, [1e-5]*1, [1e-6]*1]))
-learning_rate = list(itertools.chain(*[[1e-3]*1, [1e-4]*1, [1e-5]*1, [1e-6]*1]))
-noise_var = list(itertools.chain(*[[4]*1, [1]*1, [0.5]*1, [0.1]*1]))
-noise_theta = list(itertools.chain(*[[1]*1, [5]*1, [25]*1, [50]*1]))
-search_space = {'learning_rate': learning_rate,
-                'noise_var': noise_var,
-                'noise_theta': noise_theta}
+# number_learning_steps_list = list(itertools.chain(*[[100000] * 3, [300000] * 3, [600000] * 3, [1000000] * 3]))
+# number_learning_steps_list = list(itertools.chain(*[[2000] * 3, [30000] * 3, [60000] * 3, [100000] * 3]))
+# search_space = {'number_learning_steps': number_learning_steps_list}
 
 # toDo: postgresql instead of sqlite
 study = optuna.create_study(study_name=folder_name,
                             direction='maximize',
-                            storage=f'sqlite:///{folder_name}/{folder_name}.sqlite',
+                            storage=f'sqlite:///optuna_sqlite.sqlite',
                             load_if_exists=True,
-                            sampler=optuna.samplers.GridSampler(search_space)
+                            # sampler=optuna.samplers.GridSampler(search_space)
                             )
 
-study.optimize(objective, n_trials=1, n_jobs=1)
+study.optimize(objective, n_trials=number_trails, n_jobs=1)
