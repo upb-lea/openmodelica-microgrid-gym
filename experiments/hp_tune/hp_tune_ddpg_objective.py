@@ -172,8 +172,8 @@ def optuna_optimize_mysql_lea35(objective, sampler=None, study_name='dummy'):
                        'ssh_username': 'webbah'}
         with sshtunnel.open_tunnel(server_name, **tun_cfg) as tun:
 
-            storage = get_storage(url=f'mysql://{optuna_creds}'
-                                      f'@localhost:{tun.local_bind_port}/{DB_NAME}')
+            # storage = get_storage(url=f'mysql://{optuna_creds}'
+            #                          f'@localhost:{tun.local_bind_port}/{DB_NAME}')
 
             # storage = optuna.storages.RDBStorage(
             #    url=f'postgresql://{optuna_creds}'
@@ -181,7 +181,8 @@ def optuna_optimize_mysql_lea35(objective, sampler=None, study_name='dummy'):
             #    **storage_kws)
 
             study = optuna.create_study(
-                storage=storage,
+                # storage=storage,
+                storage=f"mysql://{optuna_creds}@localhost:{tun.local_bind_port}/{DB_NAME}",
                 # storage=f'postgresql://{optuna_creds}'
                 #        f'@localhost:{tun.local_bind_port}/{DB_NAME}',
                 sampler=sampler, study_name=study_name,
