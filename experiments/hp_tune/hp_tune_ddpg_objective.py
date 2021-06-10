@@ -142,13 +142,6 @@ def optuna_optimize_mysql_lea35(objective, sampler=None, study_name='dummy'):
     with open(creds_path, 'r') as f:
         optuna_creds = ':'.join([s.strip(' \n') for s in f.readlines()])
 
-    study = optuna.create_study(study_name=study_name,
-                                direction='maximize',
-                                storage=f"mysql://{optuna_creds}@localhost/{DB_NAME}",
-                                load_if_exists=True,
-                                sampler=sampler
-                                )
-    study.optimize(objective, n_trials=n_trials)
 
     if node in ('LEA-WORK35', 'fe1'):
         if node == 'fe1':
