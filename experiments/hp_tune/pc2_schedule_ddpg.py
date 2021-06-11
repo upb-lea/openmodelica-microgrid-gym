@@ -62,6 +62,8 @@ def main():
                                                  job_name, res_plan,
                                                  execution_line),
                     dry=False)
+                print('sleep 10s for better DB interaction', end='\r')
+                time.sleep(10)
 
         old_ccsinfo_counts = ccsinfo_state_counts
 
