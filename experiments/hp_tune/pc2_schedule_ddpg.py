@@ -13,7 +13,7 @@ ALLOWED_MAX_CPU_CORES = 512
 
 # resources request
 job_resource_plan = {
-    'duration': 12,  # in hours
+    'duration': 8,  # in hours
     'ncpus': 2,
     'memory': 12,
     'vmemory': 16,
@@ -66,7 +66,7 @@ def main():
         old_ccsinfo_counts = ccsinfo_state_counts
 
         print('sleep..', end='\r')
-        time.sleep(120)
+        time.sleep(12000)
 
 
 if __name__ == '__main__':

@@ -389,7 +389,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                            "Reward function": 'rew.rew_fun_dq0',
                            "Trial number": n_trail,
                            "Database name": folder_name,
-                           "Info": "Delay, obs=[v_mess,sp_dq0, i_mess_dq0, error_mess_sp, last_action]; Reward = MRE, without abort! (risk=0 manullay in env)"}
+                           "Info": "Delay, obs=[v_mess,sp_dq0, i_mess_dq0, error_mess_sp, last_action]; Reward = MRE, without abort! (risk=0 manullay in env); only voltage taken into account in reward!"}
 
     # Add v-&i-measurements
     test_after_training.update({env_test.viz_col_tmpls[j].vars[i].replace(".", "_"): env_test.history[
