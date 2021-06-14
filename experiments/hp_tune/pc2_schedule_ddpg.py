@@ -6,10 +6,12 @@ import pathlib
 import uuid
 import time
 from experiments.hp_tune.util import pc2
+from experiments.hp_tune.util.config import cfg
 
 # config
 USER = os.getenv('USER')
 ALLOWED_MAX_CPU_CORES = 512
+STUDY_NAME = cfg['STUDY_NAME']
 
 # resources request
 job_resource_plan = {
@@ -27,7 +29,7 @@ def main():
     old_ccsinfo_counts = None
     while True:
         job_files_path = pathlib.Path(
-            "/scratch/hpc-prf-reinfl/weber/OMG/ccs_job_files")  # SCRATCH = $PC2PFS/hpc_....re/OMG_prjecet
+            f"/scratch/hpc-prf-reinfl/weber/OMG/ccs_job_files/{STUDY_NAME}")  # SCRATCH = $PC2PFS/hpc_....re/OMG_prjecet
         job_files_path.mkdir(parents=False, exist_ok=True)
 
         # read ccsinfo
