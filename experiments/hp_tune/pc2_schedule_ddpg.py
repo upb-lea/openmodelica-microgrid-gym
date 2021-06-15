@@ -70,7 +70,7 @@ def main():
         old_ccsinfo_counts = ccsinfo_state_counts
 
         print('sleep..', end='\r')
-        time.sleep(12000)
+        time.sleep(300)
 
 
 if __name__ == '__main__':
