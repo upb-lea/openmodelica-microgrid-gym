@@ -50,11 +50,11 @@ def ddpg_objective(trial):
     batch_size = 1024  # trial.suggest_int("batch_size", 32, 1024)  # 128
     buffer_size = int(1e6)  # trial.suggest_int("buffer_size", 10, 1000000)  # 128
 
-    actor_hidden_size = 150  # trial.suggest_int("actor_hidden_size", 10, 200)  # 100  # Using LeakyReLU
-    actor_number_layers = 1  # trial.suggest_int("actor_number_layers", 1, 3)
+    actor_hidden_size = trial.suggest_int("actor_hidden_size", 10, 200)  # 100  # Using LeakyReLU
+    actor_number_layers = trial.suggest_int("actor_number_layers", 1, 3)
 
-    critic_hidden_size = 150  # trial.suggest_int("critic_hidden_size", 10, 300)  # 100
-    critic_number_layers = 2  # trial.suggest_int("critic_number_layers", 1, 4)
+    critic_hidden_size = trial.suggest_int("critic_hidden_size", 10, 300)  # 100
+    critic_number_layers = trial.suggest_int("critic_number_layers", 1, 4)
 
     n_trail = str(trial.number)
     use_gamma_in_rew = 1
@@ -83,6 +83,7 @@ def ddpg_objective(trial):
                           "Trial number": n_trail,
                           "Database name": cfg['STUDY_NAME'],
                           "Start time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime()),
+                          "Optimierer Setting stuff": "Kein Const_liar_feature"
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
@@ -314,7 +315,7 @@ if __name__ == "__main__":
     # learning_rate = list(itertools.chain(*[[1e-9] * 1]))
     # search_space = {'learning_rate': learning_rate}  # , 'number_learning_steps': number_learning_steps}
 
-    TPE_sampler = TPESampler(n_startup_trials=256, constant_liar=True)
+    TPE_sampler = TPESampler(n_startup_trials=256)  # , constant_liar=True)
 
     optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
 
