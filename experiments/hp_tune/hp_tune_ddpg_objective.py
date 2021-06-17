@@ -11,7 +11,7 @@ import platform
 import argparse
 import sshtunnel
 import numpy as np
-# np.random.seed(0)
+np.random.seed(0)
 from experiments.hp_tune.util.config import cfg
 
 # from experiments.hp_tune.experiment_vctrl_single_inv import experiment_fit_DDPG, mongo_recorder
@@ -31,17 +31,17 @@ node = platform.uname().node
 def ddpg_objective(trial):
     number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
 
-    learning_rate = trial.suggest_loguniform("learning_rate", 1e-8, 5e-2)  # 0.0002#
+    learning_rate = 1e-6  # trial.suggest_loguniform("learning_rate", 1e-8, 5e-2)  # 0.0002#
 
-    lr_decay_start = trial.suggest_float("lr_decay_start", 0.00001, 1)  # 3000  # 0.2 * number_learning_steps?
-    lr_decay_duration = trial.suggest_float("lr_decay_duration", 0.00001,
-                                            1)  # 3000  # 0.2 * number_learning_steps?
+    lr_decay_start = 0.45  # trial.suggest_float("lr_decay_start", 0.00001, 1)  # 3000  # 0.2 * number_learning_steps?
+    lr_decay_duration = 0.39  # trial.suggest_float("lr_decay_duration", 0.00001,
+    #               1)  # 3000  # 0.2 * number_learning_steps?
     t_start = int(lr_decay_start * number_learning_steps)
     t_end = int(np.minimum(lr_decay_start * number_learning_steps + lr_decay_duration * number_learning_steps,
                            number_learning_steps))
-    final_lr = trial.suggest_float("final_lr", 0.00001, 1)
+    final_lr = 0.04  # trial.suggest_float("final_lr", 0.00001, 1)
 
-    gamma = trial.suggest_float("gamma", 0.5, 0.99)
+    gamma = 0.95  # trial.suggest_float("gamma", 0.5, 0.99)
     weight_scale = 0.1  # trial.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
 
     bias_scale = 0.1  # trial.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
@@ -51,22 +51,22 @@ def ddpg_objective(trial):
     batch_size = 1024  # trial.suggest_int("batch_size", 32, 1024)  # 128
     buffer_size = int(1e6)  # trial.suggest_int("buffer_size", 10, 1000000)  # 128
 
-    actor_hidden_size = trial.suggest_int("actor_hidden_size", 10, 200)  # 100  # Using LeakyReLU
-    actor_number_layers = trial.suggest_int("actor_number_layers", 1, 5)
+    actor_hidden_size = 13  # trial.suggest_int("actor_hidden_size", 10, 200)  # 100  # Using LeakyReLU
+    actor_number_layers = 3  # trial.suggest_int("actor_number_layers", 1, 5)
 
-    critic_hidden_size = trial.suggest_int("critic_hidden_size", 10, 500)  # 100
-    critic_number_layers = trial.suggest_int("critic_number_layers", 1, 4)
+    critic_hidden_size = 285  # trial.suggest_int("critic_hidden_size", 10, 500)  # 100
+    critic_number_layers = 2  # trial.suggest_int("critic_number_layers", 1, 4)
 
     n_trail = str(trial.number)
     use_gamma_in_rew = 1
-    noise_var = trial.suggest_loguniform("noise_var", 0.01, 4)  # 2
+    noise_var = 0.5  # trial.suggest_loguniform("noise_var", 0.01, 4)  # 2
     # min var, action noise is reduced to (depends on noise_var)
     noise_var_min = 0.0013  # trial.suggest_loguniform("noise_var_min", 0.0000001, 2)
     # min var, action noise is reduced to (depends on training_episode_length)
     noise_steps_annealing = int(
         0.25 * number_learning_steps)  # trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
     # number_learning_steps)
-    noise_theta = trial.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
+    noise_theta = 40  # trial.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
     error_exponent = 0.5  # trial.suggest_loguniform("error_exponent", 0.01, 4)
 
     training_episode_length = 2000  # trial.suggest_int("training_episode_length", 200, 5000)  # 128
@@ -316,7 +316,7 @@ if __name__ == "__main__":
     # learning_rate = list(itertools.chain(*[[1e-9] * 1]))
     # search_space = {'learning_rate': learning_rate}  # , 'number_learning_steps': number_learning_steps}
 
-    TPE_sampler = TPESampler(n_startup_trials=512)  # , constant_liar=True)
+    TPE_sampler = TPESampler(n_startup_trials=1)  # , constant_liar=True)
 
     optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
 
