@@ -42,7 +42,7 @@ def ddpg_objective(trial):
     final_lr = trial.suggest_float("final_lr", 0.00001, 1)
 
     gamma = trial.suggest_float("gamma", 0.5, 0.99)
-    weight_scale = 0.1  # trial.suggest_loguniform("weight_scale", 5e-4, 0.1)  # 0.005
+    weight_scale = trial.suggest_loguniform("weight_scale", 5e-5, 0.2)  # 0.005
 
     bias_scale = 0.1  # trial.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
     alpha_relu_actor = 0.1  # trial.suggest_loguniform("alpha_relu_actor", 0.0001, 0.5)  # 0.005
@@ -316,7 +316,7 @@ if __name__ == "__main__":
     # learning_rate = list(itertools.chain(*[[1e-9] * 1]))
     # search_space = {'learning_rate': learning_rate}  # , 'number_learning_steps': number_learning_steps}
 
-    TPE_sampler = TPESampler(n_startup_trials=512)  # , constant_liar=True)
+    TPE_sampler = TPESampler(n_startup_trials=300)  # , constant_liar=True)
 
     optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
 

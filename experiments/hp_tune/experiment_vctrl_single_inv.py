@@ -69,6 +69,7 @@ class FeatureWrapper(Monitor):
         self.reward_episode_mean = []
         self.n_trail = n_trail
         self.phase = []
+        self.integrator_sum = np.zeros(self.action_space.shape)
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
         """
@@ -78,6 +79,11 @@ class FeatureWrapper(Monitor):
         if cfg['is_dq0']:
             # Action: dq0 -> abc
             action = dq0_to_abc(action, self.env.net.components[0].phase)
+
+        self.integrator_sum += action
+
+        action = action + self.integrator_sum
+
         obs, reward, done, info = super().step(action)
         self._n_training_steps += 1
 
@@ -186,6 +192,7 @@ class FeatureWrapper(Monitor):
         """
         obs = super().reset()
         self._n_training_steps = 0
+        self.integrator_sum = np.zeros(self.action_space.shape)
 
         self.i_phasor = self.cal_phasor_magnitude(obs[0:3])
         self.v_phasor = self.cal_phasor_magnitude(obs[3:6])
