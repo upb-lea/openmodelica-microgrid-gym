@@ -277,7 +277,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                    )
 
     env = FeatureWrapper(env, number_of_features=6, training_episode_length=training_episode_length,
-                         recorder=mongo_recorder, n_trail=n_trail, integrator_weigth=integrator_weight)
+                         recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight)
 
     n_actions = env.action_space.shape[-1]
     noise_var = noise_var  # 20#0.2
@@ -362,7 +362,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                     'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
                                     'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                         )
-    env_test = FeatureWrapper(env_test, number_of_features=6, integrator_weigth=integrator_weight)
+    env_test = FeatureWrapper(env_test, number_of_features=6, integrator_weight=integrator_weight)
     obs = env_test.reset()
     phase_list = []
     phase_list.append(env_test.env.net.components[0].phase)
