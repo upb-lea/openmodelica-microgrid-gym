@@ -80,7 +80,7 @@ class FeatureWrapper(Monitor):
             # Action: dq0 -> abc
             action = dq0_to_abc(action, self.env.net.components[0].phase)
 
-        self.integrator_sum += action
+        self.integrator_sum += action * net.ts
 
         action = action + self.integrator_sum
 
@@ -367,11 +367,17 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     phase_list.append(env_test.env.net.components[0].phase)
 
     rew_list = []
+    a0 = []
+    a1 = []
+    a2 = []
 
     while True:
         action, _states = model.predict(obs, deterministic=True)
         obs, rewards, done, info = env_test.step(action)
         phase_list.append(env_test.env.net.components[0].phase)
+        a0.append(np.float64(action[0]))
+        a1.append(np.float64(action[1]))
+        a2.append(np.float64(action[2]))
 
         if rewards == -1 and not limit_exceeded_in_test:
             # Set addidional penalty of -1 if limit is exceeded once in the test case
@@ -390,6 +396,9 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     test_after_training = {"Name": "Test",
                            "time": ts,
                            "Reward": rew_list,
+                           "Action0": a0,
+                           "Action1": a1,
+                           "Action2": a2,
                            "Phase": phase_list,
                            "Node": platform.uname().node,
                            "End time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime()),
