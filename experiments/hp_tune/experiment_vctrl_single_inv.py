@@ -33,7 +33,7 @@ mongo_recorder = Recorder(node=node,
 class FeatureWrapper(Monitor):
 
     def __init__(self, env, number_of_features: int = 0, training_episode_length: int = np.inf,
-                 recorder=None, n_trail=""):
+                 recorder=None, n_trail="", integrator_weight=net.ts):
         """
         Env Wrapper to add features to the env-observations and adds information to env.step output which can be used in
         case of an continuing (non-episodic) task to reset the environment without being terminated by done
@@ -70,6 +70,7 @@ class FeatureWrapper(Monitor):
         self.n_trail = n_trail
         self.phase = []
         self.integrator_sum = np.zeros(self.action_space.shape)
+        self.integrator_weight = integrator_weight
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
         """
@@ -80,7 +81,7 @@ class FeatureWrapper(Monitor):
             # Action: dq0 -> abc
             action = dq0_to_abc(action, self.env.net.components[0].phase)
 
-        self.integrator_sum += action * net.ts
+        self.integrator_sum += action * self.integrator_weight
 
         action = action + self.integrator_sum
 
@@ -256,7 +257,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                         alpha_relu_critic,
                         noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
                         training_episode_length, buffer_size,
-                        learning_starts, tau, number_learning_steps, n_trail):
+                        learning_starts, tau, number_learning_steps, integrator_weight, n_trail):
     if node not in cfg['lea_vpn_nodes']:
         # assume we are on pc2
         log_path = f'/scratch/hpc-prf-reinfl/weber/OMG/{folder_name}/{n_trail}/'
@@ -276,7 +277,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                    )
 
     env = FeatureWrapper(env, number_of_features=6, training_episode_length=training_episode_length,
-                         recorder=mongo_recorder, n_trail=n_trail)
+                         recorder=mongo_recorder, n_trail=n_trail, integrator_weigth=integrator_weight)
 
     n_actions = env.action_space.shape[-1]
     noise_var = noise_var  # 20#0.2
@@ -361,7 +362,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                     'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
                                     'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                         )
-    env_test = FeatureWrapper(env_test, number_of_features=6)
+    env_test = FeatureWrapper(env_test, number_of_features=6, integrator_weigth=integrator_weight)
     obs = env_test.reset()
     phase_list = []
     phase_list.append(env_test.env.net.components[0].phase)

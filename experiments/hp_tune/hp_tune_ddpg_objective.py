@@ -31,6 +31,8 @@ node = platform.uname().node
 def ddpg_objective(trial):
     number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
 
+    integrator_weight = trial.suggest_loguniform("integrator_weight", 1e-6, 1e-2)
+
     learning_rate = trial.suggest_loguniform("learning_rate", 1e-8, 5e-2)  # 0.0002#
 
     lr_decay_start = trial.suggest_float("lr_decay_start", 0.00001, 1)  # 3000  # 0.2 * number_learning_steps?
@@ -84,7 +86,7 @@ def ddpg_objective(trial):
                           "Trial number": n_trail,
                           "Database name": cfg['STUDY_NAME'],
                           "Start time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime()),
-                          "Optimierer Setting stuff": "Kein Const_liar_feature, hoehere Grenzen"
+                          "Optimierer Setting stuff": "Kein Const_liar_feature, hoehere Grenzen, INtergrator Gewicht als HP"
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
@@ -96,7 +98,7 @@ def ddpg_objective(trial):
                                alpha_relu_critic,
                                noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
                                training_episode_length, buffer_size,
-                               learning_starts, tau, number_learning_steps, n_trail)
+                               learning_starts, tau, number_learning_steps, integrator_weight, n_trail)
 
     return loss
 
