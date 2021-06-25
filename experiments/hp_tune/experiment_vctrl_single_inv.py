@@ -33,7 +33,7 @@ mongo_recorder = Recorder(node=node,
 class FeatureWrapper(Monitor):
 
     def __init__(self, env, number_of_features: int = 0, training_episode_length: int = np.inf,
-                 recorder=None, n_trail="", integrator_weight=net.ts):
+                 recorder=None, n_trail="", integrator_weight=net.ts, antiwindup_weight=net.ts):
         """
         Env Wrapper to add features to the env-observations and adds information to env.step output which can be used in
         case of an continuing (non-episodic) task to reset the environment without being terminated by done
@@ -71,21 +71,28 @@ class FeatureWrapper(Monitor):
         self.phase = []
         self.integrator_sum = np.zeros(self.action_space.shape)
         self.integrator_weight = integrator_weight
+        self.antiwindup_weight = antiwindup_weight
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
         """
         Adds additional features and infos after the gym env.step() function is executed.
         Triggers the env to reset without done=True every training_episode_length steps
         """
-        if cfg['is_dq0']:
-            # Action: dq0 -> abc
-            action = dq0_to_abc(action, self.env.net.components[0].phase)
-
         self.integrator_sum += action * self.integrator_weight
 
-        action = action + self.integrator_sum
+        action_PI = action + self.integrator_sum
 
-        obs, reward, done, info = super().step(action)
+        if cfg['is_dq0']:
+            # Action: dq0 -> abc
+            action_abc = dq0_to_abc(action_PI, self.env.net.components[0].phase)
+
+        # check if m_abc will be clipped
+        if np.any(abs(action_abc) > 1):
+            # if, reduce integrator by clipped delta
+            action_delta = abc_to_dq0(np.clip(action_abc, -1, 1) - action_abc, self.env.net.components[0].phase)
+            self.integrator_sum += action_delta * self.antiwindup_weight
+
+        obs, reward, done, info = super().step(action_abc)
         self._n_training_steps += 1
 
         if self._n_training_steps % self.training_episode_length == 0:
@@ -161,14 +168,10 @@ class FeatureWrapper(Monitor):
             obs[0:3] = abc_to_dq0(obs[0:3], self.env.net.components[0].phase)
 
         """
-        Feature control error: v_setpoint - v_mess
+        Features
         """
-        error = obs[6:9] - obs[3:6]
-
-        """
-        Feature delta to current limit
-        """
-        # delta_i_lim_i_phasor = 1 - self.i_phasor
+        error = obs[6:9] - obs[3:6]  # control error: v_setpoint - v_mess
+        # delta_i_lim_i_phasor = 1 - self.i_phasor  # delta to current limit
 
         """
         Following maps the return to the range of [-0.5, 0.5] in
@@ -177,6 +180,8 @@ class FeatureWrapper(Monitor):
         """
         # obs = np.append(obs, self.i_phasor - 0.5)
         obs = np.append(obs, error)
+        obs = np.append(obs, np.sin(self.env.net.components[0].phase))
+        obs = np.append(obs, np.cos(self.env.net.components[0].phase))
         # obs = np.append(obs, delta_i_lim_i_phasor)
 
         """
@@ -217,19 +222,21 @@ class FeatureWrapper(Monitor):
             obs[3:6] = abc_to_dq0(obs[3:6], self.env.net.components[0].phase)
             obs[0:3] = abc_to_dq0(obs[0:3], self.env.net.components[0].phase)
         """
-        Feature control error: v_setpoint - v_mess
+        Features
         """
-        error = obs[6:9] - obs[3:6]
+        error = obs[6:9] - obs[3:6]  # control error: v_setpoint - v_mess
+        # delta_i_lim_i_phasor = 1 - self.i_phasor  # delta to current limit
 
         """
-        Feature delta to current limit
+        Following maps the return to the range of [-0.5, 0.5] in
+        case of magnitude = [-lim, lim] using (phasor_mag) - 0.5. 0.5 can be exceeded in case of the magnitude
+        exceeds the limit (no extra env interruption here!, all phases should be validated separately)
         """
-        delta_i_lim_i_phasor = 1 - self.i_phasor
-
         # obs = np.append(obs, self.i_phasor - 0.5)
         obs = np.append(obs, error)
+        obs = np.append(obs, np.sin(self.env.net.components[0].phase))
+        obs = np.append(obs, np.cos(self.env.net.components[0].phase))
         # obs = np.append(obs, delta_i_lim_i_phasor)
-
         """
         Add used action to the NN input to learn delay
         """
@@ -257,7 +264,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                         alpha_relu_critic,
                         noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
                         training_episode_length, buffer_size,
-                        learning_starts, tau, number_learning_steps, integrator_weight, n_trail):
+                        learning_starts, tau, number_learning_steps, integrator_weight, antiwindup_weight, n_trail):
     if node not in cfg['lea_vpn_nodes']:
         # assume we are on pc2
         log_path = f'/scratch/hpc-prf-reinfl/weber/OMG/{folder_name}/{n_trail}/'
@@ -276,8 +283,9 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                    )
 
-    env = FeatureWrapper(env, number_of_features=6, training_episode_length=training_episode_length,
-                         recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight)
+    env = FeatureWrapper(env, number_of_features=8, training_episode_length=training_episode_length,
+                         recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
+                         antiwindup_weight=antiwindup_weight)
 
     n_actions = env.action_space.shape[-1]
     noise_var = noise_var  # 20#0.2
@@ -362,7 +370,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                     'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
                                     'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                         )
-    env_test = FeatureWrapper(env_test, number_of_features=6, integrator_weight=integrator_weight)
+    env_test = FeatureWrapper(env_test, number_of_features=8, integrator_weight=integrator_weight,
+                              antiwindup_weight=antiwindup_weight)
     obs = env_test.reset()
     phase_list = []
     phase_list.append(env_test.env.net.components[0].phase)
@@ -406,7 +415,9 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                            "Reward function": 'rew.rew_fun_dq0',
                            "Trial number": n_trail,
                            "Database name": folder_name,
-                           "Info": "Delay, obs=[v_mess,sp_dq0, i_mess_dq0, error_mess_sp, last_action]; Reward = MRE, without abort! (risk=0 manullay in env); only voltage taken into account in reward!"}
+                           "Info": "Delay, obs=[v_mess,sp_dq0, i_mess_dq0, error_mess_sp, last_action, sin/cos(phase)]; "
+                                   "Reward = MRE, PI-Approch using AntiWindUp"
+                                   "without abort! (risk=0 manullay in env); only voltage taken into account in reward!"}
 
     # Add v-&i-measurements
     test_after_training.update({env_test.viz_col_tmpls[j].vars[i].replace(".", "_"): env_test.history[

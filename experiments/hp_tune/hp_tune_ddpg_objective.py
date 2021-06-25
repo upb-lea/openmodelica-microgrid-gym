@@ -31,9 +31,10 @@ node = platform.uname().node
 def ddpg_objective(trial):
     number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
 
-    integrator_weight = trial.suggest_loguniform("integrator_weight", 1e-6, 1e-2)
+    integrator_weight = trial.suggest_loguniform("integrator_weight", 1e-6, 300e-6)
+    antiwindup_weight = trial.suggest_loguniform("antiwindup_weight", 50e-6, 50e-3)
 
-    learning_rate = trial.suggest_loguniform("learning_rate", 1e-8, 5e-2)  # 0.0002#
+    learning_rate = trial.suggest_loguniform("learning_rate", 100e-9, 100e-6)  # 0.0002#
 
     lr_decay_start = trial.suggest_float("lr_decay_start", 0.00001, 1)  # 3000  # 0.2 * number_learning_steps?
     lr_decay_duration = trial.suggest_float("lr_decay_duration", 0.00001,
@@ -43,7 +44,7 @@ def ddpg_objective(trial):
                            number_learning_steps))
     final_lr = trial.suggest_float("final_lr", 0.00001, 1)
 
-    gamma = trial.suggest_float("gamma", 0.5, 0.99)
+    gamma = trial.suggest_float("gamma", 0.8, 0.99)
     weight_scale = trial.suggest_loguniform("weight_scale", 5e-5, 0.2)  # 0.005
 
     bias_scale = 0.1  # trial.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
@@ -61,7 +62,7 @@ def ddpg_objective(trial):
 
     n_trail = str(trial.number)
     use_gamma_in_rew = 1
-    noise_var = trial.suggest_loguniform("noise_var", 0.01, 4)  # 2
+    noise_var = trial.suggest_loguniform("noise_var", 0.01, 1)  # 2
     # min var, action noise is reduced to (depends on noise_var)
     noise_var_min = 0.0013  # trial.suggest_loguniform("noise_var_min", 0.0000001, 2)
     # min var, action noise is reduced to (depends on training_episode_length)
@@ -98,7 +99,8 @@ def ddpg_objective(trial):
                                alpha_relu_critic,
                                noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
                                training_episode_length, buffer_size,
-                               learning_starts, tau, number_learning_steps, integrator_weight, n_trail)
+                               learning_starts, tau, number_learning_steps, integrator_weight, antiwindup_weight,
+                               n_trail)
 
     return loss
 
