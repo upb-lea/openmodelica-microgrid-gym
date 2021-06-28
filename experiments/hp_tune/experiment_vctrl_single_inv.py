@@ -76,6 +76,8 @@ class FeatureWrapper(Monitor):
         self.integrator_sum = np.zeros(self.action_space.shape)
         self.integrator_weight = integrator_weight
         self.antiwindup_weight = antiwindup_weight
+        self.used_P = np.zeros(self.action_space.shape)
+        self.used_I = np.zeros(self.action_space.shape)
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
         """
@@ -189,12 +191,20 @@ class FeatureWrapper(Monitor):
         obs = np.append(obs, error)
         obs = np.append(obs, np.sin(self.env.net.components[0].phase))
         obs = np.append(obs, np.cos(self.env.net.components[0].phase))
+        obs = np.append(obs, self.used_P)
+        obs = np.append(obs, self.used_I)
         # obs = np.append(obs, delta_i_lim_i_phasor)
 
         """
         Add used action to the NN input to learn delay
         """
-        obs = np.append(obs, self.used_action)
+        # obs = np.append(obs, self.used_action)
+
+        # todo efficiency?
+        self.used_P = np.copy(action_P)
+        self.used_I = np.copy(self.integrator_sum)
+        # self.used_P = action_P
+        # self.used_I = self.integrator_sum
 
         return obs, reward, done, info
 
@@ -206,6 +216,8 @@ class FeatureWrapper(Monitor):
         obs = super().reset()
         self._n_training_steps = 0
         self.integrator_sum = np.zeros(self.action_space.shape)
+        self.used_P = np.zeros(self.action_space.shape)
+        self.used_I = np.zeros(self.action_space.shape)
 
         self.i_phasor = self.cal_phasor_magnitude(obs[0:3])
         self.v_phasor = self.cal_phasor_magnitude(obs[3:6])
@@ -243,11 +255,13 @@ class FeatureWrapper(Monitor):
         obs = np.append(obs, error)
         obs = np.append(obs, np.sin(self.env.net.components[0].phase))
         obs = np.append(obs, np.cos(self.env.net.components[0].phase))
+        obs = np.append(obs, self.used_P)
+        obs = np.append(obs, self.used_I)
         # obs = np.append(obs, delta_i_lim_i_phasor)
         """
         Add used action to the NN input to learn delay
         """
-        obs = np.append(obs, self.used_action)
+        # obs = np.append(obs, self.used_action)
 
         return obs
 
@@ -290,7 +304,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                    )
 
-    env = FeatureWrapper(env, number_of_features=8, training_episode_length=training_episode_length,
+    env = FeatureWrapper(env, number_of_features=11, training_episode_length=training_episode_length,
                          recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
                          antiwindup_weight=antiwindup_weight)
 
@@ -383,7 +397,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                     'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
                                     'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                         )
-    env_test = FeatureWrapper(env_test, number_of_features=8, integrator_weight=integrator_weight,
+    env_test = FeatureWrapper(env_test, number_of_features=11, integrator_weight=integrator_weight,
                               antiwindup_weight=antiwindup_weight)
     obs = env_test.reset()
     phase_list = []
@@ -437,7 +451,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                            "Reward function": 'rew.rew_fun_dq0',
                            "Trial number": n_trail,
                            "Database name": folder_name,
-                           "Info": "Delay, obs=[v_mess,sp_dq0, i_mess_dq0, error_mess_sp, last_action, sin/cos(phase)]; "
+                           "Info": "Delay, obs=[v_mess,sp_dq0, i_mess_dq0, error_mess_sp, last_action, sin/cos(phase),"
+                                   "integrator_zustand(delayed!), genutzte Aktion (P-anteil)]; "
                                    "Reward = MRE, PI-Approch using AntiWindUp"
                                    "without abort! (risk=0 manullay in env); only voltage taken into account in reward!"}
 

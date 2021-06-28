@@ -90,6 +90,7 @@ def ddpg_objective(trial):
                           "Start time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime()),
                           "Optimierer/ Setting stuff": "Kein Const_liar_feature, hoehere Grenzen, INtergrator Gewicht als HP,"
                                                        "Actionspace = 6, da P und I-Anteil seperate ausgänge und im wrapper addiert werden"
+                                                       "Integratorzustand+used_P_Action (je um einen verzoegert) wird mit als feature uebergeben"
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
