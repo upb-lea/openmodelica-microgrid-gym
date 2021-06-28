@@ -31,8 +31,9 @@ node = platform.uname().node
 def ddpg_objective(trial):
     number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
 
-    integrator_weight = trial.suggest_loguniform("integrator_weight", 1e-6, 300e-6)
-    antiwindup_weight = trial.suggest_loguniform("antiwindup_weight", 50e-6, 50e-3)
+    integrator_weight = trial.suggest_loguniform("integrator_weight", 1e-6, 1e-0)
+    # antiwindup_weight = trial.suggest_loguniform("antiwindup_weight", 50e-6, 50e-3)
+    antiwindup_weight = trial.suggest_float("antiwindup_weight", 0.00001, 1)
 
     learning_rate = trial.suggest_loguniform("learning_rate", 100e-9, 100e-6)  # 0.0002#
 
@@ -87,7 +88,8 @@ def ddpg_objective(trial):
                           "Trial number": n_trail,
                           "Database name": cfg['STUDY_NAME'],
                           "Start time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime()),
-                          "Optimierer Setting stuff": "Kein Const_liar_feature, hoehere Grenzen, INtergrator Gewicht als HP"
+                          "Optimierer/ Setting stuff": "Kein Const_liar_feature, hoehere Grenzen, INtergrator Gewicht als HP,"
+                                                       "Actionspace = 6, da P und I-Anteil seperate ausgänge und im wrapper addiert werden"
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
@@ -99,7 +101,8 @@ def ddpg_objective(trial):
                                alpha_relu_critic,
                                noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
                                training_episode_length, buffer_size,
-                               learning_starts, tau, number_learning_steps, integrator_weight, antiwindup_weight,
+                               learning_starts, tau, number_learning_steps, integrator_weight,
+                               integrator_weight * antiwindup_weight,
                                n_trail)
 
     return loss

@@ -51,6 +51,10 @@ class FeatureWrapper(Monitor):
         self.observation_space = gym.spaces.Box(
             low=np.full(env.observation_space.shape[0] + number_of_features, -np.inf),
             high=np.full(env.observation_space.shape[0] + number_of_features, np.inf))
+
+        # increase action-space for PI-seperation
+        # self.action_space=gym.spaces.Box(low=np.full(d_i, -1), high=np.full(d_i, 1))
+
         self.training_episode_length = training_episode_length
         self.recorder = recorder
         self._n_training_steps = 0
@@ -78,9 +82,12 @@ class FeatureWrapper(Monitor):
         Adds additional features and infos after the gym env.step() function is executed.
         Triggers the env to reset without done=True every training_episode_length steps
         """
-        self.integrator_sum += action * self.integrator_weight
+        action_P = action[0:3]
+        action_I = action[3:6]
 
-        action_PI = action + self.integrator_sum
+        self.integrator_sum += action_I * self.integrator_weight
+
+        action_PI = action_P + self.integrator_sum
 
         if cfg['is_dq0']:
             # Action: dq0 -> abc
@@ -287,6 +294,9 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                          recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
                          antiwindup_weight=antiwindup_weight)
 
+    # todo: Upwnscale actionspace - lessulgy possible? Interaction pytorch...
+    env.action_space = gym.spaces.Box(low=np.full(6, -1), high=np.full(6, 1))
+
     n_actions = env.action_space.shape[-1]
     noise_var = noise_var  # 20#0.2
     noise_theta = noise_theta  # 50 # stiffness of OU
@@ -340,6 +350,9 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
         count = count + 2
 
+    # todo: Downscale actionspace - lessulgy possible? Interaction pytorch...
+    env.action_space = gym.spaces.Box(low=np.full(3, -1), high=np.full(3, 1))
+
     # start training
     model.learn(total_timesteps=number_learning_steps)
 
@@ -377,17 +390,23 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     phase_list.append(env_test.env.net.components[0].phase)
 
     rew_list = []
-    a0 = []
-    a1 = []
-    a2 = []
+    aP0 = []
+    aP1 = []
+    aP2 = []
+    aI0 = []
+    aI1 = []
+    aI2 = []
 
     while True:
         action, _states = model.predict(obs, deterministic=True)
         obs, rewards, done, info = env_test.step(action)
         phase_list.append(env_test.env.net.components[0].phase)
-        a0.append(np.float64(action[0]))
-        a1.append(np.float64(action[1]))
-        a2.append(np.float64(action[2]))
+        aP0.append(np.float64(action[0]))
+        aP1.append(np.float64(action[1]))
+        aP2.append(np.float64(action[2]))
+        aI0.append(np.float64(action[3]))
+        aI1.append(np.float64(action[4]))
+        aI2.append(np.float64(action[5]))
 
         if rewards == -1 and not limit_exceeded_in_test:
             # Set addidional penalty of -1 if limit is exceeded once in the test case
@@ -406,9 +425,12 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     test_after_training = {"Name": "Test",
                            "time": ts,
                            "Reward": rew_list,
-                           "Action0": a0,
-                           "Action1": a1,
-                           "Action2": a2,
+                           "ActionP0": aP0,
+                           "ActionP1": aP1,
+                           "ActionP2": aP2,
+                           "ActionI0": aI0,
+                           "ActionI1": aI1,
+                           "ActionI2": aI2,
                            "Phase": phase_list,
                            "Node": platform.uname().node,
                            "End time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime()),
