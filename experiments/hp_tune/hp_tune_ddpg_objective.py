@@ -31,7 +31,8 @@ node = platform.uname().node
 def ddpg_objective(trial):
     number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
 
-    integrator_weight = trial.suggest_loguniform("integrator_weight", 1e-6, 1e-0)
+    integrator_weight = trial.suggest_loguniform("integrator_weight", 1 / 20, 20)
+    # integrator_weight = trial.suggest_loguniform("integrator_weight", 1e-6, 1e-0)
     # antiwindup_weight = trial.suggest_loguniform("antiwindup_weight", 50e-6, 50e-3)
     antiwindup_weight = trial.suggest_float("antiwindup_weight", 0.00001, 1)
 
