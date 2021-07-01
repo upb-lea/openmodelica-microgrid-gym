@@ -1,7 +1,7 @@
 cfg = dict(lea_vpn_nodes=['lea-skynet', 'lea-picard', 'lea-barclay',
                           'lea-cyberdyne', 'webbah-ThinkPad-L380', 'LEA_WORK35'],
 
-           STUDY_NAME='PC2_DDGP_Vctrl_single_inv_13_PI_approach_antiWU_6actions',
+           STUDY_NAME='PC2_DDGP_Vctrl_single_inv_14_from_Study_13_HPs_trail_651_smaller_LR',
            meas_data_folder='Json_to_MonogDB/',
            MONGODB_PORT=12001,
            loglevel='test',
