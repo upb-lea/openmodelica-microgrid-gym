@@ -30,51 +30,54 @@ node = platform.uname().node
 
 def ddpg_objective(trial):
     number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
-
-    integrator_weight = 0.216  # trial.suggest_loguniform("integrator_weight", 1 / 20, 20)
+    # rew_weigth = trial.suggest_float("rew_weigth", 0.1, 5)
+    # rew_penalty_distribution = trial.suggest_float("antiwindup_weight", 0.1, 5)
+    penalty_I_weight = trial.suggest_loguniform("penalty_I_weight", 1e-6, 1e0)
+    penalty_P_weight = trial.suggest_loguniform("penalty_P_weight", 1e-6, 1e0)
+    integrator_weight = trial.suggest_loguniform("integrator_weight", 1 / 20, 20)
     # integrator_weight = trial.suggest_loguniform("integrator_weight", 1e-6, 1e-0)
     # antiwindup_weight = trial.suggest_loguniform("antiwindup_weight", 50e-6, 50e-3)
-    antiwindup_weight = 0.96  # trial.suggest_float("antiwindup_weight", 0.00001, 1)
+    antiwindup_weight = trial.suggest_float("antiwindup_weight", 0.00001, 1)
 
-    learning_rate = 1.42e-5  # trial.suggest_loguniform("learning_rate", 100e-9, 100e-6)  # 0.0002#
+    learning_rate = trial.suggest_loguniform("learning_rate", 100e-9, 100e-6)  # 0.0002#
 
-    lr_decay_start = 0.88  # trial.suggest_float("lr_decay_start", 0.00001, 1)  # 3000  # 0.2 * number_learning_steps?
-    lr_decay_duration = 0.064  # trial.suggest_float("lr_decay_duration", 0.00001,
-    #              1)  # 3000  # 0.2 * number_learning_steps?
+    lr_decay_start = trial.suggest_float("lr_decay_start", 0.00001, 1)  # 3000  # 0.2 * number_learning_steps?
+    lr_decay_duration = trial.suggest_float("lr_decay_duration", 0.00001,
+                                            1)  # 3000  # 0.2 * number_learning_steps?
     t_start = int(lr_decay_start * number_learning_steps)
     t_end = int(np.minimum(lr_decay_start * number_learning_steps + lr_decay_duration * number_learning_steps,
                            number_learning_steps))
-    final_lr = 0.3  # trial.suggest_float("final_lr", 0.00001, 1)
+    final_lr = trial.suggest_float("final_lr", 0.00001, 1)
 
-    gamma = 0.927  # trial.suggest_float("gamma", 0.8, 0.99)
-    weight_scale = 0.000132  # trial.suggest_loguniform("weight_scale", 5e-5, 0.2)  # 0.005
+    gamma = trial.suggest_float("gamma", 0.8, 0.99)
+    weight_scale = trial.suggest_loguniform("weight_scale", 5e-5, 0.2)  # 0.005
 
-    bias_scale = 0.1  # trial.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
+    bias_scale = trial.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
     alpha_relu_actor = 0.1  # trial.suggest_loguniform("alpha_relu_actor", 0.0001, 0.5)  # 0.005
     alpha_relu_critic = 0.1  # trial.suggest_loguniform("alpha_relu_critic", 0.0001, 0.5)  # 0.005
 
     batch_size = 1024  # trial.suggest_int("batch_size", 32, 1024)  # 128
     buffer_size = int(1e6)  # trial.suggest_int("buffer_size", 10, 1000000)  # 128
 
-    actor_hidden_size = 131  # trial.suggest_int("actor_hidden_size", 10, 200)  # 100  # Using LeakyReLU
-    actor_number_layers = 3  # trial.suggest_int("actor_number_layers", 1, 5)
+    actor_hidden_size = trial.suggest_int("actor_hidden_size", 10, 200)  # 100  # Using LeakyReLU
+    actor_number_layers = trial.suggest_int("actor_number_layers", 1, 5)
 
-    critic_hidden_size = 324  # trial.suggest_int("critic_hidden_size", 10, 500)  # 100
-    critic_number_layers = 3  # trial.suggest_int("critic_number_layers", 1, 4)
+    critic_hidden_size = trial.suggest_int("critic_hidden_size", 10, 500)  # 100
+    critic_number_layers = trial.suggest_int("critic_number_layers", 1, 4)
 
     n_trail = str(trial.number)
     use_gamma_in_rew = 1
-    noise_var = 0.012  # trial.suggest_loguniform("noise_var", 0.01, 1)  # 2
+    noise_var = trial.suggest_loguniform("noise_var", 0.01, 1)  # 2
     # min var, action noise is reduced to (depends on noise_var)
     noise_var_min = 0.0013  # trial.suggest_loguniform("noise_var_min", 0.0000001, 2)
     # min var, action noise is reduced to (depends on training_episode_length)
     noise_steps_annealing = int(
         0.25 * number_learning_steps)  # trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
     # number_learning_steps)
-    noise_theta = 1.74  # trial.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
+    noise_theta = trial.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
     error_exponent = 0.5  # trial.suggest_loguniform("error_exponent", 0.01, 4)
 
-    training_episode_length = 2000  # trial.suggest_int("training_episode_length", 200, 5000)  # 128
+    training_episode_length = trial.suggest_int("training_episode_length", 10, 2500)  # 128
     learning_starts = 0.32  # trial.suggest_loguniform("learning_starts", 0.1, 2)  # 128
     tau = 0.005  # trial.suggest_loguniform("tau", 0.0001, 0.2)  # 2
 
@@ -85,7 +88,6 @@ def ddpg_objective(trial):
 
     trail_config_mongo = {"Name": "Config",
                           "Node": node,
-                          "LR": 'vom besten aus study 8',
                           "Number_learning_Steps": number_learning_steps,
                           "Trial number": n_trail,
                           "Database name": cfg['STUDY_NAME'],
@@ -93,6 +95,9 @@ def ddpg_objective(trial):
                           "Optimierer/ Setting stuff": "Kein Const_liar_feature, hoehere Grenzen, INtergrator Gewicht als HP,"
                                                        "Actionspace = 6, da P und I-Anteil seperate ausgänge und im wrapper addiert werden"
                                                        "Integratorzustand+used_P_Action (je um einen verzoegert) wird mit als feature uebergeben"
+                                                       "Penalties fuer Integratorzustund ungleich null und action_P "
+                                                       "Aenderung zum vorherigen Schritt"
+
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
@@ -105,7 +110,7 @@ def ddpg_objective(trial):
                                noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
                                training_episode_length, buffer_size,
                                learning_starts, tau, number_learning_steps, integrator_weight,
-                               integrator_weight * antiwindup_weight,
+                               integrator_weight * antiwindup_weight, penalty_I_weight, penalty_P_weight,
                                n_trail)
 
     return loss

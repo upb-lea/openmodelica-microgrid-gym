@@ -389,6 +389,51 @@ class Reward:
 
         return rew
 
+    def rew_fun_PIPI_MRE(self, cols: List[str], data: np.ndarray, risk) -> float:
+        """
+        uses the same reward for voltage like defined above but also includes reward depending on the current
+        If i_nom is exceeded r_current: f(i_mess) -> [0, 1] is multiplied to the r_voltage
+        Before r_voltage is scaled to the region [0,1]:
+         - r_voltage = (r_voltage+1)/2
+         - r = r_voltage * r_current
+         - r = r-1
+
+         If v_lim or i_lim are exceeded, episode abort -> env.abort_reward (should be -1) is given back
+
+        :param cols: list of variable names of the data
+        :param data: observation data from the environment (ControlVariables, e.g. currents and voltages)
+        :return: Error as negative reward
+        """
+        self.set_idx(cols)
+        idx = self._idx
+
+        i_mess = data[idx[0]]  # 3 phase currents at LC inductors
+        mess = data[idx[2]]  # 3 phase currents at LC inductors
+
+        # set points (sp)
+        isp_abc_master = data[idx[1]]  # convert dq set-points into three-phase abc coordinates
+        SP = data[idx[3]]  # convert dq set-points into three-phase abc coordinates
+
+        # SP = vsp_dq0_master * self.lim
+        # mess = vdq0_master * self.lim
+
+        # rew = np.sum(-((np.abs(SP - mess)) ** 0.5)) * (1 - self.gamma) / 3
+
+        phase = data[idx[4]]
+
+        vdq0_master = abc_to_dq0(data[idx[2]], phase) / self.lim  # 3 phase currents at LC inductors
+
+        # set points (sp)
+        vsp_dq0_master = abc_to_dq0(data[idx[3]],
+                                    phase) / self.lim  # convert dq set-points into three-phase abc coordinates
+
+        # SP = vsp_dq0_master * self.lim
+        # mess = vdq0_master * self.lim
+
+        rew = np.sum(-((np.abs(vsp_dq0_master - vdq0_master)) ** 0.5)) * (1 - self.gamma) / 3
+
+        return rew
+
     def rew_fun_PIPI(self, cols: List[str], data: np.ndarray, risk) -> float:
         """
         uses the same reward for voltage like defined above but also includes reward depending on the current

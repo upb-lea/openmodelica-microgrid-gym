@@ -33,7 +33,8 @@ mongo_recorder = Recorder(node=node,
 class FeatureWrapper(Monitor):
 
     def __init__(self, env, number_of_features: int = 0, training_episode_length: int = np.inf,
-                 recorder=None, n_trail="", integrator_weight=net.ts, antiwindup_weight=net.ts):
+                 recorder=None, n_trail="", integrator_weight=net.ts, antiwindup_weight=net.ts, gamma=0,
+                 penalty_I_weight=1, penalty_P_weight=1):
         """
         Env Wrapper to add features to the env-observations and adds information to env.step output which can be used in
         case of an continuing (non-episodic) task to reset the environment without being terminated by done
@@ -78,6 +79,9 @@ class FeatureWrapper(Monitor):
         self.antiwindup_weight = antiwindup_weight
         self.used_P = np.zeros(self.action_space.shape)
         self.used_I = np.zeros(self.action_space.shape)
+        self.gamma = gamma
+        self.penalty_I_weight = penalty_I_weight
+        self.penalty_P_weight = penalty_P_weight
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
         """
@@ -102,6 +106,15 @@ class FeatureWrapper(Monitor):
             self.integrator_sum += action_delta * self.antiwindup_weight
 
         obs, reward, done, info = super().step(action_abc)
+
+        integrator_penalty = - np.sum((np.abs(action_I)) ** 0.5) * (1 - self.gamma) / 3
+        action_P_penalty = - np.sum((np.abs(action_P - self.used_P)) ** 0.5) * (1 - self.gamma) / 3
+
+        # reward_weight is = 1
+        reward = (reward + self.penalty_I_weight * integrator_penalty
+                  + self.penalty_P_weight * action_P_penalty) \
+                 / (1 + self.penalty_I_weight + self.penalty_P_weight)
+
         self._n_training_steps += 1
 
         if self._n_training_steps % self.training_episode_length == 0:
@@ -285,7 +298,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                         alpha_relu_critic,
                         noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
                         training_episode_length, buffer_size,
-                        learning_starts, tau, number_learning_steps, integrator_weight, antiwindup_weight, n_trail):
+                        learning_starts, tau, number_learning_steps, integrator_weight, antiwindup_weight,
+                        penalty_I_weight, penalty_P_weight, n_trail):
     if node not in cfg['lea_vpn_nodes']:
         # assume we are on pc2
         log_path = f'/scratch/hpc-prf-reinfl/weber/OMG/{folder_name}/{n_trail}/'
@@ -306,7 +320,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
     env = FeatureWrapper(env, number_of_features=11, training_episode_length=training_episode_length,
                          recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
-                         antiwindup_weight=antiwindup_weight)
+                         antiwindup_weight=antiwindup_weight, gamma=gamma,
+                         penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight)
 
     # todo: Upwnscale actionspace - lessulgy possible? Interaction pytorch...
     env.action_space = gym.spaces.Box(low=np.full(6, -1), high=np.full(6, 1))
@@ -398,7 +413,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                     'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                         )
     env_test = FeatureWrapper(env_test, number_of_features=11, integrator_weight=integrator_weight,
-                              antiwindup_weight=antiwindup_weight)
+                              antiwindup_weight=antiwindup_weight, gamma=1, penalty_I_weight=0, penalty_P_weight=0)
+    # using gamma=1 and rew_weigth=3 we get the original reward from the env without penalties
     obs = env_test.reset()
     phase_list = []
     phase_list.append(env_test.env.net.components[0].phase)
