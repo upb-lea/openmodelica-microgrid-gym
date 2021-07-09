@@ -107,8 +107,9 @@ class FeatureWrapper(Monitor):
 
         obs, reward, done, info = super().step(action_abc)
 
-        integrator_penalty = - np.sum((np.abs(action_I)) ** 0.5) * (1 - self.gamma) / 3
-        action_P_penalty = - np.sum((np.abs(action_P - self.used_P)) ** 0.5) * (1 - self.gamma) / 3
+        integrator_penalty = np.sum(-((np.abs(action_I)) ** 0.5)) * (1 - self.gamma) / 3
+        # action_P_penalty = - np.sum((np.abs(action_P - self.used_P)) ** 0.5) * (1 - self.gamma) / 3
+        action_P_penalty = np.sum(-((np.abs(action_P)) ** 0.5)) * (1 - self.gamma) / 3
 
         # reward_weight is = 1
         reward = (reward + self.penalty_I_weight * integrator_penalty
@@ -426,6 +427,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     aI0 = []
     aI1 = []
     aI2 = []
+    integrator_sum = []
 
     while True:
         action, _states = model.predict(obs, deterministic=True)
@@ -437,6 +439,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
         aI0.append(np.float64(action[3]))
         aI1.append(np.float64(action[4]))
         aI2.append(np.float64(action[5]))
+        integrator_sum.append(env.integrator_sum)
 
         if rewards == -1 and not limit_exceeded_in_test:
             # Set addidional penalty of -1 if limit is exceeded once in the test case
@@ -461,6 +464,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                            "ActionI0": aI0,
                            "ActionI1": aI1,
                            "ActionI2": aI2,
+                           "integrator_sum": integrator_sum,
                            "Phase": phase_list,
                            "Node": platform.uname().node,
                            "End time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime()),

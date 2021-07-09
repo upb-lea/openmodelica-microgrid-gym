@@ -60,9 +60,9 @@ def ddpg_objective(trial):
     buffer_size = int(1e6)  # trial.suggest_int("buffer_size", 10, 1000000)  # 128
 
     actor_hidden_size = trial.suggest_int("actor_hidden_size", 10, 200)  # 100  # Using LeakyReLU
-    actor_number_layers = trial.suggest_int("actor_number_layers", 1, 5)
+    actor_number_layers = trial.suggest_int("actor_number_layers", 1, 3)
 
-    critic_hidden_size = trial.suggest_int("critic_hidden_size", 10, 500)  # 100
+    critic_hidden_size = trial.suggest_int("critic_hidden_size", 10, 300)  # 100
     critic_number_layers = trial.suggest_int("critic_number_layers", 1, 4)
 
     n_trail = str(trial.number)
@@ -95,9 +95,7 @@ def ddpg_objective(trial):
                           "Optimierer/ Setting stuff": "Kein Const_liar_feature, hoehere Grenzen, INtergrator Gewicht als HP,"
                                                        "Actionspace = 6, da P und I-Anteil seperate ausgänge und im wrapper addiert werden"
                                                        "Integratorzustand+used_P_Action (je um einen verzoegert) wird mit als feature uebergeben"
-                                                       "Penalties fuer Integratorzustund ungleich null und action_P "
-                                                       "Aenderung zum vorherigen Schritt"
-
+                                                       "Penalties fuer action_P und action_P "
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)

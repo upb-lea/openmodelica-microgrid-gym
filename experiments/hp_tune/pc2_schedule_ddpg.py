@@ -15,7 +15,7 @@ STUDY_NAME = cfg['STUDY_NAME']
 
 # resources request
 job_resource_plan = {
-    'duration': 16,  # in hours
+    'duration': 24,  # in hours
     'ncpus': 2,
     'memory': 12,
     'vmemory': 16,
