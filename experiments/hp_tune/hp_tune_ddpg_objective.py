@@ -32,14 +32,14 @@ def ddpg_objective(trial):
     number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
     # rew_weigth = trial.suggest_float("rew_weigth", 0.1, 5)
     # rew_penalty_distribution = trial.suggest_float("antiwindup_weight", 0.1, 5)
-    penalty_I_weight = trial.suggest_loguniform("penalty_I_weight", 1e-6, 1e0)
-    penalty_P_weight = trial.suggest_loguniform("penalty_P_weight", 1e-6, 1e0)
-    integrator_weight = trial.suggest_loguniform("integrator_weight", 1 / 20, 20)
+    penalty_I_weight = trial.suggest_float("penalty_I_weight", 100e-6, 1e2)
+    penalty_P_weight = trial.suggest_float("penalty_P_weight", 100e-6, 1e2)
+    integrator_weight = trial.suggest_float("integrator_weight", 1 / 20, 2)
     # integrator_weight = trial.suggest_loguniform("integrator_weight", 1e-6, 1e-0)
     # antiwindup_weight = trial.suggest_loguniform("antiwindup_weight", 50e-6, 50e-3)
     antiwindup_weight = trial.suggest_float("antiwindup_weight", 0.00001, 1)
 
-    learning_rate = trial.suggest_loguniform("learning_rate", 100e-9, 100e-6)  # 0.0002#
+    learning_rate = trial.suggest_loguniform("learning_rate", 1e-6, 1e-3)  # 0.0002#
 
     lr_decay_start = trial.suggest_float("lr_decay_start", 0.00001, 1)  # 3000  # 0.2 * number_learning_steps?
     lr_decay_duration = trial.suggest_float("lr_decay_duration", 0.00001,
@@ -49,15 +49,15 @@ def ddpg_objective(trial):
                            number_learning_steps))
     final_lr = trial.suggest_float("final_lr", 0.00001, 1)
 
-    gamma = trial.suggest_float("gamma", 0.8, 0.99)
+    gamma = trial.suggest_float("gamma", 0.7, 0.99)
     weight_scale = trial.suggest_loguniform("weight_scale", 5e-5, 0.2)  # 0.005
 
     bias_scale = trial.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
-    alpha_relu_actor = 0.1  # trial.suggest_loguniform("alpha_relu_actor", 0.0001, 0.5)  # 0.005
-    alpha_relu_critic = 0.1  # trial.suggest_loguniform("alpha_relu_critic", 0.0001, 0.5)  # 0.005
+    alpha_relu_actor = trial.suggest_loguniform("alpha_relu_actor", 0.0001, 0.5)  # 0.005
+    alpha_relu_critic = trial.suggest_loguniform("alpha_relu_critic", 0.0001, 0.5)  # 0.005
 
-    batch_size = 1024  # trial.suggest_int("batch_size", 32, 1024)  # 128
-    buffer_size = int(1e6)  # trial.suggest_int("buffer_size", 10, 1000000)  # 128
+    batch_size = trial.suggest_int("batch_size", 16, 1024)  # 128
+    buffer_size = trial.suggest_int("buffer_size", int(1e4), int(1e6))  # 128
 
     actor_hidden_size = trial.suggest_int("actor_hidden_size", 10, 200)  # 100  # Using LeakyReLU
     actor_number_layers = trial.suggest_int("actor_number_layers", 1, 3)
@@ -77,9 +77,12 @@ def ddpg_objective(trial):
     noise_theta = trial.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
     error_exponent = 0.5  # trial.suggest_loguniform("error_exponent", 0.01, 4)
 
-    training_episode_length = trial.suggest_int("training_episode_length", 10, 2500)  # 128
-    learning_starts = 0.32  # trial.suggest_loguniform("learning_starts", 0.1, 2)  # 128
-    tau = 0.005  # trial.suggest_loguniform("tau", 0.0001, 0.2)  # 2
+    training_episode_length = trial.suggest_int("training_episode_length", 500, 5000)  # 128
+    # learning_starts = 0.32  # trial.suggest_loguniform("learning_starts", 0.1, 2)  # 128
+    tau = trial.suggest_loguniform("tau", 0.0001, 0.2)  # 2
+
+    train_freq_type = "step"  # trial.suggest_categorical("train_freq_type", ["episode", "step"])
+    train_freq = trial.suggest_int("train_freq", 1, 10000)
 
     learning_rate = linear_schedule(initial_value=learning_rate, final_value=learning_rate * final_lr,
                                     t_start=t_start,
@@ -95,7 +98,8 @@ def ddpg_objective(trial):
                           "Optimierer/ Setting stuff": "Kein Const_liar_feature, hoehere Grenzen, INtergrator Gewicht als HP,"
                                                        "Actionspace = 6, da P und I-Anteil seperate ausgänge und im wrapper addiert werden"
                                                        "Integratorzustand+used_P_Action (je um einen verzoegert) wird mit als feature uebergeben"
-                                                       "Penalties fuer action_P und action_P "
+                                                       "Penalties fuer action_P und action_P"
+                                                       "Mehr HPs: trainfreq, batch/buffer_size, a_relu "
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
@@ -106,10 +110,10 @@ def ddpg_objective(trial):
                                actor_hidden_size, actor_number_layers, critic_hidden_size, critic_number_layers,
                                alpha_relu_critic,
                                noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
-                               training_episode_length, buffer_size,
-                               learning_starts, tau, number_learning_steps, integrator_weight,
+                               training_episode_length, buffer_size,  # learning_starts,
+                               tau, number_learning_steps, integrator_weight,
                                integrator_weight * antiwindup_weight, penalty_I_weight, penalty_P_weight,
-                               n_trail)
+                               train_freq_type, train_freq, n_trail)
 
     return loss
 
