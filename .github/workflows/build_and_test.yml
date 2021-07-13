@@ -55,6 +55,7 @@ jobs:
         git commit -m "Update documentation" -a || true
         # The above command will fail if no changes were present, so we ignore
         # that.
+        git pull
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
