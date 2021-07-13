@@ -180,40 +180,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-openmodelica_microgrid_gym.aux_ctl.observers">
-<span id="omg-aux-ctl-observers"></span><h1>omg.aux_ctl.observers<a class="headerlink" href="#module-openmodelica_microgrid_gym.aux_ctl.observers" title="Permalink to this headline">¶</a></h1>
-<dl class="py class">
-<dt id="openmodelica_microgrid_gym.aux_ctl.observers.Lueneberger">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.aux_ctl.observers.</code><code class="sig-name descname">Lueneberger</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">A</span></em>, <em class="sig-param"><span class="n">B</span></em>, <em class="sig-param"><span class="n">C</span></em>, <em class="sig-param"><span class="n">L</span></em>, <em class="sig-param"><span class="n">ts</span></em>, <em class="sig-param"><span class="n">vDC</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/observers.html#Lueneberger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.observers.Lueneberger" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#openmodelica_microgrid_gym.aux_ctl.observers.Observer" title="openmodelica_microgrid_gym.aux_ctl.observers.Observer"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.aux_ctl.observers.Observer</span></code></a></p>
-<dl class="py method">
-<dt id="openmodelica_microgrid_gym.aux_ctl.observers.Lueneberger.cal_estimate">
-<code class="sig-name descname">cal_estimate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">u</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/observers.html#Lueneberger.cal_estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.observers.Lueneberger.cal_estimate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Estimtates output values depending on measured outputs y and intputs u</p>
-<p>Our exemplary application:
-x_hat = [iL_abc, vC_abc, iLoad_abc]
-y = [iL_abc_mess, vC_abc_mess, 0]
-C = [[1, 0, 0], [0, 1, 0], [0, 0, 0]] -&gt; y_hat = [iL_hat, vC_hat, 0]</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt id="openmodelica_microgrid_gym.aux_ctl.observers.Observer">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.aux_ctl.observers.</code><code class="sig-name descname">Observer</code><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/observers.html#Observer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.observers.Observer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt id="openmodelica_microgrid_gym.aux_ctl.observers.Observer.cal_estimate">
-<code class="sig-name descname">cal_estimate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">u</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/observers.html#Observer.cal_estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.observers.Observer.cal_estimate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Estimtates output values depending on measured outputs y and intputs u</p>
-<p>Our exemplary application:
-x_hat = [iL_abc, vC_abc, iLoad_abc]
-y = [iL_abc_mess, vC_abc_mess, 0]
-C = [[1, 0, 0], [0, 1, 0], [0, 0, 0]] -&gt; y_hat = [iL_hat, vC_hat, 0]</p>
-</dd></dl>
-
-</dd></dl>
-
+  <div class="section" id="omg-aux-ctl-observers">
+<h1>omg.aux_ctl.observers<a class="headerlink" href="#omg-aux-ctl-observers" title="Permalink to this headline">¶</a></h1>
 </div>
 
 

@@ -178,45 +178,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-openmodelica_microgrid_gym.agents.episodic">
-<span id="omg-agents-episodic"></span><h1>omg.agents.episodic<a class="headerlink" href="#module-openmodelica_microgrid_gym.agents.episodic" title="Permalink to this headline">¶</a></h1>
-<dl class="py class">
-<dt id="openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.agents.episodic.</code><code class="sig-name descname">EpisodicLearnerAgent</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs_varnames</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">history</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/episodic.html#EpisodicLearnerAgent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="omg.agents.agent.html#openmodelica_microgrid_gym.agents.agent.Agent" title="openmodelica_microgrid_gym.agents.agent.Agent"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.agents.agent.Agent</span></code></a></p>
-<p>Abstract base class for all Agents. The agent can act on the environment and observe its result.
-This class is aims to wrap the whole learning process into a class to simplify the implementation.</p>
-<p>This class is strongly inspired by the tensorforce library.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>obs_varnames</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]) – list of variable names that match the values of the observations
-passed in the act function. Will be automatically set by the Runner class</p></li>
-<li><p><strong>history</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="omg.util.recorder.html#openmodelica_microgrid_gym.util.recorder.EmptyHistory" title="openmodelica_microgrid_gym.util.recorder.EmptyHistory"><code class="xref py py-class docutils literal notranslate"><span class="pre">EmptyHistory</span></code></a>]) – used to store agent internal data for monitoring</p></li>
-<li><p><strong>env</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="omg.env.modelica.html#openmodelica_microgrid_gym.env.modelica.ModelicaEnv" title="openmodelica_microgrid_gym.env.modelica.ModelicaEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelicaEnv</span></code></a>]) – reference to the environment (only needed when used in internal act function)</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt id="openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent.observe">
-<code class="sig-name descname">observe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reward</span></em>, <em class="sig-param"><span class="n">terminated</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/episodic.html#EpisodicLearnerAgent.observe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent.observe" title="Permalink to this definition">¶</a></dt>
-<dd><p>Observes current reward.
-The idea of the episodic learner is to only learn after termination, therefore update_params() must not be
-called during the episode but only at the end.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent.performance">
-<em class="property">property </em><code class="sig-name descname">performance</code><a class="headerlink" href="#openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent.performance" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent.update_params">
-<code class="sig-name descname">update_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/agents/episodic.html#EpisodicLearnerAgent.update_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.agents.episodic.EpisodicLearnerAgent.update_params" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+  <div class="section" id="omg-agents-episodic">
+<h1>omg.agents.episodic<a class="headerlink" href="#omg-agents-episodic" title="Permalink to this headline">¶</a></h1>
 </div>
 
 

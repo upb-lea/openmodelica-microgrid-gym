@@ -180,73 +180,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-openmodelica_microgrid_gym.aux_ctl.droop_controllers">
-<span id="omg-aux-ctl-droop-controllers"></span><h1>omg.aux_ctl.droop_controllers<a class="headerlink" href="#module-openmodelica_microgrid_gym.aux_ctl.droop_controllers" title="Permalink to this headline">¶</a></h1>
-<dl class="py class">
-<dt id="openmodelica_microgrid_gym.aux_ctl.droop_controllers.DroopController">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.aux_ctl.droop_controllers.</code><code class="sig-name descname">DroopController</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">DroopParams</span></em>, <em class="sig-param"><span class="n">ts</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/droop_controllers.html#DroopController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.droop_controllers.DroopController" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="omg.aux_ctl.filter.html#openmodelica_microgrid_gym.aux_ctl.filter.PT1Filter" title="openmodelica_microgrid_gym.aux_ctl.filter.PT1Filter"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.aux_ctl.filter.PT1Filter</span></code></a></p>
-<p>Implements a basic first order filter with gain and time constant.
-Uses the PT1 to implement the droop but modifies the gains and outputs as
-required to implement inverter droop</p>
-<p>Ignores the first order element if gain is set to 0, providing a linear gain</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>DroopParams</strong> (<a class="reference internal" href="omg.aux_ctl.html#openmodelica_microgrid_gym.aux_ctl.DroopParams" title="openmodelica_microgrid_gym.aux_ctl.DroopParams"><em>DroopParams</em></a>) – The droop parameters (gain, tau, nom_value)</p></li>
-<li><p><strong>ts</strong> (<em>float</em>) – Sample time</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt id="openmodelica_microgrid_gym.aux_ctl.droop_controllers.DroopController.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">val_in</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/droop_controllers.html#DroopController.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.droop_controllers.DroopController.step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements a first order response on the input, using the initialised params</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>val_in</strong> (<em>float</em>) – Input - instantaneous power/reactive power</p>
-</dd>
-<dt class="field-even">Return f/V</dt>
-<dd class="field-even"><p>frequency or voltage, depending on the load and nominal value</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt id="openmodelica_microgrid_gym.aux_ctl.droop_controllers.InverseDroopController">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.aux_ctl.droop_controllers.</code><code class="sig-name descname">InverseDroopController</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">DroopParams</span></em>, <em class="sig-param"><span class="n">ts</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/droop_controllers.html#InverseDroopController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.droop_controllers.InverseDroopController" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#openmodelica_microgrid_gym.aux_ctl.droop_controllers.DroopController" title="openmodelica_microgrid_gym.aux_ctl.droop_controllers.DroopController"><code class="xref py py-class docutils literal notranslate"><span class="pre">openmodelica_microgrid_gym.aux_ctl.droop_controllers.DroopController</span></code></a></p>
-<p>Implements an inverse Droop controller. For the use in grid following inverters
-as opposed to grid forming inverters
-Uses the frequency to determine the power output.
-Contains a derivative elements and an input filter.</p>
-<p>Ignores the first order element if gain is set to 0, providing a linear gain</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>DroopParams</strong> (<a class="reference internal" href="omg.aux_ctl.params.html#openmodelica_microgrid_gym.aux_ctl.params.InverseDroopParams" title="openmodelica_microgrid_gym.aux_ctl.params.InverseDroopParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">InverseDroopParams</span></code></a>) – The InverseDroopControllerParams for the droop controller</p></li>
-<li><p><strong>ts</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – Sample step size</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt id="openmodelica_microgrid_gym.aux_ctl.droop_controllers.InverseDroopController.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">val_in</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/aux_ctl/droop_controllers.html#InverseDroopController.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.aux_ctl.droop_controllers.InverseDroopController.step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements a inverse of the first order system</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>val_in</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – The result of a first order response to be reversed</p>
-</dd>
-<dt class="field-even">Return f/V</dt>
-<dd class="field-even"><p>frequency or voltage, depending on the load and nominal value</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+  <div class="section" id="omg-aux-ctl-droop-controllers">
+<h1>omg.aux_ctl.droop_controllers<a class="headerlink" href="#omg-aux-ctl-droop-controllers" title="Permalink to this headline">¶</a></h1>
 </div>
 
 

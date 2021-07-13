@@ -178,45 +178,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-openmodelica_microgrid_gym.util.randproc">
-<span id="omg-util-randproc"></span><h1>omg.util.randproc<a class="headerlink" href="#module-openmodelica_microgrid_gym.util.randproc" title="Permalink to this headline">¶</a></h1>
-<dl class="py class">
-<dt id="openmodelica_microgrid_gym.util.randproc.RandProcess">
-<em class="property">class </em><code class="sig-prename descclassname">openmodelica_microgrid_gym.util.randproc.</code><code class="sig-name descname">RandProcess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">process_cls</span></em>, <em class="sig-param"><span class="n">proc_kwargs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">bounds</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">initial</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/randproc.html#RandProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.randproc.RandProcess" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>wrapper around stochastic processes to allow easier integration</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>process_cls</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">BaseProcess</span></code>]) – class of the stochastic process</p></li>
-<li><p><strong>proc_kwargs</strong> – arguments passed to the class on initialization</p></li>
-<li><p><strong>bounds</strong> – boundaries of admissible values</p></li>
-<li><p><strong>initial</strong> – starting value of the process</p></li>
-<li><p><strong>gain</strong> – scale of the process output (of not set, results are between the clipped bounds)</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt id="openmodelica_microgrid_gym.util.randproc.RandProcess.reserve">
-<em class="property">property </em><code class="sig-name descname">reserve</code><a class="headerlink" href="#openmodelica_microgrid_gym.util.randproc.RandProcess.reserve" title="Permalink to this definition">¶</a></dt>
-<dd><p>This variable is used to prepare for external loadsteps or other abrupt changes in the process’ variables.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="openmodelica_microgrid_gym.util.randproc.RandProcess.reset">
-<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">initial</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/randproc.html#RandProcess.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.randproc.RandProcess.reset" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="openmodelica_microgrid_gym.util.randproc.RandProcess.sample">
-<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/openmodelica_microgrid_gym/util/randproc.html#RandProcess.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openmodelica_microgrid_gym.util.randproc.RandProcess.sample" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculates time differential and calculates the change in the outputs of the process
-:param t: timestep
-:return: value at the timestep</p>
-</dd></dl>
-
-</dd></dl>
-
+  <div class="section" id="omg-util-randproc">
+<h1>omg.util.randproc<a class="headerlink" href="#omg-util-randproc" title="Permalink to this headline">¶</a></h1>
 </div>
 
 
