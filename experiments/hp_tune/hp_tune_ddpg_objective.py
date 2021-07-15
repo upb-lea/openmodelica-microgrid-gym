@@ -32,14 +32,21 @@ def ddpg_objective(trial):
     number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
     # rew_weigth = trial.suggest_float("rew_weigth", 0.1, 5)
     # rew_penalty_distribution = trial.suggest_float("antiwindup_weight", 0.1, 5)
-    penalty_I_weight = trial.suggest_float("penalty_I_weight", 100e-6, 1e2)
-    penalty_P_weight = trial.suggest_float("penalty_P_weight", 100e-6, 1e2)
-    integrator_weight = trial.suggest_float("integrator_weight", 1 / 20, 2)
+    penalty_I_weight = trial.suggest_float("penalty_I_weight", 100e-6, 2)
+    penalty_P_weight = trial.suggest_float("penalty_P_weight", 100e-6, 2)
+
+    penalty_I_decay_start = trial.suggest_float("penalty_I_decay_start", 0.00001, 1)
+    penalty_P_decay_start = trial.suggest_float("penalty_P_decay_start", 0.00001, 1)
+
+    t_start_penalty_I = int(penalty_I_decay_start * number_learning_steps)
+    t_start_penalty_P = int(penalty_P_decay_start * number_learning_steps)
+
+    integrator_weight = trial.suggest_float("integrator_weight", 1 / 200, 2)
     # integrator_weight = trial.suggest_loguniform("integrator_weight", 1e-6, 1e-0)
     # antiwindup_weight = trial.suggest_loguniform("antiwindup_weight", 50e-6, 50e-3)
     antiwindup_weight = trial.suggest_float("antiwindup_weight", 0.00001, 1)
 
-    learning_rate = trial.suggest_loguniform("learning_rate", 1e-6, 1e-3)  # 0.0002#
+    learning_rate = trial.suggest_loguniform("learning_rate", 1e-6, 1e-1)  # 0.0002#
 
     lr_decay_start = trial.suggest_float("lr_decay_start", 0.00001, 1)  # 3000  # 0.2 * number_learning_steps?
     lr_decay_duration = trial.suggest_float("lr_decay_duration", 0.00001,
@@ -49,7 +56,7 @@ def ddpg_objective(trial):
                            number_learning_steps))
     final_lr = trial.suggest_float("final_lr", 0.00001, 1)
 
-    gamma = trial.suggest_float("gamma", 0.7, 0.99)
+    gamma = trial.suggest_float("gamma", 0.8, 0.9999)
     weight_scale = trial.suggest_loguniform("weight_scale", 5e-5, 0.2)  # 0.005
 
     bias_scale = trial.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
@@ -57,10 +64,10 @@ def ddpg_objective(trial):
     alpha_relu_critic = trial.suggest_loguniform("alpha_relu_critic", 0.0001, 0.5)  # 0.005
 
     batch_size = trial.suggest_int("batch_size", 16, 1024)  # 128
-    buffer_size = trial.suggest_int("buffer_size", int(1e4), int(1e6))  # 128
+    buffer_size = trial.suggest_int("buffer_size", int(1e4), number_learning_steps)  # 128
 
     actor_hidden_size = trial.suggest_int("actor_hidden_size", 10, 200)  # 100  # Using LeakyReLU
-    actor_number_layers = trial.suggest_int("actor_number_layers", 1, 3)
+    actor_number_layers = trial.suggest_int("actor_number_layers", 1, 4)
 
     critic_hidden_size = trial.suggest_int("critic_hidden_size", 10, 300)  # 100
     critic_number_layers = trial.suggest_int("critic_number_layers", 1, 4)
@@ -75,14 +82,16 @@ def ddpg_objective(trial):
         0.25 * number_learning_steps)  # trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
     # number_learning_steps)
     noise_theta = trial.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
-    error_exponent = 0.5  # trial.suggest_loguniform("error_exponent", 0.01, 4)
+    error_exponent = trial.suggest_loguniform("error_exponent", 0.001, 4)
 
     training_episode_length = trial.suggest_int("training_episode_length", 500, 5000)  # 128
     # learning_starts = 0.32  # trial.suggest_loguniform("learning_starts", 0.1, 2)  # 128
     tau = trial.suggest_loguniform("tau", 0.0001, 0.2)  # 2
 
     train_freq_type = "step"  # trial.suggest_categorical("train_freq_type", ["episode", "step"])
-    train_freq = trial.suggest_int("train_freq", 1, 10000)
+    train_freq = trial.suggest_int("train_freq", 1, 15000)
+
+    optimizer = trial.suggest_categorical("optimizer", ["Adam", "SGD", "RMSprop"])  # , "LBFGS"])
 
     learning_rate = linear_schedule(initial_value=learning_rate, final_value=learning_rate * final_lr,
                                     t_start=t_start,
@@ -113,7 +122,7 @@ def ddpg_objective(trial):
                                training_episode_length, buffer_size,  # learning_starts,
                                tau, number_learning_steps, integrator_weight,
                                integrator_weight * antiwindup_weight, penalty_I_weight, penalty_P_weight,
-                               train_freq_type, train_freq, n_trail)
+                               train_freq_type, train_freq, t_start_penalty_I, t_start_penalty_P, optimizer, n_trail)
 
     return loss
 
@@ -335,8 +344,8 @@ if __name__ == "__main__":
 
     TPE_sampler = TPESampler(n_startup_trials=300)  # , constant_liar=True)
 
-    optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
+    #optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
 
-    # optuna_optimize_sqlite(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
+    optuna_optimize_sqlite(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
     # optuna_optimize(ddpg_objective, study_name=STUDY_NAME,
     #                sampler=TPE_sampler)  #, sampler=optuna.samplers.GridSampler(search_space))

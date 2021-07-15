@@ -385,7 +385,7 @@ class Reward:
         # SP = vsp_dq0_master * self.lim
         # mess = vdq0_master * self.lim
 
-        rew = np.sum(-((np.abs(vsp_dq0_master - vdq0_master)) ** 0.5)) * (1 - self.gamma) / 3
+        rew = np.sum(-((np.abs(vsp_dq0_master - vdq0_master)) ** self.exponent)) * (1 - self.gamma) / 3
 
         return rew
 

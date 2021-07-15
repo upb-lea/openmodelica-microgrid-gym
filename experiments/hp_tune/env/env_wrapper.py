@@ -15,7 +15,8 @@ class FeatureWrapper(Monitor):
 
     def __init__(self, env, number_of_features: int = 0, training_episode_length: int = np.inf,
                  recorder=None, n_trail="", integrator_weight=net.ts, antiwindup_weight=net.ts, gamma=0,
-                 penalty_I_weight=1, penalty_P_weight=1):
+                 penalty_I_weight=1, penalty_P_weight=1, t_start_penalty_I=0, t_start_penalty_P=0,
+                 number_learing_steps=500000):
         """
         Env Wrapper to add features to the env-observations and adds information to env.step output which can be used in
         case of an continuing (non-episodic) task to reset the environment without being terminated by done
@@ -63,6 +64,9 @@ class FeatureWrapper(Monitor):
         self.gamma = gamma
         self.penalty_I_weight = penalty_I_weight
         self.penalty_P_weight = penalty_P_weight
+        self.t_start_penalty_I = t_start_penalty_I
+        self.t_start_penalty_P = t_start_penalty_P
+        self.number_learing_steps = number_learing_steps
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
         """
@@ -93,9 +97,25 @@ class FeatureWrapper(Monitor):
         action_P_penalty = np.sum(-((np.abs(action_P)) ** 0.5)) * (1 - self.gamma) / 3
 
         # reward_weight is = 1
-        reward = (reward + self.penalty_I_weight * integrator_penalty
-                  + self.penalty_P_weight * action_P_penalty) \
-                 / (1 + self.penalty_I_weight + self.penalty_P_weight)
+
+        if self.total_steps > self.t_start_penalty_I:
+            penalty_I_weight_scale = 1 / (self.t_start_penalty_I - self.number_learing_steps) * self.total_steps - \
+                                     self.number_learing_steps / (self.t_start_penalty_I - self.number_learing_steps)
+
+        else:
+            penalty_I_weight_scale = 1
+
+        if self.total_steps > self.t_start_penalty_P:
+            penalty_P_weight_scale = 1 / (self.t_start_penalty_P - self.number_learing_steps) * self.total_steps - \
+                                     self.number_learing_steps / (self.t_start_penalty_P - self.number_learing_steps)
+
+        else:
+
+            penalty_P_weight_scale = 1
+
+        reward = (reward + (self.penalty_I_weight * penalty_I_weight_scale) * integrator_penalty
+                  + self.penalty_P_weight * penalty_P_weight_scale * action_P_penalty) \
+                 / (1 + self.penalty_I_weight * penalty_I_weight_scale + self.penalty_P_weight * penalty_P_weight_scale)
 
         self._n_training_steps += 1
 

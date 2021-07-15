@@ -2,6 +2,7 @@ import platform
 import time
 
 import gym
+import matplotlib.pyplot as plt
 import numpy as np
 import torch as th
 from stable_baselines3 import DDPG
@@ -33,7 +34,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                         training_episode_length, buffer_size,  # learning_starts,
                         tau, number_learning_steps, integrator_weight, antiwindup_weight,
                         penalty_I_weight, penalty_P_weight,
-                        train_freq_type, train_freq, n_trail):
+                        train_freq_type, train_freq, t_start_penalty_I, t_start_penalty_P, optimizer, n_trail):
     if node not in cfg['lea_vpn_nodes']:
         # assume we are on pc2
         log_path = f'/scratch/hpc-prf-reinfl/weber/OMG/{folder_name}/{n_trail}/'
@@ -55,7 +56,9 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     env = FeatureWrapper(env, number_of_features=11, training_episode_length=training_episode_length,
                          recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
                          antiwindup_weight=antiwindup_weight, gamma=gamma,
-                         penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight)
+                         penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight,
+                         t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
+                         number_learing_steps=number_learning_steps)
 
     # todo: Upwnscale actionspace - lessulgy possible? Interaction pytorch...
     env.action_space = gym.spaces.Box(low=np.full(6, -1), high=np.full(6, 1))
@@ -70,9 +73,20 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     #                                              sigma_min=noise_var * np.ones(n_actions) * noise_var_min,
     #                                              mean=np.zeros(n_actions), theta=noise_theta * np.ones(n_actions),
     #                                              sigma=noise_var * np.ones(n_actions), dt=net.ts)
+    print(optimizer)
+    if optimizer == 'SGD':
+        used_optimzer = th.optim.SGD
+    elif optimizer == 'RMSprop':
+        used_optimzer = th.optim.RMSprop
+    # elif optimizer == 'LBFGS':
+    # needs in step additional argument
+    #    used_optimzer = th.optim.LBFGS
+    else:
+        used_optimzer = th.optim.Adam
 
     policy_kwargs = dict(activation_fn=th.nn.LeakyReLU, net_arch=dict(pi=[actor_hidden_size] * actor_number_layers
-                                                                      , qf=[critic_hidden_size] * critic_number_layers))
+                                                                      , qf=[critic_hidden_size] * critic_number_layers),
+                         optimizer_class=used_optimzer)
 
     model = DDPG('MlpPolicy', env, verbose=1, tensorboard_log=log_path,
                  # model = myDDPG('MlpPolicy', env, verbose=1, tensorboard_log=f'{folder_name}/{n_trail}/',
