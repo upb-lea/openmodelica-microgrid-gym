@@ -154,6 +154,8 @@ def experiment_fit_TD3(learning_rate, gamma, use_gamma_in_rew, weight_scale, bia
         if kk < critic_number_layers:
             model.critic.qf0._modules[str(count + 1)].negative_slope = alpha_relu_critic
             model.critic_target.qf0._modules[str(count + 1)].negative_slope = alpha_relu_critic
+            model.critic.qf1._modules[str(count + 1)].negative_slope = alpha_relu_critic
+            model.critic_target.qf1._modules[str(count + 1)].negative_slope = alpha_relu_critic
 
         count = count + 2
 
