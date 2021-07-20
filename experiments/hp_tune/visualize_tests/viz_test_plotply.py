@@ -16,8 +16,8 @@ trail = db.Trail_number_21
 for post in trail.find({"Name": "Test"}):
     test_data = post
 
-fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))
-ax1, ax2 = ax.flatten()
+# fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))
+# ax1, ax2 = ax.flatten()
 ts = 1e-4  # if ts stored: take from db
 t = np.arange(0, len(test_data['lc_capacitor1_v']) * ts, ts).tolist()
 
@@ -34,14 +34,24 @@ df2['v_c'] = pd.DataFrame(test_data['lc_capacitor3_v'])
 # df2['v_1_SP'] = pd.DataFrame(test_data['inverter1_v_ref_1'])
 # df2['v_2_SP'] = pd.DataFrame(test_data['inverter1_v_ref_2'])
 
+df2['v_d_mess'] = pd.DataFrame(test_data['master_CVVd'])
+df2['v_q_mess'] = pd.DataFrame(test_data['master_CVVq'])
+df2['v_0_mess'] = pd.DataFrame(test_data['master_CVV0'])
+
 # df2['phase'] = pd.DataFrame(test_data['Phase'])
 
 # v_sp_abc = dq0_to_abc(np.array([df2['v_0_SP'], df2['v_1_SP'], df2['v_2_SP']]), np.array(df2['phase']))
 
 # v_mess_dq0 = abc_to_dq0(np.array([df2['v_a'], df2['v_b'], df2['v_c']]), np.array(df2['phase']))
 
-# plt.plot(t, v_sp_abc[1,:])
-# plt.show()
+plt.plot(t, df2['v_d_mess'])
+plt.plot(t, df2['v_q_mess'])
+plt.plot(t, df2['v_0_mess'])
+plt.grid()
+plt.xlabel("time")
+plt.ylabel("v_dq0")
+plt.title('PIPI')
+plt.show()
 
 x = df2['t']
 v_a = df2['v_a']  # v_sp_abc[0,:]#

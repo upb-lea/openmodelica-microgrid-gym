@@ -9,7 +9,8 @@ from pymongo import MongoClient
 
 from openmodelica_microgrid_gym.util import dq0_to_abc, abc_to_dq0
 
-db_name = 'PC2_DDPG_MRE_V_only'
+# db_name = 'PC2_DDGP_Vctrl_single_inv_18_penalties'
+db_name = 'DDPG_SplitActor_Best_study18_6462'
 trial = '834'
 show_episode_number = 10
 
@@ -17,8 +18,8 @@ with sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001)) as
     with MongoClient(f'mongodb://localhost:{tun.local_bind_port}/') as client:
         db = client[db_name]
 
-        # trial = db.Trail_number_232
-        trial = db.Trial_number_7
+        trial = db.Trial_number_4
+        # trial = db.Trial_number_6462
 
         trial_config = trial.find_one({"Name": "Config"})
         trial_test = trial.find_one({"Name": "Test"})
@@ -67,6 +68,7 @@ with sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001)) as
         plt.plot(t_test, v_mess_dq0[1, :])
         plt.plot(t_test, v_mess_dq0[2, :])
         plt.plot(t_test, v_sp_d_test)
+        #plt.ylim([-30, 300])
         plt.grid()
         plt.xlabel("time")
         plt.ylabel("v_dq0")
@@ -81,6 +83,100 @@ with sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001)) as
         plt.ylabel("v_abc")
         plt.title('Test')
         plt.show()
+
+        if 1:
+            actionP0_test = trial_test['ActionP0']
+            actionP1_test = trial_test['ActionP1']
+            actionP2_test = trial_test['ActionP2']
+            actionI0_test = trial_test['ActionI0']
+            actionI1_test = trial_test['ActionI1']
+            actionI2_test = trial_test['ActionI2']
+
+            plt.plot(t_test[1:], actionP0_test)
+            plt.plot(t_test[1:], actionP1_test)
+            plt.plot(t_test[1:], actionP2_test)
+            # plt.xlim([0, 0.1])
+            plt.grid()
+            plt.xlabel("time")
+            plt.ylabel("action_P")
+            plt.title('Test')
+            plt.show()
+
+            plt.plot(t_test[1:], actionI0_test)
+            plt.plot(t_test[1:], actionI1_test)
+            plt.plot(t_test[1:], actionI2_test)
+            # plt.xlim([0, 0.1])
+            plt.grid()
+            plt.xlabel("time")
+            plt.ylabel("action_I")
+            plt.title('Test')
+            plt.show()
+
+            integrator_sum0 = np.cumsum(
+                np.array(actionI0_test) * trial_config['integrator_weight'])  # trial_test['integrator_sum0']#
+            integrator_sum1 = np.cumsum(np.array(actionI1_test) * trial_config['integrator_weight'])
+            integrator_sum2 = np.cumsum(np.array(actionI2_test) * trial_config['integrator_weight'])
+
+            plt.plot(t_test[1:], integrator_sum0)
+            plt.plot(t_test[1:], integrator_sum1)
+            plt.plot(t_test[1:], integrator_sum2)
+            # plt.xlim([0, 0.1])
+            plt.grid()
+            plt.xlabel("time")
+            plt.ylabel("Integratorzustand")
+            plt.title('Test')
+            plt.show()
+
+            if 1:
+                plot = px.Figure()
+                plot.add_trace(
+                    px.Scatter(y=actionI0_test))
+                plot.add_trace(
+                    px.Scatter(y=actionI1_test))
+                plot.add_trace(
+                    px.Scatter(y=actionI2_test))
+
+                plot.update_layout(
+                    xaxis=dict(
+                        rangeselector=dict(
+                            buttons=list([
+                                dict(count=1,
+                                     step="day",
+                                     stepmode="backward"),
+                            ])
+                        ),
+                        rangeslider=dict(
+                            visible=True
+                        ),
+                    )
+                )
+
+                plot.show()
+
+                plot = px.Figure()
+                plot.add_trace(
+                    px.Scatter(y=actionP0_test))
+                plot.add_trace(
+                    px.Scatter(y=actionP1_test))
+                plot.add_trace(
+                    px.Scatter(y=actionP2_test))
+
+                plot.update_layout(
+                    xaxis=dict(
+                        rangeselector=dict(
+                            buttons=list([
+                                dict(count=1,
+                                     step="day",
+                                     stepmode="backward"),
+                            ])
+                        ),
+                        rangeslider=dict(
+                            visible=True
+                        ),
+                    )
+                )
+
+                plot.show()
 
         # pyplot v_abc
         plot = px.Figure()

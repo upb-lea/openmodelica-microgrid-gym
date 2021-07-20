@@ -231,7 +231,7 @@ def run_experiment():
             plt.close()
 
         env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
-                       reward_fun=rew.rew_fun_PIPI,
+                       reward_fun=rew.rew_fun_PIPI_MRE,
                        viz_cols=[
                            PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'master.SPV{i}' for i in 'abc']],
                                     callback=plotter.xylables_v_abc,

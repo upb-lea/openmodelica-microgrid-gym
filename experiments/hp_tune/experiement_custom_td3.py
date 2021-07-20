@@ -28,16 +28,17 @@ mongo_recorder = Recorder(node=node,
                           database_name=folder_name)  # store to port 12001 for ssh data to cyberdyne or locally as json to cfg[meas_data_folder]
 
 
-def experiment_fit_DDPG_custom(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
-                               batch_size,
-                               actor_hidden_size, actor_number_layers, critic_hidden_size, critic_number_layers,
-                               alpha_relu_critic,
-                               noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
-                               training_episode_length, buffer_size,  # learning_starts,
-                               tau, number_learning_steps, integrator_weight, antiwindup_weight,
-                               penalty_I_weight, penalty_P_weight,
-                               train_freq_type, train_freq, t_start_penalty_I, t_start_penalty_P, optimizer, n_trail
-                               ):
+def experiment_fit_Custom_TD3(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
+                              batch_size,
+                              actor_hidden_size, actor_number_layers, critic_hidden_size, critic_number_layers,
+                              alpha_relu_critic,
+                              noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
+                              training_episode_length, buffer_size,  # learning_starts,
+                              tau, number_learning_steps, integrator_weight, antiwindup_weight,
+                              penalty_I_weight, penalty_P_weight,
+                              train_freq_type, train_freq, t_start_penalty_I, t_start_penalty_P, optimizer, n_trail,
+                              policy_delay, target_policy_noise, target_noise_clip
+                              ):
     if node not in cfg['lea_vpn_nodes']:
         # assume we are on pc2
         log_path = f'/scratch/hpc-prf-reinfl/weber/OMG/{folder_name}/{n_trail}/'
@@ -91,29 +92,29 @@ def experiment_fit_DDPG_custom(learning_rate, gamma, use_gamma_in_rew, weight_sc
                                                                       , qf=[critic_hidden_size] * critic_number_layers),
                          optimizer_class=used_optimzer)
 
-    model = DDPG(policy='CustomTD3Policy',
-                 env=env,
-                 learning_rate=learning_rate,
-                 buffer_size=buffer_size,
-                 learning_starts=100,
-                 batch_size=batch_size,
-                 tau=tau,
-                 gamma=gamma,
-                 train_freq=(train_freq, train_freq_type),
-                 gradient_steps=-1,
-                 action_noise=action_noise,
-                 optimize_memory_usage=False,
-                 # policy_delay=policy_delay,
-                 # target_policy_noise=target_policy_noise,
-                 # target_noise_clip=target_noise_clip,
-                 tensorboard_log=log_path,
-                 create_eval_env=False,
-                 policy_kwargs=policy_kwargs,
-                 verbose=0,
-                 seed=None,
-                 device="auto",
-                 _init_setup_model=True
-                 )
+    model = TD3(policy='CustomTD3Policy',
+                env=env,
+                learning_rate=learning_rate,
+                buffer_size=buffer_size,
+                learning_starts=100,
+                batch_size=batch_size,
+                tau=tau,
+                gamma=gamma,
+                train_freq=(train_freq, train_freq_type),
+                gradient_steps=-1,
+                action_noise=action_noise,
+                optimize_memory_usage=False,
+                policy_delay=policy_delay,
+                target_policy_noise=target_policy_noise,
+                target_noise_clip=target_noise_clip,
+                tensorboard_log=log_path,
+                create_eval_env=False,
+                policy_kwargs=policy_kwargs,
+                verbose=0,
+                seed=None,
+                device="auto",
+                _init_setup_model=True
+                )
 
     # Adjust network -> maybe change to Costume net like https://stable-baselines3.readthedocs.io/en/master/guide/custom_policy.html
     # adn scale weights and biases
@@ -151,8 +152,8 @@ def experiment_fit_DDPG_custom(learning_rate, gamma, use_gamma_in_rew, weight_sc
         if kk < critic_number_layers:
             model.critic.qf0._modules[str(count + 1)].negative_slope = alpha_relu_critic
             model.critic_target.qf0._modules[str(count + 1)].negative_slope = alpha_relu_critic
-            # model.critic.qf1._modules[str(count + 1)].negative_slope = alpha_relu_critic
-            # model.critic_target.qf1._modules[str(count + 1)].negative_slope = alpha_relu_critic
+            model.critic.qf1._modules[str(count + 1)].negative_slope = alpha_relu_critic
+            model.critic_target.qf1._modules[str(count + 1)].negative_slope = alpha_relu_critic
 
         count = count + 2
 
