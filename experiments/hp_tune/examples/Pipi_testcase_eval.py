@@ -200,9 +200,9 @@ upper_bound_load_clip = 200  # to apply symmetrical load bounds
 lower_bound_load_clip_std = 2
 upper_bound_load_clip_std = 0
 
-for max_eps_steps in range(len(max_episode_steps_list)):
+for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit='step', leave=False):
 
-    for ave_run in range(num_average):
+    for ave_run in tqdm(range(num_average), desc='steps', unit='step', leave=False):
         R = np.random.uniform(low=lower_bound_load, high=upper_bound_load)
 
         gen = RandProcess(VasicekProcess, proc_kwargs=dict(speed=800, vol=40, mean=R), initial=R,
@@ -338,7 +338,8 @@ for max_eps_steps in range(len(max_episode_steps_list)):
 
         agent_fig = None
         obs = env.reset()
-        for step in tqdm(range(env.max_episode_steps), desc='steps', unit='step', leave=False):
+        # for step in tqdm(range(env.max_episode_steps), desc='steps', unit='step', leave=False):
+        for step in range(env.max_episode_steps):
             # for _ in tqdm(range(1000), desc='steps', unit='step', leave=False):
 
             done, r = False, None
