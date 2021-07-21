@@ -359,6 +359,7 @@ for max_eps_steps in range(len(max_episode_steps_list)):
 
             if step % 1000 == 0 and step != 0:
                 env.close()
+                agent.reset()
                 obs = env.reset()
 
             #    break
