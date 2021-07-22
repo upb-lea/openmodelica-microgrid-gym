@@ -458,7 +458,7 @@ if __name__ == "__main__":
 
     TPE_sampler = TPESampler(n_startup_trials=2500)  # , constant_liar=True)
 
-    optuna_optimize_mysql_lea35(td3_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
+    optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
 
     # optuna_optimize_sqlite(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
     # optuna_optimize(ddpg_objective, study_name=STUDY_NAME,
