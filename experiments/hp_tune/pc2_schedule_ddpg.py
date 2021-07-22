@@ -25,9 +25,11 @@ MAX_WORKERS = ALLOWED_MAX_CPU_CORES // job_resource_plan['ncpus']
 
 
 def main():
+    started_workers = 0
     print('Start slavedriving loop..')
     old_ccsinfo_counts = None
-    while True:
+    # while True:
+    while started_workers < 300:
         job_files_path = pathlib.Path(
             f"/scratch/hpc-prf-reinfl/weber/OMG/ccs_job_files/{STUDY_NAME}")  # SCRATCH = $PC2PFS/hpc_....re/OMG_prjecet
         job_files_path.mkdir(parents=False, exist_ok=True)
@@ -49,6 +51,7 @@ def main():
             n_workers = MAX_WORKERS - total_busy
             print(f'Start {n_workers} workers:')
             for w in range(n_workers):
+                started_workers += 1
                 jobid = str(uuid.uuid4()).split('-')[0]
                 cluster = "oculus"
                 job_name = job_files_path / f"pc2_job_{jobid}.sh"
