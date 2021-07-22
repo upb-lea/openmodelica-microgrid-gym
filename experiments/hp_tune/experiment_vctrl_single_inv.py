@@ -152,7 +152,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     rew.exponent = 0.5  # 1
     limit_exceeded_in_test = False
     limit_exceeded_penalty = 0
-    env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v0',
+    env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v1',
                         reward_fun=rew.rew_fun_dq0,
                         abort_reward=-1,  # no needed if in rew no None is given back
                         # on_episode_reset_callback=cb.fire  # needed?
@@ -179,7 +179,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     integrator_sum1 = []
     integrator_sum2 = []
 
-    while True:
+    for step in range(env_test.max_episode_steps):
         action, _states = model.predict(obs, deterministic=True)
         obs, rewards, done, info = env_test.step(action)
         phase_list.append(env_test.env.net.components[0].phase)
@@ -201,6 +201,12 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
         return_sum += rewards
         rew_list.append(rewards)
         # print(rewards)
+
+        if step % 1000 == 0 and step != 0:
+            env_test.close()
+
+            obs = env_test.reset()
+
         if done:
             env_test.close()
             # print(limit_exceeded_in_test)
