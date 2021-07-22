@@ -1,6 +1,7 @@
 package grid
-  import Modelica.Units.SI;
-  import SI = Modelica.Units.SI;
+  import SI = Modelica.SIunits;
+  //import Modelica.Units.SI;
+  //import SI = Modelica.Units.SI;
   
   package filter
     model pi
@@ -825,7 +826,7 @@ package grid
       parameter SI.Inductance L2 = 0.001;
       parameter SI.Inductance L3 = 0.001;
       Modelica.Electrical.Analog.Interfaces.Pin pin1 annotation(
-        Placement(visible = true, transformation(origin = {-100, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-100, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+        Placement(visible = true, transformation(origin = {-100, -60}, extent = {{-10, -10}, {10,10}}, rotation = 0), iconTransformation(origin = {-100, -60}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Electrical.Analog.Interfaces.Pin pin2 annotation(
         Placement(visible = true, transformation(origin = {-100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0), iconTransformation(origin = {-100, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Electrical.Analog.Basic.Ground ground1 annotation(
@@ -1288,7 +1289,7 @@ package grid
 
   package components
     model resistor
-      parameter SI.Resistance R(start = 1);
+      parameter SI.Resistance R = 1;
       extends Modelica.Electrical.Analog.Interfaces.OnePort;
     equation
       v = R * i;
@@ -1864,15 +1865,15 @@ package grid
       Placement(visible = true, transformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
   grid.loads.rl rl1(L1 = 0.00495, L2 = 0.00495, L3 = 0.00495, R1 = 6.22, R2 = 6.22, R3 = 6.22)  annotation(
       Placement(visible = true, transformation(origin = {86, 4}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  grid.ideal_filter.l l12(L1 = 0.000589, L2 = 0.000589, L3 = 0.000589)  annotation(
+  grid.ideal_filter.l l12(L1 = 0.0002, L2 = 0.0002, L3 = 0.0002)  annotation(
       Placement(visible = true, transformation(origin = {-4, 0}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
-  grid.ideal_filter.l l13(L1 = 0.000589, L2 = 0.000589, L3 = 0.000589)  annotation(
+  grid.ideal_filter.l l13(L1 = 0.0002, L2 = 0.0002, L3 = 0.0002)  annotation(
       Placement(visible = true, transformation(origin = {26, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  grid.ideal_filter.l l23(L1 = 0.000589, L2 = 0.000589, L3 = 0.000589)  annotation(
+  grid.ideal_filter.l l23(L1 = 0.0002, L2 = 0.0002, L3 = 0.0002)  annotation(
       Placement(visible = true, transformation(origin = {22, -30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  grid.filter.lcl lcl1(C1 = 0.000010029, C2 = 0.000010029, C3 = 0.000010029, L1 = 0.0003, L2 = 0.0003, L3 = 0.0003, L4 = 0.0003, L5 = 0.0003, L6 = 0.0003, R1 = 0, R2 = 0, R3 = 0, R4 = 0, R5 = 0, R6 = 0, R7 = 0, R8 = 0, R9 = 0)  annotation(
+  grid.filter.lcl lcl1(C1 = 0.00003, C2 = 0.00003, C3 = 0.00003, L1 = 0.002, L2 = 0.002, L3 = 0.002, L4 = 0.002, L5 = 0.002, L6 = 0.002, R1 = 0.00001, R2 = 0.00001, R3 = 0.00001, R4 = 0.00001, R5 = 0.00001, R6 = 0.00001, R7 = 0.00001, R8 = 0.00001, R9 = 0.00001)  annotation(
       Placement(visible = true, transformation(origin = {-34, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  filter.lcl lcl2(C1 = 0.000010029, C2 = 0.000010029, C3 = 0.000010029, L1 = 0.0003, L2 = 0.0003, L3 = 0.0003, L4 = 0.0003, L5 = 0.0003, L6 = 0.0003, R1 = 0, R2 = 0, R3 = 0, R4 = 0, R5 = 0, R6 = 0, R7 = 0, R8 = 0, R9 = 0)  annotation(
+  filter.lcl lcl2(C1 = 0.00003, C2 = 0.00003, C3 = 0.00003, L1 = 0.002, L2 = 0.002, L3 = 0.002, L4 = 0.002, L5 = 0.002, L6 = 0.002, R1 = 0.00001, R2 = 0.00001, R3 = 0.00001, R4 = 0.00001, R5 = 0.00001, R6 = 0.00001, R7 = 0.00001, R8 = 0.00001, R9 = 0.00001)  annotation(
       Placement(visible = true, transformation(origin = {-34, -30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   equation
     connect(i1p1, inverter1.u1) annotation(

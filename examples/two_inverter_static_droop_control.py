@@ -24,7 +24,7 @@ num_episodes = 1  # number of simulation episodes
 # (here, only 1 episode makes sense since simulation conditions don't change in this example)
 DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
 QDroopGain = 1000.0  # virtual droop gain for reactive power / VAR/V
-net = Network.load('../net/net.yaml')
+net = Network.load('../experiments/swing_equation/microgrid.yaml')
 delta_t = net.ts  # simulation time step size / s
 freq_nom = net.freq_nom  # nominal grid frequency / Hz
 v_nom = net.v_nom  # nominal grid voltage / V
@@ -78,10 +78,10 @@ if __name__ == '__main__':
                                               droop_param, qdroop_param, ts_sim=delta_t, name='slave'))
 
     # Define the agent as StaticControlAgent which performs the basic controller steps for every environment set
-    agent = StaticControlAgent(ctrl, {'master': [[f'lc1.inductor{k}.i' for k in '123'],
-                                                 [f'lc1.capacitor{k}.v' for k in '123']],
-                                      'slave': [[f'lcl1.inductor{k}.i' for k in '123'],
-                                                [f'lcl1.capacitor{k}.v' for k in '123'],
+    agent = StaticControlAgent(ctrl, {'master': [[f'lcl1.inductor{k}.i' for k in '123'],
+                                                 [f'lcl1.capacitor{k}.v' for k in '123']],
+                                      'slave': [[f'lcl2.inductor{k}.i' for k in '123'],
+                                                [f'lcl2.capacitor{k}.v' for k in '123'],
                                                 np.zeros(3)]})
 
     # Define the environment
@@ -98,7 +98,7 @@ if __name__ == '__main__':
                                  'rl1.inductor2.L': 0.001,
                                  'rl1.inductor3.L': 0.001
                                  },
-                   model_path='../omg_grid/grid.network.fmu',
+                   model_path='../omg_grid/grid.microgrid.fmu',
                    net=net
                    )
 
