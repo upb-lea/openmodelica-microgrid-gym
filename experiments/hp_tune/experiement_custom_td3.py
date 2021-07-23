@@ -15,7 +15,7 @@ from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
 from experiments.hp_tune.env.env_wrapper import FeatureWrapper
 from experiments.hp_tune.env.rewards import Reward
 from experiments.hp_tune.env.vctrl_single_inv import net  # , folder_name
-from experiments.hp_tune.util.config import cfg
+from experiments.hp_tune.util.configTD3 import cfg
 from experiments.hp_tune.util.recorder import Recorder
 
 # np.random.seed(0)

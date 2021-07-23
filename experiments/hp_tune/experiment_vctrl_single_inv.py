@@ -178,7 +178,16 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     integrator_sum0 = []
     integrator_sum1 = []
     integrator_sum2 = []
-
+    va = []
+    vb = []
+    vc = []
+    v_ref0 = []
+    v_ref1 = []
+    v_ref2 = []
+    ia = []
+    ib = []
+    ic = []
+    R_load = []
     for step in range(env_test.max_episode_steps):
         action, _states = model.predict(obs, deterministic=True)
         obs, rewards, done, info = env_test.step(action)
@@ -193,6 +202,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
         integrator_sum1.append(np.float64(env_test.integrator_sum[1]))
         integrator_sum2.append(np.float64(env_test.integrator_sum[2]))
 
+
         if rewards == -1 and not limit_exceeded_in_test:
             # Set addidional penalty of -1 if limit is exceeded once in the test case
             limit_exceeded_in_test = True
@@ -203,9 +213,20 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
         # print(rewards)
 
         if step % 1000 == 0 and step != 0:
-            env_test.close()
+            va.extend(env_test.history[env_test.viz_col_tmpls[0].vars[0]].copy().values.tolist())
+            vb.extend(env_test.history[env_test.viz_col_tmpls[0].vars[1]].copy().values.tolist())
+            vc.extend(env_test.history[env_test.viz_col_tmpls[0].vars[2]].copy().values.tolist())
+            v_ref0.extend(env_test.history[env_test.viz_col_tmpls[0].vars[3]].copy().values.tolist())
+            v_ref1.extend(env_test.history[env_test.viz_col_tmpls[0].vars[4]].copy().values.tolist())
+            v_ref2.extend(env_test.history[env_test.viz_col_tmpls[0].vars[5]].copy().values.tolist())
+            ia.extend(env_test.history[env_test.viz_col_tmpls[1].vars[0]].copy().values.tolist())
+            ib.extend(env_test.history[env_test.viz_col_tmpls[1].vars[1]].copy().values.tolist())
+            ic.extend(env_test.history[env_test.viz_col_tmpls[1].vars[2]].copy().values.tolist())
+            R_load.extend(env_test.history[env_test.viz_col_tmpls[2].vars[1]].copy().values.tolist())
 
+            env_test.close()
             obs = env_test.reset()
+            phase_list.append(env_test.env.net.components[0].phase)
 
         if done:
             env_test.close()
@@ -216,6 +237,16 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     test_after_training = {"Name": "Test",
                            "time": ts,
                            "Reward": rew_list,
+                           "lc_capacitor1_v": va,
+                           "lc_capacitor2_v": vb,
+                           "lc_capacitor3_v": vc,
+                           "inverter1_v_ref_0": v_ref0,
+                           "inverter1_v_ref_1": v_ref1,
+                           "inverter1_v_ref_2": v_ref2,
+                           "lc_inductor1_i": ia,
+                           "lc_inductor2_i": ib,
+                           "lc_inductor3_i": ic,
+                           "r_load_resistor1_R": R_load,
                            "ActionP0": aP0,
                            "ActionP1": aP1,
                            "ActionP2": aP2,
@@ -236,6 +267,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                    "Reward = MRE, PI-Approch using AntiWindUp"
                                    "without abort! (risk=0 manullay in env); only voltage taken into account in reward!"}
 
+    """
+    In new testenv not used, because then only the last episode is stored
     # Add v-&i-measurements
     test_after_training.update({env_test.viz_col_tmpls[j].vars[i].replace(".", "_"): env_test.history[
         env_test.viz_col_tmpls[j].vars[i]].copy().tolist() for j in range(2) for i in range(6)
@@ -243,6 +276,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     test_after_training.update({env_test.viz_col_tmpls[2].vars[i].replace(".", "_"): env_test.history[
         env_test.viz_col_tmpls[2].vars[i]].copy().tolist() for i in range(3)
                                 })
+    """
 
     mongo_recorder.save_to_json('Trial_number_' + n_trail, test_after_training)
 

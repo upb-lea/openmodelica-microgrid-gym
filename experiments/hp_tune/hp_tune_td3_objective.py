@@ -4,6 +4,7 @@ import time
 import sqlalchemy
 from optuna.samplers import TPESampler
 
+from experiments.hp_tune.experiment_vctrl_single_inv_TD3 import experiment_fit_TD3
 
 os.environ['PGOPTIONS'] = '-c statement_timeout=1000'
 
@@ -13,9 +14,10 @@ import argparse
 import sshtunnel
 import numpy as np
 # np.random.seed(0)
-from experiments.hp_tune.util.config import cfg
+from experiments.hp_tune.util.configTD3 import cfg
 
-from experiments.hp_tune.experiment_vctrl_single_inv import mongo_recorder, experiment_fit_DDPG
+# from experiments.hp_tune.experiment_vctrl_single_inv import experiment_fit_DDPG, mongo_recorder
+from experiments.hp_tune.experiment_vctrl_single_inv_TD3 import mongo_recorder
 from experiments.hp_tune.util.scheduler import linear_schedule
 
 PC2_LOCAL_PORT2PSQL = 11999
@@ -28,8 +30,7 @@ STUDY_NAME = cfg['STUDY_NAME']  # 'DDPG_MRE_sqlite_PC2'
 node = platform.uname().node
 
 
-
-def ddpg_objective(trial):
+def td3_objective(trial):
     number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
     # rew_weigth = trial.suggest_float("rew_weigth", 0.1, 5)
     # rew_penalty_distribution = trial.suggest_float("antiwindup_weight", 0.1, 5)
@@ -60,15 +61,15 @@ def ddpg_objective(trial):
     gamma = trial.suggest_float("gamma", 0.5, 0.9999)
     weight_scale = trial.suggest_loguniform("weight_scale", 5e-5, 0.2)  # 0.005
 
-    bias_scale = trial.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
+    # bias_scale = trial.suggest_loguniform("bias_scale", 5e-4, 0.1)  # 0.005
     alpha_relu_actor = trial.suggest_loguniform("alpha_relu_actor", 0.0001, 0.5)  # 0.005
     alpha_relu_critic = trial.suggest_loguniform("alpha_relu_critic", 0.0001, 0.5)  # 0.005
 
     batch_size = trial.suggest_int("batch_size", 16, 1024)  # 128
     buffer_size = trial.suggest_int("buffer_size", int(1e4), number_learning_steps)  # 128
 
-    actor_hidden_size = trial.suggest_int("actor_hidden_size", 10, 200)  # 100  # Using LeakyReLU
-    actor_number_layers = trial.suggest_int("actor_number_layers", 1, 4)
+    actor_hidden_size = trial.suggest_int("actor_hidden_size", 10, 250)  # 100  # Using LeakyReLU
+    actor_number_layers = trial.suggest_int("actor_number_layers", 1, 5)
 
     critic_hidden_size = trial.suggest_int("critic_hidden_size", 10, 300)  # 100
     critic_number_layers = trial.suggest_int("critic_number_layers", 1, 4)
@@ -87,7 +88,7 @@ def ddpg_objective(trial):
 
     training_episode_length = trial.suggest_int("training_episode_length", 500, 5000)  # 128
     # learning_starts = 0.32  # trial.suggest_loguniform("learning_starts", 0.1, 2)  # 128
-    tau = trial.suggest_loguniform("tau", 0.0001, 0.3)  # 2
+    tau = trial.suggest_loguniform("tau", 0.0001, 0.2)  # 2
 
     train_freq_type = "step"  # trial.suggest_categorical("train_freq_type", ["episode", "step"])
     train_freq = trial.suggest_int("train_freq", 1, 15000)
@@ -99,9 +100,13 @@ def ddpg_objective(trial):
                                     t_end=t_end,
                                     total_timesteps=number_learning_steps)
 
+    policy_delay = trial.suggest_int("policy_delay", 1, 50)
+    target_policy_noise = trial.suggest_float("target_policy_noise", 0.0001, 1)
+    target_noise_clip = trial.suggest_float("target_noise_clip", 0.0001, 2)
+
     trail_config_mongo = {"Name": "Config",
                           "Node": node,
-                          "Agent": "DDPG",
+                          "Agent": "TD3",
                           "Number_learning_Steps": number_learning_steps,
                           "Trial number": n_trail,
                           "Database name": cfg['STUDY_NAME'],
@@ -111,26 +116,24 @@ def ddpg_objective(trial):
                                                        "Integratorzustand+used_P_Action (je um einen verzoegert) wird mit als feature uebergeben"
                                                        "Penalties fuer action_P und action_P"
                                                        "Mehr HPs: trainfreq, batch/buffer_size, a_relu ",
-                          'Weitere Info': "NEUES TEST ENV - 100k steps alle 1000 resettet das vom training - zufällige"
-                                          "Last",
                           "additionalInfo": "Long Holiday run"
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
     mongo_recorder.save_to_json('Trial_number_' + n_trail, trail_config_mongo)
 
-    loss = experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale,
-                               # loss = experiment_fit_DDPG_custom(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale,
-                               alpha_relu_actor,
-                               batch_size,
-                               actor_hidden_size, actor_number_layers, critic_hidden_size, critic_number_layers,
-                               alpha_relu_critic,
-                               noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
-                               training_episode_length, buffer_size,  # learning_starts,
-                               tau, number_learning_steps, integrator_weight,
-                               integrator_weight * antiwindup_weight, penalty_I_weight, penalty_P_weight,
-                               train_freq_type, train_freq, t_start_penalty_I, t_start_penalty_P, optimizer,
-                               n_trail)
+    loss = experiment_fit_TD3(learning_rate, gamma, use_gamma_in_rew, weight_scale, alpha_relu_actor,
+                              # loss = experiment_fit_Custom_TD3(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
+                              batch_size,
+                              actor_hidden_size, actor_number_layers, critic_hidden_size, critic_number_layers,
+                              alpha_relu_critic,
+                              noise_var, noise_theta, noise_var_min, noise_steps_annealing, error_exponent,
+                              training_episode_length, buffer_size,  # learning_starts,
+                              tau, number_learning_steps, integrator_weight,
+                              integrator_weight * antiwindup_weight, penalty_I_weight, penalty_P_weight,
+                              train_freq_type, train_freq, t_start_penalty_I, t_start_penalty_P, optimizer,
+                              n_trail,
+                              policy_delay, target_policy_noise, target_noise_clip)
 
     return loss
 
@@ -350,8 +353,8 @@ if __name__ == "__main__":
 
     TPE_sampler = TPESampler(n_startup_trials=2500)  # , constant_liar=True)
 
-    optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
+    optuna_optimize_mysql_lea35(td3_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
 
-    # optuna_optimize_sqlite(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
-    # optuna_optimize(ddpg_objective, study_name=STUDY_NAME,
+    # optuna_optimize_sqlite(td3_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
+    # optuna_optimize(td3_objective, study_name=STUDY_NAME,
     # sampler=TPE_sampler)  #, sampler=optuna.samplers.GridSampler(search_space))

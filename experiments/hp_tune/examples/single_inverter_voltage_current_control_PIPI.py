@@ -211,7 +211,7 @@ def run_experiment():
 
         loadstep_timestep = max_episode_steps / 2
 
-        gen = RandProcess(VasicekProcess, proc_kwargs=dict(speed=1000, vol=10, mean=R), initial=R,
+        gen = RandProcess(VasicekProcess, proc_kwargs=dict(speed=800, vol=40, mean=R), initial=R,
                           bounds=(lower_bound_load, upper_bound_load))
         plotter = PlotManager(agent, save_results=save_results, save_folder=save_folder,
                               show_plots=show_plots)
@@ -219,6 +219,7 @@ def run_experiment():
         rand_load_test = RandomLoad(max_episode_steps, net.ts, gen,
                                     load_curve=pd.read_pickle(
                                         'experiments/hp_tune/data/R_load_test_case_2_seconds.pkl'))
+
 
         def xylables_R(fig):
             ax = fig.gca()
@@ -380,8 +381,8 @@ def run_experiment():
                                     })
 
         # va = self.env.env.history[self.env.env.viz_col_tmpls[0].vars[0]].copy()
-        mongo_recorder = Recorder(database_name=folder_name)
-        mongo_recorder.save_to_mongodb('Trail_number_2', test_after_training)
+        # mongo_recorder = Recorder(database_name=folder_name)
+        # mongo_recorder.save_to_mongodb('Trail_number_3', test_after_training)
 
         return (return_sum / env.max_episode_steps + limit_exceeded_penalty)
 

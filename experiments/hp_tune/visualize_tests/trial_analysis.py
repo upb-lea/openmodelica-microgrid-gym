@@ -10,15 +10,18 @@ from pymongo import MongoClient
 from openmodelica_microgrid_gym.util import dq0_to_abc, abc_to_dq0
 
 # db_name = 'PC2_DDGP_Vctrl_single_inv_18_penalties'
-db_name = 'DDPG_SplitActor_Best_study18_6462'
-trial = '834'
+db_name = 'PC2_TD3_Vctrl_single_inv_3'
+# db_name = 'PC2_TD3_Vctrl_single_inv_2'
+# db_name = 'DDPG_Retrain_Best_study18_6462'
+# trial = '834'
 show_episode_number = 10
+make_pyplot = False
 
 with sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001)) as tun:
     with MongoClient(f'mongodb://localhost:{tun.local_bind_port}/') as client:
         db = client[db_name]
 
-        trial = db.Trial_number_4
+        trial = db.Trial_number_5
         # trial = db.Trial_number_6462
 
         trial_config = trial.find_one({"Name": "Config"})
@@ -43,6 +46,7 @@ with sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001)) as
         i_a_test = trial_test['lc_inductor1_i']
         i_b_test = trial_test['lc_inductor2_i']
         i_c_test = trial_test['lc_inductor3_i']
+        R_load = trial_test['r_load_resistor1_R']
 
         v_sp_d_test = trial_test['inverter1_v_ref_0']
         v_sp_q_test = trial_test['inverter1_v_ref_1']
@@ -50,15 +54,24 @@ with sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001)) as
 
         phase_test = trial_test['Phase']
 
-        v_sp_abc = dq0_to_abc(np.array([v_sp_d_test, v_sp_q_test, v_sp_0_test]), np.array(phase_test))
+        v_sp_abc = dq0_to_abc(np.array([v_sp_d_test, v_sp_q_test, v_sp_0_test]), np.array(phase_test[:-1]))
 
-        v_mess_dq0 = abc_to_dq0(np.array([v_a_test, v_b_test, v_c_test]), np.array(phase_test))
+        v_mess_dq0 = abc_to_dq0(np.array([v_a_test, v_b_test, v_c_test]), np.array(phase_test[:-1]))
+
+        plt.plot(t_test, R_load)
+        plt.grid()
+        # plt.xlim([0, 0.1])
+        plt.xlabel("time")
+        plt.ylabel("R_load")
+        plt.title('Test')
+        plt.show()
 
         plt.plot(t_test, v_a_test)
         plt.plot(t_test, v_b_test)
         plt.plot(t_test, v_c_test)
-        plt.plot(t_test, v_sp_abc[0, :])
+        # plt.plot(t_test, v_sp_abc[0, :])
         plt.grid()
+        # plt.xlim([0, 0.1])
         plt.xlabel("time")
         plt.ylabel("v_abc")
         plt.title('Test')
@@ -69,11 +82,13 @@ with sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001)) as
         plt.plot(t_test, v_mess_dq0[2, :])
         plt.plot(t_test, v_sp_d_test)
         #plt.ylim([-30, 300])
+        plt.xlim([0, 0.1])
         plt.grid()
         plt.xlabel("time")
         plt.ylabel("v_dq0")
         plt.title('Test')
         plt.show()
+
 
         plt.plot(t_test, i_a_test)
         plt.plot(t_test, i_b_test)
@@ -112,10 +127,12 @@ with sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001)) as
             plt.title('Test')
             plt.show()
 
-            integrator_sum0 = np.cumsum(
-                np.array(actionI0_test) * trial_config['integrator_weight'])  # trial_test['integrator_sum0']#
-            integrator_sum1 = np.cumsum(np.array(actionI1_test) * trial_config['integrator_weight'])
-            integrator_sum2 = np.cumsum(np.array(actionI2_test) * trial_config['integrator_weight'])
+            integrator_sum0 = trial_test['integrator_sum0']  # np.cumsum(
+            # np.array(actionI0_test) * trial_config['integrator_weight'])  # trial_test['integrator_sum0']#
+            integrator_sum1 = trial_test[
+                'integrator_sum1']  # np.cumsum(np.array(actionI1_test) * trial_config['integrator_weight'])
+            integrator_sum2 = trial_test[
+                'integrator_sum2']  # np.cumsum(np.array(actionI2_test) * trial_config['integrator_weight'])
 
             plt.plot(t_test[1:], integrator_sum0)
             plt.plot(t_test[1:], integrator_sum1)
@@ -127,7 +144,7 @@ with sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001)) as
             plt.title('Test')
             plt.show()
 
-            if 1:
+            if make_pyplot:
                 plot = px.Figure()
                 plot.add_trace(
                     px.Scatter(y=actionI0_test))
@@ -178,43 +195,44 @@ with sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001)) as
 
                 plot.show()
 
-        # pyplot v_abc
-        plot = px.Figure()
-        plot.add_trace(
-            px.Scatter(x=t_test, y=v_a_test))
-        # px.Scatter(x=x, y=v_mess_dq0[0][:]))
+        if make_pyplot:
+            # pyplot v_abc
+            plot = px.Figure()
+            plot.add_trace(
+                px.Scatter(x=t_test, y=v_a_test))
+            # px.Scatter(x=x, y=v_mess_dq0[0][:]))
 
-        plot.add_trace(
-            px.Scatter(x=t_test, y=v_b_test))
-        # px.Scatter(x=x, y=v_mess_dq0[1][:]))
-        plot.add_trace(
-            px.Scatter(x=t_test, y=v_c_test))
-        # px.Scatter(x=x, y=v_mess_dq0[2][:]))
+            plot.add_trace(
+                px.Scatter(x=t_test, y=v_b_test))
+            # px.Scatter(x=x, y=v_mess_dq0[1][:]))
+            plot.add_trace(
+                px.Scatter(x=t_test, y=v_c_test))
+            # px.Scatter(x=x, y=v_mess_dq0[2][:]))
 
-        plot.add_trace(
-            px.Scatter(x=t_test, y=v_sp_abc[1, :]))
-        # px.Scatter(x=x, y=df2['v_1_SP']))
+            plot.add_trace(
+                px.Scatter(x=t_test, y=v_sp_abc[1, :]))
+            # px.Scatter(x=x, y=df2['v_1_SP']))
 
-        plot.add_trace(
-            px.Scatter(x=t_test, y=v_sp_abc[2, :]))
-        # px.Scatter(x=x, y=df2['v_2_SP']))
+            plot.add_trace(
+                px.Scatter(x=t_test, y=v_sp_abc[2, :]))
+            # px.Scatter(x=x, y=df2['v_2_SP']))
 
-        plot.update_layout(
-            xaxis=dict(
-                rangeselector=dict(
-                    buttons=list([
-                        dict(count=1,
-                             step="day",
-                             stepmode="backward"),
-                    ])
-                ),
-                rangeslider=dict(
-                    visible=True
-                ),
+            plot.update_layout(
+                xaxis=dict(
+                    rangeselector=dict(
+                        buttons=list([
+                            dict(count=1,
+                                 step="day",
+                                 stepmode="backward"),
+                        ])
+                    ),
+                    rangeslider=dict(
+                        visible=True
+                    ),
+                )
             )
-        )
 
-        plot.show()
+            plot.show()
 
     ##############################################################
     # After Training
@@ -232,29 +250,31 @@ with sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001)) as
     plt.xlabel("Episodes")
     # plt.yscale('log')
     plt.ylabel("Mean episode Reward")
+    # plt.ylim([-0.06, -0.025])
     # plt.title("1.000.000")
     plt.show()
 
-    plot = px.Figure()
-    plot.add_trace(
-        px.Scatter(y=train_reward_per_episode))
+    if make_pyplot:
+        plot = px.Figure()
+        plot.add_trace(
+            px.Scatter(y=train_reward_per_episode))
 
-    plot.update_layout(
-        xaxis=dict(
-            rangeselector=dict(
-                buttons=list([
-                    dict(count=1,
-                         step="day",
-                         stepmode="backward"),
-                ])
-            ),
-            rangeslider=dict(
-                visible=True
-            ),
+        plot.update_layout(
+            xaxis=dict(
+                rangeselector=dict(
+                    buttons=list([
+                        dict(count=1,
+                             step="day",
+                             stepmode="backward"),
+                    ])
+                ),
+                rangeslider=dict(
+                    visible=True
+                ),
+            )
         )
-    )
 
-    plot.show()
+        plot.show()
 
     t = np.arange(number_learning_steps)
 
@@ -383,30 +403,30 @@ with sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001)) as
         # v_a_SP = df2['v_0_SP']#v_sp_abc[0,:]
         # v_b_SP = df2['v_1_SP']#v_sp_abc[1,:]
         # v_c_SP = df2['v_2_SP']#v_sp_abc[2,:]
+        if make_pyplot:
+            plot = px.Figure()
+            plot.add_trace(
+                px.Scatter(y=v_a))
 
-        plot = px.Figure()
-        plot.add_trace(
-            px.Scatter(y=v_a))
+            plot.add_trace(
+                px.Scatter(y=v_b))
 
-        plot.add_trace(
-            px.Scatter(y=v_b))
+            plot.add_trace(
+                px.Scatter(y=v_c))
 
-        plot.add_trace(
-            px.Scatter(y=v_c))
-
-        plot.update_layout(
-            xaxis=dict(
-                rangeselector=dict(
-                    buttons=list([
-                        dict(count=1,
-                             step="day",
-                             stepmode="backward"),
-                    ])
-                ),
-                rangeslider=dict(
-                    visible=True
-                ),
+            plot.update_layout(
+                xaxis=dict(
+                    rangeselector=dict(
+                        buttons=list([
+                            dict(count=1,
+                                 step="day",
+                                 stepmode="backward"),
+                        ])
+                    ),
+                    rangeslider=dict(
+                        visible=True
+                    ),
+                )
             )
-        )
 
-        plot.show()
+            plot.show()

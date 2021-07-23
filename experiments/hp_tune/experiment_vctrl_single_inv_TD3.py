@@ -14,7 +14,7 @@ from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
 from experiments.hp_tune.env.env_wrapper import FeatureWrapper
 from experiments.hp_tune.env.rewards import Reward
 from experiments.hp_tune.env.vctrl_single_inv import net  # , folder_name
-from experiments.hp_tune.util.config import cfg
+from experiments.hp_tune.util.configTD3 import cfg
 from experiments.hp_tune.util.recorder import Recorder
 
 # np.random.seed(0)
@@ -27,7 +27,7 @@ mongo_recorder = Recorder(node=node,
                           database_name=folder_name)  # store to port 12001 for ssh data to cyberdyne or locally as json to cfg[meas_data_folder]
 
 
-def experiment_fit_TD3(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
+def experiment_fit_TD3(learning_rate, gamma, use_gamma_in_rew, weight_scale, alpha_relu_actor,
                        batch_size,
                        actor_hidden_size, actor_number_layers, critic_hidden_size, critic_number_layers,
                        alpha_relu_critic,
@@ -184,7 +184,7 @@ def experiment_fit_TD3(learning_rate, gamma, use_gamma_in_rew, weight_scale, bia
     rew.exponent = 0.5  # 1
     limit_exceeded_in_test = False
     limit_exceeded_penalty = 0
-    env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v0',
+    env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v1',
                         reward_fun=rew.rew_fun_dq0,
                         abort_reward=-1,  # no needed if in rew no None is given back
                         # on_episode_reset_callback=cb.fire  # needed?
@@ -210,8 +210,18 @@ def experiment_fit_TD3(learning_rate, gamma, use_gamma_in_rew, weight_scale, bia
     integrator_sum0 = []
     integrator_sum1 = []
     integrator_sum2 = []
+    va = []
+    vb = []
+    vc = []
+    v_ref0 = []
+    v_ref1 = []
+    v_ref2 = []
+    ia = []
+    ib = []
+    ic = []
+    R_load = []
 
-    while True:
+    for step in range(env_test.max_episode_steps):
         action, _states = model.predict(obs, deterministic=True)
         obs, rewards, done, info = env_test.step(action)
         phase_list.append(env_test.env.net.components[0].phase)
@@ -233,6 +243,23 @@ def experiment_fit_TD3(learning_rate, gamma, use_gamma_in_rew, weight_scale, bia
         return_sum += rewards
         rew_list.append(rewards)
         # print(rewards)
+
+        if step % 1000 == 0 and step != 0:
+            va.extend(env_test.history[env_test.viz_col_tmpls[0].vars[0]].copy().values.tolist())
+            vb.extend(env_test.history[env_test.viz_col_tmpls[0].vars[1]].copy().values.tolist())
+            vc.extend(env_test.history[env_test.viz_col_tmpls[0].vars[2]].copy().values.tolist())
+            v_ref0.extend(env_test.history[env_test.viz_col_tmpls[0].vars[3]].copy().values.tolist())
+            v_ref1.extend(env_test.history[env_test.viz_col_tmpls[0].vars[4]].copy().values.tolist())
+            v_ref2.extend(env_test.history[env_test.viz_col_tmpls[0].vars[5]].copy().values.tolist())
+            ia.extend(env_test.history[env_test.viz_col_tmpls[1].vars[0]].copy().values.tolist())
+            ib.extend(env_test.history[env_test.viz_col_tmpls[1].vars[1]].copy().values.tolist())
+            ic.extend(env_test.history[env_test.viz_col_tmpls[1].vars[2]].copy().values.tolist())
+            R_load.extend(env_test.history[env_test.viz_col_tmpls[2].vars[1]].copy().values.tolist())
+
+            env_test.close()
+            obs = env_test.reset()
+            phase_list.append(env_test.env.net.components[0].phase)
+
         if done:
             env_test.close()
             # print(limit_exceeded_in_test)
@@ -242,6 +269,16 @@ def experiment_fit_TD3(learning_rate, gamma, use_gamma_in_rew, weight_scale, bia
     test_after_training = {"Name": "Test",
                            "time": ts,
                            "Reward": rew_list,
+                           "lc_capacitor1_v": va,
+                           "lc_capacitor2_v": vb,
+                           "lc_capacitor3_v": vc,
+                           "inverter1_v_ref_0": v_ref0,
+                           "inverter1_v_ref_1": v_ref1,
+                           "inverter1_v_ref_2": v_ref2,
+                           "lc_inductor1_i": ia,
+                           "lc_inductor2_i": ib,
+                           "lc_inductor3_i": ic,
+                           "r_load_resistor1_R": R_load,
                            "ActionP0": aP0,
                            "ActionP1": aP1,
                            "ActionP2": aP2,
@@ -262,6 +299,8 @@ def experiment_fit_TD3(learning_rate, gamma, use_gamma_in_rew, weight_scale, bia
                                    "Reward = MRE, PI-Approch using AntiWindUp"
                                    "without abort! (risk=0 manullay in env); only voltage taken into account in reward!"}
 
+    """
+        In new testenv not used, because then only the last episode is stored
     # Add v-&i-measurements
     test_after_training.update({env_test.viz_col_tmpls[j].vars[i].replace(".", "_"): env_test.history[
         env_test.viz_col_tmpls[j].vars[i]].copy().tolist() for j in range(2) for i in range(6)
@@ -269,6 +308,7 @@ def experiment_fit_TD3(learning_rate, gamma, use_gamma_in_rew, weight_scale, bia
     test_after_training.update({env_test.viz_col_tmpls[2].vars[i].replace(".", "_"): env_test.history[
         env_test.viz_col_tmpls[2].vars[i]].copy().tolist() for i in range(3)
                                 })
+    """
 
     mongo_recorder.save_to_json('Trial_number_' + n_trail, test_after_training)
 

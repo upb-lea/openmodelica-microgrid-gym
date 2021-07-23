@@ -3,15 +3,15 @@ the allowed cpu core limit"""
 
 import os
 import pathlib
-import time
 import uuid
-
+import time
 from experiments.hp_tune.util import pc2
-# config
-from experiments.hp_tune.util.config import cfg
+from experiments.hp_tune.util.configTD3 import cfg
 
+# config
 USER = os.getenv('USER')
 ALLOWED_MAX_CPU_CORES = 512
+STUDY_NAME = cfg['STUDY_NAME']
 
 # resources request
 job_resource_plan = {
@@ -22,14 +22,14 @@ job_resource_plan = {
 }
 
 MAX_WORKERS = ALLOWED_MAX_CPU_CORES // job_resource_plan['ncpus']
-STUDY_NAME = cfg['STUDY_NAME']
-NUMBER_INTERATIONS = 1
+
 
 def main():
+    started_workers = 0
     print('Start slavedriving loop..')
-    print('Will start MAX_WORKERS and terminate.')
     old_ccsinfo_counts = None
-    for _ in range(MAX_WORKERS):
+    # while True:
+    while started_workers < 300:
         job_files_path = pathlib.Path(
             f"/scratch/hpc-prf-reinfl/weber/OMG/ccs_job_files/{STUDY_NAME}")  # SCRATCH = $PC2PFS/hpc_....re/OMG_prjecet
         job_files_path.mkdir(parents=False, exist_ok=True)
@@ -48,33 +48,32 @@ def main():
 
         if total_busy < MAX_WORKERS:
             #  call workers to work
-            # n_workers = MAX_WORKERS - total_busy
-            # print(f'Start {n_workers} workers:')
-            # for w in range(n_workers):
-            jobid = str(uuid.uuid4()).split('-')[0]
-            cluster = "oculus"
-            job_name = job_files_path / f"pc2_job_{jobid}.sh"
-            res_plan = pc2.calculate_resources(**job_resource_plan)
+            n_workers = MAX_WORKERS - total_busy
+            print(f'Start {n_workers} workers:')
+            for w in range(n_workers):
+                started_workers += 1
+                jobid = str(uuid.uuid4()).split('-')[0]
+                cluster = "oculus"
+                job_name = job_files_path / f"pc2_job_{jobid}.sh"
+                res_plan = pc2.calculate_resources(**job_resource_plan)
 
-            execution_line = "PYTHONPATH=$HOME/openmodelica-microgrid-gym/ " \
-                             "python $HOME/openmodelica-microgrid-gym/experiments/hp_tune/hp_tune_ddpg_objective.py -n 3"
+                execution_line = "PYTHONPATH=$HOME/openmodelica-microgrid-gym/ " \
+                                 "python $HOME/openmodelica-microgrid-gym/experiments/hp_tune/hp_tune_td3_objective.py -n 1"
 
-            print(f'Start job {jobid} ..')
-            pc2.create_n_run_script(
-                job_name,
-                pc2.build_shell_script_lines(job_files_path, cluster,
-                                             job_name, res_plan,
-                                             execution_line),
-                dry=False)
-
-            print('sleep 10s for better DB interaction', end='\r')
-            time.sleep(10)
+                print(f'Start job {jobid} ..')
+                pc2.create_n_run_script(
+                    job_name,
+                    pc2.build_shell_script_lines(job_files_path, cluster,
+                                                 job_name, res_plan,
+                                                 execution_line),
+                    dry=False)
+                print('sleep 10s for better DB interaction', end='\r')
+                time.sleep(10)
 
         old_ccsinfo_counts = ccsinfo_state_counts
 
-        # print('sleep..', end='\r')
-        # time.sleep(120)
-    print('Finished, need resatart to schedule again!..', end='\r')
+        print('sleep..', end='\r')
+        time.sleep(300)
 
 
 if __name__ == '__main__':

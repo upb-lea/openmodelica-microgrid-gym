@@ -240,7 +240,7 @@ register(id='vctrl_single_inv_test-v1',
                           )
              ],
              viz_mode='episode',
-             max_episode_steps=100000,
+             max_episode_steps=100001,
              model_params={'lc.resistor1.R': R_filter,
                            'lc.resistor2.R': R_filter,
                            'lc.resistor3.R': R_filter,
