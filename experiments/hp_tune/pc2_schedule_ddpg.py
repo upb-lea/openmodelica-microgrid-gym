@@ -41,9 +41,10 @@ def main():
 
         with open(creds_path, 'r') as f:
             optuna_creds = ':'.join([s.strip(' \n') for s in f.readlines()])
-
+        print(optuna_creds)
+        time.sleep(3)
         study = optuna.create_study(
-            storage=f'mysql://{optuna_creds}@localhost:{SERVER_LOCAL_PORT2MYSQL}/{DB_NAME}',
+            storage=f'mysql://{optuna_creds}@localhost:{PC2_LOCAL_PORT2MYSQL}/{DB_NAME}',
             # storage=f'postgresql://{optuna_creds}@localhost:{port}/{DB_NAME}',
             sampler=TPESampler(n_startup_trials=2500), study_name=STUDY_NAME,
             load_if_exists=True,
