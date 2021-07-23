@@ -27,6 +27,8 @@ job_resource_plan = {
 
 MAX_WORKERS = ALLOWED_MAX_CPU_CORES // job_resource_plan['ncpus']
 
+PC2_LOCAL_PORT2MYSQL = 11998
+SERVER_LOCAL_PORT2MYSQL = 3306
 
 
 def main():
@@ -41,7 +43,7 @@ def main():
             optuna_creds = ':'.join([s.strip(' \n') for s in f.readlines()])
 
         study = optuna.create_study(
-            storage=f'mysql://{optuna_creds}@localhost:{11998}/{DB_NAME}',
+            storage=f'mysql://{optuna_creds}@localhost:{PC2_LOCAL_PORT2MYSQL}/{DB_NAME}',
             # storage=f'postgresql://{optuna_creds}@localhost:{port}/{DB_NAME}',
             sampler=TPESampler(n_startup_trials=2500), study_name=STUDY_NAME,
             load_if_exists=True,
