@@ -5,6 +5,12 @@ import os
 import pathlib
 import uuid
 import time
+
+import numpy as np
+import optuna
+import sqlalchemy
+from optuna.samplers import TPESampler
+
 from experiments.hp_tune.util import pc2
 from experiments.hp_tune.util.configTD3 import cfg
 
@@ -12,7 +18,7 @@ from experiments.hp_tune.util.configTD3 import cfg
 USER = os.getenv('USER')
 ALLOWED_MAX_CPU_CORES = 512
 STUDY_NAME = cfg['STUDY_NAME']
-
+DB_NAME = 'optuna'
 # resources request
 job_resource_plan = {
     'duration': 24,  # in hours
@@ -24,12 +30,51 @@ job_resource_plan = {
 MAX_WORKERS = ALLOWED_MAX_CPU_CORES // job_resource_plan['ncpus']
 
 
+def get_storage(url, storage_kws):
+    successfull = False
+    retry_counter = 0
+
+    while not successfull:
+        try:
+            storage = optuna.storages.RDBStorage(
+                url=url, **storage_kws)
+            successfull = True
+        except (sqlalchemy.exc.OperationalError, sqlalchemy.exc.DatabaseError) as e:
+            wait_time = np.random.randint(60, 300)
+            retry_counter += 1
+            if retry_counter > 10:
+                print('Stopped after 10 connection attempts!')
+                raise e
+            print(f'Could not connect, retry in {wait_time} s')
+            time.sleep(wait_time)
+
+    return storage
+
 def main():
     started_workers = 0
     print('Start slavedriving loop..')
     old_ccsinfo_counts = None
-    # while True:
-    while started_workers < 300:
+    while True:
+
+        creds_path = f'{os.getenv("HOME")}/creds/optuna_mysql'
+
+        with open(creds_path, 'r') as f:
+            optuna_creds = ':'.join([s.strip(' \n') for s in f.readlines()])
+
+        storage = get_storage(f'mysql://{optuna_creds}@localhost:{11998}/{DB_NAME}')
+        study = optuna.create_study(
+            storage=storage,
+            # storage=f'postgresql://{optuna_creds}@localhost:{port}/{DB_NAME}',
+            sampler=TPESampler(n_startup_trials=2500), study_name=STUDY_NAME,
+            load_if_exists=True,
+            direction='maximize')
+
+        complete_trials = len([t for t in study.trials if t.state == optuna.structs.TrialState.COMPLETE])
+
+        if complete_trials > 12000:
+            print('Maximal completed trials reached - STOPPING')
+            break
+
         job_files_path = pathlib.Path(
             f"/scratch/hpc-prf-reinfl/weber/OMG/ccs_job_files/{STUDY_NAME}")  # SCRATCH = $PC2PFS/hpc_....re/OMG_prjecet
         job_files_path.mkdir(parents=False, exist_ok=True)
