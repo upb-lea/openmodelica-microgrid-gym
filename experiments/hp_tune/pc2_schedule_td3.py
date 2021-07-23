@@ -6,9 +6,7 @@ import pathlib
 import uuid
 import time
 
-import numpy as np
 import optuna
-import sqlalchemy
 from optuna.samplers import TPESampler
 
 from experiments.hp_tune.util import pc2
@@ -30,26 +28,6 @@ job_resource_plan = {
 MAX_WORKERS = ALLOWED_MAX_CPU_CORES // job_resource_plan['ncpus']
 
 
-def get_storage(url, storage_kws):
-    successfull = False
-    retry_counter = 0
-
-    while not successfull:
-        try:
-            storage = optuna.storages.RDBStorage(
-                url=url, **storage_kws)
-            successfull = True
-        except (sqlalchemy.exc.OperationalError, sqlalchemy.exc.DatabaseError) as e:
-            wait_time = np.random.randint(60, 300)
-            retry_counter += 1
-            if retry_counter > 10:
-                print('Stopped after 10 connection attempts!')
-                raise e
-            print(f'Could not connect, retry in {wait_time} s')
-            time.sleep(wait_time)
-
-    return storage
-
 def main():
     started_workers = 0
     print('Start slavedriving loop..')
@@ -61,9 +39,8 @@ def main():
         with open(creds_path, 'r') as f:
             optuna_creds = ':'.join([s.strip(' \n') for s in f.readlines()])
 
-        storage = get_storage(f'mysql://{optuna_creds}@localhost:{11998}/{DB_NAME}')
         study = optuna.create_study(
-            storage=storage,
+            storage=f"mysql://{optuna_creds}@localhost/{DB_NAME}",
             # storage=f'postgresql://{optuna_creds}@localhost:{port}/{DB_NAME}',
             sampler=TPESampler(n_startup_trials=2500), study_name=STUDY_NAME,
             load_if_exists=True,
