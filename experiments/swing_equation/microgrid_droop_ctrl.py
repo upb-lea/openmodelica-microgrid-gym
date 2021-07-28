@@ -106,10 +106,10 @@ if __name__ == '__main__':
                                               droop_param, qdroop_param, lower_droop_voltage_threshold=-100000, ts_sim=delta_t, name='slave'))
 
     # Define the agent as StaticControlAgent which performs the basic controller steps for every environment set
-    agent = StaticControlAgent(ctrl, {'master': [[f'lcl1.inductor{k}.i' for k in '123'],
-                                                 [f'lcl1.capacitor{k}.v' for k in '123']],
-                                      'slave': [[f'lcl2.inductor{k}.i' for k in '123'],
-                                                [f'lcl2.capacitor{k}.v' for k in '123'],
+    agent = StaticControlAgent(ctrl, {'master': [[f'lc1.inductor{k}.i' for k in '123'],
+                                                 [f'lc1.capacitor{k}.v' for k in '123']],
+                                      'slave': [[f'lc2.inductor{k}.i' for k in '123'],
+                                                [f'lc2.capacitor{k}.v' for k in '123'],
                                                 np.zeros(3)]})
 
     # Define the environment

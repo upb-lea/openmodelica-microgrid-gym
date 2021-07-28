@@ -9,7 +9,7 @@ m = GEKKO(remote=False)
 #define parameter
 Pdroop = 8000
 Qdroop = 2000
-t_end = 1
+t_end = 0.3
 steps = 1000
 nomFreq = 50  # grid frequency / Hz
 nomVolt = value = 230
@@ -206,9 +206,9 @@ Vd_2 = np.subtract(e2,u2)
 
 print(f1[400])
 print(e1[400])
-print(e1[600])
+print(e1[500])
 print(u1[400])
-print(u1[600])
+print(u1[400])
 print(B)
 
 plt.title('Frequency')

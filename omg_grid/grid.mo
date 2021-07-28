@@ -1871,10 +1871,10 @@ package grid
       Placement(visible = true, transformation(origin = {26, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   grid.ideal_filter.l l23(L1 = 0.0002, L2 = 0.0002, L3 = 0.0002)  annotation(
       Placement(visible = true, transformation(origin = {22, -30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  grid.filter.lcl lcl1(C1 = 0.00003, C2 = 0.00003, C3 = 0.00003, L1 = 0.002, L2 = 0.002, L3 = 0.002, L4 = 0.002, L5 = 0.002, L6 = 0.002, R1 = 0.00001, R2 = 0.00001, R3 = 0.00001, R4 = 0.00001, R5 = 0.00001, R6 = 0.00001, R7 = 0.00001, R8 = 0.00001, R9 = 0.00001)  annotation(
-      Placement(visible = true, transformation(origin = {-34, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  filter.lcl lcl2(C1 = 0.00003, C2 = 0.00003, C3 = 0.00003, L1 = 0.002, L2 = 0.002, L3 = 0.002, L4 = 0.002, L5 = 0.002, L6 = 0.002, R1 = 0.00001, R2 = 0.00001, R3 = 0.00001, R4 = 0.00001, R5 = 0.00001, R6 = 0.00001, R7 = 0.00001, R8 = 0.00001, R9 = 0.00001)  annotation(
-      Placement(visible = true, transformation(origin = {-34, -30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  ideal_filter.lc lc1 annotation(
+      Placement(visible = true, transformation(origin = {-30, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  ideal_filter.lc lc2(C1 = 0.00003, C2 = 0.00003, C3 = 0.00003, L1 = 0.004, L2 = 0.004, L3 = 0.004)  annotation(
+      Placement(visible = true, transformation(origin = {-30, -30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
   equation
     connect(i1p1, inverter1.u1) annotation(
       Line(points = {{-104, 18}, {-86, 18}, {-86, 24}, {-80, 24}, {-80, 24}}, color = {0, 0, 127}));
@@ -1900,42 +1900,42 @@ package grid
       Line(points = {{32, -30}, {54, -30}, {54, 4}, {76, 4}}, color = {0, 0, 255}));
     connect(l23.pin4, rl1.pin1) annotation(
       Line(points = {{32, -36}, {46, -36}, {46, -2}, {76, -2}}, color = {0, 0, 255}));
-  connect(inverter2.pin3, lcl2.pin3) annotation(
-      Line(points = {{-60, -24}, {-44, -24}}, color = {0, 0, 255}));
-  connect(inverter2.pin2, lcl2.pin2) annotation(
-      Line(points = {{-60, -30}, {-44, -30}}, color = {0, 0, 255}));
-  connect(inverter2.pin1, lcl2.pin1) annotation(
-      Line(points = {{-60, -36}, {-44, -36}}, color = {0, 0, 255}));
-  connect(inverter1.pin3, lcl1.pin3) annotation(
-      Line(points = {{-60, 36}, {-44, 36}}, color = {0, 0, 255}));
-  connect(lcl1.pin2, inverter1.pin2) annotation(
-      Line(points = {{-44, 30}, {-60, 30}}, color = {0, 0, 255}));
-  connect(inverter1.pin1, lcl1.pin1) annotation(
-      Line(points = {{-60, 24}, {-44, 24}}, color = {0, 0, 255}));
-  connect(lcl1.pin6, l13.pin3) annotation(
-      Line(points = {{-24, 36}, {16, 36}}, color = {0, 0, 255}));
-  connect(lcl1.pin5, l13.pin2) annotation(
-      Line(points = {{-24, 30}, {16, 30}}, color = {0, 0, 255}));
-  connect(lcl1.pin4, l13.pin1) annotation(
-      Line(points = {{-24, 24}, {16, 24}}, color = {0, 0, 255}));
-  connect(lcl2.pin6, l23.pin3) annotation(
-      Line(points = {{-24, -24}, {12, -24}}, color = {0, 0, 255}));
-  connect(lcl2.pin5, l23.pin2) annotation(
-      Line(points = {{-24, -30}, {12, -30}}, color = {0, 0, 255}));
-  connect(lcl2.pin4, l23.pin1) annotation(
-      Line(points = {{-24, -36}, {12, -36}}, color = {0, 0, 255}));
-  connect(l12.pin3, lcl1.pin6) annotation(
-      Line(points = {{2, 10}, {2, 36}, {-24, 36}}, color = {0, 0, 255}));
-  connect(l12.pin2, lcl1.pin5) annotation(
-      Line(points = {{-4, 10}, {-4, 30}, {-24, 30}}, color = {0, 0, 255}));
-  connect(l12.pin1, lcl1.pin4) annotation(
-      Line(points = {{-10, 10}, {-10, 24}, {-24, 24}}, color = {0, 0, 255}));
-  connect(l12.pin4, lcl2.pin4) annotation(
-      Line(points = {{-10, -10}, {-10, -36}, {-24, -36}}, color = {0, 0, 255}));
-  connect(l12.pin5, lcl2.pin5) annotation(
-      Line(points = {{-4, -10}, {-4, -30}, {-24, -30}}, color = {0, 0, 255}));
-  connect(l12.pin6, l23.pin3) annotation(
+    connect(l12.pin6, l23.pin3) annotation(
       Line(points = {{2, -10}, {2, -24}, {12, -24}}, color = {0, 0, 255}));
+  connect(l23.pin2, l12.pin5) annotation(
+      Line(points = {{12, -30}, {-4, -30}, {-4, -10}, {-4, -10}}, color = {0, 0, 255}));
+  connect(l23.pin1, l12.pin4) annotation(
+      Line(points = {{12, -36}, {-10, -36}, {-10, -10}, {-10, -10}}, color = {0, 0, 255}));
+  connect(l13.pin3, l12.pin3) annotation(
+      Line(points = {{16, 36}, {2, 36}, {2, 10}, {2, 10}, {2, 10}}, color = {0, 0, 255}));
+  connect(l13.pin2, l12.pin2) annotation(
+      Line(points = {{16, 30}, {-4, 30}, {-4, 10}, {-4, 10}}, color = {0, 0, 255}));
+  connect(l13.pin1, l12.pin1) annotation(
+      Line(points = {{16, 24}, {-10, 24}, {-10, 12}, {-10, 12}, {-10, 10}, {-10, 10}}, color = {0, 0, 255}));
+  connect(lc1.pin6, l13.pin3) annotation(
+      Line(points = {{-20, 36}, {2, 36}, {2, 36}, {16, 36}, {16, 36}}, color = {0, 0, 255}));
+  connect(lc1.pin5, l13.pin2) annotation(
+      Line(points = {{-20, 30}, {16, 30}, {16, 30}, {16, 30}}, color = {0, 0, 255}));
+  connect(lc1.pin4, l13.pin1) annotation(
+      Line(points = {{-20, 24}, {16, 24}, {16, 24}, {16, 24}}, color = {0, 0, 255}));
+  connect(lc2.pin6, l23.pin3) annotation(
+      Line(points = {{-20, -24}, {12, -24}, {12, -24}, {12, -24}}, color = {0, 0, 255}));
+  connect(lc2.pin5, l23.pin2) annotation(
+      Line(points = {{-20, -30}, {12, -30}, {12, -30}, {12, -30}}, color = {0, 0, 255}));
+  connect(lc2.pin4, l23.pin1) annotation(
+      Line(points = {{-20, -36}, {12, -36}, {12, -36}, {12, -36}}, color = {0, 0, 255}));
+  connect(inverter1.pin3, lc1.pin3) annotation(
+      Line(points = {{-60, 36}, {-40, 36}, {-40, 36}, {-40, 36}}, color = {0, 0, 255}));
+  connect(inverter1.pin2, lc1.pin2) annotation(
+      Line(points = {{-60, 30}, {-40, 30}, {-40, 30}, {-40, 30}}, color = {0, 0, 255}));
+  connect(inverter1.pin1, lc1.pin1) annotation(
+      Line(points = {{-60, 24}, {-40, 24}, {-40, 24}, {-40, 24}}, color = {0, 0, 255}));
+  connect(inverter2.pin3, lc2.pin3) annotation(
+      Line(points = {{-60, -24}, {-40, -24}, {-40, -24}, {-40, -24}}, color = {0, 0, 255}));
+  connect(inverter2.pin2, lc2.pin2) annotation(
+      Line(points = {{-60, -30}, {-42, -30}, {-42, -30}, {-40, -30}, {-40, -30}}, color = {0, 0, 255}));
+  connect(inverter2.pin1, lc2.pin1) annotation(
+      Line(points = {{-60, -36}, {-40, -36}, {-40, -36}, {-40, -36}, {-40, -36}}, color = {0, 0, 255}));
     annotation(
       Diagram);
   end microgrid;
