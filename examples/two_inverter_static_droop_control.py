@@ -43,7 +43,7 @@ def load_step(t, gain):
     :param gain: device parameter
     :return: Dictionary with load parameters
     """
-    return 1 * gain if t < .4 else gain / 2
+    return 1 * gain if t < .25 else gain / 2
 
 
 if __name__ == '__main__':
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    viz_mode='episode',
                    # viz_cols=['*.m[dq0]', 'slave.freq', 'lcl1.*'],
-                   viz_cols=['master.inst*', 'slave.inst*', 'lc1.*', 'slave.freq'],
+                   viz_cols=['master.inst*', 'slave.inst*', 'lc1.*', 'slave.freq', 'lc2.*', 'rl1.*', 'master.freq'],
                    log_level=logging.INFO,
                    max_episode_steps=max_episode_steps,
                    model_params={'rl1.resistor1.R': partial(load_step, gain=6.22),

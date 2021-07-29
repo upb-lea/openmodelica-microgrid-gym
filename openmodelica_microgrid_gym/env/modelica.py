@@ -359,7 +359,9 @@ class ModelicaEnv(gym.Env):
                     df.plot(legend=True, figure=fig, ax=ax)
                     plt.show()
                     figs.append(fig)
-
+                    df.to_pickle("a_file.pkl")
+                    a = 1
+                    #dasd
                 # plot all templates
                 for tmpl in self.viz_col_tmpls:
                     fig, ax = plt.subplots()
