@@ -37,7 +37,7 @@ logging.basicConfig()
 
 def load_step(t, gain):
     """
-    Defines a load step after 0.2 s
+    Defines a load step after 0.25 s
     Doubles the load parameters
     :param t:
     :param gain: device parameter
