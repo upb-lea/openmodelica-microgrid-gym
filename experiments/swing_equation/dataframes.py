@@ -98,7 +98,7 @@ output.plot()
 plt.show()
 Freq_1 = output['master.freq']
 Freq_1 = Freq_1[::10]
-Freq_1.to_pickle("B1_F")
+Freq_1.to_pickle("B1_F.pkl")
 
 
 #F2
@@ -109,7 +109,7 @@ output.plot()
 plt.show()
 Freq_2 = output['slave.freq']
 Freq_2 = Freq_2[::10]
-Freq_2.to_pickle("B2_F")
+Freq_2.to_pickle("B2_F.pkl")
 
 
 #1P
@@ -119,9 +119,9 @@ plt.figure()
 #print(output)
 output.plot()
 plt.show()
-P_1 = output['master.instPow']
-P_1 = Freq_1[::10]
-P_1.to_pickle("B1_P")
+P_1 = output['master.instPow']/3
+P_1 = P_1[::10]
+P_1.to_pickle("B1_P.pkl")
 
 
 #Q1
@@ -131,9 +131,9 @@ plt.figure()
 #print(output)
 output.plot()
 plt.show()
-Q_1 = output['master.instQ']
-Q_1 = Freq_1[::10]
-Q_1.to_pickle("B1_Q")
+Q_1 = output['master.instQ']/3
+Q_1 = Q_1[::10]
+Q_1.to_pickle("B1_Q.pkl")
 
 #P2
 
@@ -142,9 +142,9 @@ plt.figure()
 #print(output)
 output.plot()
 plt.show()
-P_2 = output['slave.instPow']
-P_2 = Freq_1[::10]
-P_2.to_pickle("B2_P")
+P_2 = output['slave.instPow']/3
+P_2 = P_2[::10]
+P_2.to_pickle("B2_P.pkl")
 
 
 #Q2
@@ -154,6 +154,6 @@ plt.figure()
 print(output)
 output.plot()
 plt.show()
-Q_2 = output['slave.instQ']
-Q_2 = Freq_1[::10]
-Q_2.to_pickle("B2_Q")
+Q_2 = output['slave.instQ']/3
+Q_2 = Q_2[::10]
+Q_2.to_pickle("B2_Q.pkl")

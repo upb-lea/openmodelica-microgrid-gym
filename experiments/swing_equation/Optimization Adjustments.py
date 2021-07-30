@@ -2,26 +2,51 @@ from gekko import GEKKO
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 #   import csv
 #   Initialize Model
 m = GEKKO(remote=False)
+
+#Load OMG Values
+
+B1_V = pd.read_pickle("B1_V.pkl")
+B2_V = pd.read_pickle("B2_V.pkl")
+B3_V = pd.read_pickle("B3_V.pkl")
+
+B1_F = pd.read_pickle("B1_F.pkl")
+B2_F = pd.read_pickle("B2_F.pkl")
+
+B1_P = pd.read_pickle("B1_P.pkl")
+B2_P = pd.read_pickle("B2_P.pkl")
+B3_P = pd.read_pickle("B3_P.pkl")
+
+B1_Q = pd.read_pickle("B1_Q.pkl")
+B2_Q = pd.read_pickle("B2_Q.pkl")
+B3_Q = pd.read_pickle("B3_Q.pkl")
+
+
+
+
+
+
 
 #define parameter
 Pdroop = 8000
 Qdroop = 2000
 t_end = 0.5
-steps = 1000
+steps = 1001
 nomFreq = 50  # grid frequency / Hz
 nomVolt = value = 230
 omega = 2*np.pi*nomFreq
+tau = 0.0001 # Filter constant of, inverse of cut-off frequency
 
-L_lcl_11 = 0.0002
-L_lcl_12 = 0.0002
-L_lcl_21 = 0.0002
-L_lcl_22 = 0.0002
+L_lcl_11 = 0.001
+L_lcl_12 = 0.001
+L_lcl_21 = 0.00
+L_lcl_22 = 0.00
 
-C_lcl_1 = 0.00003
-C_lcl_2 = 0.00003
+C_lcl_1 = 0.00001
+C_lcl_2 = 0.00001
 
 #Filter Calculations
 
@@ -30,8 +55,8 @@ Zc2 = 1/(C_lcl_2*omega)
 Zl11 = L_lcl_11*omega
 Zl21 = L_lcl_21*omega
 
-B_lcl1 = -(omega * L_lcl_12)/(0**2 + (omega*L_lcl_12)**2)
-B_lcl2 = -(omega * L_lcl_22)/(0**2 + (omega*L_lcl_22)**2)
+#B_lcl1 = -(omega * L_lcl_12)/(0**2 + (omega*L_lcl_12)**2)
+#B_lcl2 = -(omega * L_lcl_22)/(0**2 + (omega*L_lcl_22)**2)
 
 #star_connection = False
 
@@ -97,9 +122,9 @@ q_offset = [0, 0, 0]
 
 #variables
 
-e1 = m.Var(value=10)
-e2 = m.Var(value=10)
-e3 = m.Var(value=10)
+#e1 = m.Var(value=10)
+#e2 = m.Var(value=10)
+#e3 = m.Var(value=10)
 u1 = m.Var(value=10)
 u2 = m.Var(value=10)
 u3 = m.Var(value=10)
@@ -115,6 +140,18 @@ w3 = m.Var(value=2)
 theta1 = m.Var(value=1)
 theta2 = m.Var(value=1)
 theta3 = m.Var(value=1)
+P1f = m.Var(value=0)
+P2f = m.Var(value=0)
+P3f = m.Var(value=0)
+Q1f = m.Var(value=0)
+Q2f = m.Var(value=0)
+Q3f = m.Var(value=0)
+p1f = m.Var(value=0)
+p2f = m.Var(value=0)
+p3f = m.Var(value=0)
+q1f = m.Var(value=0)
+q2f = m.Var(value=0)
+q3f = m.Var(value=0)
 #theta1, theta2, theta3 = [m.Var() for i in range(3)]
 
 #initialize variables
@@ -133,9 +170,9 @@ theta3.value = 0
 
 #m.Equation(e1 == u1/abs(Zc1/(Zc1+Zl11)))
 #m.Equation(e2 == u2/abs(Zc2/(Zc2+Zl21)))
-m.Equation(e1 == m.sqrt(u1**2 + ((L_lcl_11+L_lcl_12)*omega*(m.sqrt(P1**2 + Q1**2)/u1))**2))
-m.Equation(e2 == m.sqrt(u2**2 + ((L_lcl_21+L_lcl_22)*omega*(m.sqrt(P2**2 + Q2**2)/u2))**2))
-m.Equation(e3 == 0)
+#m.Equation(e1 == m.sqrt(u1**2 + ((L_lcl_11+L_lcl_12)*omega*(m.sqrt(P1**2 + Q1**2)/u1))**2))
+#m.Equation(e2 == m.sqrt(u2**2 + ((L_lcl_21+L_lcl_22)*omega*(m.sqrt(P2**2 + Q2**2)/u2))**2))
+#m.Equation(e3 == 0)
 
 
 m.Equation(u1 * u1 * (G[0][0] * m.cos(theta1 - theta1) + B[0][0] * m.sin(theta1 - theta1)) + \
@@ -165,8 +202,26 @@ m.Equation(theta1.dt() == w1)
 m.Equation(theta2.dt() == w2)
 m.Equation(theta3.dt() == w3)
 
-#Power ODE
 
+#PT1 Filtering
+
+m.Equation(P1f.dt() == p1f)
+m.Equation(P2f.dt() == p2f)
+m.Equation(P3f.dt() == p3f)
+
+m.Equation(Q1f.dt() == q1f)
+m.Equation(Q2f.dt() == q2f)
+m.Equation(Q3f.dt() == q3f)
+
+m.Equation(P1f + tau * p1f == P1)
+m.Equation(P2f + tau * p2f == P2)
+m.Equation(P3f + tau * p3f == P3)
+
+m.Equation(Q1f + tau * q1f == Q1)
+m.Equation(Q2f + tau * q2f == Q2)
+m.Equation(Q3f + tau * q3f == Q3)
+
+#Power ODE
 
 m.Equation(w1.dt() == ((-P1+p_offset[0])-(droop_linear[0]*(w1-omega)))/(J*w1))
 m.Equation(w2.dt() == ((-P2+p_offset[1])-(droop_linear[1]*(w2-omega)))/(J*w2))
@@ -203,12 +258,12 @@ f3 = np.divide(w3, (2*np.pi))
 
 #Voltage drop
 
-Vd_1 = np.subtract(e1,u1)
-Vd_2 = np.subtract(e2,u2)
+#Vd_1 = np.subtract(e1,u1)
+#Vd_2 = np.subtract(e2,u2)
 
 print(f1[400])
-print(e1[400])
-print(e1[500])
+#print(e1[400])
+#print(e1[500])
 print(u1[400])
 print(u1[400])
 print(B)
@@ -242,8 +297,8 @@ plt.legend()
 plt.show()
 
 plt.title('Voltage')
-plt.plot(m.time, e1, 'c', label='Inverter 1 Voltage')
-plt.plot(m.time, e2, 'm', label='Inverter 2 Voltage')
+#plt.plot(m.time, e1, 'c', label='Inverter 1 Voltage')
+#plt.plot(m.time, e2, 'm', label='Inverter 2 Voltage')
 plt.plot(m.time, u1, 'r', label='V1')
 plt.plot(m.time, u2, 'b', label='V2')
 plt.plot(m.time, u3, '--g', label='V3')
@@ -253,13 +308,47 @@ plt.ylim(200, 240)
 plt.legend()
 plt.show()
 
-plt.title('Voltage drop over LCL filter')
-plt.plot(m.time, Vd_1, 'r', label='V1')
-plt.plot(m.time, Vd_2, 'b', label='V2')
+
+plt.title('Voltage comparison')
+#plt.plot(m.time, e1, 'c', label='Inverter 1 Voltage')
+#plt.plot(m.time, e2, 'm', label='Inverter 2 Voltage')
+plt.plot(m.time, u1, 'r', label='V1')
+plt.plot(m.time, B1_V, 'b', label='V1_OMG')
+plt.plot(m.time, u2, 'y', label='V2')
+plt.plot(m.time, B2_V, label='V2_OMG')
+plt.plot(m.time, u3, 'g', label='V3')
+plt.plot(m.time, B3_V, label='V3_OMG')
 plt.xlabel('Time (s)')
 plt.ylabel('Voltage (V)')
+plt.ylim(200, 240)
 plt.legend()
 plt.show()
+
+
+plt.title('Frequency comparison')
+plt.plot(m.time, f1, 'r', label='f1')
+plt.plot(m.time, f2, 'b', label='f2')
+plt.plot(m.time, f3, '--g', label='f3')
+plt.plot(m.time, B1_F, label='f1_OMG')
+plt.plot(m.time, B2_F, label='f2_OMG')
+plt.xlabel('Time (s)')
+plt.ylabel('Frequency (Hz)')
+plt.ylim(46, 52)
+plt.legend()
+plt.show()
+
+
+#plt.title('Voltage drop over LCL filter')
+#plt.plot(m.time, Vd_1, 'r', label='V1')
+#plt.plot(m.time, Vd_2, 'b', label='V2')
+#plt.xlabel('Time (s)')
+#plt.ylabel('Voltage (V)')
+#plt.legend()
+#plt.show()
+
+
+
+
 
 plt.title('Active Power Flow')
 plt.plot(m.time, P1, 'r', label='P1')
@@ -271,6 +360,20 @@ plt.ylim(-100, 10000)
 plt.legend()
 plt.show()
 
+plt.title('Active Power Flow Comparison')
+plt.plot(m.time, P1, 'r', label='P1')
+plt.plot(m.time, P2, '--b', label='P2')
+plt.plot(m.time, P3, 'g', label='P3')
+plt.plot(m.time, -B1_P, label='P1_OMG')
+plt.plot(m.time, -B2_P, label='P2_OMG')
+plt.plot(m.time, B3_P, label='P3_OMG')
+plt.xlabel('Time (s)')
+plt.ylabel('Active Power (W)')
+plt.ylim(-100, 16000)
+plt.legend()
+plt.show()
+
+
 plt.title('Reactive Power Flow')
 plt.plot(m.time, Q1, 'r', label='Q1')
 plt.plot(m.time, Q2, '--b', label='Q2')
@@ -281,7 +384,23 @@ plt.ylabel('Reactive Power (VAr)')
 plt.legend()
 plt.show()
 
-a = w1
-np.savetxt("Swing_4000Q50j0_5jq0_0005.csv", a, delimiter=",")
 
-np.savetxt("PyCharm_value_rev1.csv", np.column_stack((m.time, f1, f2, f3, u1, u2, u3, P1, P2, P3, Q1, Q2, Q3)), delimiter=",", fmt='%s') #, header=header
+plt.title('Reactive Power Flow Comparison')
+plt.plot(m.time, Q1, 'r', label='Q1')
+plt.plot(m.time, Q2, '--b', label='Q2')
+plt.plot(m.time, Q3, 'g', label='Q3')
+plt.plot(m.time, B1_Q, label='Q1_OMG')
+plt.plot(m.time, B2_Q, label='Q2_OMG')
+plt.plot(m.time, B3_Q, label='Q3_OMG')
+plt.xlabel('Time (s)')
+plt.ylabel('Reactive Power (VAr)')
+#plt.ylim(-100, 2000)
+plt.legend()
+plt.show()
+
+
+
+a = w1
+#np.savetxt("Swing_4000Q50j0_5jq0_0005.csv", a, delimiter=",")
+
+#np.savetxt("PyCharm_value_rev1.csv", np.column_stack((m.time, f1, f2, f3, u1, u2, u3, P1, P2, P3, Q1, Q2, Q3)), delimiter=",", fmt='%s') #, header=header
