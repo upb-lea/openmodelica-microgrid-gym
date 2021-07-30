@@ -81,11 +81,11 @@ print('B_LV ist')
 print(B_L_lv_line_10km)
 
 step = np.zeros(steps)
-step[0:499] = 6.22
+step[0:500] = 6.22
 step[500:] = 6.22/2
 
 step_l = np.zeros(steps)
-step_l[0:499] = 0.00495    # in Henry
+step_l[0:500] = 0.00495    # in Henry
 step_l[500:] = 0.00495    # in Henry
 
 
@@ -346,8 +346,37 @@ plt.show()
 #plt.legend()
 #plt.show()
 
+#Calculate bus 3 Power
+Z_eff = np.sqrt(np.array(step)**2 + (np.array(step_l)*w3)**2)
+powerfactor = np.array(step) / Z_eff
+phi = np.arccos(powerfactor)
+S3_real = np.array(u3)**2/Z_eff
+P3_real = S3_real * powerfactor
+Q3_real = np.sin(phi) * S3_real
+
+#Z_eff = (np.array(step))
+plt.title('Z_Eff')
+plt.plot(m.time, Z_eff, 'r', label='Z')
+plt.legend()
+plt.show()
+
+plt.title('Powerfactor')
+plt.plot(m.time, powerfactor, 'r', label='Z')
+plt.legend()
+plt.show()
+
+print(Z_eff)
+print('powerfactor')
+print(powerfactor)
+print(S3_real)
 
 
+plt.title('Bus 3 Powers')
+plt.plot(m.time, S3_real , 'r', label='S3')
+plt.plot(m.time, P3_real, '--b', label='P3')
+plt.plot(m.time, Q3_real, 'g', label='Q3')
+plt.legend()
+plt.show()
 
 
 plt.title('Active Power Flow')
@@ -363,7 +392,7 @@ plt.show()
 plt.title('Active Power Flow Comparison')
 plt.plot(m.time, P1, 'r', label='P1')
 plt.plot(m.time, P2, '--b', label='P2')
-plt.plot(m.time, P3, 'g', label='P3')
+plt.plot(m.time, P3_real, 'g', label='P3')
 plt.plot(m.time, -B1_P, label='P1_OMG')
 plt.plot(m.time, -B2_P, label='P2_OMG')
 plt.plot(m.time, B3_P, label='P3_OMG')
@@ -388,7 +417,7 @@ plt.show()
 plt.title('Reactive Power Flow Comparison')
 plt.plot(m.time, Q1, 'r', label='Q1')
 plt.plot(m.time, Q2, '--b', label='Q2')
-plt.plot(m.time, Q3, 'g', label='Q3')
+plt.plot(m.time, Q3_real, 'g', label='Q3')
 plt.plot(m.time, B1_Q, label='Q1_OMG')
 plt.plot(m.time, B2_Q, label='Q2_OMG')
 plt.plot(m.time, B3_Q, label='Q3_OMG')
