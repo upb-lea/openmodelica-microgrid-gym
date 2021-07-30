@@ -250,6 +250,30 @@ m.solve()
 #print(B)
 #print(G)
 
+
+#Calculate bus 3 Power
+Z_eff = np.sqrt(np.array(step)**2 + (np.array(step_l)*w3)**2)
+powerfactor = np.array(step) / Z_eff
+phi = np.arccos(powerfactor)
+S3_real = np.array(u3)**2/Z_eff
+P3_real = S3_real * powerfactor
+Q3_real = np.sin(phi) * S3_real
+
+f1 = np.divide(w1, (2*np.pi))
+f2 = np.divide(w2, (2*np.pi))
+f3 = np.divide(w3, (2*np.pi))
+
+# Calculate reward function:
+
+Delta_V1 = np.mean(abs(np.array(u1)-B1_V))
+Delta_V2 = np.mean(abs(np.array(u2)-B2_V))
+Delta_V3 = np.mean(abs(np.array(u3)-B3_V))
+Delta_F1 = np.mean(abs(np.array(f1)-B1_F))
+Delta_F2 = np.mean(abs(np.array(f2)-B2_F))
+#Delta_F3 = np.mean(abs(np.array(f3)-B_V))
+print('Spannungsdiff:')
+print(Delta_V1)
+
 #Results
 
 f1 = np.divide(w1, (2*np.pi))
@@ -346,13 +370,7 @@ plt.show()
 #plt.legend()
 #plt.show()
 
-#Calculate bus 3 Power
-Z_eff = np.sqrt(np.array(step)**2 + (np.array(step_l)*w3)**2)
-powerfactor = np.array(step) / Z_eff
-phi = np.arccos(powerfactor)
-S3_real = np.array(u3)**2/Z_eff
-P3_real = S3_real * powerfactor
-Q3_real = np.sin(phi) * S3_real
+
 
 #Z_eff = (np.array(step))
 plt.title('Z_Eff')
