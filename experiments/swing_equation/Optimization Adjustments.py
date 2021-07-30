@@ -33,7 +33,7 @@ Zl21 = L_lcl_21*omega
 B_lcl1 = -(omega * L_lcl_12)/(0**2 + (omega*L_lcl_12)**2)
 B_lcl2 = -(omega * L_lcl_22)/(0**2 + (omega*L_lcl_22)**2)
 
-star_connection = False
+#star_connection = False
 
 J = 0.0005
 J_Q = 0.00005
@@ -42,15 +42,15 @@ R_lv_line_10km = 0.0
 #L_lv_line_10km = 0.000589
 L_lv_line_10km = 0.0002
 
-if star_connection:
-    R_line_delta = 0    # (R_lv_line_10km * 6) / R_lv_line_10km
-    X_line_star = L_lv_line_10km * omega
-    X_line_delta = (X_line_star**2 + X_line_star**2 + X_line_star**2) / X_line_star     # Equation adapted due to singular value
-    B_L_lv_line_10km = -X_line_delta / (R_line_delta**2 + X_line_delta**2)
-    print(X_line_star)
-    print(X_line_delta)
-else:
-    B_L_lv_line_10km = -(omega * L_lv_line_10km)/(R_lv_line_10km**2 + (omega*L_lv_line_10km)**2)
+#if star_connection:
+#    R_line_delta = 0    # (R_lv_line_10km * 6) / R_lv_line_10km
+#    X_line_star = L_lv_line_10km * omega
+#    X_line_delta = (X_line_star**2 + X_line_star**2 + X_line_star**2) / X_line_star     # Equation adapted due to singular value
+#    B_L_lv_line_10km = -X_line_delta / (R_line_delta**2 + X_line_delta**2)
+#    print(X_line_star)
+#    print(X_line_delta)
+#else:
+B_L_lv_line_10km = -(omega * L_lv_line_10km)/(R_lv_line_10km**2 + (omega*L_lv_line_10km)**2)
 
 print('B_LV ist')
 print(B_L_lv_line_10km)
