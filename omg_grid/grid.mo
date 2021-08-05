@@ -2,7 +2,7 @@ package grid
   import SI = Modelica.SIunits;
   //import Modelica.Units.SI;
   //import SI = Modelica.Units.SI;
-  
+
   package filter
     model pi
       parameter SI.Capacitance C1 = 0.00001;
@@ -1903,9 +1903,9 @@ package grid
     connect(l12.pin6, l23.pin3) annotation(
       Line(points = {{2, -10}, {2, -24}, {12, -24}}, color = {0, 0, 255}));
   connect(l23.pin2, l12.pin5) annotation(
-      Line(points = {{12, -30}, {-4, -30}, {-4, -10}, {-4, -10}}, color = {0, 0, 255}));
+      Line(points = {{12, -30}, {-4, -30}, {-4, -10}}, color = {0, 0, 255}));
   connect(l23.pin1, l12.pin4) annotation(
-      Line(points = {{12, -36}, {-10, -36}, {-10, -10}, {-10, -10}}, color = {0, 0, 255}));
+      Line(points = {{12, -36}, {-10, -36}, {-10, -10}}, color = {0, 0, 255}));
   connect(l13.pin3, l12.pin3) annotation(
       Line(points = {{16, 36}, {2, 36}, {2, 10}, {2, 10}, {2, 10}}, color = {0, 0, 255}));
   connect(l13.pin2, l12.pin2) annotation(
@@ -1919,11 +1919,11 @@ package grid
   connect(lc1.pin4, l13.pin1) annotation(
       Line(points = {{-20, 24}, {16, 24}, {16, 24}, {16, 24}}, color = {0, 0, 255}));
   connect(lc2.pin6, l23.pin3) annotation(
-      Line(points = {{-20, -24}, {12, -24}, {12, -24}, {12, -24}}, color = {0, 0, 255}));
+      Line(points = {{-20, -24}, {12, -24}}, color = {0, 0, 255}));
   connect(lc2.pin5, l23.pin2) annotation(
-      Line(points = {{-20, -30}, {12, -30}, {12, -30}, {12, -30}}, color = {0, 0, 255}));
+      Line(points = {{-20, -30}, {12, -30}}, color = {0, 0, 255}));
   connect(lc2.pin4, l23.pin1) annotation(
-      Line(points = {{-20, -36}, {12, -36}, {12, -36}, {12, -36}}, color = {0, 0, 255}));
+      Line(points = {{-20, -36}, {12, -36}}, color = {0, 0, 255}));
   connect(inverter1.pin3, lc1.pin3) annotation(
       Line(points = {{-60, 36}, {-40, 36}, {-40, 36}, {-40, 36}}, color = {0, 0, 255}));
   connect(inverter1.pin2, lc1.pin2) annotation(

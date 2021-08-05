@@ -5,7 +5,7 @@ import numpy as np
 
 
 #Voltage 1
-output = pd.read_pickle("a_file.pkl")
+output = pd.read_pickle("1_V.pkl")
 plt.figure()
 #print(output)
 output.plot()
@@ -91,7 +91,7 @@ Q_3.to_pickle("B3_Q.pkl")
 
 
 #F1
-output = pd.read_pickle("1_freq.pkl")
+output = pd.read_pickle("1_F.pkl")
 plt.figure()
 #print(output)
 output.plot()

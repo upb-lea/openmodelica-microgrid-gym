@@ -22,8 +22,8 @@ from openmodelica_microgrid_gym.net import Network
 max_episode_steps = 10000  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes
 # (here, only 1 episode makes sense since simulation conditions don't change in this example)
-DroopGain = 8000.0  # virtual droop gain for active power / W/Hz
-QDroopGain = 2000.0  # virtual droop gain for reactive power / VAR/V
+DroopGain = 24000.0  # virtual droop gain for active power / W/Hz
+QDroopGain = 10000.0  # virtual droop gain for reactive power / VAR/V
 net = Network.load('../experiments/swing_equation/microgrid.yaml')
 delta_t = net.ts  # simulation time step size / s
 freq_nom = net.freq_nom  # nominal grid frequency / Hz

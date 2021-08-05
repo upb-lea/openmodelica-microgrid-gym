@@ -6,7 +6,7 @@ components:
   inv1:
     id: inverter1
     i_nom: 20
-    i_lim: 40
+    i_lim: 60
     #v_DC: 1000
     cls: MasterInverter
     v_noise:
