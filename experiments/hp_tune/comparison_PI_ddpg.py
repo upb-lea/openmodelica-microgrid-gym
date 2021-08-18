@@ -130,8 +130,10 @@ kernel = GPy.kern.Matern32(input_dim=len(bounds), variance=prior_var, lengthscal
 
 #####################################
 # Definition of the controllers
+kp_v = 0.002
+ki_v = 143
 # Choose Kp and Ki for the current and voltage controller as mutable parameters
-mutable_params = dict(voltageP=MutableFloat(0.002), voltageI=MutableFloat(143))  # 300Hz
+mutable_params = dict(voltageP=MutableFloat(kp_v), voltageI=MutableFloat(ki_v))  # 300Hz
 # mutable_params = dict(voltageP=MutableFloat(0.016), voltageI=MutableFloat(105))  # 300Hz
 voltage_dqp_iparams = PI_params(kP=mutable_params['voltageP'], kI=mutable_params['voltageI'],
                                 limits=(-iLimit, iLimit))
@@ -578,6 +580,11 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
         ts = time.gmtime()
         compare_result = {"Name": "comparison_PI_DDPG",
                           "time": ts,
+                          "PI_Kp_c": kp_c,
+                          "PI_Ki_c": ki_c,
+                          "PI_Kp_v": kp_v,
+                          "PI_Ki_v": ki_v,
+                          "DDPG_model_path": model_path,
                           "Return PI": (return_sum_PI / env.max_episode_steps + limit_exceeded_penalty_PI),
                           "Return DDPG": (return_sum / env_test.max_episode_steps + limit_exceeded_penalty),
                           "v_d_PI": v_d_PI,
