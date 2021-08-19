@@ -38,6 +38,7 @@ class CallbackList(list):
 show_plots = False
 balanced_load = False
 save_results = True
+PIPI = True
 
 num_average = 25
 max_episode_steps_list = [1000, 5000, 10000, 20000, 50000, 100000]
@@ -53,7 +54,7 @@ ret_dict = dict()
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
-folder_name = 'Pipi_new_testcase_opt2'
+folder_name = 'Pipi_new_testcase_opt_4D_Test'
 save_folder = os.path.join(current_directory, folder_name)
 os.makedirs(save_folder, exist_ok=True)
 
@@ -65,7 +66,7 @@ net = Network.load('net/net_vctrl_single_inv.yaml')
 delta_t = 1e-4  # simulation time step size / s
 undersample = 1
 max_episode_steps = 100001  # number of simulation steps per episode
-num_episodes = 40  # number of simulation episodes (i.e. SafeOpt iterations)
+num_episodes = 100  # number of simulation episodes (i.e. SafeOpt iterations)
 n_MC = 1  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
 v_DC = 600  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 60  # nominal grid frequency / Hz
@@ -106,9 +107,21 @@ prior_var = 2  # prior variance of the GP
 
 # Choose Kp and Ki (current and voltage controller) as mutable parameters (below) and define bounds and lengthscale
 # for both of them
-bounds = [(0.000, 0.045), (4, 450)]  # bounds on the input variable current-Ki&Kp and voltage-Ki&Kp
-lengthscale = [0.01,
-               150]  # [.003, 50.]  # length scale for the parameter variation [current-Ki&Kp and voltage-Ki&Kp] for the GP
+if PIPI:
+    bounds = [(0.001, 0.07), (2, 150), (0.000, 0.045), (4, 450)]
+    lengthscale = [0.005, 25., 0.01, 150]  # .003, 50.]
+    mutable_params = dict(currentP=MutableFloat(0.04), currentI=MutableFloat(11.8),
+                          voltageP=MutableFloat(0.0175), voltageI=MutableFloat(12))
+    current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'],
+                                    limits=(-1, 1))  # Best set from paper III-D
+
+else:
+    bounds = [(0.000, 0.045), (4, 450)]
+    lengthscale = [0.01, 150]  # [0.003, 50]
+    mutable_params = dict(voltageP=MutableFloat(0.0175), voltageI=MutableFloat(12))  # 300Hz
+    kp_c = 0.04
+    ki_c = 11.8  # 11.8
+    current_dqp_iparams = PI_params(kP=kp_c, kI=ki_c, limits=(-1, 1))
 
 # The performance should not drop below the safe threshold, which is defined by the factor safe_threshold times
 # the initial performance: safe_threshold = 1.2 means: performance measurement for optimization are seen as
@@ -132,14 +145,12 @@ kernel = GPy.kern.Matern32(input_dim=len(bounds), variance=prior_var, lengthscal
 #####################################
 # Definition of the controllers
 # Choose Kp and Ki for the current and voltage controller as mutable parameters
-mutable_params = dict(voltageP=MutableFloat(0.0175), voltageI=MutableFloat(12))  # 300Hz
+
 # mutable_params = dict(voltageP=MutableFloat(0.016), voltageI=MutableFloat(105))  # 300Hz
 voltage_dqp_iparams = PI_params(kP=mutable_params['voltageP'], kI=mutable_params['voltageI'],
                                 limits=(-iLimit, iLimit))
 
-kp_c = 0.04
-ki_c = 11.8  # 11.8
-current_dqp_iparams = PI_params(kP=kp_c, kI=ki_c, limits=(-1, 1))  # Current controller values
+# Current controller values
 
 # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
 # filter and the nominal frequency
@@ -332,26 +343,26 @@ df_len = pd.DataFrame({'lengthscale': lengthscale,
 if save_results:
     agent.history.df.to_csv(save_folder + '/_result.csv')
     df_len.to_csv(save_folder + '/_params.csv')
+if not PIPI:
+    best_agent_plt = runner.run_data['last_agent_plt']
+    ax = best_agent_plt.axes[0]
+    ax.grid(which='both')
+    ax.set_axisbelow(True)
 
-best_agent_plt = runner.run_data['last_agent_plt']
-ax = best_agent_plt.axes[0]
-ax.grid(which='both')
-ax.set_axisbelow(True)
-
-agent.params.reset()
-ax.set_ylabel(r'$K_\mathrm{i}\,/\,\mathrm{(AV^{-1}s^{-1})}$')
-ax.set_xlabel(r'$K_\mathrm{p}\,/\,\mathrm{(AV^{-1})}$')
-ax.get_figure().axes[1].set_ylabel(r'$J$')
-plt.title('Lengthscale = {}; balanced = '.format(lengthscale, balanced_load))
-# ax.plot([0.01, 0.01], [0, 250], 'k')
-# ax.plot([mutable_params['currentP'].val, mutable_params['currentP'].val], bounds[1], 'k-', zorder=1,
-#         lw=4,
-#         alpha=.5)
-best_agent_plt.show()
-if save_results:
-    best_agent_plt.savefig(save_folder + '/_agent_plt.pdf')
-    best_agent_plt.savefig(save_folder + '/_agent_plt.pgf')
-    agent.history.df.to_csv(save_folder + '/_result.csv')
+    agent.params.reset()
+    ax.set_ylabel(r'$K_\mathrm{i}\,/\,\mathrm{(AV^{-1}s^{-1})}$')
+    ax.set_xlabel(r'$K_\mathrm{p}\,/\,\mathrm{(AV^{-1})}$')
+    ax.get_figure().axes[1].set_ylabel(r'$J$')
+    plt.title('Lengthscale = {}; balanced = '.format(lengthscale, balanced_load))
+    # ax.plot([0.01, 0.01], [0, 250], 'k')
+    # ax.plot([mutable_params['currentP'].val, mutable_params['currentP'].val], bounds[1], 'k-', zorder=1,
+    #         lw=4,
+    #         alpha=.5)
+    best_agent_plt.show()
+    if save_results:
+        best_agent_plt.savefig(save_folder + '/_agent_plt.pdf')
+        best_agent_plt.savefig(save_folder + '/_agent_plt.pgf')
+        agent.history.df.to_csv(save_folder + '/_result.csv')
 
 print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df.round({'J': 4, 'Params': 4})))
 print('\n Experiment finished with best set: \n')
