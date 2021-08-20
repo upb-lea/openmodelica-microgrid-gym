@@ -18,7 +18,9 @@ from stochastic.processes import VasicekProcess
 
 from experiments.hp_tune.env.random_load import RandomLoad
 from experiments.hp_tune.env.rewards import Reward
-from experiments.model_validation.execution.monte_carlo_runner import MonteCarloRunner
+# from experiments.model_validation.execution.monte_carlo_runner import MonteCarloRunner
+from experiments.hp_tune.execution.reset_runner import MonteCarloRunner
+from experiments.hp_tune.execution.runner import Runner
 from openmodelica_microgrid_gym.agents import SafeOptAgent
 from openmodelica_microgrid_gym.agents.util import MutableFloat
 from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, \
@@ -330,7 +332,6 @@ env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                )
 
 runner = MonteCarloRunner(agent, env)
-
 runner.run(num_episodes, n_mc=n_MC, visualise=True,  # prepare_mc_experiment=reset_loads,
            return_gradient_extend=False)
 
