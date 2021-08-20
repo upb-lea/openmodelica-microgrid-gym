@@ -600,14 +600,16 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                           "v_0_DDPG": v_0,
                           "R_load": R_load,
                           "max_episode_steps": str(max_episode_steps_list[max_eps_steps]),
-                          "number of averages per run": num_average
+                          "number of averages per run": num_average,
+                          "info": "best of new 4D unsafe optimization of 200 runs to figure out the boundaries "
+                                  "of the statespace without reset"
                           }
         node = platform.uname().node
 
         # mongo_recorder = Recorder(database_name=folder_name)
 
         # mongo_recorder.save_to_mongodb('Comparison1' + n_trail, compare_result)
-        mongo_recorder.save_to_mongodb('Comparison_4D_optimizedPIPI', compare_result)
+        mongo_recorder.save_to_mongodb('Comparison_4D_optimizedPIPI_2', compare_result)
         # mongo_recorder.save_to_mongodb('Comparison_2D_optimizedPIPI', compare_result)
 
         ret_list.append((return_sum / env_test.max_episode_steps + limit_exceeded_penalty))
