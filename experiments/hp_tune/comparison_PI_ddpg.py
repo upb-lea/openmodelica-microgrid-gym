@@ -51,7 +51,7 @@ show_plots = False
 balanced_load = False
 save_results = False
 
-folder_name = 'Comparison_PI_DDPG'  # cfg['STUDY_NAME']
+folder_name = 'Comparison_PI'  # cfg['STUDY_NAME']
 node = platform.uname().node
 
 # mongo_recorder = Recorder(database_name=folder_name)
@@ -59,7 +59,7 @@ mongo_recorder = Recorder(node=node,
                           database_name=folder_name)  # store to port 12001 for ssh data to cyberdyne or locally as json to cfg[meas_data_folder]
 
 num_average = 1
-max_episode_steps_list = [1000, 100000]  # [1000, 5000, 10000, 20000, 50000, 100000]
+max_episode_steps_list = [700]  # [1000, 5000, 10000, 20000, 50000, 100000]
 
 result_list = []
 ret_list = []
@@ -82,7 +82,7 @@ os.makedirs(save_folder, exist_ok=True)
 net = Network.load('net/net_vctrl_single_inv.yaml')
 delta_t = 1e-4  # simulation time step size / s
 undersample = 1
-max_episode_steps = 1002  # number of simulation steps per episode
+# max_episode_steps = 1002  # number of simulation steps per episode
 num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
 n_MC = 1  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
 v_DC = 600  # DC-link voltage / V; will be set as model parameter in the FMU
@@ -232,7 +232,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
         gen = RandProcess(VasicekProcess, proc_kwargs=dict(speed=800, vol=40, mean=R), initial=R,
                           bounds=(lower_bound_load, upper_bound_load))
 
-        rand_load_train = RandomLoad(max_episode_steps, net.ts, gen,
+        rand_load_train = RandomLoad(max_episode_steps_list[max_eps_steps], net.ts, gen,
                                      bounds=(lower_bound_load_clip, upper_bound_load_clip),
                                      bounds_std=(lower_bound_load_clip_std, upper_bound_load_clip_std))
 
@@ -244,10 +244,10 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
         plotter = PlotManager(agent, save_results=save_results, save_folder=save_folder,
                               show_plots=show_plots)
 
-        rand_load_test = RandomLoad(max_episode_steps, net.ts, gen,
-                                    load_curve=pd.read_pickle(
-                                        'experiments/hp_tune/data/R_load_test_case_2_seconds.pkl'))
 
+        # rand_load_test = RandomLoad(max_episode_steps_list[max_eps_steps], net.ts, gen,
+        #                            load_curve=pd.read_pickle(
+        #                                'experiments/hp_tune/data/R_load_test_case_2_seconds.pkl'))
 
         def xylables_R(fig):
             ax = fig.gca()
@@ -482,7 +482,8 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
         obs = env_test.reset()
         obs_PI = env.reset()
 
-        for step in range(env_test.max_episode_steps):
+        for step in tqdm(range(env_test.max_episode_steps), desc='steps', unit='step', leave=False):
+            # for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit='step', leave=False):
 
             agent.observe(None, False)
             act_PI = agent.act(obs_PI)
@@ -506,6 +507,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
             return_sum += rewards
             rew_list.append(rewards)
 
+            """
             v_a = env_test.history.df['lc.capacitor1.v'].iloc[-1]
             v_b = env_test.history.df['lc.capacitor2.v'].iloc[-1]
             v_c = env_test.history.df['lc.capacitor3.v'].iloc[-1]
@@ -527,9 +529,11 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
             v_d_PI.append(v_dq0_PI[0])
             v_q_PI.append(v_dq0_PI[1])
             v_0_PI.append(v_dq0_PI[2])
-
             """
-            if step % 1000 == 0 and step != 0:
+
+            if step % 10000 == 0 and step != 0:
+                print("10%")
+            """
                 env_test.close()
                 obs = env_test.reset()
 
@@ -541,9 +545,33 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
             # print(rewards)
             if done:
                 env_test.close()
+
                 # print(limit_exceeded_in_test)
                 break
+        v_a = env_test.history.df['lc.capacitor1.v']
+        v_b = env_test.history.df['lc.capacitor2.v']
+        v_c = env_test.history.df['lc.capacitor3.v']
+        R_load = (env_test.history.df['r_load.resistor1.R'].tolist())
+        phase = env_test.history.df['inverter1.phase.0']  # env_test.env.net.components[0].phase
+        v_dq0 = abc_to_dq0(np.array([v_a, v_b, v_c]), phase)
 
+        v_d = (v_dq0[0].tolist())
+        v_q = (v_dq0[1].tolist())
+        v_0 = (v_dq0[2].tolist())
+
+        v_a_PI = env.history.df['lc.capacitor1.v']
+        v_b_PI = env.history.df['lc.capacitor2.v']
+        v_c_PI = env.history.df['lc.capacitor3.v']
+        R_load_PI = (env.history.df['r_load.resistor1.R'].tolist())
+        phase_PI = env.history.df['inverter1.phase.0']  # env.net.components[0].phase
+
+        v_dq0_PI = abc_to_dq0(np.array([v_a_PI, v_b_PI, v_c_PI]), phase_PI)
+
+        v_d_PI = (v_dq0_PI[0].tolist())
+        v_q_PI = (v_dq0_PI[1].tolist())
+        v_0_PI = (v_dq0_PI[2].tolist())
+
+        env_test.close()
         _, env_fig = env.close()
         agent.observe(r_PI, done_PI)
 
@@ -614,7 +642,8 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
         # mongo_recorder = Recorder(database_name=folder_name)
 
         # mongo_recorder.save_to_mongodb('Comparison1' + n_trail, compare_result)
-        mongo_recorder.save_to_mongodb('Comparison_4D_optimizedPIPI_reset_100_test_without_reset', compare_result)
+        mongo_recorder.save_to_mongodb('Comparison_4D_optimizedPIPI_reset_100_test_without_resetBarcleyNEW',
+                                       compare_result)
         # mongo_recorder.save_to_mongodb('Comparison_2D_optimizedPIPI', compare_result)
 
         ret_list.append((return_sum / env_test.max_episode_steps + limit_exceeded_penalty))
