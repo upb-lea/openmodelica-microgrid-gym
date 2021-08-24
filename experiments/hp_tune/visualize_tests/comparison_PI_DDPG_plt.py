@@ -11,12 +11,13 @@ from openmodelica_microgrid_gym.util import dq0_to_abc, abc_to_dq0
 
 db_name = 'Comparison_PI_DDPG'
 
-interval_list_x = [[0, 0.025], [0.79, 0.94], [0.89, 0.92], [0.9, 0.94]]
-interval_list_y = [[-150, 250], [-75, 350], [-300, 350], [150, 190]]
+interval_list_x = [[0, 0.025], [0.49, 0.62], [0.498, 0.51], [0.57, 0.587]]
+interval_list_y = [[-100, 280], [-120, 375], [-100, 225], [-50, 375]]
 
-make_pyplot = True
+make_pyplot = False
 show_load = True
-trial_name = 'Comparison_4D_optimizedPIPI'
+# trial_name = 'Comparison_4D_optimizedPIPI__unsafe2'
+trial_name = 'Comparison_4D_optimizedPIPI_reset_100'
 
 with sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001)) as tun:
     with MongoClient(f'mongodb://localhost:{tun.local_bind_port}/') as client:
@@ -26,8 +27,11 @@ with sshtunnel.open_tunnel('lea38', remote_bind_address=('127.0.0.1', 12001)) as
         # trial = db['Comparison_numSteps_[1000, 5000, 10000, 20000, 50000, 100000]_average_1']
         trial = db[trial_name]
 
-        for trials in trial.find():
-            testcase_100k = trials
+        # find last trial/collection
+        # for trials in trial.find():
+        #    testcase_100k = trials
+
+        testcase_100k = trial.find_one({"max_episode_steps": "100000"})
 
         return_PR = testcase_100k['Return PI']
         return_DDPG = testcase_100k['Return DDPG']

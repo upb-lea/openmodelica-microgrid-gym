@@ -132,8 +132,8 @@ kernel = GPy.kern.Matern32(input_dim=len(bounds), variance=prior_var, lengthscal
 # Definition of the controllers
 # kp_v = 0.002
 # ki_v = 143
-kp_v = 0.0095  # 0.0
-ki_v = 173.22  # 200
+kp_v = 0  # 0.0095  # 0.0
+ki_v = 182  # 173.22  # 200
 # Choose Kp and Ki for the current and voltage controller as mutable parameters
 mutable_params = dict(voltageP=MutableFloat(kp_v), voltageI=MutableFloat(ki_v))  # 300Hz
 # mutable_params = dict(voltageP=MutableFloat(0.016), voltageI=MutableFloat(105))  # 300Hz
@@ -143,8 +143,8 @@ voltage_dqp_iparams = PI_params(kP=mutable_params['voltageP'], kI=mutable_params
 # kp_c = 0.033
 # ki_c = 17.4  # 11.8
 
-kp_c = 0.0404  # 0.04
-ki_c = 4.065  # 11.8
+kp_c = 0.0308  # 0.0404  # 0.04
+ki_c = 13.3584  # 4.065  # 11.8
 current_dqp_iparams = PI_params(kP=kp_c, kI=ki_c, limits=(-1, 1))  # Current controller values
 
 # Define the droop parameters for the inverter of the active power Watt/Hz (DroopGain), delta_t (0.005) used for the
@@ -528,6 +528,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
             v_q_PI.append(v_dq0_PI[1])
             v_0_PI.append(v_dq0_PI[2])
 
+            """
             if step % 1000 == 0 and step != 0:
                 env_test.close()
                 obs = env_test.reset()
@@ -535,6 +536,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                 env.close()
                 agent.reset()
                 obs_PI = env.reset()
+            """
 
             # print(rewards)
             if done:
@@ -599,17 +601,20 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                           "v_q_DDPG": v_q,
                           "v_0_DDPG": v_0,
                           "R_load": R_load,
+                          "R_load_PI": R_load_PI,
                           "max_episode_steps": str(max_episode_steps_list[max_eps_steps]),
                           "number of averages per run": num_average,
-                          "info": "best of new 4D unsafe optimization of 200 runs to figure out the boundaries "
-                                  "of the statespace without reset"
+                          "info": "best of new 4D unsafe optimization of 300 runs (picard) to figure out the boundaries "
+                                  "of the statespace without reset",
+                          "optimization node": 'picard',
+                          "optimization folder name": 'Pipi_new_testcase_opt_4d_undsafe_2'
                           }
         node = platform.uname().node
 
         # mongo_recorder = Recorder(database_name=folder_name)
 
         # mongo_recorder.save_to_mongodb('Comparison1' + n_trail, compare_result)
-        mongo_recorder.save_to_mongodb('Comparison_4D_optimizedPIPI_2', compare_result)
+        mongo_recorder.save_to_mongodb('Comparison_4D_optimizedPIPI_reset_100_test_without_reset', compare_result)
         # mongo_recorder.save_to_mongodb('Comparison_2D_optimizedPIPI', compare_result)
 
         ret_list.append((return_sum / env_test.max_episode_steps + limit_exceeded_penalty))
