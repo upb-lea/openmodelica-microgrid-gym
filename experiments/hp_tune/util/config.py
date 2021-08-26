@@ -6,6 +6,6 @@ cfg = dict(lea_vpn_nodes=['lea-skynet', 'lea-picard', 'lea-barclay',
            # STUDY_NAME='DEGUB_1',
            meas_data_folder='Json_to_MonogDB/',
            MONGODB_PORT=12001,
-           loglevel='test',
+           loglevel='train',
            is_dq0=True
            )

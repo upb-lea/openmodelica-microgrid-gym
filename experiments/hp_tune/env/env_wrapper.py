@@ -92,6 +92,8 @@ class FeatureWrapper(Monitor):
 
         obs, reward, done, info = super().step(action_abc)
 
+        super().render()
+
         integrator_penalty = np.sum(-((np.abs(action_I)) ** 0.5)) * (1 - self.gamma) / 3
         # action_P_penalty = - np.sum((np.abs(action_P - self.used_P)) ** 0.5) * (1 - self.gamma) / 3
         action_P_penalty = np.sum(-((np.abs(action_P)) ** 0.5)) * (1 - self.gamma) / 3
@@ -122,6 +124,7 @@ class FeatureWrapper(Monitor):
         if self._n_training_steps % self.training_episode_length == 0:
             # info["timelimit_reached"] = True
             done = True
+            super().close()
 
         # add wanted features here (add appropriate self.observation in init!!)
         # calculate magnitude of current phasor abc

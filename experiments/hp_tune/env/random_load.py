@@ -60,6 +60,25 @@ class RandomLoad:
 
         return self.rand_process.sample(t)
 
+    def clipped_step(self, t):
+        return np.clip(self.rand_process.sample(t),
+                       self.bounds[0] + self.lowerbound_std,
+                       self.bounds[1] + self.upperbound_std
+                       )
+
+    def one_random_loadstep_per_episode(self, t):
+        if self.loadstep_time * self.ts < t <= self.loadstep_time * self.ts + self.ts:
+            # do with 100 percent propability
+            self.do_change(1002, 102)
+        # else:
+        # with 2 permill change drift
+        #    self.do_change(2, 0)
+
+        return np.clip(self.rand_process.sample(t),
+                       self.bounds[0] + self.lowerbound_std,
+                       self.bounds[1] + self.upperbound_std
+                       )
+
     def give_dataframe_value(self, t, col):
         """
         Gives load values from a stored dataframe (self.load_curve)
@@ -103,8 +122,28 @@ class RandomLoad:
                 # drift -> Lower speed to allow
                 self.rand_process.proc.speed = np.random.randint(10, 100)
 
-
         return np.clip(self.rand_process.sample(t),
                        self.bounds[0] + self.lowerbound_std,
                        self.bounds[1] + self.upperbound_std
                        )
+
+    def do_change(self, event_prob_permill=2, step_prob_percent=50):
+        if np.random.randint(0, 1001) < event_prob_permill:
+
+            gain = np.random.randint(self.rand_process.bounds[0], self.rand_process.bounds[1])
+
+            self.rand_process.proc.mean = gain
+            self.rand_process.proc.vol = np.random.randint(1, 150)
+            self.rand_process.proc.speed = np.random.randint(10, 1200)
+            # define sdt for clipping once every event
+            self.lowerbound_std = np.random.normal(scale=self.bounds_std[0])
+            self.upperbound_std = np.random.normal(scale=self.bounds_std[1])
+
+            # With 50% probability do a step or a drift
+            if np.random.randint(0, 101) < step_prob_percent:
+                # step
+                self.rand_process.reserve = gain
+
+            else:
+                # drift -> Lower speed to allow
+                self.rand_process.proc.speed = np.random.randint(10, 100)
