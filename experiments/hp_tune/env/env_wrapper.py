@@ -8,7 +8,7 @@ from stable_baselines3.common.type_aliases import GymStepReturn
 
 from experiments.hp_tune.env.vctrl_single_inv import net
 from experiments.hp_tune.util.config import cfg
-from openmodelica_microgrid_gym.util import abc_to_alpha_beta, dq0_to_abc, abc_to_dq0
+from openmodelica_microgrid_gym.util import abc_to_alpha_beta, dq0_to_abc, abc_to_dq0, Fastqueue
 
 
 class FeatureWrapper(Monitor):
@@ -67,6 +67,17 @@ class FeatureWrapper(Monitor):
         self.t_start_penalty_I = t_start_penalty_I
         self.t_start_penalty_P = t_start_penalty_P
         self.number_learing_steps = number_learing_steps
+
+        self.delay_0 = Fastqueue(1, 3)
+        self.delay_1 = Fastqueue(1, 3)
+        self.delay_2 = Fastqueue(1, 3)
+        self.delay_3 = Fastqueue(1, 3)
+        self.delay_4 = Fastqueue(1, 3)
+        self.delay_5 = Fastqueue(1, 3)
+        self.delay_6 = Fastqueue(1, 3)
+        self.delay_7 = Fastqueue(1, 3)
+        self.delay_8 = Fastqueue(1, 3)
+        self.delay_9 = Fastqueue(1, 3)
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
         """
@@ -211,7 +222,30 @@ class FeatureWrapper(Monitor):
         obs = np.append(obs, np.cos(self.env.net.components[0].phase))
         obs = np.append(obs, self.used_P)
         obs = np.append(obs, self.used_I)
+
+        """Add past observations"""
+        obs0 = self.delay_0.shift(obs[3:6])
+        obs1 = self.delay_1.shift(obs0)
+        obs2 = self.delay_2.shift(obs1)
+        obs3 = self.delay_3.shift(obs2)
+        obs4 = self.delay_4.shift(obs3)
+        obs5 = self.delay_5.shift(obs4)
+        obs6 = self.delay_6.shift(obs5)
+        obs7 = self.delay_7.shift(obs6)
+        obs8 = self.delay_8.shift(obs7)
+        obs9 = self.delay_9.shift(obs8)
         # obs = np.append(obs, delta_i_lim_i_phasor)
+
+        obs = np.append(obs, obs0)
+        obs = np.append(obs, obs1)
+        obs = np.append(obs, obs2)
+        obs = np.append(obs, obs3)
+        obs = np.append(obs, obs4)
+        obs = np.append(obs, obs5)
+        obs = np.append(obs, obs6)
+        obs = np.append(obs, obs7)
+        obs = np.append(obs, obs8)
+        obs = np.append(obs, obs9)
 
         """
         Add used action to the NN input to learn delay
@@ -231,6 +265,18 @@ class FeatureWrapper(Monitor):
         Reset the wrapped env and the flag for the number of training steps after the env is reset
         by the agent for training purpose and internal counters
         """
+
+        self.delay_0.clear()
+        self.delay_1.clear()
+        self.delay_2.clear()
+        self.delay_3.clear()
+        self.delay_4.clear()
+        self.delay_5.clear()
+        self.delay_6.clear()
+        self.delay_7.clear()
+        self.delay_8.clear()
+        self.delay_9.clear()
+
         obs = super().reset()
         self._n_training_steps = 0
         self.integrator_sum = np.zeros(self.action_space.shape)
@@ -280,6 +326,31 @@ class FeatureWrapper(Monitor):
         Add used action to the NN input to learn delay
         """
         # obs = np.append(obs, self.used_action)
+
+        """Add past observations"""
+        """Add past observations"""
+        obs0 = self.delay_0.shift(obs[3:6])
+        obs1 = self.delay_1.shift(obs0)
+        obs2 = self.delay_2.shift(obs1)
+        obs3 = self.delay_3.shift(obs2)
+        obs4 = self.delay_4.shift(obs3)
+        obs5 = self.delay_5.shift(obs4)
+        obs6 = self.delay_6.shift(obs5)
+        obs7 = self.delay_7.shift(obs6)
+        obs8 = self.delay_8.shift(obs7)
+        obs9 = self.delay_9.shift(obs8)
+        # obs = np.append(obs, delta_i_lim_i_phasor)
+
+        obs = np.append(obs, obs0)
+        obs = np.append(obs, obs1)
+        obs = np.append(obs, obs2)
+        obs = np.append(obs, obs3)
+        obs = np.append(obs, obs4)
+        obs = np.append(obs, obs5)
+        obs = np.append(obs, obs6)
+        obs = np.append(obs, obs7)
+        obs = np.append(obs, obs8)
+        obs = np.append(obs, obs9)
 
         return obs
 

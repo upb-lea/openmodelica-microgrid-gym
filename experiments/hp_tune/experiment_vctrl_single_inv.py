@@ -53,7 +53,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                    )
 
-    env = FeatureWrapper(env, number_of_features=11, training_episode_length=training_episode_length,
+    env = FeatureWrapper(env, number_of_features=11 + 30, training_episode_length=training_episode_length,
                          recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
                          antiwindup_weight=antiwindup_weight, gamma=gamma,
                          penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight,
@@ -160,7 +160,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                     'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
                                     'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
                         )
-    env_test = FeatureWrapper(env_test, number_of_features=11, integrator_weight=integrator_weight,
+    env_test = FeatureWrapper(env_test, number_of_features=11 + 30, integrator_weight=integrator_weight,
                               recorder=mongo_recorder, antiwindup_weight=antiwindup_weight,
                               gamma=1, penalty_I_weight=0, penalty_P_weight=0)
     # using gamma=1 and rew_weigth=3 we get the original reward from the env without penalties
