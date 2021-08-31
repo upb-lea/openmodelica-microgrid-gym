@@ -127,6 +127,8 @@ def ddpg_objective_fix_params(trial):
                                                        "Penalties fuer action_P und action_P"
                                                        "Mehr HPs: trainfreq, batch/buffer_size, a_relu ",
                           'Weitere Info': "Neue Features: OHNE 10 vdq0, bestes HP set aus study 22, pro train_episode ein Lastsprung"
+                                          "Als Bewertung wird der MSE verwendet um zu gucken ob Schwingungen reduziert werden"
+                                          "Vs schlechtere Stationäre genauigkeit"
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
@@ -201,7 +203,7 @@ def ddpg_objective(trial):
         0.25 * number_learning_steps)  # trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
     # number_learning_steps)
     noise_theta = trial.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
-    error_exponent = 0.5  # trial.suggest_loguniform("error_exponent", 0.001, 4)
+    error_exponent = 2  # 0.5  # trial.suggest_loguniform("error_exponent", 0.001, 4)
 
     training_episode_length = trial.suggest_int("training_episode_length", 500, 5000)  # 128
     # learning_starts = 0.32  # trial.suggest_loguniform("learning_starts", 0.1, 2)  # 128
