@@ -101,7 +101,8 @@ def xylables_R(fig):
     plt.close()
 
 
-rand_load_train = RandomLoad(max_episode_steps, net.ts, gen, bounds=(lower_bound_load_clip, upper_bound_load_clip),
+rand_load_train = RandomLoad(cfg['train_episode_length'], net.ts, gen,
+                             bounds=(lower_bound_load_clip, upper_bound_load_clip),
                              bounds_std=(lower_bound_load_clip_std, upper_bound_load_clip_std))
 
 cb = CallbackList()
@@ -232,7 +233,7 @@ register(id='vctrl_single_inv_train-v1',
          )
 
 rand_load_test = RandomLoad(max_episode_steps, net.ts, gen,
-                            load_curve=pd.read_pickle('experiments/hp_tune/data/R_load_test_case_2_seconds.pkl'))
+                            load_curve=pd.read_pickle('experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'))
 
 register(id='vctrl_single_inv_test-v0',
          entry_point='openmodelica_microgrid_gym.env:ModelicaEnv',
@@ -317,9 +318,9 @@ register(id='vctrl_single_inv_test-v1',
                            # 'r_load.resistor1.R': partial(rand_load_train.load_step, gain=R),
                            # 'r_load.resistor2.R': partial(rand_load_train.load_step, gain=R),
                            # 'r_load.resistor3.R': partial(rand_load_train.load_step, gain=R),
-                           'r_load.resistor1.R': rand_load_train.random_load_step,
-                           'r_load.resistor2.R': rand_load_train.random_load_step,
-                           'r_load.resistor3.R': rand_load_train.random_load_step,
+                           'r_load.resistor1.R': rand_load_train.one_random_loadstep_per_episode,
+                           'r_load.resistor2.R': rand_load_train.clipped_step,
+                           'r_load.resistor3.R': rand_load_train.clipped_step,
                            'lc.capacitor1.v': lambda t: np.random.uniform(low=-v_nom,
                                                                           high=v_nom) if t == -1 else None,
                            'lc.capacitor2.v': lambda t: np.random.uniform(low=-v_nom,

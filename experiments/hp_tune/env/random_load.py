@@ -5,11 +5,11 @@ from openmodelica_microgrid_gym.util import RandProcess
 
 
 class RandomLoad:
-    def __init__(self, max_episode_steps: int, ts: float, rand_process: RandProcess, loadstep_time: int = None,
+    def __init__(self, train_episode_length: int, ts: float, rand_process: RandProcess, loadstep_time: int = None,
                  load_curve: pd.DataFrame = None, bounds=None, bounds_std=None):
         """
 
-        :param max_episode_steps: number of steps per episode
+        :param max_episode_steps: number of steps per training episode (can differ from env.max_episode_steps)
         :param ts: sampletime of env
         :param rand_pocess: Instance of random process defines noise added to load
         :param loadstep_time: number of env step where load step should happen
@@ -18,11 +18,11 @@ class RandomLoad:
         :param bounds_std: Chosen bounds are sampled from a distribution with std=bounds_std and mean=bounds
 
         """
-        self.max_episode_steps = max_episode_steps
+        self.train_episode_length = train_episode_length
         self.ts = ts
         self.rand_process = rand_process
         if loadstep_time is None:
-            self.loadstep_time = np.random.randint(0, self.max_episode_steps)
+            self.loadstep_time = np.random.randint(0, self.train_episode_length)
         else:
             self.loadstep_time = loadstep_time
         self.load_curve = load_curve
@@ -40,7 +40,7 @@ class RandomLoad:
 
     def reset(self, loadstep_time=None):
         if loadstep_time is None:
-            self.loadstep_time = np.random.randint(0, self.max_episode_steps)
+            self.loadstep_time = np.random.randint(0, self.train_episode_length)
         else:
             self.loadstep_time = loadstep_time
 

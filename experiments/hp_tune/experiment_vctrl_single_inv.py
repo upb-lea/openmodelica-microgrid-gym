@@ -45,7 +45,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                  use_gamma_normalization=use_gamma_in_rew, error_exponent=error_exponent, i_lim=net['inverter1'].i_lim,
                  i_nom=net['inverter1'].i_nom)
 
-    env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train-v0',
+    env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train-v1',
                    reward_fun=rew.rew_fun_dq0,
                    abort_reward=-1,
                    obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
@@ -58,7 +58,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                          antiwindup_weight=antiwindup_weight, gamma=gamma,
                          penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight,
                          t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
-                         number_learing_steps=number_learning_steps)
+                         number_learing_steps=number_learning_steps, use_past_vals=True, number_past_vals=30)
 
     # todo: Upwnscale actionspace - lessulgy possible? Interaction pytorch...
     env.action_space = gym.spaces.Box(low=np.full(6, -1), high=np.full(6, 1))
@@ -162,7 +162,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                         )
     env_test = FeatureWrapper(env_test, number_of_features=11 + 30, integrator_weight=integrator_weight,
                               recorder=mongo_recorder, antiwindup_weight=antiwindup_weight,
-                              gamma=1, penalty_I_weight=0, penalty_P_weight=0)
+                              gamma=1, penalty_I_weight=0, penalty_P_weight=0, use_past_vals=True, number_past_vals=30)
     # using gamma=1 and rew_weigth=3 we get the original reward from the env without penalties
     obs = env_test.reset()
     phase_list = []
@@ -202,7 +202,6 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
         integrator_sum1.append(np.float64(env_test.integrator_sum[1]))
         integrator_sum2.append(np.float64(env_test.integrator_sum[2]))
 
-
         if rewards == -1 and not limit_exceeded_in_test:
             # Set addidional penalty of -1 if limit is exceeded once in the test case
             limit_exceeded_in_test = True
@@ -212,7 +211,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
         rew_list.append(rewards)
         # print(rewards)
 
-        if step % 1000 == 0 and step != 0:
+        # if step % 1000 == 0 and step != 0:
+        if step % cfg['train_episode_length'] == 0 and step != 0:
             va.extend(env_test.history[env_test.viz_col_tmpls[0].vars[0]].copy().values.tolist())
             vb.extend(env_test.history[env_test.viz_col_tmpls[0].vars[1]].copy().values.tolist())
             vc.extend(env_test.history[env_test.viz_col_tmpls[0].vars[2]].copy().values.tolist())

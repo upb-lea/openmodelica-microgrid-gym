@@ -16,7 +16,7 @@ class FeatureWrapper(Monitor):
     def __init__(self, env, number_of_features: int = 0, training_episode_length: int = np.inf,
                  recorder=None, n_trail="", integrator_weight=net.ts, antiwindup_weight=net.ts, gamma=0,
                  penalty_I_weight=1, penalty_P_weight=1, t_start_penalty_I=0, t_start_penalty_P=0,
-                 number_learing_steps=500000):
+                 number_learing_steps=500000, use_past_vals=False, number_past_vals=0):
         """
         Env Wrapper to add features to the env-observations and adds information to env.step output which can be used in
         case of an continuing (non-episodic) task to reset the environment without being terminated by done
@@ -67,6 +67,8 @@ class FeatureWrapper(Monitor):
         self.t_start_penalty_I = t_start_penalty_I
         self.t_start_penalty_P = t_start_penalty_P
         self.number_learing_steps = number_learing_steps
+
+        self.use_past_vals = use_past_vals
 
         self.delay_0 = Fastqueue(1, 3)
         self.delay_1 = Fastqueue(1, 3)
@@ -224,28 +226,29 @@ class FeatureWrapper(Monitor):
         obs = np.append(obs, self.used_I)
 
         """Add past observations"""
-        obs0 = self.delay_0.shift(obs[3:6])
-        obs1 = self.delay_1.shift(obs0)
-        obs2 = self.delay_2.shift(obs1)
-        obs3 = self.delay_3.shift(obs2)
-        obs4 = self.delay_4.shift(obs3)
-        obs5 = self.delay_5.shift(obs4)
-        obs6 = self.delay_6.shift(obs5)
-        obs7 = self.delay_7.shift(obs6)
-        obs8 = self.delay_8.shift(obs7)
-        obs9 = self.delay_9.shift(obs8)
-        # obs = np.append(obs, delta_i_lim_i_phasor)
+        if self.use_past_vals:
+            obs0 = self.delay_0.shift(obs[3:6])
+            obs1 = self.delay_1.shift(obs0)
+            obs2 = self.delay_2.shift(obs1)
+            obs3 = self.delay_3.shift(obs2)
+            obs4 = self.delay_4.shift(obs3)
+            obs5 = self.delay_5.shift(obs4)
+            obs6 = self.delay_6.shift(obs5)
+            obs7 = self.delay_7.shift(obs6)
+            obs8 = self.delay_8.shift(obs7)
+            obs9 = self.delay_9.shift(obs8)
+            # obs = np.append(obs, delta_i_lim_i_phasor)
 
-        obs = np.append(obs, obs0)
-        obs = np.append(obs, obs1)
-        obs = np.append(obs, obs2)
-        obs = np.append(obs, obs3)
-        obs = np.append(obs, obs4)
-        obs = np.append(obs, obs5)
-        obs = np.append(obs, obs6)
-        obs = np.append(obs, obs7)
-        obs = np.append(obs, obs8)
-        obs = np.append(obs, obs9)
+            obs = np.append(obs, obs0)
+            obs = np.append(obs, obs1)
+            obs = np.append(obs, obs2)
+            obs = np.append(obs, obs3)
+            obs = np.append(obs, obs4)
+            obs = np.append(obs, obs5)
+            obs = np.append(obs, obs6)
+            obs = np.append(obs, obs7)
+            obs = np.append(obs, obs8)
+            obs = np.append(obs, obs9)
 
         """
         Add used action to the NN input to learn delay
@@ -328,29 +331,29 @@ class FeatureWrapper(Monitor):
         # obs = np.append(obs, self.used_action)
 
         """Add past observations"""
-        """Add past observations"""
-        obs0 = self.delay_0.shift(obs[3:6])
-        obs1 = self.delay_1.shift(obs0)
-        obs2 = self.delay_2.shift(obs1)
-        obs3 = self.delay_3.shift(obs2)
-        obs4 = self.delay_4.shift(obs3)
-        obs5 = self.delay_5.shift(obs4)
-        obs6 = self.delay_6.shift(obs5)
-        obs7 = self.delay_7.shift(obs6)
-        obs8 = self.delay_8.shift(obs7)
-        obs9 = self.delay_9.shift(obs8)
-        # obs = np.append(obs, delta_i_lim_i_phasor)
+        if self.use_past_vals:
+            obs0 = self.delay_0.shift(obs[3:6])
+            obs1 = self.delay_1.shift(obs0)
+            obs2 = self.delay_2.shift(obs1)
+            obs3 = self.delay_3.shift(obs2)
+            obs4 = self.delay_4.shift(obs3)
+            obs5 = self.delay_5.shift(obs4)
+            obs6 = self.delay_6.shift(obs5)
+            obs7 = self.delay_7.shift(obs6)
+            obs8 = self.delay_8.shift(obs7)
+            obs9 = self.delay_9.shift(obs8)
+            # obs = np.append(obs, delta_i_lim_i_phasor)
 
-        obs = np.append(obs, obs0)
-        obs = np.append(obs, obs1)
-        obs = np.append(obs, obs2)
-        obs = np.append(obs, obs3)
-        obs = np.append(obs, obs4)
-        obs = np.append(obs, obs5)
-        obs = np.append(obs, obs6)
-        obs = np.append(obs, obs7)
-        obs = np.append(obs, obs8)
-        obs = np.append(obs, obs9)
+            obs = np.append(obs, obs0)
+            obs = np.append(obs, obs1)
+            obs = np.append(obs, obs2)
+            obs = np.append(obs, obs3)
+            obs = np.append(obs, obs4)
+            obs = np.append(obs, obs5)
+            obs = np.append(obs, obs6)
+            obs = np.append(obs, obs7)
+            obs = np.append(obs, obs8)
+            obs = np.append(obs, obs9)
 
         return obs
 
