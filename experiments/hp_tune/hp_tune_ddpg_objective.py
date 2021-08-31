@@ -126,7 +126,7 @@ def ddpg_objective_fix_params(trial):
                                                        "Integratorzustand+used_P_Action (je um einen verzoegert) wird mit als feature uebergeben"
                                                        "Penalties fuer action_P und action_P"
                                                        "Mehr HPs: trainfreq, batch/buffer_size, a_relu ",
-                          'Weitere Info': "Neue Features: letzten 10 vdq0, bestes HP set aus study 22"
+                          'Weitere Info': "Neue Features: OHNE 10 vdq0, bestes HP set aus study 22, pro train_episode ein Lastsprung"
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
