@@ -96,7 +96,7 @@ def ddpg_objective_fix_params(trial):
         0.25 * number_learning_steps)  # trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
     # number_learning_steps)
     noise_theta = trial_config["noise_theta"]  # trial.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
-    error_exponent = 0.5  # trial.suggest_loguniform("error_exponent", 0.001, 4)
+    error_exponent = 2  # 0.5  # trial.suggest_loguniform("error_exponent", 0.001, 4)
 
     training_episode_length = trial_config[
         "training_episode_length"]  # trial.suggest_int("training_episode_length", 500, 5000)  # 128
