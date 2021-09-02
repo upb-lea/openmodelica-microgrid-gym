@@ -109,6 +109,8 @@ def ddpg_objective_fix_params(trial):
     optimizer = trial_config[
         "optimizer"]  # trial.suggest_categorical("optimizer", ["Adam", "SGD", "RMSprop"])  # , "LBFGS"])
 
+    number_past_vals = trial.suggest_int("number_past_vals", 0, 200)
+
     learning_rate = linear_schedule(initial_value=learning_rate, final_value=learning_rate * final_lr,
                                     t_start=t_start,
                                     t_end=t_end,
@@ -126,8 +128,8 @@ def ddpg_objective_fix_params(trial):
                                                        "Integratorzustand+used_P_Action (je um einen verzoegert) wird mit als feature uebergeben"
                                                        "Penalties fuer action_P und action_P"
                                                        "Mehr HPs: trainfreq, batch/buffer_size, a_relu ",
-                          'Weitere Info': "Neue Features: OHNE pastVals, bestes HP set aus study 22, pro train_episode ein Lastsprung"
-                                          "Laststrom als feature"
+                          'Weitere Info': "Neue Features: pastVals HPO als ersatz fuer Laststrom?, bestes HP set aus study 22"
+                                          ", pro train_episode mehr als ein (10) Lastsprung"
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
@@ -144,7 +146,7 @@ def ddpg_objective_fix_params(trial):
                                tau, number_learning_steps, integrator_weight,
                                integrator_weight * antiwindup_weight, penalty_I_weight, penalty_P_weight,
                                train_freq_type, train_freq, t_start_penalty_I, t_start_penalty_P, optimizer,
-                               n_trail)
+                               n_trail, number_past_vals)
 
     return loss
 
@@ -467,7 +469,7 @@ if __name__ == "__main__":
     # learning_rate = list(itertools.chain(*[[1e-9] * 1]))
     # search_space = {'learning_rate': learning_rate}  # , 'number_learning_steps': number_learning_steps}
 
-    TPE_sampler = TPESampler(n_startup_trials=10)  # , constant_liar=True)
+    TPE_sampler = TPESampler(n_startup_trials=50)  # , constant_liar=True)
     # TPE_sampler = TPESampler(n_startup_trials=2500)  # , constant_liar=True)
 
     # optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)

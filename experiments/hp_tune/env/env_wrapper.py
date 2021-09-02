@@ -16,7 +16,7 @@ class FeatureWrapper(Monitor):
     def __init__(self, env, number_of_features: int = 0, training_episode_length: int = np.inf,
                  recorder=None, n_trail="", integrator_weight=net.ts, antiwindup_weight=net.ts, gamma=0,
                  penalty_I_weight=1, penalty_P_weight=1, t_start_penalty_I=0, t_start_penalty_P=0,
-                 number_learing_steps=500000, use_past_vals=False, number_past_vals=0):
+                 number_learing_steps=500000):  # , use_past_vals=False, number_past_vals=0):
         """
         Env Wrapper to add features to the env-observations and adds information to env.step output which can be used in
         case of an continuing (non-episodic) task to reset the environment without being terminated by done
@@ -68,18 +68,6 @@ class FeatureWrapper(Monitor):
         self.t_start_penalty_P = t_start_penalty_P
         self.number_learing_steps = number_learing_steps
 
-        self.use_past_vals = use_past_vals
-
-        self.delay_0 = Fastqueue(1, 3)
-        self.delay_1 = Fastqueue(1, 3)
-        self.delay_2 = Fastqueue(1, 3)
-        self.delay_3 = Fastqueue(1, 3)
-        self.delay_4 = Fastqueue(1, 3)
-        self.delay_5 = Fastqueue(1, 3)
-        self.delay_6 = Fastqueue(1, 3)
-        self.delay_7 = Fastqueue(1, 3)
-        self.delay_8 = Fastqueue(1, 3)
-        self.delay_9 = Fastqueue(1, 3)
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
         """
@@ -137,6 +125,9 @@ class FeatureWrapper(Monitor):
                  / (1 + self.penalty_I_weight * penalty_I_weight_scale + self.penalty_P_weight * penalty_P_weight_scale)
 
         self._n_training_steps += 1
+
+        if self._n_training_steps % round(self.training_episode_length / 10) == 0:
+            self.env.on_episode_reset_callback()
 
         if self._n_training_steps % self.training_episode_length == 0:
             # info["timelimit_reached"] = True
@@ -226,37 +217,12 @@ class FeatureWrapper(Monitor):
         obs = np.append(obs, error)
         obs = np.append(obs, np.sin(self.env.net.components[0].phase))
         obs = np.append(obs, np.cos(self.env.net.components[0].phase))
-        obs = np.append(obs, self.used_P)
-        obs = np.append(obs, self.used_I)
-
-        """Add past observations"""
-        if self.use_past_vals:
-            obs0 = self.delay_0.shift(obs[3:6])
-            obs1 = self.delay_1.shift(obs0)
-            obs2 = self.delay_2.shift(obs1)
-            obs3 = self.delay_3.shift(obs2)
-            obs4 = self.delay_4.shift(obs3)
-            obs5 = self.delay_5.shift(obs4)
-            obs6 = self.delay_6.shift(obs5)
-            obs7 = self.delay_7.shift(obs6)
-            obs8 = self.delay_8.shift(obs7)
-            obs9 = self.delay_9.shift(obs8)
-            # obs = np.append(obs, delta_i_lim_i_phasor)
-
-            obs = np.append(obs, obs0)
-            obs = np.append(obs, obs1)
-            obs = np.append(obs, obs2)
-            obs = np.append(obs, obs3)
-            obs = np.append(obs, obs4)
-            obs = np.append(obs, obs5)
-            obs = np.append(obs, obs6)
-            obs = np.append(obs, obs7)
-            obs = np.append(obs, obs8)
-            obs = np.append(obs, obs9)
 
         """
         Add used action to the NN input to learn delay
         """
+        obs = np.append(obs, self.used_P)
+        obs = np.append(obs, self.used_I)
         # obs = np.append(obs, self.used_action)
 
         # todo efficiency?
@@ -273,16 +239,6 @@ class FeatureWrapper(Monitor):
         by the agent for training purpose and internal counters
         """
 
-        self.delay_0.clear()
-        self.delay_1.clear()
-        self.delay_2.clear()
-        self.delay_3.clear()
-        self.delay_4.clear()
-        self.delay_5.clear()
-        self.delay_6.clear()
-        self.delay_7.clear()
-        self.delay_8.clear()
-        self.delay_9.clear()
 
         obs = super().reset()
 
@@ -331,38 +287,14 @@ class FeatureWrapper(Monitor):
         obs = np.append(obs, error)
         obs = np.append(obs, np.sin(self.env.net.components[0].phase))
         obs = np.append(obs, np.cos(self.env.net.components[0].phase))
-        obs = np.append(obs, self.used_P)
-        obs = np.append(obs, self.used_I)
+
         # obs = np.append(obs, delta_i_lim_i_phasor)
         """
         Add used action to the NN input to learn delay
         """
+        obs = np.append(obs, self.used_P)
+        obs = np.append(obs, self.used_I)
         # obs = np.append(obs, self.used_action)
-
-        """Add past observations"""
-        if self.use_past_vals:
-            obs0 = self.delay_0.shift(obs[3:6])
-            obs1 = self.delay_1.shift(obs0)
-            obs2 = self.delay_2.shift(obs1)
-            obs3 = self.delay_3.shift(obs2)
-            obs4 = self.delay_4.shift(obs3)
-            obs5 = self.delay_5.shift(obs4)
-            obs6 = self.delay_6.shift(obs5)
-            obs7 = self.delay_7.shift(obs6)
-            obs8 = self.delay_8.shift(obs7)
-            obs9 = self.delay_9.shift(obs8)
-            # obs = np.append(obs, delta_i_lim_i_phasor)
-
-            obs = np.append(obs, obs0)
-            obs = np.append(obs, obs1)
-            obs = np.append(obs, obs2)
-            obs = np.append(obs, obs3)
-            obs = np.append(obs, obs4)
-            obs = np.append(obs, obs5)
-            obs = np.append(obs, obs6)
-            obs = np.append(obs, obs7)
-            obs = np.append(obs, obs8)
-            obs = np.append(obs, obs9)
 
         return obs
 
@@ -378,3 +310,62 @@ class FeatureWrapper(Monitor):
         i_phasor_mag = np.sqrt(i_alpha_beta[0] ** 2 + i_alpha_beta[1] ** 2)
 
         return i_phasor_mag
+
+
+class FeatureWrapper_pastVals(FeatureWrapper):
+
+    def __init__(self, env, number_of_features: int = 0, training_episode_length: int = np.inf,
+                 recorder=None, n_trail="", integrator_weight=net.ts, antiwindup_weight=net.ts, gamma=0,
+                 penalty_I_weight=1, penalty_P_weight=1, t_start_penalty_I=0, t_start_penalty_P=0,
+                 number_learing_steps=500000, number_past_vals=10):
+        """
+        Env Wrapper which adds the number_past_vals voltage ([3:6]!!!) observations to the observations.
+        Initialized with zeros!
+        """
+        super().__init__(env, number_of_features, training_episode_length,
+                         recorder, n_trail, integrator_weight, antiwindup_weight, gamma,
+                         penalty_I_weight, penalty_P_weight, t_start_penalty_I, t_start_penalty_P,
+                         number_learing_steps)
+
+        # self.observation_space = gym.spaces.Box(
+        #    low=np.full(env.observation_space.shape[0] + number_of_features, -np.inf),
+        #    high=np.full(env.observation_space.shape[0] + number_of_features, np.inf))
+
+        self.delay_queues = [Fastqueue(1, 3) for _ in range(number_past_vals)]
+
+    def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
+        obs, reward, done, info = super().step(action)
+        obs_delay_array = self.shift_and_append(obs[3:6])
+        obs = np.append(obs, obs_delay_array)
+
+        return obs, reward, done, info
+
+    def reset(self, **kwargs):
+        """
+        Reset the wrapped env and the flag for the number of training steps after the env is reset
+        by the agent for training purpose and internal counters
+        """
+
+        [x.clear() for x in self.delay_queues]
+        obs = super().reset()
+        obs_delay_array = self.shift_and_append(obs[3:6])
+        obs = np.append(obs, obs_delay_array)
+
+        return obs
+
+    def shift_and_append(self, obs):
+        """
+        Takes the observation and shifts throught the queue
+        every queue output is added to total obs
+        """
+        obs_delay_array = np.array([])
+        obs_temp = obs
+        for queue in self.delay_queues:
+            obs_temp = queue.shift(obs_temp)
+            obs_delay_array = np.append(obs_delay_array, obs_temp)
+
+        return obs_delay_array
+
+
+class FeatureWrapper_futureVals(FeatureWrapper):
+    pass

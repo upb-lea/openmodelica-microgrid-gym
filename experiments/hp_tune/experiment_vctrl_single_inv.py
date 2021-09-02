@@ -10,7 +10,7 @@ from stable_baselines3 import DDPG
 from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
 
 # from agents.my_ddpg import myDDPG
-from experiments.hp_tune.env.env_wrapper import FeatureWrapper
+from experiments.hp_tune.env.env_wrapper import FeatureWrapper, FeatureWrapper_pastVals
 from experiments.hp_tune.env.rewards import Reward
 from experiments.hp_tune.env.vctrl_single_inv import net  # , folder_name
 from experiments.hp_tune.util.config import cfg
@@ -34,7 +34,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                         training_episode_length, buffer_size,  # learning_starts,
                         tau, number_learning_steps, integrator_weight, antiwindup_weight,
                         penalty_I_weight, penalty_P_weight,
-                        train_freq_type, train_freq, t_start_penalty_I, t_start_penalty_P, optimizer, n_trail):
+                        train_freq_type, train_freq, t_start_penalty_I, t_start_penalty_P, optimizer, n_trail,
+                        number_past_vals=0):
     if node not in cfg['lea_vpn_nodes']:
         # assume we are on pc2
         log_path = f'/scratch/hpc-prf-reinfl/weber/OMG/{folder_name}/{n_trail}/'
@@ -50,16 +51,25 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                    abort_reward=-1,
                    obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
                                'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
-                               'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2',
-                               'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i']
+                               'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
+                   # ,'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i']
                    )
 
-    env = FeatureWrapper(env, number_of_features=11, training_episode_length=training_episode_length,
-                         recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
-                         antiwindup_weight=antiwindup_weight, gamma=gamma,
-                         penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight,
-                         t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
-                         number_learing_steps=number_learning_steps)  # , use_past_vals=True, number_past_vals=30)
+    if cfg['env_wrapper'] == 'past':
+        env = FeatureWrapper_pastVals(env, number_of_features=11 + number_past_vals * 3,
+                                      training_episode_length=training_episode_length,
+                                      recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
+                                      antiwindup_weight=antiwindup_weight, gamma=gamma,
+                                      penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight,
+                                      t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
+                                      number_learing_steps=number_learning_steps, number_past_vals=number_past_vals)
+    else:
+        env = FeatureWrapper(env, number_of_features=11, training_episode_length=training_episode_length,
+                             recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
+                             antiwindup_weight=antiwindup_weight, gamma=gamma,
+                             penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight,
+                             t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
+                             number_learing_steps=number_learning_steps)  # , use_past_vals=True, number_past_vals=30)
 
     # todo: Upwnscale actionspace - lessulgy possible? Interaction pytorch...
     env.action_space = gym.spaces.Box(low=np.full(6, -1), high=np.full(6, 1))
@@ -159,13 +169,23 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                         # on_episode_reset_callback=cb.fire  # needed?
                         obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
                                     'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
-                                    'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2',
-                                    'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i']
+                                    'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
+                        # ,'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i']
                         )
-    env_test = FeatureWrapper(env_test, number_of_features=11, integrator_weight=integrator_weight,
-                              recorder=mongo_recorder, antiwindup_weight=antiwindup_weight,
-                              gamma=1, penalty_I_weight=0,
-                              penalty_P_weight=0)  #, use_past_vals=True, number_past_vals=30)
+
+    if cfg['env_wrapper'] == 'past':
+        env_test = FeatureWrapper_pastVals(env_test, number_of_features=11 + number_past_vals * 3,
+                                           integrator_weight=integrator_weight,
+                                           recorder=mongo_recorder, antiwindup_weight=antiwindup_weight,
+                                           gamma=1, penalty_I_weight=0,
+                                           penalty_P_weight=0, number_past_vals=number_past_vals,
+                                           training_episode_length=training_episode_length, )
+    else:
+        env_test = FeatureWrapper(env_test, number_of_features=11, integrator_weight=integrator_weight,
+                                  recorder=mongo_recorder, antiwindup_weight=antiwindup_weight,
+                                  gamma=1, penalty_I_weight=0,
+                                  penalty_P_weight=0,
+                                  training_episode_length=training_episode_length, )  # , use_past_vals=True, number_past_vals=30)
     # using gamma=1 and rew_weigth=3 we get the original reward from the env without penalties
     obs = env_test.reset()
     phase_list = []

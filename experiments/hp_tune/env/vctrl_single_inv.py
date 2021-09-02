@@ -101,7 +101,7 @@ def xylables_R(fig):
     plt.close()
 
 
-rand_load_train = RandomLoad(cfg['train_episode_length'], net.ts, gen,
+rand_load_train = RandomLoad(round(cfg['train_episode_length'] / 10), net.ts, gen,
                              bounds=(lower_bound_load_clip, upper_bound_load_clip),
                              bounds_std=(lower_bound_load_clip_std, upper_bound_load_clip_std))
 
@@ -232,8 +232,10 @@ register(id='vctrl_single_inv_train-v1',
          )
          )
 
-rand_load_test = RandomLoad(max_episode_steps, net.ts, gen,
-                            load_curve=pd.read_pickle('experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'))
+rand_load_test = RandomLoad(2881, net.ts, gen,
+                            load_curve=pd.read_pickle(
+                                'experiments/hp_tune/data/R_load_oneLoadstepPerEpisode2881Len_test_case_10_seconds.pkl'))
+# load_curve=pd.read_pickle('experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'))
 
 register(id='vctrl_single_inv_test-v0',
          entry_point='openmodelica_microgrid_gym.env:ModelicaEnv',
