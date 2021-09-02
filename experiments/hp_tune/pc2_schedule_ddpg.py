@@ -51,7 +51,7 @@ def main():
 
         complete_trials = len([t for t in study.trials if t.state == optuna.structs.TrialState.COMPLETE])
         print(f'Completed trials in study: {complete_trials}')
-        if complete_trials > 300:
+        if complete_trials > 500:
             print('Maximal completed trials reached - STOPPING')
             break
 
