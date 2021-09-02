@@ -96,7 +96,7 @@ def ddpg_objective_fix_params(trial):
         0.25 * number_learning_steps)  # trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
     # number_learning_steps)
     noise_theta = trial_config["noise_theta"]  # trial.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
-    error_exponent = 2  # 0.5  # trial.suggest_loguniform("error_exponent", 0.001, 4)
+    error_exponent = 0.5  # trial.suggest_loguniform("error_exponent", 0.001, 4)
 
     training_episode_length = trial_config[
         "training_episode_length"]  # trial.suggest_int("training_episode_length", 500, 5000)  # 128
@@ -126,9 +126,8 @@ def ddpg_objective_fix_params(trial):
                                                        "Integratorzustand+used_P_Action (je um einen verzoegert) wird mit als feature uebergeben"
                                                        "Penalties fuer action_P und action_P"
                                                        "Mehr HPs: trainfreq, batch/buffer_size, a_relu ",
-                          'Weitere Info': "Neue Features: OHNE 10 vdq0, bestes HP set aus study 22, pro train_episode ein Lastsprung"
-                                          "Als Bewertung wird der MSE verwendet um zu gucken ob Schwingungen reduziert werden"
-                                          "Vs schlechtere Stationäre genauigkeit"
+                          'Weitere Info': "Neue Features: OHNE pastVals, bestes HP set aus study 22, pro train_episode ein Lastsprung"
+                                          "Laststrom als feature"
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
@@ -472,8 +471,9 @@ if __name__ == "__main__":
     # TPE_sampler = TPESampler(n_startup_trials=2500)  # , constant_liar=True)
 
     # optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
-    optuna_optimize_mysql_lea35(ddpg_objective_fix_params, study_name=STUDY_NAME, sampler=TPE_sampler)
 
+    optuna_optimize_mysql_lea35(ddpg_objective_fix_params, study_name=STUDY_NAME, sampler=TPE_sampler)
     # optuna_optimize_sqlite(ddpg_objective_fix_params, study_name=STUDY_NAME, sampler=TPE_sampler)
+
     # optuna_optimize(ddpg_objective, study_name=STUDY_NAME,
     # sampler=TPE_sampler)  #, sampler=optuna.samplers.GridSampler(search_space))

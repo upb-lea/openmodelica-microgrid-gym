@@ -50,7 +50,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                    abort_reward=-1,
                    obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
                                'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
-                               'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
+                               'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2',
+                               'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i']
                    )
 
     env = FeatureWrapper(env, number_of_features=11, training_episode_length=training_episode_length,
@@ -149,7 +150,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     rew.gamma = 0
     # episodes will not abort, if limit is exceeded reward = -1
     rew.det_run = True
-    rew.exponent = 2  # 0.5  # 1
+    rew.exponent = 0.5  # 1
     limit_exceeded_in_test = False
     limit_exceeded_penalty = 0
     env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v1',
@@ -158,7 +159,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                         # on_episode_reset_callback=cb.fire  # needed?
                         obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
                                     'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
-                                    'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
+                                    'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2',
+                                    'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i']
                         )
     env_test = FeatureWrapper(env_test, number_of_features=11, integrator_weight=integrator_weight,
                               recorder=mongo_recorder, antiwindup_weight=antiwindup_weight,

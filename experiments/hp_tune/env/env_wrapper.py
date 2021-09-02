@@ -105,6 +105,10 @@ class FeatureWrapper(Monitor):
 
         obs, reward, done, info = super().step(action_abc)
 
+        if len(obs) > 9:
+            # ASSUME  THAT LOADCURRENT is included!
+            obs[9:12] = obs[9:12] / net['inverter1'].i_lim
+
         super().render()
 
         integrator_penalty = np.sum(-((np.abs(action_I)) ** 0.5)) * (1 - self.gamma) / 3
@@ -281,6 +285,11 @@ class FeatureWrapper(Monitor):
         self.delay_9.clear()
 
         obs = super().reset()
+
+        if len(obs) > 9:
+            # ASSUME  THAT LOADCURRENT is included!
+            obs[9:12] = obs[9:12] / net['inverter1'].i_lim
+
         self._n_training_steps = 0
         self.integrator_sum = np.zeros(self.action_space.shape)
         self.used_P = np.zeros(self.action_space.shape)
