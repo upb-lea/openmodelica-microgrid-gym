@@ -148,8 +148,8 @@ register(id='vctrl_single_inv_train-v0',
                            # 'r_load.resistor2.R': partial(rand_load_train.load_step, gain=R),
                            # 'r_load.resistor3.R': partial(rand_load_train.load_step, gain=R),
                            'r_load.resistor1.R': rand_load_train.random_load_step,
-                           'r_load.resistor2.R': rand_load_train.random_load_step,
-                           'r_load.resistor3.R': rand_load_train.random_load_step,
+                           'r_load.resistor2.R': rand_load_train.clipped_step,
+                           'r_load.resistor3.R': rand_load_train.clipped_step,
                            'lc.capacitor1.v': lambda t: np.random.uniform(low=-v_nom,
                                                                           high=v_nom) if t == -1 else None,
                            'lc.capacitor2.v': lambda t: np.random.uniform(low=-v_nom,
@@ -235,6 +235,7 @@ register(id='vctrl_single_inv_train-v1',
 rand_load_test = RandomLoad(2881, net.ts, gen,
                             load_curve=pd.read_pickle(
                                 'experiments/hp_tune/data/R_load_oneLoadstepPerEpisode2881Len_test_case_10_seconds.pkl'))
+# 'experiments/hp_tune/data/R_load_tenLoadstepPerEpisode2881Len_test_case_10_seconds.pkl'))
 # load_curve=pd.read_pickle('experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'))
 
 register(id='vctrl_single_inv_test-v0',
@@ -320,7 +321,8 @@ register(id='vctrl_single_inv_test-v1',
                            # 'r_load.resistor1.R': partial(rand_load_train.load_step, gain=R),
                            # 'r_load.resistor2.R': partial(rand_load_train.load_step, gain=R),
                            # 'r_load.resistor3.R': partial(rand_load_train.load_step, gain=R),
-                           'r_load.resistor1.R': rand_load_train.one_random_loadstep_per_episode,
+                           'r_load.resistor1.R': rand_load_train.random_load_step,
+                           # 'r_load.resistor1.R': rand_load_train.one_random_loadstep_per_episode,
                            'r_load.resistor2.R': rand_load_train.clipped_step,
                            'r_load.resistor3.R': rand_load_train.clipped_step,
                            'lc.capacitor1.v': lambda t: np.random.uniform(low=-v_nom,

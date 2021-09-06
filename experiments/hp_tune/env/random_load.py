@@ -86,7 +86,8 @@ class RandomLoad:
         :param col: colon name of the dataframe (typically str)
         """
         if t < 0:
-            return None
+            # return None
+            return self.load_curve[col][0]
         if self.load_curve is None:
             raise ValueError('No dataframe given! Please feed load class (.load_curve) with data')
         return self.load_curve[col][int(t / self.ts)]

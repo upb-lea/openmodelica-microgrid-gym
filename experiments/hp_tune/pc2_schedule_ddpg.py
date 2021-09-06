@@ -14,7 +14,7 @@ from experiments.hp_tune.util.config import cfg
 
 # config
 USER = os.getenv('USER')
-ALLOWED_MAX_CPU_CORES = 150  # 512
+ALLOWED_MAX_CPU_CORES = 250  # 512
 STUDY_NAME = cfg['STUDY_NAME']
 DB_NAME = 'optuna'
 # resources request
@@ -51,7 +51,7 @@ def main():
 
         complete_trials = len([t for t in study.trials if t.state == optuna.structs.TrialState.COMPLETE])
         print(f'Completed trials in study: {complete_trials}')
-        if complete_trials > 20:
+        if complete_trials > 150:
             print('Maximal completed trials reached - STOPPING')
             break
 

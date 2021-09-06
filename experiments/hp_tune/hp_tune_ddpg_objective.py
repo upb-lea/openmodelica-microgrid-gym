@@ -109,7 +109,7 @@ def ddpg_objective_fix_params(trial):
     optimizer = trial_config[
         "optimizer"]  # trial.suggest_categorical("optimizer", ["Adam", "SGD", "RMSprop"])  # , "LBFGS"])
 
-    number_past_vals = trial.suggest_int("number_past_vals", 0, 200)
+    number_past_vals = trial.suggest_int("number_past_vals", 0, 100)
 
     learning_rate = linear_schedule(initial_value=learning_rate, final_value=learning_rate * final_lr,
                                     t_start=t_start,
@@ -128,8 +128,8 @@ def ddpg_objective_fix_params(trial):
                                                        "Integratorzustand+used_P_Action (je um einen verzoegert) wird mit als feature uebergeben"
                                                        "Penalties fuer action_P und action_P"
                                                        "Mehr HPs: trainfreq, batch/buffer_size, a_relu ",
-                          'Weitere Info': "Neue Features: pastVals HPO als ersatz fuer Laststrom?, bestes HP set aus study 22"
-                                          ", pro train_episode mehr als ein (10) Lastsprung"
+                          'Weitere Info': "Neue Features: pastVals HPO mit alten fiesen Testcase, bestes HP set aus study 22"
+                                          "Vermutung: Mehr spruenge, dann bringen pastVals mehr"
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)

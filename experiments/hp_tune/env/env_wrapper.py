@@ -13,7 +13,7 @@ from openmodelica_microgrid_gym.util import abc_to_alpha_beta, dq0_to_abc, abc_t
 
 class FeatureWrapper(Monitor):
 
-    def __init__(self, env, number_of_features: int = 0, training_episode_length: int = np.inf,
+    def __init__(self, env, number_of_features: int = 0, training_episode_length: int = 5000000,
                  recorder=None, n_trail="", integrator_weight=net.ts, antiwindup_weight=net.ts, gamma=0,
                  penalty_I_weight=1, penalty_P_weight=1, t_start_penalty_I=0, t_start_penalty_P=0,
                  number_learing_steps=500000):  # , use_past_vals=False, number_past_vals=0):
@@ -126,8 +126,8 @@ class FeatureWrapper(Monitor):
 
         self._n_training_steps += 1
 
-        if self._n_training_steps % round(self.training_episode_length / 10) == 0:
-            self.env.on_episode_reset_callback()
+        # if self._n_training_steps % round(self.training_episode_length / 10) == 0:
+        #    self.env.on_episode_reset_callback()
 
         if self._n_training_steps % self.training_episode_length == 0:
             # info["timelimit_reached"] = True
@@ -314,7 +314,7 @@ class FeatureWrapper(Monitor):
 
 class FeatureWrapper_pastVals(FeatureWrapper):
 
-    def __init__(self, env, number_of_features: int = 0, training_episode_length: int = np.inf,
+    def __init__(self, env, number_of_features: int = 0, training_episode_length: int = 500000,
                  recorder=None, n_trail="", integrator_weight=net.ts, antiwindup_weight=net.ts, gamma=0,
                  penalty_I_weight=1, penalty_P_weight=1, t_start_penalty_I=0, t_start_penalty_P=0,
                  number_learing_steps=500000, number_past_vals=10):

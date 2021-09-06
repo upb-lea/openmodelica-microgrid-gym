@@ -46,7 +46,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                  use_gamma_normalization=use_gamma_in_rew, error_exponent=error_exponent, i_lim=net['inverter1'].i_lim,
                  i_nom=net['inverter1'].i_nom)
 
-    env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train-v1',
+    env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train-v0',
                    reward_fun=rew.rew_fun_dq0,
                    abort_reward=-1,
                    obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
