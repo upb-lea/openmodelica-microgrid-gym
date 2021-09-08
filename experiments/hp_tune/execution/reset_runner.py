@@ -73,7 +73,7 @@ class MonteCarloRunner:
                 for p in tqdm(range(self.env.max_episode_steps + 1), desc='steps', unit='step', leave=False):
                     self.agent.observe(r, False)
                     act = self.agent.act(obs)
-                    if p == 1000:
+                    if p % 1000 == 0 and p > 0:
                         asd = 1
                         obs = self.env.reset()
                         self.agent.controllers['master'].reset()
@@ -158,6 +158,8 @@ class MonteCarloRunner:
                                  / (self.agent.initial_performance - self.agent.min_performance)
 
             self.agent.performance = np.mean(performance_mc)
+            if self.agent.performance > 1:
+                asd = 1
             self.agent.update_params()
 
             if visualise:

@@ -56,7 +56,7 @@ ret_dict = dict()
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
-folder_name = 'Pipi_new_testcase_opt_4D_Test'
+folder_name = 'Pipi_new_testcase_opt_4D_reset2'
 save_folder = os.path.join(current_directory, folder_name)
 os.makedirs(save_folder, exist_ok=True)
 
@@ -67,7 +67,7 @@ np.random.seed(1)
 net = Network.load('net/net_vctrl_single_inv.yaml')
 delta_t = 1e-4  # simulation time step size / s
 undersample = 1
-max_episode_steps = 100001  # number of simulation steps per episode
+max_episode_steps = 99999#10000  # number of simulation steps per episode
 num_episodes = 100  # number of simulation episodes (i.e. SafeOpt iterations)
 n_MC = 1  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
 v_DC = 600  # DC-link voltage / V; will be set as model parameter in the FMU
@@ -110,8 +110,10 @@ prior_var = 2  # prior variance of the GP
 # Choose Kp and Ki (current and voltage controller) as mutable parameters (below) and define bounds and lengthscale
 # for both of them
 if PIPI:
-    bounds = [(0.001, 0.07), (2, 150), (0.000, 0.045), (4, 450)]
-    lengthscale = [0.005, 25., 0.01, 150]  # .003, 50.]
+    # bounds = [(0.001, 0.07), (2, 150), (0.000, 0.045), (4, 450)]
+    # lengthscale = [0.005, 25., 0.008, 150] # .003, 50.]
+    bounds = [(0.001, 0.07), (2, 150), (0.000, 0.05), (4, 600)]
+    lengthscale = [0.01, 35., 0.01, 175]  # .003, 50.]
     mutable_params = dict(currentP=MutableFloat(0.04), currentI=MutableFloat(11.8),
                           voltageP=MutableFloat(0.0175), voltageI=MutableFloat(12))
     current_dqp_iparams = PI_params(kP=mutable_params['currentP'], kI=mutable_params['currentI'],
@@ -130,12 +132,12 @@ else:
 # unsafe, if the new measured performance drops below 20 % of the initial performance of the initial safe (!)
 # parameter set
 safe_threshold = 0
-j_min = -15000  # -5  # 15000? # cal min allowed performance
+j_min = -50000  # -5  # 15000? # cal min allowed performance
 
 # The algorithm will not try to expand any points that are below this threshold. This makes the algorithm stop
 # expanding points eventually.
 # The following variable is multiplied with the first performance of the initial set by the factor below:
-explore_threshold = -200
+explore_threshold = -200000
 
 # Factor to multiply with the initial reward to give back an abort_reward-times higher negative reward in case of
 # limit exceeded
@@ -325,7 +327,7 @@ env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                                                                            high=i_nom) if t == -1 else None,
                              },
                net=net,
-               model_path='omg_grid/grid.paper_loadstep.fmu',
+               model_path='omg_grid/grid.paper_loadstepWIN.fmu',
                history=FullHistory(),
                on_episode_reset_callback=cb.fire,
                action_time_delay=1 * undersample
@@ -362,7 +364,7 @@ if not PIPI:
     best_agent_plt.show()
     if save_results:
         best_agent_plt.savefig(save_folder + '/_agent_plt.pdf')
-        best_agent_plt.savefig(save_folder + '/_agent_plt.pgf')
+        #best_agent_plt.savefig(save_folder + '/_agent_plt.pgf')
         agent.history.df.to_csv(save_folder + '/_result.csv')
 
 print('\n Experiment finished with best set: \n\n {}'.format(agent.history.df.round({'J': 4, 'Params': 4})))
