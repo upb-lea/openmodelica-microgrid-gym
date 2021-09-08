@@ -10,15 +10,17 @@ show_load = True
 interval_plt = True
 # interval_list_x = [[0, 0.015], [6.32, 6.42], [6.4, 6.42]]#, [6.4, 6.42]]#[0.993, 0.997], [0.993, 0.997]]
 # interval_list_y = [[-20, 310], [-20, 330], [50, 330]]#, [50, 325]]
-interval_list_x = [[0, 0.015], [0.173, 0.177], [0.173, 0.177]]  # [0.993, 0.997], [0.993, 0.997]]
-interval_list_y = [[-20, 310], [-5, 210], [150, 201]]  # , [50, 325]]
-folder_name = 'saves/Comparison_PI_DDPG_WandWO_pastVals_HPO'
+interval_list_x = [[6.405, 6.41], [0, 0.015], [0.173, 0.177]]  # [0.993, 0.997], [0.993, 0.997]]
+interval_list_y = [[110, 330], [-20, 310], [-5, 210]]  # , [50, 325]]
+folder_name = 'saves/Comparison_PI_DDPG_iLoad_Feature'
 # folder_name = 'saves/Comparison_PI_DDPGs_oneLoadstepPerEpisode'
 # name = 'DDPG_PI_local_PastVals_10000steps'
-df = pd.read_pickle(folder_name + '/PI_10000steps')
-df_DDPG_past_vals = pd.read_pickle(folder_name + '/model_pastVals.zip_10000steps')
-# df_DDPG_past_vals = pd.read_pickle('saves/Comparison_PI_DDPGs_oneLoadstepPerEpisode'+'/model_pastVals.zip_100000steps')
-df_DDPG = pd.read_pickle(folder_name + '/model_noPastVals_10000steps')
+df = pd.read_pickle(folder_name + '/PI_100000steps')
+# df_DDPG_past_vals = pd.read_pickle(folder_name + '/model_pastVals.zip_10000steps')
+df_DDPG_past_vals = pd.read_pickle(
+    'saves/Comparison_PI_DDPGs_oneLoadstepPerEpisode' + '/model_pastVals.zip_100000steps')
+# df_DDPG = pd.read_pickle(folder_name + '/model_noPastVals_10000steps')
+df_DDPG = pd.read_pickle(folder_name + '/model.zip_100000steps')
 # df_PI = pd.read_pickle(folder_name+'/PI_10000steps')
 # df = pd.read_pickle('DDPG_PI_local_10000steps')
 
@@ -354,7 +356,7 @@ axs[2, 1].set_ylabel("i_dq0_DDPG")
 
 """
 
-fig.savefig(f'{folder_name}/overview.pdf')
+#fig.savefig(f'{folder_name}/overview.pdf')
 
 fig.subplots_adjust(wspace=0.4, hspace=0.2)
 plt.show()
@@ -408,7 +410,7 @@ if interval_plt:
         axs[2, i].set_ylim(interval_list_y[i])
         axs[2, i].set_xlabel("time")
         if i == 0:
-            axs[2, i].set_ylabel("v_dq0_DDPG")
+            axs[2, i].set_ylabel("v_dq0_DDPG i_load_feature")
         # axs[2, i].set_title(f'#{plt_count}')
         # plt.show()
         plt_count += 1
@@ -429,7 +431,7 @@ if interval_plt:
     fig.subplots_adjust(wspace=0.2, hspace=0.2)
     plt.show()
 
-    fig.savefig(f'{folder_name}/Ausschnitt.pdf')
+    fig.savefig(f'{folder_name}/Ausschnitt2.pdf')
 
 if make_pyplot:
     # pyplot PI

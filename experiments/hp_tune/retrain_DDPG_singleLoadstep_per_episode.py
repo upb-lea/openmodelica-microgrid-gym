@@ -32,7 +32,8 @@ node = platform.uname().node
 file_congfig = open(model_path +
                     'PC2_DDPG_Vctrl_single_inv_22_newTestcase_Trial_number_11534_0.json', )
 trial_config = json.load(file_congfig)
-
+print('Config-Params:')
+print(*trial_config.items(), sep='\n')
 # mongo_recorder = Recorder(database_name=folder_name)
 mongo_recorder = Recorder(node=node,
                           database_name=folder_name)  # store to port 12001 for ssh data to cyberdyne or locally as json to cfg[meas_data_folder]

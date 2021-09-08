@@ -51,7 +51,7 @@ show_plots = False
 balanced_load = False
 save_results = False
 
-folder_name = 'Comparison_PI'  # cfg['STUDY_NAME']
+folder_name = 'Comparison_PI_DDPG_retrain_oneLoadstep'  # cfg['STUDY_NAME']
 node = platform.uname().node
 
 # mongo_recorder = Recorder(database_name=folder_name)
@@ -59,7 +59,7 @@ mongo_recorder = Recorder(node=node,
                           database_name=folder_name)  # store to port 12001 for ssh data to cyberdyne or locally as json to cfg[meas_data_folder]
 
 num_average = 1
-max_episode_steps_list = [700]  # [1000, 5000, 10000, 20000, 50000, 100000]
+max_episode_steps_list = [10000]  # [1000, 5000, 10000, 20000, 50000, 100000]
 
 result_list = []
 ret_list = []
@@ -440,7 +440,8 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
 
         env_test.action_space = gym.spaces.Box(low=np.full(6, -1), high=np.full(6, 1))
 
-        model = DDPG.load(model_path + f'model.zip')  # , env=env_test)
+        # model = DDPG.load(model_path + f'model.zip')  # , env=env_test)
+        model = DDPG.load(model_path + f'model_retrained.zip')  # , env=env_test)
 
         count = 0
         for kk in range(actor_number_layers + 1):
@@ -551,10 +552,17 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
         v_a = env_test.history.df['lc.capacitor1.v']
         v_b = env_test.history.df['lc.capacitor2.v']
         v_c = env_test.history.df['lc.capacitor3.v']
+        i_a = env_test.history.df['lc.inductor1.i']
+        i_b = env_test.history.df['lc.inductor2.i']
+        i_c = env_test.history.df['lc.inductor3.i']
         R_load = (env_test.history.df['r_load.resistor1.R'].tolist())
         phase = env_test.history.df['inverter1.phase.0']  # env_test.env.net.components[0].phase
         v_dq0 = abc_to_dq0(np.array([v_a, v_b, v_c]), phase)
+        i_dq0 = abc_to_dq0(np.array([i_a, i_b, i_c]), phase)
 
+        i_d = i_dq0[0].tolist()
+        i_q = i_dq0[1].tolist()
+        i_0 = i_dq0[2].tolist()
         v_d = (v_dq0[0].tolist())
         v_q = (v_dq0[1].tolist())
         v_0 = (v_dq0[2].tolist())
@@ -562,11 +570,18 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
         v_a_PI = env.history.df['lc.capacitor1.v']
         v_b_PI = env.history.df['lc.capacitor2.v']
         v_c_PI = env.history.df['lc.capacitor3.v']
+        i_a_PI = env.history.df['lc.inductor1.i']
+        i_b_PI = env.history.df['lc.inductor2.i']
+        i_c_PI = env.history.df['lc.inductor3.i']
         R_load_PI = (env.history.df['r_load.resistor1.R'].tolist())
         phase_PI = env.history.df['inverter1.phase.0']  # env.net.components[0].phase
 
+        i_dq0_PI = abc_to_dq0(np.array([i_a, i_b, i_c]), phase)
         v_dq0_PI = abc_to_dq0(np.array([v_a_PI, v_b_PI, v_c_PI]), phase_PI)
 
+        i_d_PI = i_dq0_PI[0].tolist()
+        i_q_PI = i_dq0_PI[1].tolist()
+        i_0_PI = i_dq0_PI[2].tolist()
         v_d_PI = (v_dq0_PI[0].tolist())
         v_q_PI = (v_dq0_PI[1].tolist())
         v_0_PI = (v_dq0_PI[2].tolist())
@@ -581,7 +596,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
         plt.xlabel("")
         plt.grid()
         plt.ylabel("v_dq0")
-        plt.title('Test')
+        plt.title('DDPG')
         plt.show()
 
         plt.plot(R_load, 'g')
@@ -597,7 +612,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
         plt.xlabel("")
         plt.grid()
         plt.ylabel("v_dq0")
-        plt.title('Test')
+        plt.title('PI')
         plt.show()
 
         plt.plot(R_load_PI, 'g')
@@ -634,7 +649,8 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                           "number of averages per run": num_average,
                           "info": "best of new 4D unsafe optimization of 300 runs (picard) to figure out the boundaries "
                                   "of the statespace without reset",
-                          "optimization node": 'picard',
+                          "optimization node": 'Thinkpad',
+                          "info2": 'storing the current and modulation indices as well',
                           "optimization folder name": 'Pipi_new_testcase_opt_4d_undsafe_2'
                           }
         node = platform.uname().node
@@ -642,7 +658,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
         # mongo_recorder = Recorder(database_name=folder_name)
 
         # mongo_recorder.save_to_mongodb('Comparison1' + n_trail, compare_result)
-        mongo_recorder.save_to_mongodb('Comparison_4D_optimizedPIPI_reset_100_test_without_resetBarcleyNEW',
+        mongo_recorder.save_to_mongodb('Comparison_4D_optimizedPIPI_retrainDDPG',
                                        compare_result)
         # mongo_recorder.save_to_mongodb('Comparison_2D_optimizedPIPI', compare_result)
 

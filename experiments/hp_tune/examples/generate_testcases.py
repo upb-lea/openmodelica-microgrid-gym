@@ -1,19 +1,54 @@
 from functools import partial
-
+import numpy as np
+import pandas as pd
 import gym
 import matplotlib.pyplot as plt
 from stochastic.processes import VasicekProcess
+from tqdm import tqdm
 
 from experiments.hp_tune.env.random_load import RandomLoad
+from experiments.hp_tune.env.vctrl_single_inv import CallbackList
+from experiments.hp_tune.util.config import cfg
 from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import RandProcess
 
-load = 55  # 28
-upper_bound_load = 140
-lower_bound_load = 11
-net = Network.load('net/net_vctrl_single_inv.yaml')
-max_episode_steps = int(2 / net.ts)
+# load = 55  # 28
+# net = Network.load('net/net_vctrl_single_inv.yaml')
+# max_episode_steps = int(2 / net.ts)
+
+
+# Simulation definitions
+if not cfg['is_dq0']:
+    # load net using abc reference values
+    net = Network.load('net/net_vctrl_single_inv.yaml')
+else:
+    # load net using dq0 reference values
+    net = Network.load('net/net_vctrl_single_inv_dq0.yaml')
+
+# set high to not terminate env! Termination should be done in wrapper by env after episode-length-HP
+max_episode_steps = 100000  # net.max_episode_steps  # number of simulation steps per episode
+
+i_lim = net['inverter1'].i_lim  # inverter current limit / A
+i_nom = net['inverter1'].i_nom  # nominal inverter current / A
+v_nom = net.v_nom
+v_lim = net['inverter1'].v_lim
+v_DC = net['inverter1'].v_DC
+
+L_filter = 2.3e-3  # / H
+R_filter = 400e-3  # / Ohm
+C_filter = 10e-6  # / F
+# R = 40  # nomVoltPeak / 7.5   # / Ohm
+lower_bound_load = -10  # to allow maximal load that draws i_limit
+upper_bound_load = 200  # to apply symmetrical load bounds
+lower_bound_load_clip = 14  # to allow maximal load that draws i_limit (let exceed?)
+upper_bound_load_clip = 200  # to apply symmetrical load bounds
+lower_bound_load_clip_std = 2
+upper_bound_load_clip_std = 0
+R = np.random.uniform(low=lower_bound_load, high=upper_bound_load)
+
+gen = RandProcess(VasicekProcess, proc_kwargs=dict(speed=800, vol=40, mean=R), initial=R,
+                  bounds=(lower_bound_load, upper_bound_load))
 
 """
  Tescases need to have:
@@ -104,10 +139,23 @@ def load_step(t):
 
 
 if __name__ == '__main__':
-    gen = RandProcess(VasicekProcess, proc_kwargs=dict(speed=1000, vol=10, mean=load), initial=load,
-                      bounds=(lower_bound_load, upper_bound_load))
+    # gen = RandProcess(VasicekProcess, proc_kwargs=dict(speed=1000, vol=10, mean=load), initial=load,
+    #                  bounds=(lower_bound_load, upper_bound_load))
 
-    rand_load = RandomLoad(max_episode_steps, net.ts, gen)
+    # rand_load = RandomLoad(max_episode_steps, net.ts, gen)
+
+    rand_load = RandomLoad(round(cfg['train_episode_length'] / 10), net.ts, gen,
+                           bounds=(lower_bound_load_clip, upper_bound_load_clip),
+                           bounds_std=(lower_bound_load_clip_std, upper_bound_load_clip_std))
+
+    rand_load_train = RandomLoad(cfg['train_episode_length'], net.ts, gen,
+                                 bounds=(lower_bound_load_clip, upper_bound_load_clip),
+                                 bounds_std=(lower_bound_load_clip_std, upper_bound_load_clip_std))
+
+    cb = CallbackList()
+    # set initial = None to reset load random in range of bounds
+    cb.append(partial(gen.reset))  # , initial=np.random.uniform(low=lower_bound_load, high=upper_bound_load)))
+    cb.append(rand_load_train.reset)
 
 
     def xylables(fig):
@@ -123,9 +171,11 @@ if __name__ == '__main__':
 
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    net=net,
-                   model_params={'r_load.resistor1.R': load_step,  # For use upper function
-                                 'r_load.resistor2.R': load_step,
-                                 'r_load.resistor3.R': load_step},
+                   # model_params={'r_load.resistor1.R': rand_load.random_load_step,  # For use upper function
+                   model_params={'r_load.resistor1.R': rand_load_train.one_random_loadstep_per_episode,
+                                 # For use upper function
+                                 'r_load.resistor2.R': rand_load.clipped_step,
+                                 'r_load.resistor3.R': rand_load.clipped_step},
                    # model_params={'r_load.resistor1.R': rand_load.random_load_step,         # for check train-random
                    #              'r_load.resistor2.R': rand_load.random_load_step,         # loadstep
                    #              'r_load.resistor3.R': rand_load.random_load_step},
@@ -133,17 +183,37 @@ if __name__ == '__main__':
                        PlotTmpl([f'r_load.resistor{i}.R' for i in '123'],
                                 callback=xylables
                                 )],
-                   model_path='../../../omg_grid/grid.paper_loadstep.fmu',
-                   max_episode_steps=max_episode_steps)
+                   model_path='omg_grid/grid.paper_loadstep.fmu',
+                   max_episode_steps=max_episode_steps,
+                   on_episode_reset_callback=cb.fire, )
 
     env.reset()
-    for _ in range(max_episode_steps):
+    R_load1 = []
+    R_load2 = []
+    R_load3 = []
+    # for _ in range(max_episode_steps):
+    for current_step in tqdm(range(max_episode_steps), desc='steps', unit='step', leave=False):
         env.render()
 
         obs, rew, done, info = env.step(env.action_space.sample())  # take a random action
+
+        # If env is reset for several loadsteps, store env.df
+        if current_step % round(cfg['train_episode_length'] / 10) == 0 and current_step != 0:
+            R_load1.extend(env.history.df['r_load.resistor1.R'].copy().values.tolist())
+            R_load2.extend(env.history.df['r_load.resistor2.R'].copy().values.tolist())
+            R_load3.extend(env.history.df['r_load.resistor3.R'].copy().values.tolist())
+
+            # obs = env.reset()
+            env.on_episode_reset_callback()
         if done:
             break
     env.close()
+    R_load1.extend(env.history.df['r_load.resistor1.R'].copy().values.tolist())
+    R_load2.extend(env.history.df['r_load.resistor2.R'].copy().values.tolist())
+    R_load3.extend(env.history.df['r_load.resistor3.R'].copy().values.tolist())
 
-    df_store = env.history.df[['r_load.resistor1.R', 'r_load.resistor2.R', 'r_load.resistor3.R']]
-    # df_store.to_pickle('R_load_test_case_2_seconds.pkl')
+    df_store = pd.DataFrame(list(zip(R_load1, R_load2, R_load3)),
+                            columns=['r_load.resistor1.R', 'r_load.resistor2.R', 'r_load.resistor3.R'])
+
+    # df_store = env.history.df[['r_load.resistor1.R', 'r_load.resistor2.R', 'r_load.resistor3.R']]
+    df_store.to_pickle('R_load_tenLoadstepPerEpisode2881Len_test_case_10_seconds.pkl')

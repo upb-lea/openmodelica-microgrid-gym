@@ -50,24 +50,25 @@ import gym
 show_plots = True
 save_results = False
 
-folder_name = 'saves/Comparison_PI_DDPG_WandWO_pastVals_HPO'  # cfg['STUDY_NAME']
+folder_name = 'saves/Comparison_study_22_best_pastVal_HPO_oldtestEnv_PI_SP_corr'  # cfg['STUDY_NAME']
 node = platform.uname().node
 
 # model_name = 'model_retrain_pastVals12.zip'
-number_past_vals = [1, 0]  # [30, 0]
-use_past_vals = [True, False]  # [True, False]
+number_past_vals = [2]  # [0, 5, 10, 16, 25]  # [30, 0]
+use_past_vals = [True]  # [False, True, True, True, True]  # [True, False]
 # model_name = ['model.zip']
-model_path = 'experiments/hp_tune/trained_models/study_22_best_pastVal_HPO/'
+model_path = 'experiments/hp_tune/trained_models/study_22_best_pastVal_HPO_oldtestEnv/'
 # model_path = 'experiments/hp_tune/trained_models/study_22_best_iLoad_Feature/'
-model_name = ['model_pastVals.zip', 'model_noPastVals']  # , 'model_noPastVals.zip']
-# model_path = 'experiments/hp_tune/trained_models/study_22_best_onestepPerEpisodeTraining/'
+
+model_name = [
+    'model_2_pastVals.zip']  # ['model_0_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
 
 error_exponent = 0.5
 
 mongo_recorder = Recorder(node=node, database_name=folder_name)
 
 num_average = 1
-max_episode_steps_list = [10000]  # [1000, 5000, 10000, 20000, 50000, 100000]
+max_episode_steps_list = [20000]  # [1000, 5000, 10000, 20000, 50000, 100000]
 
 result_list = []
 ret_list = []
@@ -200,9 +201,9 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                                      bounds_std=(lower_bound_load_clip_std, upper_bound_load_clip_std))
         rand_load_test = RandomLoad(max_episode_steps_list[max_eps_steps], net.ts, gen,
                                     load_curve=pd.read_pickle(
-                                        'experiments/hp_tune/data/R_load_tenLoadstepPerEpisode2881Len_test_case_10_seconds.pkl'))
-        # 'experiments/hp_tune/data/R_load_oneLoadstepPerEpisode2881Len_test_case_10_seconds.pkl'))
-        # 'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'))
+                                        # 'experiments/hp_tune/data/R_load_tenLoadstepPerEpisode2881Len_test_case_10_seconds.pkl'))
+                                        # 'experiments/hp_tune/data/R_load_oneLoadstepPerEpisode2881Len_test_case_10_seconds.pkl'))
+                                        'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'))
 
         cb = CallbackList()
         # set initial = None to reset load random in range of bounds
