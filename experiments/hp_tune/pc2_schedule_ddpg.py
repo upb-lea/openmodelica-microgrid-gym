@@ -14,7 +14,7 @@ from experiments.hp_tune.util.config import cfg
 
 # config
 USER = os.getenv('USER')
-ALLOWED_MAX_CPU_CORES = 256  # 512
+ALLOWED_MAX_CPU_CORES = 400  # 512
 STUDY_NAME = cfg['STUDY_NAME']
 DB_NAME = 'optuna'
 # resources request
