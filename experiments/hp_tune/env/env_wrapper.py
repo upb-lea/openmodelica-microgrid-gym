@@ -1,14 +1,18 @@
 import platform
+from functools import partial
 from typing import Union
 
 import gym
 import numpy as np
+import pandas as pd
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.type_aliases import GymStepReturn
+from stochastic.processes import VasicekProcess
 
+from experiments.hp_tune.env.random_load import RandomLoad
 from experiments.hp_tune.env.vctrl_single_inv import net
 from experiments.hp_tune.util.config import cfg
-from openmodelica_microgrid_gym.util import abc_to_alpha_beta, dq0_to_abc, abc_to_dq0, Fastqueue
+from openmodelica_microgrid_gym.util import abc_to_alpha_beta, dq0_to_abc, abc_to_dq0, Fastqueue, RandProcess
 
 
 class FeatureWrapper(Monitor):
@@ -368,4 +372,56 @@ class FeatureWrapper_pastVals(FeatureWrapper):
 
 
 class FeatureWrapper_futureVals(FeatureWrapper):
-    pass
+
+    def __init__(self, env, number_of_features: int = 0, training_episode_length: int = 5000000,
+                 recorder=None, n_trail="", integrator_weight=net.ts, antiwindup_weight=net.ts, gamma=0,
+                 penalty_I_weight=1, penalty_P_weight=1, t_start_penalty_I=0, t_start_penalty_P=0,
+                 number_learing_steps=500000, number_future_vals=0):
+        """
+                Env Wrapper which adds the number_future_vals R-values to the observations.
+                Initialized with zeros!
+                Therfore it uses the in the init defined pkl
+                """
+        super().__init__(env, number_of_features + number_future_vals, training_episode_length,
+                         recorder, n_trail, integrator_weight, antiwindup_weight, gamma,
+                         penalty_I_weight, penalty_P_weight, t_start_penalty_I, t_start_penalty_P,
+                         number_learing_steps)
+
+        # not needed... toDo Chage in Randload init?
+        gen = RandProcess(VasicekProcess, proc_kwargs=dict(speed=800, vol=40, mean=50), initial=50,
+                          bounds=(14, 200))
+        self.load_curve = RandomLoad(2881, net.ts, gen,
+                                     load_curve=pd.read_pickle(
+                                         'experiments/hp_tune/data/R_load_hard_test_case_60_seconds_noReset.pkl'))
+
+        self.future_vals = []
+        self.number_future_vals = number_future_vals
+
+    def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
+        obs, reward, done, info = super().step(action)
+
+        self.future_vals = [self.load_curve.give_dataframe_value(self.env.sim_time_interval[0] +
+                                                                 i * self.env.time_step_size,
+                                                                 col='r_load.resistor' + Rx + '.R')
+                            for i in range(self.number_future_vals) for Rx in ['1']]  # , '2', '3']]
+        # toDo: if Load is not balanced, different values have to be sampled! (till now only 1 value per future step is sufficent
+
+        obs = np.append(obs, self.future_vals)
+
+        return obs, reward, done, info
+
+    def reset(self, **kwargs):
+        """
+        Reset the wrapped env and the flag for the number of training steps after the env is reset
+        by the agent for training purpose and internal counters
+        """
+
+        obs = super().reset()
+        self.future_vals = [self.load_curve.give_dataframe_value(self.env.sim_time_interval[0] +
+                                                                 i * self.env.time_step_size,
+                                                                 col='r_load.resistor' + Rx + '.R')
+                            for i in range(self.number_future_vals) for Rx in ['1']]  # , '2', '3']]
+        # toDo: if Load is not balanced, different values have to be sampled! (till now only 1 value per future step is sufficent
+
+        obs = np.append(obs, self.future_vals)
+        return obs

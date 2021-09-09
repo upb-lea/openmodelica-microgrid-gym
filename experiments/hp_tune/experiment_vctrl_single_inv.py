@@ -10,7 +10,7 @@ from stable_baselines3 import DDPG
 from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
 
 # from agents.my_ddpg import myDDPG
-from experiments.hp_tune.env.env_wrapper import FeatureWrapper, FeatureWrapper_pastVals
+from experiments.hp_tune.env.env_wrapper import FeatureWrapper, FeatureWrapper_pastVals, FeatureWrapper_futureVals
 from experiments.hp_tune.env.rewards import Reward
 from experiments.hp_tune.env.vctrl_single_inv import net  # , folder_name
 from experiments.hp_tune.util.config import cfg
@@ -46,7 +46,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                  use_gamma_normalization=use_gamma_in_rew, error_exponent=error_exponent, i_lim=net['inverter1'].i_lim,
                  i_nom=net['inverter1'].i_nom)
 
-    env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train-v0',
+    env = gym.make('experiments.hp_tune.env:vctrl_single_inv_train-v2',
                    reward_fun=rew.rew_fun_dq0,
                    abort_reward=-1,
                    obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
@@ -63,6 +63,15 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                       penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight,
                                       t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
                                       number_learing_steps=number_learning_steps, number_past_vals=number_past_vals)
+
+    if cfg['env_wrapper'] == 'future':
+        env = FeatureWrapper_futureVals(env, number_of_features=11, training_episode_length=training_episode_length,
+                                        recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
+                                        antiwindup_weight=antiwindup_weight, gamma=gamma,
+                                        penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight,
+                                        t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
+                                        number_learing_steps=number_learning_steps, number_future_vals=10)
+
     else:
         env = FeatureWrapper(env, number_of_features=11, training_episode_length=training_episode_length,
                              recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
@@ -180,6 +189,15 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                            gamma=1, penalty_I_weight=0,
                                            penalty_P_weight=0, number_past_vals=number_past_vals,
                                            training_episode_length=training_episode_length, )
+    if cfg['env_wrapper'] == 'future':
+        env_test = FeatureWrapper_futureVals(env_test, number_of_features=11,
+                                             training_episode_length=training_episode_length,
+                                             recorder=mongo_recorder, n_trail=n_trail,
+                                             integrator_weight=integrator_weight,
+                                             antiwindup_weight=antiwindup_weight, gamma=gamma,
+                                             penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight,
+                                             t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
+                                             number_learing_steps=number_learning_steps, number_future_vals=10)
     else:
         env_test = FeatureWrapper(env_test, number_of_features=11, integrator_weight=integrator_weight,
                                   recorder=mongo_recorder, antiwindup_weight=antiwindup_weight,

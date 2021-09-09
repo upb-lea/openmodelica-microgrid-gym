@@ -27,7 +27,7 @@ else:
     net = Network.load('net/net_vctrl_single_inv_dq0.yaml')
 
 # set high to not terminate env! Termination should be done in wrapper by env after episode-length-HP
-max_episode_steps = 100000  # net.max_episode_steps  # number of simulation steps per episode
+max_episode_steps = 600000  # net.max_episode_steps  # number of simulation steps per episode
 
 i_lim = net['inverter1'].i_lim  # inverter current limit / A
 i_nom = net['inverter1'].i_nom  # nominal inverter current / A
@@ -172,7 +172,8 @@ if __name__ == '__main__':
     env = gym.make('openmodelica_microgrid_gym:ModelicaEnv_test-v1',
                    net=net,
                    # model_params={'r_load.resistor1.R': rand_load.random_load_step,  # For use upper function
-                   model_params={'r_load.resistor1.R': rand_load_train.one_random_loadstep_per_episode,
+                   # model_params={'r_load.resistor1.R': rand_load_train.one_random_loadstep_per_episode,
+                   model_params={'r_load.resistor1.R': rand_load_train.random_load_step,
                                  # For use upper function
                                  'r_load.resistor2.R': rand_load.clipped_step,
                                  'r_load.resistor3.R': rand_load.clipped_step},
@@ -198,6 +199,7 @@ if __name__ == '__main__':
         obs, rew, done, info = env.step(env.action_space.sample())  # take a random action
 
         # If env is reset for several loadsteps, store env.df
+        """
         if current_step % round(cfg['train_episode_length'] / 10) == 0 and current_step != 0:
             R_load1.extend(env.history.df['r_load.resistor1.R'].copy().values.tolist())
             R_load2.extend(env.history.df['r_load.resistor2.R'].copy().values.tolist())
@@ -205,6 +207,7 @@ if __name__ == '__main__':
 
             # obs = env.reset()
             env.on_episode_reset_callback()
+        """
         if done:
             break
     env.close()
@@ -216,4 +219,5 @@ if __name__ == '__main__':
                             columns=['r_load.resistor1.R', 'r_load.resistor2.R', 'r_load.resistor3.R'])
 
     # df_store = env.history.df[['r_load.resistor1.R', 'r_load.resistor2.R', 'r_load.resistor3.R']]
-    df_store.to_pickle('R_load_tenLoadstepPerEpisode2881Len_test_case_10_seconds.pkl')
+    # df_store.to_pickle('R_load_tenLoadstepPerEpisode2881Len_test_case_10_seconds.pkl')
+    df_store.to_pickle('R_load_hard_test_case_60_seconds_noReset.pkl')
