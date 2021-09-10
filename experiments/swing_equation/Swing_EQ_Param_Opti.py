@@ -464,6 +464,3 @@ plt.ylabel('Reactive Power (VAr)')
 #plt.ylim(-100, 2000)
 plt.legend()
 plt.show()
-
-
-a = w1
