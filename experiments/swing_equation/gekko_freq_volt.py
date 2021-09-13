@@ -33,7 +33,7 @@ Zl21 = L_lcl_21*omega
 B_lcl1 = -(omega * L_lcl_12)/(0**2 + (omega*L_lcl_12)**2)
 B_lcl2 = -(omega * L_lcl_22)/(0**2 + (omega*L_lcl_22)**2)
 
-star_connection = True
+star_connection = False
 
 J = 0.0005
 J_Q = 0.00005
