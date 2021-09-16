@@ -27,7 +27,7 @@ else:
     net = Network.load('net/net_vctrl_single_inv_dq0.yaml')
 
 # set high to not terminate env! Termination should be done in wrapper by env after episode-length-HP
-max_episode_steps = 600000  # net.max_episode_steps  # number of simulation steps per episode
+max_episode_steps = 10000  # net.max_episode_steps  # number of simulation steps per episode
 
 i_lim = net['inverter1'].i_lim  # inverter current limit / A
 i_nom = net['inverter1'].i_nom  # nominal inverter current / A
@@ -69,6 +69,27 @@ time_step_up2 = 1.66
 time_drift_down3 = 1.72
 
 R_load = []
+
+
+def load_step_deterministic(t):
+    if -2 < t <= 0.1:
+        return 100.0
+    if 0.1 < t <= 0.2:
+        return 50.0
+    if 0.2 < t <= 0.3:
+        return 100.0
+    if 0.3 < t <= 0.4:
+        return 50.0
+    if 0.4 < t <= 0.5:
+        return 200.0
+    if 0.5 < t <= 0.6:
+        return 50.0
+    if 0.7 < t <= 0.7:
+        return 14.0
+    if 0.7 < t <= 0.8:
+        return 200.0
+    else:
+        return 14
 
 
 def load_step(t):
@@ -173,13 +194,13 @@ if __name__ == '__main__':
                    net=net,
                    # model_params={'r_load.resistor1.R': rand_load.random_load_step,  # For use upper function
                    # model_params={'r_load.resistor1.R': rand_load_train.one_random_loadstep_per_episode,
-                   model_params={'r_load.resistor1.R': rand_load_train.random_load_step,
-                                 # For use upper function
-                                 'r_load.resistor2.R': rand_load.clipped_step,
-                                 'r_load.resistor3.R': rand_load.clipped_step},
-                   # model_params={'r_load.resistor1.R': rand_load.random_load_step,         # for check train-random
-                   #              'r_load.resistor2.R': rand_load.random_load_step,         # loadstep
-                   #              'r_load.resistor3.R': rand_load.random_load_step},
+                   # model_params={'r_load.resistor1.R': rand_load_train.random_load_step,
+                   #              # For use upper function
+                   #              'r_load.resistor2.R': rand_load.clipped_step,
+                   #              'r_load.resistor3.R': rand_load.clipped_step},
+                   model_params={'r_load.resistor1.R': load_step_deterministic,  # for check train-random
+                                 'r_load.resistor2.R': load_step_deterministic,  # loadstep
+                                 'r_load.resistor3.R': load_step_deterministic},
                    viz_cols=[
                        PlotTmpl([f'r_load.resistor{i}.R' for i in '123'],
                                 callback=xylables
@@ -220,4 +241,4 @@ if __name__ == '__main__':
 
     # df_store = env.history.df[['r_load.resistor1.R', 'r_load.resistor2.R', 'r_load.resistor3.R']]
     # df_store.to_pickle('R_load_tenLoadstepPerEpisode2881Len_test_case_10_seconds.pkl')
-    df_store.to_pickle('R_load_hard_test_case_60_seconds_noReset.pkl')
+    df_store.to_pickle('R_load_deterministic_test_case2_1_seconds.pkl')

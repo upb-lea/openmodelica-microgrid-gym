@@ -5,17 +5,20 @@ import plotly.graph_objects as px
 
 from openmodelica_microgrid_gym.util import abc_to_dq0
 
-make_pyplot = True
+make_pyplot = False
 show_load = True
 interval_plt = True
 
 # interval_list_x = [[0.992, 1], [0.992, 1]]
 # interval_list_y = [[150, 230], [-10, 10]]
-interval_list_x = [[0, 0.02], [0, 0.02]]
-interval_list_y = [[-10, 310], [-10, 40]]
-folder_name = 'saves/Comparison_study_22_best_pastVal_HPO_oldtestEnv'
+interval_list_x = [[0, 0.01], [0.65, 0.66], [0.695, 0.71], [0.85, 0.88]]
+interval_list_y = [[-25, 210], [160, 180], [-25, 335], [160, 180]]
+# folder_name = 'saves/Comparison_study_future10Rvals_deterministicTestcase'
+folder_name = 'saves/Comparison_study_22_best_pastVal_HPO_deterministic'
+# folder_name = 'saves/Comparison_study_22_best_pastVal_HPO_deterministic_noMeasNoise'
 
-df = pd.read_pickle(folder_name + '/PI_20000steps')
+df = pd.read_pickle(folder_name + '/PI_10000steps')
+# df = pd.read_pickle(folder_name + '/PI_9989steps')
 
 env_hist_PI = df['env_hist_PI']
 v_a_PI = env_hist_PI[0]['lc.capacitor1.v'].tolist()
@@ -28,6 +31,7 @@ v_d_PI = (v_dq0_PI[0].tolist())
 v_q_PI = (v_dq0_PI[1].tolist())
 v_0_PI = (v_dq0_PI[2].tolist())
 
+reward_PI = df['Reward PI'][0]
 return_PI = df['Return PI'][0]
 kp_c = df['PI_Kp_c'][0]
 ki_c = df['PI_Ki_c'][0]
@@ -36,7 +40,9 @@ ki_v = df['PI_Ki_v'][0]
 
 model_names = [
     'model_2_pastVals.zip']  # ['model_0_pastVals.zip','model_2_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
+# model_names = ['model.zip']
 pastVals = ['2']  # ['0', '2', '5', '10', '16', '25']
+return_list_DDPG = []
 reward_list_DDPG = []
 
 ts = 1e-4  # if ts stored: take from db
@@ -44,22 +50,25 @@ ts = 1e-4  # if ts stored: take from db
 # t_test_R = np.arange(ts, (len(testcase_100k['v_d_PI'])) * ts, ts).tolist()
 
 t_test = np.arange(0, round((len(v_0_PI)) * ts, 4), ts).tolist()
+t_reward = np.arange(0, round((len(reward_PI)) * ts, 4), ts).tolist()
 
 # fig, axs = plt.subplots(len(model_names)+2, len(interval_list_y), figsize=(16, 12))  # , sharex=True)  # a new figure window
-fig, axs = plt.subplots(len(model_names) + 2, len(interval_list_y),
+fig, axs = plt.subplots(len(model_names) + 3, len(interval_list_y),
                         figsize=(12, 10))  # , sharex=True)  # a new figure window
 
 for i in range(len(interval_list_y)):
-    plt_count = 2
+    plt_count = 3
     ############## Subplots
     # fig = plt.figure(figsize=(10,12))  # a new figure window
 
     for model_name, pV in zip(model_names, pastVals):
 
-        df_DDPG = pd.read_pickle(folder_name + '/' + model_name + '_20000steps')
+        df_DDPG = pd.read_pickle(folder_name + '/' + model_name + '_10000steps')
+        # df_DDPG = pd.read_pickle(folder_name + '/' + model_name + '_9989steps')
 
         if i == 0:
-            reward_list_DDPG.append(round(df_DDPG['Return DDPG'][0], 4))
+            return_list_DDPG.append(round(df_DDPG['Return DDPG'][0], 4))
+            reward_list_DDPG.append(df_DDPG['Reward DDPG'][0])
 
         env_hist_DDPG = df_DDPG['env_hist_DDPG']
 
@@ -76,20 +85,33 @@ for i in range(len(interval_list_y)):
         axs[0, i].grid()
         axs[0, i].set_xlim(interval_list_x[i])
         # axs[0, i].set_ylim([15, 75])
-        # if i == 0:
-        axs[0, i].set_ylabel("$R_{\mathrm{load}}\,/\,\mathrm{\Omega}$")
+        if i == 0:
+            axs[0, i].set_ylabel("$R_{\mathrm{load}}\,/\,\mathrm{\Omega}$")
         # ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
 
-        axs[1, i].plot(t_test, v_d_PI, 'b', label='v_d')
-        axs[1, i].plot(t_test, v_q_PI, 'r', label='v_q')
-        axs[1, i].plot(t_test, v_0_PI, 'g', label='v_0')
+        DDPG_reward = df_DDPG['Reward DDPG'][0]
+
+        axs[1, i].plot(t_reward, reward_PI, 'b', label=f'      PI: '
+                                                       f'{round(sum(reward_PI[int(interval_list_x[i][0] / ts):int(interval_list_x[i][1] / ts)]) / ((interval_list_x[i][1] - interval_list_x[i][0]) / ts), 4)}')
+        axs[1, i].plot(t_reward, DDPG_reward, 'r', label=f'DDPG: '
+                                                         f'{round(sum(DDPG_reward[int(interval_list_x[i][0] / ts):int(interval_list_x[i][1] / ts)]) / ((interval_list_x[i][1] - interval_list_x[i][0]) / ts), 4)}')
         axs[1, i].grid()
         axs[1, i].set_xlim(interval_list_x[i])
-        axs[1, i].set_ylim(interval_list_y[i])
+        # axs[1, i].set_ylim(interval_list_y[i])
+        axs[1, i].legend()
         if i == 0:
-            axs[1, i].set_ylabel("$v_{\mathrm{dq0, PI}}\,/\,\mathrm{V}$")
-        else:
-            axs[1, i].set_ylabel("$v_{\mathrm{q0, PI}}\,/\,\mathrm{V}$")
+            axs[1, i].set_ylabel("Reward")
+
+        axs[2, i].plot(t_test, v_d_PI, 'b', label='v_d')
+        axs[2, i].plot(t_test, v_q_PI, 'r', label='v_q')
+        axs[2, i].plot(t_test, v_0_PI, 'g', label='v_0')
+        axs[2, i].grid()
+        axs[2, i].set_xlim(interval_list_x[i])
+        axs[2, i].set_ylim(interval_list_y[i])
+        if i == 0:
+            axs[2, i].set_ylabel("$v_{\mathrm{dq0, PI}}\,/\,\mathrm{V}$")
+        # else:
+        #    axs[1, i].set_ylabel("$v_{\mathrm{q0, PI}}\,/\,\mathrm{V}$")
 
         axs[plt_count, i].plot(t_test, v_d_DDPG, 'b')
         axs[plt_count, i].plot(t_test, v_q_DDPG, 'r')
@@ -101,20 +123,20 @@ for i in range(len(interval_list_y)):
         if i == 0:
             # axs[plt_count, i].set_ylabel(pV)
             axs[plt_count, i].set_ylabel("$v_{\mathrm{dq0, DDPG}}\,/\,\mathrm{V}$")
-        else:
-            axs[plt_count, i].set_ylabel("$v_{\mathrm{q0, DDPG}}\,/\,\mathrm{V}$")
+        # else:
+        #    axs[plt_count, i].set_ylabel("$v_{\mathrm{q0, DDPG}}\,/\,\mathrm{V}$")
         plt_count += 1
 
-
-fig.suptitle(f'Model using pastVals:' +str(pastVals)+' \n '
-                 f'Model-return(MRE)'+ str(reward_list_DDPG) +' \n'
-                 f'  PI-return(MRE): {return_PI} \n '
-                 f'PI: Kp_i = {kp_c}, Ki_i = {ki_c}, Kp_v = {kp_v}, Ki_v = {ki_v}', fontsize=14)
+fig.suptitle(f'Model using pastVals:' + str(pastVals) + ' \n '
+                                                        f'Model-return(MRE)' + str(return_list_DDPG) + ' \n'
+                                                                                                       f'  PI-return(MRE): {return_PI} \n '
+                                                                                                       f'PI: Kp_i = {kp_c}, Ki_i = {ki_c}, Kp_v = {kp_v}, Ki_v = {ki_v}',
+             fontsize=14)
 
 fig.subplots_adjust(wspace=0.2, hspace=0.2)
 plt.show()
 
-#fig.savefig(f'{folder_name}/Ausschnitt_2pV_blackstart.pdf')
+fig.savefig(f'{folder_name}/Ausschnitt_2pV.pdf')
 
 if make_pyplot:
     # pyplot Load
@@ -130,11 +152,9 @@ if make_pyplot:
     # pyplot PI
     plot = px.Figure()
     plot.add_trace(
-        px.Scatter(x=t_test, y=v_d_PI))
+        px.Scatter(x=t_reward, y=DDPG_reward))
     plot.add_trace(
-        px.Scatter(x=t_test, y=v_q_PI))
-    plot.add_trace(
-        px.Scatter(x=t_test, y=v_0_PI))
+        px.Scatter(x=t_reward, y=reward_PI))
     # plot.add_trace(
     #    px.Scatter(x=t_test, y=v_sp_abc[1, :]))
 
@@ -144,7 +164,7 @@ if make_pyplot:
     plot.show()
 
     for model_name in model_names:
-        df_DDPG = pd.read_pickle(folder_name + '/' + model_name + '_20000steps')
+        df_DDPG = pd.read_pickle(folder_name + '/' + model_name + '_10000steps')
 
         env_hist_DDPG = df_DDPG['env_hist_DDPG']
 
@@ -177,3 +197,45 @@ if make_pyplot:
             dict(count=1, step="day", stepmode="backward"), ])),
             rangeslider=dict(visible=True), ))
         plot.show()
+
+plt.plot(t_test, v_d_DDPG, 'b')
+# plt.plot(t_test, v_d_PI, 'r')
+# plt.plot(t_test, v_sp_abc[0, :])
+plt.grid()
+# plt.xlim([0, 0.025])
+plt.ylim([160, 190])
+plt.xlabel("time")
+plt.ylabel("v_dq0_DDPG")
+plt.title(f'DDPG')
+plt.show()
+
+plt.plot(t_test, v_d_PI, 'r')
+# plt.plot(t_test, v_sp_abc[0, :])
+plt.grid()
+# plt.xlim([0, 0.025])
+plt.ylim([160, 190])
+plt.xlabel("time")
+plt.ylabel("v_dq0_DDPG")
+plt.title(f'DDPG')
+plt.show()
+
+plt.plot(t_test, v_d_DDPG, 'b')
+# plt.plot(t_test, v_d_PI, 'r')
+# plt.plot(t_test, v_sp_abc[0, :])
+plt.grid()
+plt.xlim([0.1, 0.2])
+plt.ylim([160, 190])
+plt.xlabel("time")
+plt.ylabel("v_dq0_DDPG")
+plt.title(f'DDPG')
+plt.show()
+
+plt.plot(t_test, v_d_PI, 'r')
+# plt.plot(t_test, v_sp_abc[0, :])
+plt.grid()
+plt.xlim([0.1, 0.2])
+plt.ylim([160, 190])
+plt.xlabel("time")
+plt.ylabel("v_dq0_DDPG")
+plt.title(f'DDPG')
+plt.show()
