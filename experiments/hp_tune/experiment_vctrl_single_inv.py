@@ -57,7 +57,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                    )
 
     if cfg['env_wrapper'] == 'past':
-        env = FeatureWrapper_pastVals(env, number_of_features=11 + number_past_vals * 3,
+        env = FeatureWrapper_pastVals(env, number_of_features=9 + number_past_vals * 3,
                                       training_episode_length=training_episode_length,
                                       recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
                                       antiwindup_weight=antiwindup_weight, gamma=gamma,
@@ -202,7 +202,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                         )
 
     if cfg['env_wrapper'] == 'past':
-        env_test = FeatureWrapper_pastVals(env_test, number_of_features=11 + number_past_vals * 3,
+        env_test = FeatureWrapper_pastVals(env_test, number_of_features=9 + number_past_vals * 3,
                                            integrator_weight=integrator_weight,
                                            recorder=mongo_recorder, antiwindup_weight=antiwindup_weight,
                                            gamma=1, penalty_I_weight=0,

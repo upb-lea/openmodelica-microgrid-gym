@@ -485,8 +485,8 @@ class FeatureWrapper(Monitor):
         """
         # obs = np.append(obs, self.i_phasor - 0.5)
         obs = np.append(obs, error)
-        obs = np.append(obs, np.sin(self.env.net.components[0].phase))
-        obs = np.append(obs, np.cos(self.env.net.components[0].phase))
+        # obs = np.append(obs, np.sin(self.env.net.components[0].phase))
+        # obs = np.append(obs, np.cos(self.env.net.components[0].phase))
 
         """
         Add used action to the NN input to learn delay
@@ -555,8 +555,8 @@ class FeatureWrapper(Monitor):
         """
         # obs = np.append(obs, self.i_phasor - 0.5)
         obs = np.append(obs, error)
-        obs = np.append(obs, np.sin(self.env.net.components[0].phase))
-        obs = np.append(obs, np.cos(self.env.net.components[0].phase))
+        # obs = np.append(obs, np.sin(self.env.net.components[0].phase))
+        # obs = np.append(obs, np.cos(self.env.net.components[0].phase))
 
         # obs = np.append(obs, delta_i_lim_i_phasor)
         """

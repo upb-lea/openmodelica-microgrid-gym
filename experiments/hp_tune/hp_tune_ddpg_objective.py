@@ -109,7 +109,7 @@ def ddpg_objective_fix_params(trial):
     optimizer = trial_config[
         "optimizer"]  # trial.suggest_categorical("optimizer", ["Adam", "SGD", "RMSprop"])  # , "LBFGS"])
 
-    number_past_vals = 2  # trial.suggest_int("number_past_vals", 0, 100)
+    number_past_vals = trial.suggest_int("number_past_vals", 0, 15)
 
     learning_rate = linear_schedule(initial_value=learning_rate, final_value=learning_rate * final_lr,
                                     t_start=t_start,
@@ -123,10 +123,7 @@ def ddpg_objective_fix_params(trial):
                           "Trial number": n_trail,
                           "Database name": cfg['STUDY_NAME'],
                           "Start time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime()),
-                          "Optimierer/ Setting stuff": "Actor + externer Integrator (Gewichtung ueber ts, nicht HP)"
-                                                       "Alter Testcase mit vielen Spruengen"
-                                                       "Besondere Features: 2pastVals, IntegratorSum, Error"
-                                                       "HPs aus study 22",
+                          "Optimierer/ Setting stuff": "pastVal HPO 2 ohne phase als feature",
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
@@ -151,21 +148,21 @@ def ddpg_objective(trial):
     number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
     # rew_weigth = trial.suggest_float("rew_weigth", 0.1, 5)
     # rew_penalty_distribution = trial.suggest_float("antiwindup_weight", 0.1, 5)
-    penalty_I_weight = trial.suggest_float("penalty_I_weight", 100e-6, 2)
-    penalty_P_weight = trial.suggest_float("penalty_P_weight", 100e-6, 2)
+    penalty_I_weight = 1  # trial.suggest_float("penalty_I_weight", 100e-6, 2)
+    penalty_P_weight = 1  # trial.suggest_float("penalty_P_weight", 100e-6, 2)
 
-    penalty_I_decay_start = trial.suggest_float("penalty_I_decay_start", 0.00001, 1)
-    penalty_P_decay_start = trial.suggest_float("penalty_P_decay_start", 0.00001, 1)
+    penalty_I_decay_start = 0.5  # trial.suggest_float("penalty_I_decay_start", 0.00001, 1)
+    penalty_P_decay_start = 0.5  # trial.suggest_float("penalty_P_decay_start", 0.00001, 1)
 
     t_start_penalty_I = int(penalty_I_decay_start * number_learning_steps)
     t_start_penalty_P = int(penalty_P_decay_start * number_learning_steps)
 
-    integrator_weight = trial.suggest_float("integrator_weight", 1 / 200, 0.5)
+    integrator_weight = 0.1  # trial.suggest_float("integrator_weight", 1 / 200, 0.5)
     # integrator_weight = trial.suggest_loguniform("integrator_weight", 1e-6, 1e-0)
     # antiwindup_weight = trial.suggest_loguniform("antiwindup_weight", 50e-6, 50e-3)
-    antiwindup_weight = trial.suggest_float("antiwindup_weight", 0.00001, 1)
+    antiwindup_weight = 0.1  # trial.suggest_float("antiwindup_weight", 0.00001, 1)
 
-    learning_rate = trial.suggest_loguniform("learning_rate", 1e-6, 1e-2)  # 0.0002#
+    learning_rate = trial.suggest_loguniform("learning_rate", 1e-7, 1e-2)  # 0.0002#
 
     lr_decay_start = trial.suggest_float("lr_decay_start", 0.00001, 1)  # 3000  # 0.2 * number_learning_steps?
     lr_decay_duration = trial.suggest_float("lr_decay_duration", 0.00001,
@@ -201,7 +198,7 @@ def ddpg_objective(trial):
         0.25 * number_learning_steps)  # trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
     # number_learning_steps)
     noise_theta = trial.suggest_loguniform("noise_theta", 1, 50)  # 25  # stiffness of OU
-    error_exponent = 2  # 0.5  # trial.suggest_loguniform("error_exponent", 0.001, 4)
+    error_exponent = 0.5  # 0.5  # trial.suggest_loguniform("error_exponent", 0.001, 4)
 
     training_episode_length = trial.suggest_int("training_episode_length", 1000, 4000)  # 128
     # learning_starts = 0.32  # trial.suggest_loguniform("learning_starts", 0.1, 2)  # 128
@@ -225,13 +222,8 @@ def ddpg_objective(trial):
                           "Trial number": n_trail,
                           "Database name": cfg['STUDY_NAME'],
                           "Start time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime()),
-                          "Optimierer/ Setting stuff": "Kein Const_liar_feature, hoehere Grenzen, INtergrator Gewicht als HP,"
-                                                       "Actionspace = 6, da P und I-Anteil seperate ausgänge und im wrapper addiert werden"
-                                                       "Integratorzustand+used_P_Action (je um einen verzoegert) wird mit als feature uebergeben"
-                                                       "Penalties fuer action_P und action_P"
-                                                       "Mehr HPs: trainfreq, batch/buffer_size, a_relu ",
-                          'Weitere Info': "Neue Features: pastVals HPO mit alten fiesen Testcase"
-                                          "Vermutung: Mehr spruenge, dann bringen pastVals mehr"
+                          "Optimierer/ Setting stuff": "DDPG HPO ohne Integrator, alle HPs fuer den I-Anteil "
+                                                       "wurden daher fix gesetzt. Vgl. zu DDPG+I-Anteil"
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
@@ -469,10 +461,10 @@ if __name__ == "__main__":
     TPE_sampler = TPESampler(n_startup_trials=400)  # , constant_liar=True)
     # TPE_sampler = TPESampler(n_startup_trials=2500)  # , constant_liar=True)
 
-    # optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
+    #optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
 
     optuna_optimize_mysql_lea35(ddpg_objective_fix_params, study_name=STUDY_NAME, sampler=TPE_sampler)
-    # optuna_optimize_sqlite(ddpg_objective_fix_params, study_name=STUDY_NAME, sampler=TPE_sampler)
+    #optuna_optimize_sqlite(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
 
     # optuna_optimize(ddpg_objective, study_name=STUDY_NAME,
     # sampler=TPE_sampler)  #, sampler=optuna.samplers.GridSampler(search_space))
