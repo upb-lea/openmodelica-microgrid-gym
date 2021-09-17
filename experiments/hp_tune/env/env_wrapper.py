@@ -503,7 +503,8 @@ class FeatureWrapper_I_controller(Monitor):
         if np.any(abs(action_abc) > 1):
             # if, reduce integrator by clipped delta
             action_delta = abc_to_dq0(np.clip(action_abc, -1, 1) - action_abc, self.env.net.components[0].phase)
-            self.integrator_sum += action_delta * self.antiwindup_weight
+            # self.integrator_sum += action_delta * self.antiwindup_weight
+            self.integrator_sum += action_delta * self.env.time_step_size
 
         obs, reward, done, info = super().step(action_abc)
 
@@ -512,32 +513,7 @@ class FeatureWrapper_I_controller(Monitor):
             obs[9:12] = obs[9:12] / net['inverter1'].i_lim
 
         super().render()
-        """
-        integrator_penalty = np.sum(-((np.abs(action_I)) ** 0.5)) * (1 - self.gamma) / 3
-        # action_P_penalty = - np.sum((np.abs(action_P - self.used_P)) ** 0.5) * (1 - self.gamma) / 3
-        action_P_penalty = np.sum(-((np.abs(action_P)) ** 0.5)) * (1 - self.gamma) / 3
 
-        # reward_weight is = 1
-
-        if self.total_steps > self.t_start_penalty_I:
-            penalty_I_weight_scale = 1 / (self.t_start_penalty_I - self.number_learing_steps) * self.total_steps - \
-                                     self.number_learing_steps / (self.t_start_penalty_I - self.number_learing_steps)
-
-        else:
-            penalty_I_weight_scale = 1
-
-        if self.total_steps > self.t_start_penalty_P:
-            penalty_P_weight_scale = 1 / (self.t_start_penalty_P - self.number_learing_steps) * self.total_steps - \
-                                     self.number_learing_steps / (self.t_start_penalty_P - self.number_learing_steps)
-
-        else:
-
-            penalty_P_weight_scale = 1
-
-        reward = (reward + (self.penalty_I_weight * penalty_I_weight_scale) * integrator_penalty
-                  + self.penalty_P_weight * penalty_P_weight_scale * action_P_penalty) \
-                 / (1 + self.penalty_I_weight * penalty_I_weight_scale + self.penalty_P_weight * penalty_P_weight_scale)
-        """
         self._n_training_steps += 1
 
         # if self._n_training_steps % round(self.training_episode_length / 10) == 0:
@@ -622,7 +598,8 @@ class FeatureWrapper_I_controller(Monitor):
         error = obs[6:9] - obs[3:6]  # control error: v_setpoint - v_mess
         # delta_i_lim_i_phasor = 1 - self.i_phasor  # delta to current limit
 
-        self.integrator_sum += error * self.integrator_weight * self.Ki
+        # self.integrator_sum += error * self.integrator_weight * self.Ki
+        self.integrator_sum += error * self.env.time_step_size * self.Ki
         """
         Following maps the return to the range of [-0.5, 0.5] in
         case of magnitude = [-lim, lim] using (phasor_mag) - 0.5. 0.5 can be exceeded in case of the magnitude
@@ -638,6 +615,7 @@ class FeatureWrapper_I_controller(Monitor):
         """
         obs_delay_array = self.shift_and_append(obs[3:6])
         obs = np.append(obs, obs_delay_array)
+        obs = np.append(obs, self.integrator_sum)
 
         """
         Add used action to the NN input to learn delay
@@ -698,7 +676,8 @@ class FeatureWrapper_I_controller(Monitor):
         """
         error = obs[6:9] - obs[3:6]  # control error: v_setpoint - v_mess
         # delta_i_lim_i_phasor = 1 - self.i_phasor  # delta to current limit
-        self.integrator_sum += error * self.integrator_weight * self.Ki
+        # self.integrator_sum += error * self.integrator_weight * self.Ki
+        self.integrator_sum += error * self.env.time_step_size * self.Ki
         """
         Following maps the return to the range of [-0.5, 0.5] in
         case of magnitude = [-lim, lim] using (phasor_mag) - 0.5. 0.5 can be exceeded in case of the magnitude
@@ -710,10 +689,11 @@ class FeatureWrapper_I_controller(Monitor):
         obs = np.append(obs, np.cos(self.env.net.components[0].phase))
 
         """
-        Add pastvals
+        Add pastvals and integrator sum
         """
         obs_delay_array = self.shift_and_append(obs[3:6])
         obs = np.append(obs, obs_delay_array)
+        obs = np.append(obs, self.integrator_sum)
 
         # obs = np.append(obs, delta_i_lim_i_phasor)
         """

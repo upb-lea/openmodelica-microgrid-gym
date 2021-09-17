@@ -74,7 +74,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                         number_learing_steps=number_learning_steps, number_future_vals=10)
 
     elif cfg['env_wrapper'] == 'I-controller':
-        env = FeatureWrapper_I_controller(env, number_of_features=11 + number_past_vals * 3,
+        env = FeatureWrapper_I_controller(env, number_of_features=14 + number_past_vals * 3,  # including integrator_sum
                                           training_episode_length=training_episode_length,
                                           recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
                                           antiwindup_weight=antiwindup_weight, gamma=gamma,
@@ -212,14 +212,16 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                              t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
                                              number_learing_steps=number_learning_steps, number_future_vals=10)
     elif cfg['env_wrapper'] == 'I-controller':
-        env = FeatureWrapper_I_controller(env, number_of_features=11 + number_past_vals * 3,
-                                          training_episode_length=training_episode_length,
-                                          recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
-                                          antiwindup_weight=antiwindup_weight, gamma=gamma,
-                                          penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight,
-                                          t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
-                                          number_learing_steps=number_learning_steps, Ki=12,
-                                          number_past_vals=number_past_vals)
+        env_test = FeatureWrapper_I_controller(env, number_of_features=14 + number_past_vals * 3,
+                                               # including integrator_sum
+                                               training_episode_length=training_episode_length,
+                                               recorder=mongo_recorder, n_trail=n_trail,
+                                               integrator_weight=integrator_weight,
+                                               antiwindup_weight=antiwindup_weight, gamma=gamma,
+                                               penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight,
+                                               t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
+                                               number_learing_steps=number_learning_steps, Ki=12,
+                                               number_past_vals=number_past_vals)
 
     else:
         env_test = FeatureWrapper(env_test, number_of_features=11, integrator_weight=integrator_weight,

@@ -123,13 +123,10 @@ def ddpg_objective_fix_params(trial):
                           "Trial number": n_trail,
                           "Database name": cfg['STUDY_NAME'],
                           "Start time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime()),
-                          "Optimierer/ Setting stuff": "Kein Const_liar_feature, hoehere Grenzen, INtergrator Gewicht als HP,"
-                                                       "Actionspace = 6, da P und I-Anteil seperate ausgänge und im wrapper addiert werden"
-                                                       "Integratorzustand+used_P_Action (je um einen verzoegert) wird mit als feature uebergeben"
-                                                       "Penalties fuer action_P und action_P"
-                                                       "Mehr HPs: trainfreq, batch/buffer_size, a_relu ",
-                          'Weitere Info': "Neue Features: pastVals HPO mit alten fiesen Testcase, bestes HP set aus study 22"
-                                          "Vermutung: Mehr spruenge, dann bringen pastVals mehr"
+                          "Optimierer/ Setting stuff": "Actor + externer Integrator (Gewichtung ueber ts, nicht HP)"
+                                                       "Alter Testcase mit vielen Spruengen"
+                                                       "Besondere Features: 2pastVals, IntegratorSum, Error"
+                                                       "HPs aus study 22",
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
@@ -474,8 +471,8 @@ if __name__ == "__main__":
 
     # optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
 
-    # optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
-    optuna_optimize_sqlite(ddpg_objective_fix_params, study_name=STUDY_NAME, sampler=TPE_sampler)
+    optuna_optimize_mysql_lea35(ddpg_objective_fix_params, study_name=STUDY_NAME, sampler=TPE_sampler)
+    # optuna_optimize_sqlite(ddpg_objective_fix_params, study_name=STUDY_NAME, sampler=TPE_sampler)
 
     # optuna_optimize(ddpg_objective, study_name=STUDY_NAME,
     # sampler=TPE_sampler)  #, sampler=optuna.samplers.GridSampler(search_space))
