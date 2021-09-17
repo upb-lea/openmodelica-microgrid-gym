@@ -11,7 +11,7 @@ from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
 
 # from agents.my_ddpg import myDDPG
 from experiments.hp_tune.env.env_wrapper import FeatureWrapper, FeatureWrapper_pastVals, FeatureWrapper_futureVals, \
-    FeatureWrapper_I_controller
+    FeatureWrapper_I_controller, BaseWrapper
 from experiments.hp_tune.env.rewards import Reward
 from experiments.hp_tune.env.vctrl_single_inv import net  # , folder_name
 from experiments.hp_tune.util.config import cfg
@@ -83,6 +83,12 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                           number_learing_steps=number_learning_steps, Ki=12,
                                           number_past_vals=number_past_vals)
 
+    elif cfg['env_wrapper'] == 'no-I-term':
+        env = BaseWrapper(env, number_of_features=8 + number_past_vals * 3,
+                          training_episode_length=training_episode_length,
+                          recorder=mongo_recorder, n_trail=n_trail, gamma=gamma,
+                          number_learing_steps=number_learning_steps, number_past_vals=number_past_vals)
+
     else:
         env = FeatureWrapper(env, number_of_features=11, training_episode_length=training_episode_length,
                              recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
@@ -92,7 +98,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                              number_learing_steps=number_learning_steps)  # , use_past_vals=True, number_past_vals=30)
 
     # todo: Upwnscale actionspace - lessulgy possible? Interaction pytorch...
-    if not cfg['env_wrapper'] == 'I-controller':
+    if cfg['env_wrapper'] not in ['no-I-term', 'I-controller']:
         env.action_space = gym.spaces.Box(low=np.full(6, -1), high=np.full(6, 1))
 
     n_actions = env.action_space.shape[-1]
@@ -160,7 +166,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
         count = count + 2
 
     # todo: Downscale actionspace - lessulgy possible? Interaction pytorch...
-    if not cfg['env_wrapper'] == 'I-controller':
+    if cfg['env_wrapper'] not in ['no-I-term', 'I-controller']:
         env.action_space = gym.spaces.Box(low=np.full(3, -1), high=np.full(3, 1))
 
     # start training
@@ -212,7 +218,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                              t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
                                              number_learing_steps=number_learning_steps, number_future_vals=10)
     elif cfg['env_wrapper'] == 'I-controller':
-        env_test = FeatureWrapper_I_controller(env, number_of_features=14 + number_past_vals * 3,
+        env_test = FeatureWrapper_I_controller(env_test, number_of_features=14 + number_past_vals * 3,
                                                # including integrator_sum
                                                training_episode_length=training_episode_length,
                                                recorder=mongo_recorder, n_trail=n_trail,
@@ -222,6 +228,12 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                                t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
                                                number_learing_steps=number_learning_steps, Ki=12,
                                                number_past_vals=number_past_vals)
+
+    elif cfg['env_wrapper'] == 'no-I-term':
+        env_test = BaseWrapper(env_test, number_of_features=8 + number_past_vals * 3,
+                               training_episode_length=training_episode_length,
+                               recorder=mongo_recorder, n_trail=n_trail, gamma=gamma,
+                               number_learing_steps=number_learning_steps, number_past_vals=number_past_vals)
 
     else:
         env_test = FeatureWrapper(env_test, number_of_features=11, integrator_weight=integrator_weight,
