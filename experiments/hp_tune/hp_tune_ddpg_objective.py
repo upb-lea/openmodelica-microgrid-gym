@@ -109,7 +109,7 @@ def ddpg_objective_fix_params(trial):
     optimizer = trial_config[
         "optimizer"]  # trial.suggest_categorical("optimizer", ["Adam", "SGD", "RMSprop"])  # , "LBFGS"])
 
-    number_past_vals = trial.suggest_int("number_past_vals", 0, 15)
+    number_past_vals = 0  # trial.suggest_int("number_past_vals", 0, 15)
 
     learning_rate = linear_schedule(initial_value=learning_rate, final_value=learning_rate * final_lr,
                                     t_start=t_start,
@@ -461,10 +461,10 @@ if __name__ == "__main__":
     TPE_sampler = TPESampler(n_startup_trials=400)  # , constant_liar=True)
     # TPE_sampler = TPESampler(n_startup_trials=2500)  # , constant_liar=True)
 
-    #optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
+    # optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
 
-    optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
-    #optuna_optimize_sqlite(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
+    # optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
+    optuna_optimize_sqlite(ddpg_objective_fix_params, study_name=STUDY_NAME, sampler=TPE_sampler)
 
     # optuna_optimize(ddpg_objective, study_name=STUDY_NAME,
     # sampler=TPE_sampler)  #, sampler=optuna.samplers.GridSampler(search_space))

@@ -667,9 +667,10 @@ class FeatureWrapper_futureVals(FeatureWrapper):
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
         obs, reward, done, info = super().step(action)
 
-        self.future_vals = [self.load_curve.give_dataframe_value(self.env.sim_time_interval[0] +
-                                                                 i * self.env.time_step_size,
-                                                                 col='r_load.resistor' + Rx + '.R') / 200
+        self.future_vals = [2 * (self.load_curve.give_dataframe_value(self.env.sim_time_interval[0] +
+                                                                      i * self.env.time_step_size,
+                                                                      col='r_load.resistor' + Rx + '.R') - 14) / (
+                                        200 - 14) - 1
                             # NORMALIZATION!
                             for i in range(self.number_future_vals) for Rx in ['1']]  # , '2', '3']]
         # toDo: if Load is not balanced, different values have to be sampled! (till now only 1 value per future step is sufficent
@@ -685,9 +686,10 @@ class FeatureWrapper_futureVals(FeatureWrapper):
         """
 
         obs = super().reset()
-        self.future_vals = [self.load_curve.give_dataframe_value(self.env.sim_time_interval[0] +
-                                                                 i * self.env.time_step_size,
-                                                                 col='r_load.resistor' + Rx + '.R') / 200
+        self.future_vals = [2 * (self.load_curve.give_dataframe_value(self.env.sim_time_interval[0] +
+                                                                      i * self.env.time_step_size,
+                                                                      col='r_load.resistor' + Rx + '.R') - 14) / (
+                                        200 - 14) - 1
                             # NORMALIZATION!
                             for i in range(self.number_future_vals) for Rx in ['1']]  # , '2', '3']]
         # toDo: if Load is not balanced, different values have to be sampled! (till now only 1 value per future step is sufficent
@@ -875,8 +877,8 @@ class FeatureWrapper_I_controller(Monitor):
         """
         # obs = np.append(obs, self.i_phasor - 0.5)
         obs = np.append(obs, error)
-        obs = np.append(obs, np.sin(self.env.net.components[0].phase))
-        obs = np.append(obs, np.cos(self.env.net.components[0].phase))
+        # obs = np.append(obs, np.sin(self.env.net.components[0].phase))
+        # obs = np.append(obs, np.cos(self.env.net.components[0].phase))
 
         """
         Add pastvals
@@ -953,8 +955,8 @@ class FeatureWrapper_I_controller(Monitor):
         """
         # obs = np.append(obs, self.i_phasor - 0.5)
         obs = np.append(obs, error)
-        obs = np.append(obs, np.sin(self.env.net.components[0].phase))
-        obs = np.append(obs, np.cos(self.env.net.components[0].phase))
+        # obs = np.append(obs, np.sin(self.env.net.components[0].phase))
+        # obs = np.append(obs, np.cos(self.env.net.components[0].phase))
 
         """
         Add pastvals and integrator sum
