@@ -84,7 +84,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                           number_past_vals=number_past_vals)
 
     elif cfg['env_wrapper'] == 'no-I-term':
-        env = BaseWrapper(env, number_of_features=8 + number_past_vals * 3,
+        env = BaseWrapper(env, number_of_features=6 + number_past_vals * 3,
                           training_episode_length=training_episode_length,
                           recorder=mongo_recorder, n_trail=n_trail, gamma=gamma,
                           number_learing_steps=number_learning_steps, number_past_vals=number_past_vals)
@@ -230,7 +230,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                                number_past_vals=number_past_vals)
 
     elif cfg['env_wrapper'] == 'no-I-term':
-        env_test = BaseWrapper(env_test, number_of_features=8 + number_past_vals * 3,
+        env_test = BaseWrapper(env_test, number_of_features=6 + number_past_vals * 3,
                                training_episode_length=training_episode_length,
                                recorder=mongo_recorder, n_trail=n_trail, gamma=gamma,
                                number_learing_steps=number_learning_steps, number_past_vals=number_past_vals)
