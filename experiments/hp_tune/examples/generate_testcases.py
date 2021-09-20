@@ -198,9 +198,12 @@ if __name__ == '__main__':
                    #              # For use upper function
                    #              'r_load.resistor2.R': rand_load.clipped_step,
                    #              'r_load.resistor3.R': rand_load.clipped_step},
-                   model_params={'r_load.resistor1.R': load_step_deterministic,  # for check train-random
-                                 'r_load.resistor2.R': load_step_deterministic,  # loadstep
-                                 'r_load.resistor3.R': load_step_deterministic},
+                   # model_params={'r_load.resistor1.R': load_step_deterministic,  # for check train-random
+                   #              'r_load.resistor2.R': load_step_deterministic,  # loadstep
+                   #              'r_load.resistor3.R': load_step_deterministic},
+                   model_params={'r_load.resistor1.R': 25,  # for check train-random
+                                 'r_load.resistor2.R': 25,  # loadstep
+                                 'r_load.resistor3.R': 25},
                    viz_cols=[
                        PlotTmpl([f'r_load.resistor{i}.R' for i in '123'],
                                 callback=xylables
@@ -241,4 +244,4 @@ if __name__ == '__main__':
 
     # df_store = env.history.df[['r_load.resistor1.R', 'r_load.resistor2.R', 'r_load.resistor3.R']]
     # df_store.to_pickle('R_load_tenLoadstepPerEpisode2881Len_test_case_10_seconds.pkl')
-    df_store.to_pickle('R_load_deterministic_test_case2_1_seconds.pkl')
+    df_store.to_pickle('R_load_deterministic_test_case_25_ohm_1_seconds.pkl')

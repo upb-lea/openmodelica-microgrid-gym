@@ -9,12 +9,16 @@ make_pyplot = False
 show_load = True
 interval_plt = True
 
-# interval_list_x = [[0.992, 1], [0.992, 1]]
-# interval_list_y = [[150, 230], [-10, 10]]
-interval_list_x = [[0, 0.01], [0.65, 0.66], [0.695, 0.71], [0.85, 0.88]]
-interval_list_y = [[-25, 210], [160, 180], [-25, 335], [160, 180]]
+# interval_list_x = [[0, 0.01], [0.105, 0.2], [0.695, 0.71], [0.85, 0.88]]
+# interval_list_y = [[-25, 210], [165, 175], [-25, 335], [165, 175]]
+
+interval_list_x = [[0, 0.01], [0.01, 1.0]]
+interval_list_y = [[-25, 210], [-5, 5]]
+
+# interval_list_x = [[0, 0.01], [2.09, 2.1], [7.08, 7.16], [7.145, 7.16]]
+# interval_list_y = [[-25, 210], [-25, 340], [-25, 340], [125, 340]]
 # folder_name = 'saves/Comparison_study_future10Rvals_deterministicTestcase'
-folder_name = 'saves/Comparison_study_22_best_pastVal_HPO_deterministic'
+folder_name = 'saves/Comparison_noPhaseFeature_50_ohm'
 # folder_name = 'saves/Comparison_study_22_best_pastVal_HPO_deterministic_noMeasNoise'
 
 df = pd.read_pickle(folder_name + '/PI_10000steps')
@@ -39,9 +43,9 @@ kp_v = df['PI_Kp_v'][0]
 ki_v = df['PI_Ki_v'][0]
 
 model_names = [
-    'model_2_pastVals.zip']  # ['model_0_pastVals.zip','model_2_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
+    'model_5_pastVals.zip']  # ['model_0_pastVals.zip','model_2_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
 # model_names = ['model.zip']
-pastVals = ['2']  # ['0', '2', '5', '10', '16', '25']
+pastVals = ['5']  # ['0', '2', '5', '10', '16', '25']
 return_list_DDPG = []
 reward_list_DDPG = []
 
@@ -67,7 +71,7 @@ for i in range(len(interval_list_y)):
         # df_DDPG = pd.read_pickle(folder_name + '/' + model_name + '_9989steps')
 
         if i == 0:
-            return_list_DDPG.append(round(df_DDPG['Return DDPG'][0], 4))
+            return_list_DDPG.append(round(df_DDPG['Return DDPG'][0], 7))
             reward_list_DDPG.append(df_DDPG['Reward DDPG'][0])
 
         env_hist_DDPG = df_DDPG['env_hist_DDPG']
@@ -128,15 +132,15 @@ for i in range(len(interval_list_y)):
         plt_count += 1
 
 fig.suptitle(f'Model using pastVals:' + str(pastVals) + ' \n '
-                                                        f'Model-return(MRE)' + str(return_list_DDPG) + ' \n'
-                                                                                                       f'  PI-return(MRE): {return_PI} \n '
-                                                                                                       f'PI: Kp_i = {kp_c}, Ki_i = {ki_c}, Kp_v = {kp_v}, Ki_v = {ki_v}',
+                                                        f'Model-return(MRE)' + str(return_list_DDPG[0]) + ' \n'
+                                                                                                          f'  PI-return(MRE):     {round(return_PI, 7)} \n '
+                                                                                                          f'PI: Kp_i = {kp_c}, Ki_i = {ki_c}, Kp_v = {kp_v}, Ki_v = {ki_v}',
              fontsize=14)
 
 fig.subplots_adjust(wspace=0.2, hspace=0.2)
 plt.show()
 
-fig.savefig(f'{folder_name}/Ausschnitt_2pV.pdf')
+fig.savefig(f'{folder_name}/Ausschnitt_2pV_q0.pdf')
 
 if make_pyplot:
     # pyplot Load
@@ -215,8 +219,8 @@ plt.grid()
 # plt.xlim([0, 0.025])
 plt.ylim([160, 190])
 plt.xlabel("time")
-plt.ylabel("v_dq0_DDPG")
-plt.title(f'DDPG')
+plt.ylabel("v_dq0_PI")
+plt.title(f'PI')
 plt.show()
 
 plt.plot(t_test, v_d_DDPG, 'b')
@@ -236,6 +240,6 @@ plt.grid()
 plt.xlim([0.1, 0.2])
 plt.ylim([160, 190])
 plt.xlabel("time")
-plt.ylabel("v_dq0_DDPG")
-plt.title(f'DDPG')
+plt.ylabel("v_dq0_PI")
+plt.title(f'PI')
 plt.show()

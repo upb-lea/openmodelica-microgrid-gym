@@ -15,7 +15,8 @@ from tqdm import tqdm
 from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
 
 # from agents.my_ddpg import myDDPG
-from experiments.hp_tune.env.env_wrapper import FeatureWrapper, FeatureWrapper_pastVals, FeatureWrapper_futureVals
+from experiments.hp_tune.env.env_wrapper import FeatureWrapper, FeatureWrapper_pastVals, FeatureWrapper_futureVals, \
+    BaseWrapper, FeatureWrapper_I_controller
 from experiments.hp_tune.env.rewards import Reward
 from experiments.hp_tune.env.vctrl_single_inv import net  # , folder_name
 from experiments.hp_tune.util.config import cfg
@@ -50,29 +51,29 @@ import gym
 show_plots = True
 save_results = False
 
-folder_name = 'saves/Comparison_study_future10Rvals_deterministicTestcase'  # cfg['STUDY_NAME']
+folder_name = 'saves/Comparison_noPhaseFeature_25_ohm'  # cfg['STUDY_NAME']
 node = platform.uname().node
 
 # model_name = 'model_retrain_pastVals12.zip'
-number_past_vals = [2]  # [0, 5, 10, 16, 25]  # [30, 0]
+number_past_vals = [5]  # [0, 5, 10, 16, 25]  # [30, 0]
 # use_past_vals = [True]  # [False, True, True, True, True]  # [True, False]
-use_past_vals = [False]  # [False, True, True, True, True]  # [True, False]
-used_future_vals = True
+wrapper = ['past']
+
 # model_name = ['model.zip']
 # model_path = 'experiments/hp_tune/trained_models/study_22_best_pastVal_HPO_oldtestEnv/'
-model_path = 'experiments/hp_tune/trained_models/future10Rvals/'
+model_path = 'experiments/hp_tune/trained_models/NoPhaseFeature_1427/'
 # model_path = 'experiments/hp_tune/trained_models/study_22_best_iLoad_Feature/'
 
-# model_name = ['model_2_pastVals.zip']  # ['model_0_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
 model_name = [
-    'model.zip']  # ['model_0_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
+    'model_5_pastVals.zip']  # ['model_0_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
+# model_name = ['model.zip']  # ['model_0_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
 
 error_exponent = 0.5
 
 mongo_recorder = Recorder(node=node, database_name=folder_name)
 
 num_average = 1
-max_episode_steps_list = [1500]  # [1000, 5000, 10000, 20000, 50000, 100000]
+max_episode_steps_list = [10000]  # [1000, 5000, 10000, 20000, 50000, 100000]
 
 result_list = []
 ret_list = []
@@ -206,8 +207,9 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
         rand_load_test = RandomLoad(max_episode_steps_list[max_eps_steps], net.ts, gen,
                                     load_curve=pd.read_pickle(
                                         # 'experiments/hp_tune/data/R_load_tenLoadstepPerEpisode2881Len_test_case_10_seconds.pkl'))
-                                        # 'experiments/hp_tune/data/R_load_oneLoadstepPerEpisode2881Len_test_case_10_seconds.pkl'))
-                                        'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'))
+                                        # 'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'))
+                                        'experiments/hp_tune/data/R_load_deterministic_test_case_25_ohm_1_seconds.pkl'))
+        # 'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'))
 
         cb = CallbackList()
         # set initial = None to reset load random in range of bounds
@@ -408,7 +410,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
 
         net = Network.load('net/net_vctrl_single_inv_dq0.yaml')  # is used from vctrl_single_env, not needed here
 
-        for used_model, used_past_vals, used_number_past_vales in zip(model_name, use_past_vals, number_past_vals):
+        for used_model, wrapper_mode, used_number_past_vales in zip(model_name, wrapper, number_past_vals):
 
             env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v0',
                                 reward_fun=rew.rew_fun_dq0,
@@ -446,8 +448,8 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                                               },
                                 )
 
-            if used_past_vals:
-                env_test = FeatureWrapper_pastVals(env_test, number_of_features=11 + used_number_past_vales,
+            if wrapper_mode == 'past':
+                env_test = FeatureWrapper_pastVals(env_test, number_of_features=11 + used_number_past_vales * 3,
                                                    # training_episode_length=training_episode_length, (da aus pickle!)
                                                    recorder=mongo_recorder, n_trail=n_trail,
                                                    integrator_weight=integrator_weight,
@@ -455,14 +457,27 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                                                    penalty_I_weight=0, penalty_P_weight=0,
                                                    number_past_vals=used_number_past_vales)
 
-            if used_future_vals:
+            elif wrapper_mode == 'future':
                 env_test = FeatureWrapper_futureVals(env_test, number_of_features=11,
-                                                     # training_episode_length=training_episode_length,
                                                      recorder=mongo_recorder, n_trail=n_trail,
                                                      integrator_weight=integrator_weight,
                                                      antiwindup_weight=antiwindup_weight, gamma=1,
-                                                     penalty_I_weight=0,
-                                                     penalty_P_weight=0, number_future_vals=10)
+                                                     penalty_I_weight=0, penalty_P_weight=0, number_future_vals=10)
+
+            elif wrapper_mode == 'I-controller':
+                env_test = FeatureWrapper_I_controller(env_test, number_of_features=14 + used_number_past_vales * 3,
+                                                       recorder=mongo_recorder, n_trail=n_trail,
+                                                       integrator_weight=integrator_weight,
+                                                       antiwindup_weight=antiwindup_weight, gamma=1,
+                                                       penalty_I_weight=0, penalty_P_weight=0,
+                                                       Ki=12,
+                                                       number_past_vals=number_past_vals)
+
+            elif wrapper_mode == 'no-I-term':
+                env_test = BaseWrapper(env_test, number_of_features=8 + number_past_vals * 3,
+                                       recorder=mongo_recorder, n_trail=n_trail, gamma=gamma,
+                                       number_past_vals=number_past_vals)
+
             else:
                 env_test = FeatureWrapper(env_test, number_of_features=11,
                                           recorder=mongo_recorder, integrator_weight=integrator_weight,
@@ -470,12 +485,8 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                                           penalty_I_weight=0,
                                           penalty_P_weight=0)  # , use_past_vals=True, number_past_vals=30)
 
-            # env_test = FeatureWrapper(env_test, number_of_features=11+used_number_past_vales, integrator_weight=integrator_weight,
-            #                          recorder=mongo_recorder, antiwindup_weight=antiwindup_weight,
-            #                          gamma=1, penalty_I_weight=0, penalty_P_weight=0)#, use_past_vals=used_past_vals)
-            # using gamma=1 and rew_weigth=3 we get the original reward from the env without penalties
-
-            env_test.action_space = gym.spaces.Box(low=np.full(6, -1), high=np.full(6, 1))
+            if wrapper_mode not in ['no-I-term', 'I-controller']:
+                env_test.action_space = gym.spaces.Box(low=np.full(6, -1), high=np.full(6, 1))
 
             # model2 = DDPG.load(model_path + f'model.zip')  # , env=env_test)
             model = DDPG.load(model_path + f'{used_model}')  # , env=env_test)
@@ -499,7 +510,8 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
 
                 count = count + 2
 
-            env_test.action_space = gym.spaces.Box(low=np.full(3, -1), high=np.full(3, 1))
+            if wrapper_mode not in ['no-I-term', 'I-controller']:
+                env_test.action_space = gym.spaces.Box(low=np.full(3, -1), high=np.full(3, 1))
 
             return_sum = 0.0
             limit_exceeded_in_test = False
@@ -633,7 +645,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
             ts = time.gmtime()
             compare_result = {"Name": "comparison_PI_DDPG",
                               "model name": model_name,
-                              "used past values as Features": used_past_vals,
+                              "Wrapper": wrapper,
                               "used_number_past_vales": used_number_past_vales,
                               "time": ts,
                               "ActionP0": action_P0,
