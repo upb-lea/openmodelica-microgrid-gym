@@ -341,7 +341,7 @@ class ModelicaEnv(gym.Env):
         if params:
             self.model.set_params(**params)
         risk = self.net.risk()
-
+        risk = 0
         # Simulate and observe result state
         outputs = self._create_state()
 
