@@ -642,7 +642,7 @@ class FeatureWrapper_futureVals(FeatureWrapper):
     def __init__(self, env, number_of_features: int = 0, training_episode_length: int = 5000000,
                  recorder=None, n_trail="", integrator_weight=net.ts, antiwindup_weight=net.ts, gamma=0,
                  penalty_I_weight=1, penalty_P_weight=1, t_start_penalty_I=0, t_start_penalty_P=0,
-                 number_learing_steps=500000, number_future_vals=0):
+                 number_learing_steps=500000, number_future_vals=0, future_data=''):
         """
                 Env Wrapper which adds the number_future_vals R-values to the observations.
                 Initialized with zeros!
@@ -659,7 +659,7 @@ class FeatureWrapper_futureVals(FeatureWrapper):
         self.load_curve = RandomLoad(2881, net.ts, gen,
                                      load_curve=pd.read_pickle(
                                          # 'experiments/hp_tune/data/R_load_hard_test_case_60_seconds_noReset.pkl'))
-                                         'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'))
+                                         future_data))
 
         self.future_vals = []
         self.number_future_vals = number_future_vals
