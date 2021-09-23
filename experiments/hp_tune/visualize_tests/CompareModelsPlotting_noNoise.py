@@ -5,23 +5,26 @@ import plotly.graph_objects as px
 
 from openmodelica_microgrid_gym.util import abc_to_dq0
 
-make_pyplot = False
+make_pyplot = True
 show_load = True
 interval_plt = True
 
 # interval_list_x = [[0, 0.01], [0.105, 0.2], [0.695, 0.71], [0.85, 0.88]]
 # interval_list_y = [[-25, 210], [165, 175], [-25, 335], [165, 175]]
 
-interval_list_x = [[0, 0.01], [0.01, 1.0]]
-interval_list_y = [[-25, 210], [-5, 5]]
+# interval_list_x = [[0, 0.01], [0.01, 1.0], [0.78, 0.9]]
+# interval_list_y = [[-25, 210], [-40, 210], [165, 175]]
 
-# interval_list_x = [[0, 0.01], [2.09, 2.1], [7.08, 7.16], [7.145, 7.16]]
-# interval_list_y = [[-25, 210], [-25, 340], [-25, 340], [125, 340]]
+# Fuer den 10s Fall
+interval_list_x = [[0, 0.01], [2.09, 2.1], [7.08, 7.16], [7.145, 7.16]]
+interval_list_y = [[-25, 210], [-25, 340], [-25, 340], [125, 340]]
 # folder_name = 'saves/Comparison_study_future10Rvals_deterministicTestcase'
-folder_name = 'saves/Comparison_noPhaseFeature_50_ohm'
+folder_name = 'saves/NoI_term_584'  # _deterministic'
 # folder_name = 'saves/Comparison_study_22_best_pastVal_HPO_deterministic_noMeasNoise'
 
-df = pd.read_pickle(folder_name + '/PI_10000steps')
+number_of_steps = '_100000steps'
+
+df = pd.read_pickle(folder_name + '/PI' + number_of_steps)
 # df = pd.read_pickle(folder_name + '/PI_9989steps')
 
 env_hist_PI = df['env_hist_PI']
@@ -42,9 +45,8 @@ ki_c = df['PI_Ki_c'][0]
 kp_v = df['PI_Kp_v'][0]
 ki_v = df['PI_Ki_v'][0]
 
-model_names = [
-    'model_5_pastVals.zip']  # ['model_0_pastVals.zip','model_2_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
-# model_names = ['model.zip']
+# model_names = ['model_5_pastVals.zip']  # ['model_0_pastVals.zip','model_2_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
+model_names = ['model.zip']
 pastVals = ['5']  # ['0', '2', '5', '10', '16', '25']
 return_list_DDPG = []
 reward_list_DDPG = []
@@ -67,7 +69,7 @@ for i in range(len(interval_list_y)):
 
     for model_name, pV in zip(model_names, pastVals):
 
-        df_DDPG = pd.read_pickle(folder_name + '/' + model_name + '_10000steps')
+        df_DDPG = pd.read_pickle(folder_name + '/' + model_name + number_of_steps)
         # df_DDPG = pd.read_pickle(folder_name + '/' + model_name + '_9989steps')
 
         if i == 0:
@@ -168,7 +170,7 @@ if make_pyplot:
     plot.show()
 
     for model_name in model_names:
-        df_DDPG = pd.read_pickle(folder_name + '/' + model_name + '_10000steps')
+        df_DDPG = pd.read_pickle(folder_name + '/' + model_name + number_of_steps)
 
         env_hist_DDPG = df_DDPG['env_hist_DDPG']
 

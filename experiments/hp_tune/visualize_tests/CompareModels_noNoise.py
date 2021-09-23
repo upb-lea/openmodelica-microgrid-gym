@@ -51,29 +51,61 @@ import gym
 show_plots = True
 save_results = False
 
-folder_name = 'saves/Comparison_noPhaseFeature_25_ohm'  # cfg['STUDY_NAME']
+folder_name = 'saves/Future_10Rvals_deterministic'  # cfg['STUDY_NAME']
 node = platform.uname().node
 
 # model_name = 'model_retrain_pastVals12.zip'
-number_past_vals = [5]  # [0, 5, 10, 16, 25]  # [30, 0]
+number_past_vals = [0]  # [0, 5, 10, 16, 25]  # [30, 0]
 # use_past_vals = [True]  # [False, True, True, True, True]  # [True, False]
-wrapper = ['past']
+wrapper = ['future']  # ['past', 'future', 'no-I-term', 'I-controller']
 
 # model_name = ['model.zip']
 # model_path = 'experiments/hp_tune/trained_models/study_22_best_pastVal_HPO_oldtestEnv/'
-model_path = 'experiments/hp_tune/trained_models/NoPhaseFeature_1427/'
+# model_path = 'experiments/hp_tune/trained_models/NoPhaseFeature_1427/'
 # model_path = 'experiments/hp_tune/trained_models/study_22_best_iLoad_Feature/'
+model_path = 'experiments/hp_tune/trained_models/Future_10Rvals/'
+# model_path = 'experiments/hp_tune/trained_models/NoI_term_584/'
 
+# model_name = [
+# 'model_5_pastVals.zip']  # ['model_0_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
 model_name = [
-    'model_5_pastVals.zip']  # ['model_0_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
-# model_name = ['model.zip']  # ['model_0_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
+    'model.zip']  # ['model_0_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
 
+################DDPG Config Stuff#########################################################################
+gamma = 0.946218
+integrator_weight = 0.311135
+antiwindup_weight = 0.660818
 error_exponent = 0.5
+use_gamma_in_rew = 1
+n_trail = 50001
+actor_number_layers = 2
+critic_number_layers = 4
+alpha_relu_actor = 0.208098
+alpha_relu_critic = 0.00678497
+"""
+################DDPG Config Stuff#########################################################################
+gamma = 0.922185  # 0.946218
+integrator_weight = 0  #0.311135
+antiwindup_weight = 0  # 0.660818
+error_exponent = 0.5
+use_gamma_in_rew = 1
+n_trail = 50001
+actor_number_layers = 2
+critic_number_layers = 3 #  4
+alpha_relu_actor = 0.0148373  # 0.208098
+alpha_relu_critic = 0.00143887  # 0.00678497
+
+
+print('HPs für DDPG ohne I-Anteil!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+"""
 
 mongo_recorder = Recorder(node=node, database_name=folder_name)
 
 num_average = 1
-max_episode_steps_list = [10000]  # [1000, 5000, 10000, 20000, 50000, 100000]
+max_episode_steps_list = [12000]  # [1000, 5000, 10000, 20000, 50000, 100000]
+
+# data_str = 'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'
+data_str = 'experiments/hp_tune/data/R_load_hard_test_case_60_seconds_noReset.pkl'
 
 result_list = []
 ret_list = []
@@ -174,17 +206,7 @@ agent = SafeOptAgent(mutable_params,
                      history=FullHistory(),
                      )
 
-################DDPG Config Stuff#########################################################################
-gamma = 0.946218
-integrator_weight = 0.311135
-antiwindup_weight = 0.660818
-error_exponent = error_exponent
-use_gamma_in_rew = 1
-n_trail = 50001
-actor_number_layers = 2
-critic_number_layers = 4
-alpha_relu_actor = 0.208098
-alpha_relu_critic = 0.00678497
+
 
 for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit='step', leave=False):
 
@@ -208,8 +230,9 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                                     load_curve=pd.read_pickle(
                                         # 'experiments/hp_tune/data/R_load_tenLoadstepPerEpisode2881Len_test_case_10_seconds.pkl'))
                                         # 'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'))
-                                        'experiments/hp_tune/data/R_load_deterministic_test_case_25_ohm_1_seconds.pkl'))
-        # 'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'))
+                                        # 'experiments/hp_tune/data/R_load_hard_test_case_60_seconds_noReset.pkl'))
+                                        # 'experiments/hp_tune/data/R_load_deterministic_test_case_25_ohm_1_seconds.pkl'))
+                                        data_str))
 
         cb = CallbackList()
         # set initial = None to reset load random in range of bounds
@@ -458,11 +481,12 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                                                    number_past_vals=used_number_past_vales)
 
             elif wrapper_mode == 'future':
-                env_test = FeatureWrapper_futureVals(env_test, number_of_features=11,
+                env_test = FeatureWrapper_futureVals(env_test, number_of_features=9,
                                                      recorder=mongo_recorder, n_trail=n_trail,
                                                      integrator_weight=integrator_weight,
                                                      antiwindup_weight=antiwindup_weight, gamma=1,
-                                                     penalty_I_weight=0, penalty_P_weight=0, number_future_vals=10)
+                                                     penalty_I_weight=0, penalty_P_weight=0, number_future_vals=10,
+                                                     future_data=data_str)
 
             elif wrapper_mode == 'I-controller':
                 env_test = FeatureWrapper_I_controller(env_test, number_of_features=14 + used_number_past_vales * 3,
@@ -474,9 +498,9 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                                                        number_past_vals=number_past_vals)
 
             elif wrapper_mode == 'no-I-term':
-                env_test = BaseWrapper(env_test, number_of_features=8 + number_past_vals * 3,
+                env_test = BaseWrapper(env_test, number_of_features=8 + used_number_past_vales * 3,
                                        recorder=mongo_recorder, n_trail=n_trail, gamma=gamma,
-                                       number_past_vals=number_past_vals)
+                                       number_past_vals=used_number_past_vales)
 
             else:
                 env_test = FeatureWrapper(env_test, number_of_features=11,
@@ -549,12 +573,13 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                 action_P0.append(np.float64(action[0]))
                 action_P1.append(np.float64(action[1]))
                 action_P2.append(np.float64(action[2]))
-                action_I0.append(np.float64(action[3]))
-                action_I1.append(np.float64(action[4]))
-                action_I2.append(np.float64(action[5]))
-                integrator_sum0.append(np.float64(env_test.integrator_sum[0]))
-                integrator_sum1.append(np.float64(env_test.integrator_sum[1]))
-                integrator_sum2.append(np.float64(env_test.integrator_sum[2]))
+                if wrapper_mode not in ['no-I-term', 'I-controller']:
+                    action_I0.append(np.float64(action[3]))
+                    action_I1.append(np.float64(action[4]))
+                    action_I2.append(np.float64(action[5]))
+                    integrator_sum0.append(np.float64(env_test.integrator_sum[0]))
+                    integrator_sum1.append(np.float64(env_test.integrator_sum[1]))
+                    integrator_sum2.append(np.float64(env_test.integrator_sum[2]))
 
                 if rewards == -1 and not limit_exceeded_in_test:
                     # Set addidional penalty of -1 if limit is exceeded once in the test case
