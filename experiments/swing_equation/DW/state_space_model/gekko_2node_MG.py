@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 ts = 1e-3
-t_end = 0.1
+t_end = 0.03
 steps = int(1 / ts)
 t = np.linspace(0, t_end, steps)
 
