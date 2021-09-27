@@ -51,26 +51,26 @@ import gym
 show_plots = True
 save_results = False
 
-folder_name = 'saves/Future_10Rvals_deterministic'  # cfg['STUDY_NAME']
+folder_name = 'saves/NoI_term_1768'  # cfg['STUDY_NAME']
 node = platform.uname().node
 
 # model_name = 'model_retrain_pastVals12.zip'
-number_past_vals = [0]  # [0, 5, 10, 16, 25]  # [30, 0]
+number_past_vals = [1]  # [0, 5, 10, 16, 25]  # [30, 0]
 # use_past_vals = [True]  # [False, True, True, True, True]  # [True, False]
-wrapper = ['future']  # ['past', 'future', 'no-I-term', 'I-controller']
+wrapper = ['no-I-term']  # ['past', 'future', 'no-I-term', 'I-controller']
 
 # model_name = ['model.zip']
 # model_path = 'experiments/hp_tune/trained_models/study_22_best_pastVal_HPO_oldtestEnv/'
 # model_path = 'experiments/hp_tune/trained_models/NoPhaseFeature_1427/'
 # model_path = 'experiments/hp_tune/trained_models/study_22_best_iLoad_Feature/'
-model_path = 'experiments/hp_tune/trained_models/Future_10Rvals/'
-# model_path = 'experiments/hp_tune/trained_models/NoI_term_584/'
+# model_path = 'experiments/hp_tune/trained_models/Future_10Rvals/'
+model_path = 'experiments/hp_tune/trained_models/NoI_term_1768/'
 
 # model_name = [
 # 'model_5_pastVals.zip']  # ['model_0_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
 model_name = [
     'model.zip']  # ['model_0_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
-
+"""
 ################DDPG Config Stuff#########################################################################
 gamma = 0.946218
 integrator_weight = 0.311135
@@ -84,28 +84,27 @@ alpha_relu_actor = 0.208098
 alpha_relu_critic = 0.00678497
 """
 ################DDPG Config Stuff#########################################################################
-gamma = 0.922185  # 0.946218
-integrator_weight = 0  #0.311135
+gamma = 0.984421  # 0.946218
+integrator_weight = 0  # 0.311135
 antiwindup_weight = 0  # 0.660818
 error_exponent = 0.5
 use_gamma_in_rew = 1
 n_trail = 50001
 actor_number_layers = 2
-critic_number_layers = 3 #  4
-alpha_relu_actor = 0.0148373  # 0.208098
-alpha_relu_critic = 0.00143887  # 0.00678497
-
+critic_number_layers = 3  # 4
+alpha_relu_actor = 0.0034719  # 0.208098
+alpha_relu_critic = 0.00613757  # 0.00678497
 
 print('HPs für DDPG ohne I-Anteil!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-"""
 
 mongo_recorder = Recorder(node=node, database_name=folder_name)
 
 num_average = 1
-max_episode_steps_list = [12000]  # [1000, 5000, 10000, 20000, 50000, 100000]
+max_episode_steps_list = [100000]  # [1000, 5000, 10000, 20000, 50000, 100000]
 
 # data_str = 'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'
-data_str = 'experiments/hp_tune/data/R_load_hard_test_case_60_seconds_noReset.pkl'
+data_str = 'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'
+# data_str = 'experiments/hp_tune/data/R_load_hard_test_case_60_seconds_noReset.pkl'
 
 result_list = []
 ret_list = []

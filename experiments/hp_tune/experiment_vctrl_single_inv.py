@@ -25,7 +25,7 @@ node = platform.uname().node
 # mongo_recorder = Recorder(database_name=folder_name)
 mongo_recorder = Recorder(node=node,
                           database_name=folder_name)  # store to port 12001 for ssh data to cyberdyne or locally as json to cfg[meas_data_folder]
-
+Ki_ddpg_combi = 182
 
 def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale, alpha_relu_actor,
                         batch_size,
@@ -80,7 +80,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                           antiwindup_weight=antiwindup_weight, gamma=gamma,
                                           penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight,
                                           t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
-                                          number_learing_steps=number_learning_steps, Ki=12,
+                                          number_learing_steps=number_learning_steps, Ki=Ki_ddpg_combi,
                                           number_past_vals=number_past_vals)
 
     elif cfg['env_wrapper'] == 'no-I-term':
@@ -226,7 +226,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                                antiwindup_weight=antiwindup_weight, gamma=gamma,
                                                penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight,
                                                t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
-                                               number_learing_steps=number_learning_steps, Ki=12,
+                                               number_learing_steps=number_learning_steps, Ki=Ki_ddpg_combi,
                                                number_past_vals=number_past_vals)
 
     elif cfg['env_wrapper'] == 'no-I-term':
