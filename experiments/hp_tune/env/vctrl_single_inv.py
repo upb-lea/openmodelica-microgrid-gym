@@ -48,13 +48,16 @@ v_lim = net['inverter1'].v_lim
 v_DC = net['inverter1'].v_DC
 
 # plant
-L_filter = 70e-6  # 2.3e-3  # / H
+L_filter = 70e-6  # / H
 R_filter = 1.1e-3  # / Ohm
-C_filter = 250e-6  # 10e-6  # / F
+C_filter = 250e-6  # / F
+# L_filter = 2.3e-3  # / H
+# R_filter = 400e-3 # / Ohm
+# C_filter = 10e-6  # / F
 # R = 40  # nomVoltPeak / 7.5   # / Ohm
-lower_bound_load = -25  # -10  # to allow maximal load that draws i_limit
+lower_bound_load = -10  # to allow maximal load that draws i_limit
 upper_bound_load = 200  # to apply symmetrical load bounds
-lower_bound_load_clip = 0.76  # 14  # to allow maximal load that draws i_limit (let exceed?)
+lower_bound_load_clip = 1  # 14  # to allow maximal load that draws i_limit (let exceed?)
 upper_bound_load_clip = 200  # to apply symmetrical load bounds
 lower_bound_load_clip_std = 2
 upper_bound_load_clip_std = 0
@@ -76,7 +79,7 @@ def xylables_i(fig):
     ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
     ax.grid(which='both')
     # fig.savefig(f'{folder_name + experiment_name + n_trail}/Inductor_currents.pdf')
-    plt.close()
+    plt.show()
 
 
 def xylables_v(fig):
@@ -88,7 +91,7 @@ def xylables_v(fig):
     ts = time.gmtime()
     # fig.savefig(
     #    f'{folder_name + experiment_name}/Capacitor_voltages{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
-    plt.close()
+    plt.show()
 
 
 def xylables_R(fig):
@@ -99,7 +102,7 @@ def xylables_R(fig):
     # ax.set_ylim([lower_bound_load - 2, upper_bound_load + 2])
     # ts = time.gmtime()
     # fig.savefig(f'{folder_name + experiment_name}/Load{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
-    plt.close()
+    plt.show()
 
 
 rand_load_train = RandomLoad(round(cfg['train_episode_length'] / 10), net.ts, gen,

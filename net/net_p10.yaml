@@ -9,8 +9,8 @@ components:
     i_nom: 300
     i_lim: 400
     #v_nom: 190
-    v_lim: 450
-    v_DC: 500
+    v_lim: 800
+    v_DC: 800
     pdroop:
       gain: 0
       tau: 0.005
