@@ -23,8 +23,8 @@ P2_nom=509900 #Watt
 Delta_P2_step=500000      #9500
 P1_nom=(e1/u2)*P2_nom
 J=np.ones(3)
-J[0]=0.4 # Inertia J_nom  / kgm² J_nom
-J[1]=J[0]*0.5 # Inertia J_1 / kgm²
+J[0]=0.5 # Inertia J_nom  / kgm² J_nom
+J[1]=J[0]*0.3 # Inertia J_1 / kgm²
 J[2]=J[0]*0.1 # Inertia J_2/ kgm²
 all_f1=[] #list where all frequencies of the different J are included
 D = 17  # [?, unfortunately given in per unit]
@@ -105,13 +105,13 @@ for i in range(2):
 
 all_f1=np.asarray(all_f1)
 deviation_f1=all_f1-nomFreq
-plt.title('Frequency')
-plt.plot(m.time, deviation_f1[0], 'r', label='Deviation f1 from nominal grid frequency (J=J_nom, D=D_nom)')
-plt.plot(m.time, deviation_f1[1], 'b', label='Deviation f1 from nominal grid frequency (J=J_nom/2, D=J_nom/2)')
-plt.axvline(x=0.25, color='black')
+plt.title('Frequenzabweichung $f_1$ von $f_0$')
+plt.plot(m.time, deviation_f1[0], 'r', label=r'$\Delta_{\mathrm{f_1}}\:(J=J_\mathrm{nom}, D=D_\mathrm{nom})$')
+plt.plot(m.time, deviation_f1[1], 'b', label=r'$\Delta_{\mathrm{f_1}}\:(J=J_\mathrm{nom}*0.3, D=D_\mathrm{nom})$')
+plt.axvline(x=0.249, color='black')
 plt.xlabel('Time (s)')
-plt.ylabel('Deviation from nominal grid frequency (Hz)')
-plt.ylim(-4, 4)
+plt.ylabel(r'$\Delta_{\mathrm{f_1}}\,/\,\mathrm{Hz}$')
+plt.ylim(-2, 1)
 plt.legend()
 plt.show()
 
