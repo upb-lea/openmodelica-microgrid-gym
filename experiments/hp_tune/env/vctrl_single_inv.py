@@ -79,7 +79,7 @@ def xylables_i(fig):
     ax.set_ylabel('$i_{\mathrm{abc}}\,/\,\mathrm{A}$')
     ax.grid(which='both')
     # fig.savefig(f'{folder_name + experiment_name + n_trail}/Inductor_currents.pdf')
-    plt.show()
+    plt.close()
 
 
 def xylables_v(fig):
@@ -91,7 +91,7 @@ def xylables_v(fig):
     ts = time.gmtime()
     # fig.savefig(
     #    f'{folder_name + experiment_name}/Capacitor_voltages{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
-    plt.show()
+    plt.close()
 
 
 def xylables_R(fig):
@@ -102,7 +102,7 @@ def xylables_R(fig):
     # ax.set_ylim([lower_bound_load - 2, upper_bound_load + 2])
     # ts = time.gmtime()
     # fig.savefig(f'{folder_name + experiment_name}/Load{time.strftime("%Y_%m_%d__%H_%M_%S", ts)}.pdf')
-    plt.show()
+    plt.close()
 
 
 rand_load_train = RandomLoad(round(cfg['train_episode_length'] / 10), net.ts, gen,
