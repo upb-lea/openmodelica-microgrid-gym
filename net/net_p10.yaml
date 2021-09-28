@@ -9,7 +9,7 @@ components:
     i_nom: 300
     i_lim: 400
     #v_nom: 190
-    v_lim: 3800
+    v_lim: 650
     v_DC: 800
     pdroop:
       gain: 0

@@ -3,6 +3,7 @@ from functools import partial
 from typing import Union
 
 import gym
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from stable_baselines3.common.monitor import Monitor
@@ -337,6 +338,9 @@ class FeatureWrapper(Monitor):
         self.t_start_penalty_I = t_start_penalty_I
         self.t_start_penalty_P = t_start_penalty_P
         self.number_learing_steps = number_learing_steps
+        # self.integrator_sum_list0 = []
+        # self.integrator_sum_list1 = []
+        # self.integrator_sum_list2 = []
 
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
@@ -355,11 +359,17 @@ class FeatureWrapper(Monitor):
             # Action: dq0 -> abc
             action_abc = dq0_to_abc(action_PI, self.env.net.components[0].phase)
 
+        # self.integrator_sum_list0.append(self.integrator_sum[0])
+        # self.integrator_sum_list1.append(self.integrator_sum[1])
+        # self.integrator_sum_list2.append(self.integrator_sum[2])
+
         # check if m_abc will be clipped
         if np.any(abs(action_abc) > 1):
             # if, reduce integrator by clipped delta
             action_delta = abc_to_dq0(np.clip(action_abc, -1, 1) - action_abc, self.env.net.components[0].phase)
             self.integrator_sum += action_delta * self.antiwindup_weight
+
+            action_abc = np.clip(action_abc, -1, 1)
 
         obs, reward, done, info = super().step(action_abc)
 
@@ -404,6 +414,7 @@ class FeatureWrapper(Monitor):
             done = True
             super().close()
 
+
         # add wanted features here (add appropriate self.observation in init!!)
         # calculate magnitude of current phasor abc
         self.i_phasor = self.cal_phasor_magnitude(obs[0:3])
@@ -422,6 +433,41 @@ class FeatureWrapper(Monitor):
             self.v_b.append(self.env.history.df['lc.capacitor2.v'].iloc[-1])
             self.v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
             self.phase.append(self.env.net.components[0].phase)
+
+
+        if cfg['is_dq0']:
+            # if setpoint in dq: Transform measurement to dq0!!!!
+            obs[3:6] = abc_to_dq0(obs[3:6], self.env.net.components[0].phase)
+            obs[0:3] = abc_to_dq0(obs[0:3], self.env.net.components[0].phase)
+
+        """
+        Features
+        """
+        error = obs[6:9] - obs[3:6]  # control error: v_setpoint - v_mess
+        # delta_i_lim_i_phasor = 1 - self.i_phasor  # delta to current limit
+
+        """
+        Following maps the return to the range of [-0.5, 0.5] in
+        case of magnitude = [-lim, lim] using (phasor_mag) - 0.5. 0.5 can be exceeded in case of the magnitude
+        exceeds the limit (no extra env interruption here!, all phases should be validated separately)
+        """
+        # obs = np.append(obs, self.i_phasor - 0.5)
+        obs = np.append(obs, error)
+        # obs = np.append(obs, np.sin(self.env.net.components[0].phase))
+        # obs = np.append(obs, np.cos(self.env.net.components[0].phase))
+
+        """
+        Add used action to the NN input to learn delay
+        """
+        obs = np.append(obs, self.used_P)
+        obs = np.append(obs, self.used_I)
+        # obs = np.append(obs, self.used_action)
+
+        # todo efficiency?
+        self.used_P = np.copy(action_P)
+        self.used_I = np.copy(self.integrator_sum)
+        # self.used_P = action_P
+        # self.used_I = self.integrator_sum
 
         if done:
             self.reward_episode_mean.append(np.mean(self.rewards))
@@ -467,39 +513,13 @@ class FeatureWrapper(Monitor):
                 self.v_c = []
                 self.phase = []
 
-        if cfg['is_dq0']:
-            # if setpoint in dq: Transform measurement to dq0!!!!
-            obs[3:6] = abc_to_dq0(obs[3:6], self.env.net.components[0].phase)
-            obs[0:3] = abc_to_dq0(obs[0:3], self.env.net.components[0].phase)
-
-        """
-        Features
-        """
-        error = obs[6:9] - obs[3:6]  # control error: v_setpoint - v_mess
-        # delta_i_lim_i_phasor = 1 - self.i_phasor  # delta to current limit
-
-        """
-        Following maps the return to the range of [-0.5, 0.5] in
-        case of magnitude = [-lim, lim] using (phasor_mag) - 0.5. 0.5 can be exceeded in case of the magnitude
-        exceeds the limit (no extra env interruption here!, all phases should be validated separately)
-        """
-        # obs = np.append(obs, self.i_phasor - 0.5)
-        obs = np.append(obs, error)
-        # obs = np.append(obs, np.sin(self.env.net.components[0].phase))
-        # obs = np.append(obs, np.cos(self.env.net.components[0].phase))
-
-        """
-        Add used action to the NN input to learn delay
-        """
-        obs = np.append(obs, self.used_P)
-        obs = np.append(obs, self.used_I)
-        # obs = np.append(obs, self.used_action)
-
-        # todo efficiency?
-        self.used_P = np.copy(action_P)
-        self.used_I = np.copy(self.integrator_sum)
-        # self.used_P = action_P
-        # self.used_I = self.integrator_sum
+            # if self._n_training_steps > 500:
+            super().close()
+            # plt.plot(self.integrator_sum_list0)
+            # plt.plot(self.integrator_sum_list1)
+            # plt.plot(self.integrator_sum_list2)
+            # plt.ylabel('intergratorzustand')
+            # plt.show()
 
         return obs, reward, done, info
 
