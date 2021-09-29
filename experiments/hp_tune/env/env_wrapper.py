@@ -365,13 +365,27 @@ class FeatureWrapper(Monitor):
 
         # check if m_abc will be clipped
         if np.any(abs(action_abc) > 1):
+
+            clipped_action = np.clip(action_abc, -1, 1)
+
+            delta_action = clipped_action - action_abc
             # if, reduce integrator by clipped delta
-            action_delta = abc_to_dq0(np.clip(action_abc, -1, 1) - action_abc, self.env.net.components[0].phase)
+            action_delta = abc_to_dq0(delta_action, self.env.net.components[0].phase)
             self.integrator_sum += action_delta * self.antiwindup_weight
 
-            action_abc = np.clip(action_abc, -1, 1)
+            clip_reward = np.clip(np.sum(np.abs(delta_action) * \
+                                         (-1 / (self.env.net.components[0].v_lim / self.env.net.components[
+                                             0].v_DC))) / 3 * (1 - self.gamma),
+                                  -1, 0)
+
+            action_abc = clipped_action
+
+        else:
+            clip_reward = 0
 
         obs, reward, done, info = super().step(action_abc)
+
+        reward = reward + clip_reward
 
         if len(obs) > 9:
             # ASSUME  THAT LOADCURRENT is included!

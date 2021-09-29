@@ -123,7 +123,8 @@ def ddpg_objective_fix_params(trial):
                           "Trial number": n_trail,
                           "Database name": cfg['STUDY_NAME'],
                           "Start time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime()),
-                          "Info": "P10 setting, EU grid, HPs von Stuy 22 + 5 pastvals",
+                          "Info": "P10 setting, EU grid, HPs von Stuy 22 + 5 pastvals"
+                                  "Reward design setzt sich aus MRE [0,1] und clipp-punishment [0,-1] zusammen",
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)

@@ -390,7 +390,8 @@ class Reward:
             else:
                 return
         else:
-            rew = np.sum(-((np.abs(vsp_dq0_master - vdq0_master)) ** self.exponent)) * (1 - self.gamma) / 3
+            # rew = np.sum(-((np.abs(vsp_dq0_master - vdq0_master)) ** self.exponent)) * (1 - self.gamma) / 3 #/2
+            rew = np.sum(1 - (2 * (np.abs(vsp_dq0_master - vdq0_master)) ** self.exponent)) * (1 - self.gamma) / 3  # /2
 
         return rew
 
