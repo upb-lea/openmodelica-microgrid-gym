@@ -338,9 +338,15 @@ class FeatureWrapper(Monitor):
         self.t_start_penalty_I = t_start_penalty_I
         self.t_start_penalty_P = t_start_penalty_P
         self.number_learing_steps = number_learing_steps
-        # self.integrator_sum_list0 = []
-        # self.integrator_sum_list1 = []
-        # self.integrator_sum_list2 = []
+        self.integrator_sum_list0 = []
+        self.integrator_sum_list1 = []
+        self.integrator_sum_list2 = []
+        self.action_P0 = []
+        self.action_P1 = []
+        self.action_P2 = []
+        self.action_I0 = []
+        self.action_I1 = []
+        self.action_I2 = []
 
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
@@ -359,9 +365,7 @@ class FeatureWrapper(Monitor):
             # Action: dq0 -> abc
             action_abc = dq0_to_abc(action_PI, self.env.net.components[0].phase)
 
-        # self.integrator_sum_list0.append(self.integrator_sum[0])
-        # self.integrator_sum_list1.append(self.integrator_sum[1])
-        # self.integrator_sum_list2.append(self.integrator_sum[2])
+
 
         # check if m_abc will be clipped
         if np.any(abs(action_abc) > 1):
@@ -448,6 +452,15 @@ class FeatureWrapper(Monitor):
             self.v_c.append(self.env.history.df['lc.capacitor3.v'].iloc[-1])
             self.phase.append(self.env.net.components[0].phase)
 
+            self.integrator_sum_list0.append(self.integrator_sum[0])
+            self.integrator_sum_list1.append(self.integrator_sum[1])
+            self.integrator_sum_list2.append(self.integrator_sum[2])
+            self.action_P0.append(np.float64(action_P[0]))
+            self.action_P1.append(np.float64(action_P[1]))
+            self.action_P2.append(np.float64(action_P[2]))
+            self.action_I0.append(np.float64(action_I[0]))
+            self.action_I1.append(np.float64(action_I[1]))
+            self.action_I2.append(np.float64(action_I[2]))
 
         if cfg['is_dq0']:
             # if setpoint in dq: Transform measurement to dq0!!!!
@@ -506,6 +519,15 @@ class FeatureWrapper(Monitor):
                                 "Trial number": self.n_trail,
                                 "Database name": cfg['STUDY_NAME'],
                                 "Reward function": 'rew.rew_fun_dq0',
+                                'Integrator0': self.integrator_sum_list0,
+                                'Integrator1': self.integrator_sum_list1,
+                                'Integrator2': self.integrator_sum_list2,
+                                'actionP0': self.action_P0,
+                                'actionP1': self.action_P1,
+                                'actionP2': self.action_P2,
+                                'actionI0': self.action_I0,
+                                'actionI1': self.action_I1,
+                                'actionI2': self.action_I2
                                 }
 
                 """
