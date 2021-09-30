@@ -9,22 +9,21 @@ import pandas as pd
 
 #define parameter
 # Inertia, Damping Factor, Line Parameters, Filters, Load steps
-Pdroop = 0.05 # P-Droop Factor Hz/W
-Qdroop = 0.3  # Q-Droop Factor / (V/Var)
+Pdroop_base = 20 # P-Droop Factor [dimensionless], it's actually inverse
 t_end = 0.5 # Simulation time / sec
 steps = 1001 # 1 more step than expected, starting and endpoint are included
 nomFreq = 50  # Grid frequency / Hz
 nomVolt = value = 6000 # Voltage / Volt
 omega = 2*np.pi*nomFreq
-tau = 0.005 # Filter constant of pt1 filter for P and Q, inverse of cut-off frequency
+tau = 0.0009 # Filter constant of pt1 filter for P and Q, inverse of cut-off frequency
 e1=6600 #V
 u2=6570 #V
 P2_nom=509900 #Watt
 Delta_P2_step=500000      #9500
 P1_nom=(e1/u2)*P2_nom
 J=np.ones(3)
-J[0]=0.5 # Inertia J_nom  / kgm² J_nom
-J[1]=J[0]*0.3 # Inertia J_1 / kgm²
+J[0]=1 # Inertia J_nom  / kgm² J_nom
+J[1]=J[0]*0.5 # Inertia J_1 / kgm²
 J[2]=J[0]*0.1 # Inertia J_2/ kgm²
 all_f1=[] #list where all frequencies of the different J are included
 D = 17  # [?, unfortunately given in per unit]
@@ -33,6 +32,7 @@ B_L_lv_line_1km = -1 / X_L_lv_line_1km  # Line suszeptance / (1/Henry) #
 R_load = u2 ** 2 / P2_nom # Load resistance / Ohm
 R_load_step = u2 ** 2 / (P2_nom + Delta_P2_step) # Load step / Ohm
 Pbase = 1000000  # P_base / W
+Pdroop_normal=(Pdroop_base*Pbase)/omega
 
 step_ohmic_load = np.zeros(steps)
 step_ohmic_load[0:500] = R_load # Resistance load / Ohm
@@ -41,6 +41,7 @@ step_ohmic_load[500:] = R_load_step # Resistance load / Ohm (calculated through 
 
 
 
+#######VSG-Control###########################
 
 #Loop through model in order to apply different J for the solver
 for i in range(2):
@@ -56,7 +57,6 @@ for i in range(2):
     w2 = m.Var(value=2)
     theta1 = m.Var(value=0)
     theta2 = m.Var(value=0)
-    p_out=m.Var(value=0)
     # P1f = m.Var(value=0)
     # p1f = m.Var(value=0)
 
@@ -78,12 +78,10 @@ for i in range(2):
     # define omega as the derivation of the phase angle
     m.Equation(theta1.dt() == w1)
     m.Equation(theta2.dt() == w2)
-    m.Equation(P_out.dt() == p_out)
-    m.Equation(P_out + tau * p_out == P_in)
 
 
-    m.Equation(P_in == P1_nom-(Pdroop*Pbase*((w1-omega)/omega))) #7.2
-    m.Equation((P_in-P_out) == J[i]*w1*w1.dt()+D*Pbase*((w1-omega)/omega))
+    m.Equation(P_in == P1_nom - (Pdroop_base * Pbase * ((w1 - omega) / omega))) #7.2
+    m.Equation((P_in-(P_out+tau*P_out.dt())) == J[i]*w1*w1.dt()+D*Pbase*((w1-omega)/omega))
     m.Equation(w2.dt()==-P_2/(J[i]*w2)) #'diskussionsfähig' #7.1 #stellgröße #mit welcher variable du einfluss auf die regelstrecke nimmst, regelgröße w1 omega
     #m.Equation(w2==w1)
 
@@ -102,12 +100,73 @@ for i in range(2):
     all_f1.append(f1)
     m.cleanup()
 
+######Droop Control Model###############################################################################################
+n = GEKKO(remote=False)
+#variables/parameters
+e1=n.Const(e1) # Output voltage / Volt
+u2=n.Const(u2) # Load voltage / Volt
+ #Input Voltage governor
+P_out= n.Var(value=0) #Output Voltage behind filter
+#P_2=m.Param(value=step_load_P2)
+P_2=n.Var(value=0)
+w1 = n.Var(value=nomFreq)
+w2 = n.Var(value=nomFreq)
+theta1 = n.Var(value=0)
+theta2 = n.Var(value=0)
 
+# P1f = m.Var(value=0)
+# p1f = m.Var(value=0)
+
+#Matrices for node admittance matrix
+R_load_variable=n.Param(value=step_ohmic_load)
+G_load=1/R_load_variable
+B = np.array([[B_L_lv_line_1km, -B_L_lv_line_1km],     #nochmal angucken!
+              [-B_L_lv_line_1km, B_L_lv_line_1km]])
+
+G = np.array([[0, 0],
+              [0, G_load]])
+
+#Power flow equations
+n.Equation(e1 * e1 * (G[0][0] * n.cos(theta1 - theta1) + B[0][0] * n.sin(theta1 - theta1)) + \
+           e1 * u2 * (G[0][1] * n.cos(theta1 - theta2) + B[0][1] * n.sin(theta1 - theta2)) == P_out) #modell
+n.Equation(u2 * e1 * (G[1][0] * n.cos(theta2 - theta1) + B[1][0] * n.sin(theta2 - theta1)) + \
+           u2 * u2 * (G[1][1] * n.cos(theta2 - theta2) + B[1][1] * n.sin(theta2 - theta2)) == P_2) #
+
+# define omega as the derivation of the phase angle
+n.Equation(theta1.dt() == w1)
+n.Equation(theta2.dt() == w2)
+
+
+#n.Equation(w1 == (-(P_out - P1_nom)/Pdroop_normal)+omega)
+n.Equation(w1 == (-((P_out+tau*P_out.dt()) - P1_nom)/Pdroop_normal)+omega)
+#n.Equation(P_out-P1_nom == (w1_dev+tau*w1_dev.dt())+omega)
+n.Equation(w2==P_2/w1) #'diskussionsfähig' #7.1 #stellgröße #mit welcher variable du einfluss auf die regelstrecke nimmst, regelgröße w1 omega
+#m.Equation(w2==w1)
+
+
+
+ #Set global options, 7 is the solving of DAE. You can check the GEKKO handbook, but i think, mode 7 and the default stuff of the rest should be fine.
+n.options.IMODE = 7
+
+
+n.time = np.linspace(0, t_end, steps) # time points
+
+
+#Solve simulation
+n.solve()
+f1 = np.divide(w1, (2*np.pi))
+all_f1.append(f1)
+n.cleanup()
+
+
+
+####Plots###############################################################################################################
 all_f1=np.asarray(all_f1)
 deviation_f1=all_f1-nomFreq
 plt.title('Frequenzabweichung $f_1$ von $f_0$')
-plt.plot(m.time, deviation_f1[0], 'r', label=r'$\Delta_{\mathrm{f_1}}\:(J=J_\mathrm{nom}, D=D_\mathrm{nom})$')
-plt.plot(m.time, deviation_f1[1], 'b', label=r'$\Delta_{\mathrm{f_1}}\:(J=J_\mathrm{nom}*0.3, D=D_\mathrm{nom})$')
+plt.plot(m.time, deviation_f1[0], 'r', label=r'VSG: $\Delta_{\mathrm{f_1}}\:(J=J_\mathrm{nom}, D=D_\mathrm{nom})$')
+plt.plot(m.time, deviation_f1[1], 'b', label=r'VSG: $\Delta_{\mathrm{f_1}}\:(J=J_\mathrm{nom}*0.5 , D=D_\mathrm{nom})$')
+plt.plot(m.time, deviation_f1[2], 'g', label=r'Droop Control')
 plt.axvline(x=0.249, color='black')
 plt.xlabel('Time (s)')
 plt.ylabel(r'$\Delta_{\mathrm{f_1}}\,/\,\mathrm{Hz}$')
