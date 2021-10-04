@@ -111,7 +111,8 @@ class RandomLoad:
             self.rand_process.proc.vol = np.random.randint(1, 150)
             self.rand_process.proc.speed = np.random.randint(10, 1200)
             # define sdt for clipping once every event
-            self.lowerbound_std = np.random.normal(scale=self.bounds_std[0])
+            # np.maximum to not allow negative values
+            self.lowerbound_std = np.maximum(np.random.normal(scale=self.bounds_std[0]), 0.0001)
             self.upperbound_std = np.random.normal(scale=self.bounds_std[1])
 
             # With 50% probability do a step or a drift
