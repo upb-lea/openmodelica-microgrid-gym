@@ -13,7 +13,7 @@ from experiments.GEM.env.env_wrapper_GEM import FeatureWrapper, FeatureWrapper_p
     FeatureWrapper_I_controller, BaseWrapper
 # from experiments.GEM.env.GEM_env import AppendLastActionWrapper
 from experiments.GEM.util.config import cfg
-from experiments.hp_tune.util.recorder import Recorder
+from experiments.GEM.util.recorder_GEM import Recorder
 
 from gym.wrappers import FlattenObservation
 import gym_electric_motor as gem
