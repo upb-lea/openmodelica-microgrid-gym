@@ -7,7 +7,10 @@ import numpy as np
 
 import sshtunnel
 from pymongo import MongoClient
-from experiments.hp_tune.util.config import cfg
+# from experiments.hp_tune.util.config import cfg
+from experiments.GEM.util.config import cfg
+
+print('Log Config: GEM!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 
 
 class Reporter:
