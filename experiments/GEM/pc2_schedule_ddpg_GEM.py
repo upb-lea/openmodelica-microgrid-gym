@@ -10,7 +10,7 @@ import optuna
 from optuna.samplers import TPESampler
 
 from experiments.hp_tune.util import pc2
-from experiments.hp_tune.util.config import cfg
+from experiments.GEM.util.config import cfg
 
 # config
 USER = os.getenv('USER')
