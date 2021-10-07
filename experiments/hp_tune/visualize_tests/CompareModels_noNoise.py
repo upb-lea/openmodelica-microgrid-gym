@@ -51,26 +51,26 @@ import gym
 show_plots = True
 save_results = False
 
-folder_name = 'saves/NoI_term_1768'  # cfg['STUDY_NAME']
+folder_name = 'saves/P10_clipped_abortReward_deterministic'  # cfg['STUDY_NAME']
 node = platform.uname().node
 
 # model_name = 'model_retrain_pastVals12.zip'
-number_past_vals = [1]  # [0, 5, 10, 16, 25]  # [30, 0]
+number_past_vals = [5]  # [0, 5, 10, 16, 25]  # [30, 0]
 # use_past_vals = [True]  # [False, True, True, True, True]  # [True, False]
-wrapper = ['no-I-term']  # ['past', 'future', 'no-I-term', 'I-controller']
+wrapper = ['past']  # ['past', 'future', 'no-I-term', 'I-controller']
 
 # model_name = ['model.zip']
 # model_path = 'experiments/hp_tune/trained_models/study_22_best_pastVal_HPO_oldtestEnv/'
 # model_path = 'experiments/hp_tune/trained_models/NoPhaseFeature_1427/'
 # model_path = 'experiments/hp_tune/trained_models/study_22_best_iLoad_Feature/'
 # model_path = 'experiments/hp_tune/trained_models/Future_10Rvals/'
-model_path = 'experiments/hp_tune/trained_models/NoI_term_1768/'
+model_path = 'experiments/hp_tune/trained_models/P10_setting_best_study22_clipped_abort_newReward_design_Corr/'
 
 # model_name = [
 # 'model_5_pastVals.zip']  # ['model_0_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
 model_name = [
     'model.zip']  # ['model_0_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
-"""
+
 ################DDPG Config Stuff#########################################################################
 gamma = 0.946218
 integrator_weight = 0.311135
@@ -96,14 +96,14 @@ alpha_relu_actor = 0.0034719  # 0.208098
 alpha_relu_critic = 0.00613757  # 0.00678497
 
 print('HPs für DDPG ohne I-Anteil!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-
+"""
 mongo_recorder = Recorder(node=node, database_name=folder_name)
 
 num_average = 1
-max_episode_steps_list = [100000]  # [1000, 5000, 10000, 20000, 50000, 100000]
+max_episode_steps_list = [2000]  # [1000, 5000, 10000, 20000, 50000, 100000]
 
-# data_str = 'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'
-data_str = 'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'
+data_str = 'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'
+# data_str = 'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'
 # data_str = 'experiments/hp_tune/data/R_load_hard_test_case_60_seconds_noReset.pkl'
 
 result_list = []
@@ -138,9 +138,13 @@ i_nom = net['inverter1'].i_nom  # nominal inverter current / A
 v_nom = net.v_nom
 v_lim = net['inverter1'].v_lim
 v_DC = net['inverter1'].v_DC
-L_filter = 2.3e-3  # / H
-R_filter = 400e-3  # / Ohm
-C_filter = 10e-6  # / F
+# L_filter = 2.3e-3  # / H
+# R_filter = 400e-3  # / Ohm
+# C_filter = 10e-6  # / F
+
+L_filter = 70e-6  # / H
+R_filter = 1.1e-3  # / Ohm
+C_filter = 250e-6  # / F
 
 lower_bound_load = -10  # to allow maximal load that draws i_limit
 upper_bound_load = 200  # to apply symmetrical load bounds
@@ -173,16 +177,27 @@ kernel = GPy.kern.Matern32(input_dim=len(bounds), variance=prior_var, lengthscal
 # Definition of the controllers
 # kp_v = 0.002
 # ki_v = 143
+"""
+Old optimized parameters:
 kp_v = 0  # 0.0095  # 0.0
 ki_v = 182  # 173.22  # 200
+kp_c = 0.0308  # 0.0404  # 0.04
+ki_c = 13.3584  # 4.065  # 11.8
+"""
+
+"""
+P10:
+"""
+kp_v = 0.2972
+ki_v = 142.7
+kp_c = 0.00068
+ki_c = 0.731
 # Choose Kp and Ki for the current and voltage controller as mutable parameters
 mutable_params = dict(voltageP=MutableFloat(kp_v), voltageI=MutableFloat(ki_v))  # 300Hz
 # mutable_params = dict(voltageP=MutableFloat(0.016), voltageI=MutableFloat(105))  # 300Hz
 voltage_dqp_iparams = PI_params(kP=mutable_params['voltageP'], kI=mutable_params['voltageI'],
                                 limits=(-i_lim * 10, i_lim * 10))
 
-kp_c = 0.0308  # 0.0404  # 0.04
-ki_c = 13.3584  # 4.065  # 11.8
 current_dqp_iparams = PI_params(kP=kp_c, kI=ki_c, limits=(-1, 1))  # Current controller values
 droop_param = DroopParams(DroopGain, 0.005, net.freq_nom)
 qdroop_param = DroopParams(QDroopGain, 0.002, net.v_nom)
@@ -204,7 +219,6 @@ agent = SafeOptAgent(mutable_params,
                                   ]),
                      history=FullHistory(),
                      )
-
 
 
 for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit='step', leave=False):
@@ -471,7 +485,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                                 )
 
             if wrapper_mode == 'past':
-                env_test = FeatureWrapper_pastVals(env_test, number_of_features=11 + used_number_past_vales * 3,
+                env_test = FeatureWrapper_pastVals(env_test, number_of_features=9 + used_number_past_vales * 3,
                                                    # training_episode_length=training_episode_length, (da aus pickle!)
                                                    recorder=mongo_recorder, n_trail=n_trail,
                                                    integrator_weight=integrator_weight,
@@ -658,7 +672,19 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
             plt.xlabel("")
             plt.grid()
             plt.ylabel('$R_{\mathrm{abc}}\,/\,\mathrm{\Omega}$')
-            plt.title('PI')
+            plt.title('DDPG')
+            plt.show()
+
+            plt.plot(env_test.integrator_sum_list0)
+            plt.plot(env_test.integrator_sum_list1)
+            plt.plot(env_test.integrator_sum_list2)
+            plt.ylabel('intergratorzustand')
+            plt.show()
+
+            plt.plot(action_P0)
+            plt.plot(action_P1)
+            plt.plot(action_P2)
+            plt.ylabel('action P')
             plt.show()
 
             # return (return_sum / env_test.max_episode_steps + limit_exceeded_penalty)

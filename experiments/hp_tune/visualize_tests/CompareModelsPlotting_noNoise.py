@@ -21,10 +21,10 @@ interval_plt = True
 interval_list_x = [[0, 0.01], [2.09, 2.1], [7.08, 7.16], [7.145, 7.16]]
 interval_list_y = [[-25, 210], [-25, 340], [-25, 340], [125, 340]]
 # folder_name = 'saves/Comparison_study_future10Rvals_deterministicTestcase'
-folder_name = 'saves/NoI_term_1768'  # _deterministic'
+folder_name = 'saves/P10_clipped_abortReward'  # _deterministic'
 # folder_name = 'saves/Comparison_study_22_best_pastVal_HPO_deterministic_noMeasNoise'
 
-number_of_steps = '_100000steps'
+number_of_steps = '_20000steps'
 
 df = pd.read_pickle(folder_name + '/PI' + number_of_steps)
 # df = pd.read_pickle(folder_name + '/PI_9989steps')
@@ -231,8 +231,8 @@ plt.plot(t_test, v_d_DDPG, 'b')
 # plt.plot(t_test, v_d_PI, 'r')
 # plt.plot(t_test, v_sp_abc[0, :])
 plt.grid()
-plt.xlim([0.1, 0.2])
-plt.ylim([160, 190])
+plt.xlim([0.1, 0.11])
+plt.ylim([290, 360])
 plt.xlabel("time")
 plt.ylabel("v_dq0_DDPG")
 plt.title(f'DDPG')
@@ -242,7 +242,7 @@ plt.plot(t_test, v_d_PI, 'r')
 # plt.plot(t_test, v_sp_abc[0, :])
 plt.grid()
 plt.xlim([0.1, 0.2])
-plt.ylim([160, 190])
+plt.ylim([290, 360])
 plt.xlabel("time")
 plt.ylabel("v_dq0_PI")
 plt.title(f'PI')
