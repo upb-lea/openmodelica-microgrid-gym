@@ -79,11 +79,37 @@ class AppendLastActionWrapper(Wrapper):
 
 class AppendLastActionWrapper_testsetting(AppendLastActionWrapper):
 
-    def reset(self, **kwargs):
+    def __init__(self, environment, new_ref_d, new_ref_q, ref_change):
+        """
+        new_ref_d/q mus be list of length test_steps/1000!
+        """
+        super().__init__(environment)
+        self.step_number = 0
+        self.ref_count = 0
+        self.new_ref_d = new_ref_d
+        self.new_ref_q = new_ref_q
+        self.ref_change = ref_change
+
+    def step(self, action):
+        (state, ref), rew, term, info = super().step(action)
+        self.step_number += 1
+
+        if self.step_number % self.ref_change == 0:
+            self.ref_count += 1
+            self.env.reference_generator._sub_generators[0]._reference_value = self.new_ref_d[
+                self.ref_count]  # np.random.uniform(-1, 0)
+            self.env.reference_generator._sub_generators[1]._reference_value = self.new_ref_q[
+                self.ref_count]  # np.random.uniform(-1, 1)
+
+        return (state, ref), rew, term, info
+
+    def reset(self, new_ref_d, new_ref_q, **kwargs):
         state, ref = super().reset()
 
-        self.env.reference_generator._sub_generators[0]._reference_value = 0.5  # np.random.uniform(-1, 0)
-        self.env.reference_generator._sub_generators[1]._reference_value = -0.2  # np.random.uniform(-1, 1)
+        self.env.reference_generator._sub_generators[0]._reference_value = self.new_ref_d[
+            self.ref_count]  # np.random.uniform(-1, 0)
+        self.env.reference_generator._sub_generators[1]._reference_value = self.new_ref_q[
+            self.ref_count]  # np.random.uniform(-1, 1)
 
         return state, ref
 
@@ -196,7 +222,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     ####################################################################################################################
 
     if cfg['env_wrapper'] == 'past':
-        env = FeatureWrapper_pastVals(env_train, number_of_features=9 + number_past_vals * 3,
+        env = FeatureWrapper_pastVals(env_train, number_of_features=2 + number_past_vals * 3,
                                       training_episode_length=training_episode_length,
                                       recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
                                       antiwindup_weight=antiwindup_weight, gamma=gamma,
@@ -329,10 +355,48 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     return_sum = 0.0
     limit_exceeded_in_test = False
     limit_exceeded_penalty = 0
+
+    # Refs created with https://github.com/max-schenke/DESSCA
+    i_d_refs = [-0.5718831392706399, -0.11155989917458595, -0.8444233463864655, -0.19260596846844558,
+                -0.48986342384598824,
+                -0.08540375784816023, -0.6983532259844449, -0.3409346664209051, -0.9852563901175903,
+                -0.019589794863040133,
+                -0.3057052318511703, -0.010759738176742362, -0.7264074671265837, -0.7003086456948622,
+                -0.5205127876117279,
+                -0.0035883351279332454, -0.24656126983332566, -0.7385108721382044, -0.8711444379999949,
+                -0.5322348905850738,
+                -0.16443631057073907, -0.26335305001172343, -0.8339056052207534, -0.9840272325710973,
+                -0.00099042967089491,
+                -0.4276376345373605, -0.4392085789117308, -0.29885945214798054, -0.3526213053117569,
+                -0.15544590095444902,
+                -0.38133627476871246, -0.0007362814213280888, -0.13766159578201825, -0.6998437778149555,
+                -0.02941718441323049,
+                -0.14911600490992516, -0.8711008909873345, -0.5803207691231205, -0.3908087722441505,
+                -0.30424273624679143,
+                -0.6032911651567467, -0.6097285170523984, -0.23000688296189783, -0.009050042083058152,
+                -0.13450601442490417,
+                -0.8117883556545268, -0.7542685229940803, -0.4627233964160423, -0.23713451030767801, -0.580302276033946]
+    i_q_refs = [-0.3392001552090831, 0.9601935188371409, -0.3536698661685236, -0.7470423329656373, 0.7498405690613185,
+                0.02118430489789434, 0.2733946954263321, 0.2919040855524663, 0.16184776106212195, 0.5033515631986878,
+                -0.3472813053105329, -0.3978931436350608, 0.6856579757847681, -0.7061719805667996, 0.05173569323125849,
+                -0.9859275339077078, 0.6511009114276964, -0.07964009848269302, 0.4872958851075428, 0.4244964715390715,
+                0.3348234680253275, -0.02175414797059596, 0.1689424266837956, -0.15367806515850901, -0.6890239130635769,
+                -0.5235888504056838, -0.18887320564466648, -0.9243752447874265, 0.9223611469482904,
+                -0.47288531380037824,
+                0.5419042725157753, 0.21808910731016923, -0.2114136814114341, -0.43862800579799827, 0.7610593015542114,
+                -0.9580202514125911, -0.058327843098379906, -0.6351863815461574, 0.06422483040085132,
+                -0.6157429182475818,
+                0.6283510657507491, -0.1007305747146939, 0.9225787627793309, -0.15228745162185686, 0.6513516638638627,
+                -0.5835510703463308, 0.46458552243856405, 0.25269729661377704, 0.1814216788492872, 0.2111335623928367]
+
+    ref_change = 500
+
     env_test = env_train
+    env_test = AppendLastActionWrapper_testsetting(env_test, i_d_refs, i_q_refs, ref_change)
+    env_test = FlattenObservation(env_test)
 
     if cfg['env_wrapper'] == 'past':
-        env_test = FeatureWrapper_pastVals(env_test, number_of_features=9 + number_past_vals * 3,
+        env_test = FeatureWrapper_pastVals(env_test, number_of_features=2 + number_past_vals * 3,
                                            integrator_weight=integrator_weight,
                                            recorder=mongo_recorder, antiwindup_weight=antiwindup_weight,
                                            gamma=1, penalty_I_weight=0,
