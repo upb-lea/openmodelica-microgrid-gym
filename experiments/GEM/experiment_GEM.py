@@ -9,8 +9,7 @@ from stable_baselines3 import DDPG
 # imports net to define reward and executes script to register experiment
 from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
 
-from experiments.GEM.env.env_wrapper_GEM import FeatureWrapper, FeatureWrapper_pastVals, FeatureWrapper_futureVals, \
-    FeatureWrapper_I_controller, BaseWrapper
+from experiments.GEM.env.env_wrapper_GEM import FeatureWrapper, FeatureWrapper_pastVals, BaseWrapper
 # from experiments.GEM.env.GEM_env import AppendLastActionWrapper
 from experiments.GEM.util.config import cfg
 from experiments.GEM.util.recorder_GEM import Recorder
@@ -230,26 +229,6 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                       t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
                                       number_learing_steps=number_learning_steps, number_past_vals=number_past_vals)
 
-    elif cfg['env_wrapper'] == 'future':
-        env = FeatureWrapper_futureVals(env_train, number_of_features=9,
-                                        training_episode_length=training_episode_length,
-                                        recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
-                                        antiwindup_weight=antiwindup_weight, gamma=gamma,
-                                        penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight,
-                                        t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
-                                        number_learing_steps=number_learning_steps, number_future_vals=10)
-
-    elif cfg['env_wrapper'] == 'I-controller':
-        env = FeatureWrapper_I_controller(env_train, number_of_features=12 + number_past_vals * 3,
-                                          # including integrator_sum
-                                          training_episode_length=training_episode_length,
-                                          recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
-                                          antiwindup_weight=antiwindup_weight, gamma=gamma,
-                                          penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight,
-                                          t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
-                                          number_learing_steps=number_learning_steps, Ki=Ki_ddpg_combi,
-                                          number_past_vals=number_past_vals)
-
     elif cfg['env_wrapper'] == 'no-I-term':
         env = BaseWrapper(env_train, number_of_features=2 + number_past_vals * 2,
                           training_episode_length=training_episode_length,
@@ -402,26 +381,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                                            gamma=0, penalty_I_weight=0,
                                            penalty_P_weight=0, number_past_vals=number_past_vals,
                                            training_episode_length=training_episode_length, )
-    elif cfg['env_wrapper'] == 'future':
-        env_test = FeatureWrapper_futureVals(env_test, number_of_features=9,
-                                             training_episode_length=training_episode_length,
-                                             recorder=mongo_recorder, n_trail=n_trail,
-                                             integrator_weight=integrator_weight,
-                                             antiwindup_weight=antiwindup_weight, gamma=gamma,
-                                             penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight,
-                                             t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
-                                             number_learing_steps=number_learning_steps, number_future_vals=10)
-    elif cfg['env_wrapper'] == 'I-controller':
-        env_test = FeatureWrapper_I_controller(env_test, number_of_features=12 + number_past_vals * 3,
-                                               # including integrator_sum
-                                               training_episode_length=training_episode_length,
-                                               recorder=mongo_recorder, n_trail=n_trail,
-                                               integrator_weight=integrator_weight,
-                                               antiwindup_weight=antiwindup_weight, gamma=gamma,
-                                               penalty_I_weight=penalty_I_weight, penalty_P_weight=penalty_P_weight,
-                                               t_start_penalty_I=t_start_penalty_I, t_start_penalty_P=t_start_penalty_P,
-                                               number_learing_steps=number_learning_steps, Ki=Ki_ddpg_combi,
-                                               number_past_vals=number_past_vals)
+
 
     elif cfg['env_wrapper'] == 'no-I-term':
         env_test = BaseWrapper(env_test, number_of_features=2 + number_past_vals * 2,
@@ -452,6 +412,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     i_q_ref = []
     action_d = []
     action_q = []
+    env_test.training_episode_length = test_length + 1  # that env is not reset
 
     for step in range(test_length):
         action, _states = model.predict(obs, deterministic=True)
