@@ -103,7 +103,7 @@ class AppendLastActionWrapper_testsetting(AppendLastActionWrapper):
 
         return (state, ref), rew, term, info
 
-    def reset(self, new_ref_d, new_ref_q, **kwargs):
+    def reset(self, **kwargs):
         state, ref = super().reset()
 
         self.env.reference_generator._sub_generators[0]._reference_value = self.new_ref_d[
@@ -157,7 +157,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     nominal_values = {key: 0.7 * limit for key, limit in limit_values.items()}
 
     # Create the environment
-    env_train = gem.make(
+    env_row = gem.make(
         # Choose the permanent magnet synchronous motor with continuous-control-set
         'DqCont-CC-PMSM-v0',
         # Pass a class with extra parameters
@@ -212,7 +212,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     )
 
     # Now we apply the wrapper defined at the beginning of this script
-    env_train = AppendLastActionWrapper(env_train)
+    env_train = AppendLastActionWrapper(env_row)
 
     # We flatten the observation (append the reference vector to the state vector such that
     # the environment will output just a single vector with both information)
@@ -222,7 +222,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     ####################################################################################################################
 
     if cfg['env_wrapper'] == 'past':
-        env = FeatureWrapper_pastVals(env_train, number_of_features=2 + number_past_vals * 3,
+        env = FeatureWrapper_pastVals(env_train, number_of_features=4 + number_past_vals * 2,
                                       training_episode_length=training_episode_length,
                                       recorder=mongo_recorder, n_trail=n_trail, integrator_weight=integrator_weight,
                                       antiwindup_weight=antiwindup_weight, gamma=gamma,
@@ -266,7 +266,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
     # todo: Upwnscale actionspace - lessulgy possible? Interaction pytorch...
     if cfg['env_wrapper'] not in ['no-I-term', 'I-controller']:
-        env.action_space = gym.spaces.Box(low=np.full(6, -1), high=np.full(6, 1))
+        env.action_space = gym.spaces.Box(low=np.full(4, -1), high=np.full(4, 1))
 
     n_actions = env.action_space.shape[-1]
     noise_var = noise_var  # 20#0.2
@@ -335,7 +335,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
         count = count + 2
 
     if cfg['env_wrapper'] not in ['no-I-term', 'I-controller']:
-        env.action_space = gym.spaces.Box(low=np.full(3, -1), high=np.full(3, 1))
+        env.action_space = gym.spaces.Box(low=np.full(2, -1), high=np.full(2, 1))
 
     # start training
     model.learn(total_timesteps=number_learning_steps)
@@ -391,15 +391,15 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
     ref_change = 500
 
-    env_test = env_train
+    env_test = env_row
     env_test = AppendLastActionWrapper_testsetting(env_test, i_d_refs, i_q_refs, ref_change)
     env_test = FlattenObservation(env_test)
 
     if cfg['env_wrapper'] == 'past':
-        env_test = FeatureWrapper_pastVals(env_test, number_of_features=2 + number_past_vals * 3,
+        env_test = FeatureWrapper_pastVals(env_test, number_of_features=4 + number_past_vals * 2,
                                            integrator_weight=integrator_weight,
                                            recorder=mongo_recorder, antiwindup_weight=antiwindup_weight,
-                                           gamma=1, penalty_I_weight=0,
+                                           gamma=0, penalty_I_weight=0,
                                            penalty_P_weight=0, number_past_vals=number_past_vals,
                                            training_episode_length=training_episode_length, )
     elif cfg['env_wrapper'] == 'future':
@@ -426,7 +426,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     elif cfg['env_wrapper'] == 'no-I-term':
         env_test = BaseWrapper(env_test, number_of_features=2 + number_past_vals * 2,
                                training_episode_length=training_episode_length,
-                               recorder=mongo_recorder, n_trail=n_trail, gamma=gamma,
+                               recorder=mongo_recorder, n_trail=n_trail, gamma=0,
                                number_learing_steps=number_learning_steps, number_past_vals=number_past_vals)
 
     else:
@@ -460,8 +460,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
         aP0.append(np.float64(action[0]))
         aP1.append(np.float64(action[1]))
         if action.shape[0] > 2:
-            aI0.append(np.float64(action[3]))
-            aI1.append(np.float64(action[4]))
+            aI0.append(np.float64(action[2]))
+            aI1.append(np.float64(action[3]))
             integrator_sum0.append(np.float64(env_test.integrator_sum[0]))
             integrator_sum1.append(np.float64(env_test.integrator_sum[1]))
 
