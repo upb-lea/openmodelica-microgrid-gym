@@ -35,7 +35,7 @@ def ddpg_objective_fix_params(trial):
                         'PC2_DDPG_Vctrl_single_inv_22_newTestcase_Trial_number_11534_0.json', )
     trial_config = json.load(file_congfig)
 
-    number_learning_steps = 100000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
+    number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
     # rew_weigth = trial.suggest_float("rew_weigth", 0.1, 5)
     # rew_penalty_distribution = trial.suggest_float("antiwindup_weight", 0.1, 5)
     penalty_I_weight = trial_config["penalty_I_weight"]  # trial.suggest_float("penalty_I_weight", 100e-6, 2)

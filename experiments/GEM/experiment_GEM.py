@@ -63,7 +63,7 @@ class AppendLastActionWrapper(Wrapper):
         return (state, ref), rew, term, info
 
     def reset(self, **kwargs):
-        state, ref = self.env.reset()
+
 
         # extend the output state by zeros after reset
         # no action can be appended yet, but the dimension must fit
@@ -72,6 +72,8 @@ class AppendLastActionWrapper(Wrapper):
         # set random reference values
         self.env.reference_generator._sub_generators[0]._reference_value = np.random.uniform(-1, 0)
         self.env.reference_generator._sub_generators[1]._reference_value = np.random.uniform(-1, 1)
+
+        state, ref = self.env.reset()
 
         return state, ref
 
@@ -90,7 +92,6 @@ class AppendLastActionWrapper_testsetting(AppendLastActionWrapper):
         self.ref_change = ref_change
 
     def step(self, action):
-        (state, ref), rew, term, info = super().step(action)
         self.step_number += 1
 
         if self.step_number % self.ref_change == 0:
@@ -100,15 +101,17 @@ class AppendLastActionWrapper_testsetting(AppendLastActionWrapper):
             self.env.reference_generator._sub_generators[1]._reference_value = self.new_ref_q[
                 self.ref_count]  # np.random.uniform(-1, 1)
 
+        (state, ref), rew, term, info = super().step(action)
+
         return (state, ref), rew, term, info
 
     def reset(self, **kwargs):
-        state, ref = super().reset()
-
         self.env.reference_generator._sub_generators[0]._reference_value = self.new_ref_d[
             self.ref_count]  # np.random.uniform(-1, 0)
         self.env.reference_generator._sub_generators[1]._reference_value = self.new_ref_q[
             self.ref_count]  # np.random.uniform(-1, 1)
+
+        state, ref = self.env.reset()
 
         return state, ref
 
@@ -426,7 +429,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
             integrator_sum0.append(np.float64(env_test.integrator_sum[0]))
             integrator_sum1.append(np.float64(env_test.integrator_sum[1]))
 
-        env_test.render()
+        # env_test.render()
         return_sum += rewards
         rew_list.append(rewards)
         i_d_mess.append(np.float64(obs[0]))

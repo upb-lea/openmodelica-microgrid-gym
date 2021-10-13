@@ -1,19 +1,14 @@
 import platform
-from functools import partial
 from typing import Union
 
 import gym
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.type_aliases import GymStepReturn
-from stochastic.processes import VasicekProcess
 
-from experiments.hp_tune.env.random_load import RandomLoad
-from experiments.hp_tune.env.vctrl_single_inv import net
 from experiments.GEM.util.config import cfg
-from openmodelica_microgrid_gym.util import abc_to_alpha_beta, dq0_to_abc, abc_to_dq0, Fastqueue, RandProcess
+from experiments.hp_tune.env.vctrl_single_inv import net
+from openmodelica_microgrid_gym.util import Fastqueue
 
 
 class BaseWrapper(Monitor):
@@ -67,7 +62,7 @@ class BaseWrapper(Monitor):
 
         obs, reward, done, info = super().step(action)
         reward = reward * (1 - self.gamma)
-        super().render()
+        # super().render()
 
         self._n_training_steps += 1
 
@@ -88,41 +83,37 @@ class BaseWrapper(Monitor):
             self.reward_episode_mean.append(np.mean(self.rewards))
             self.n_episode += 1
 
-            if done:
-                self.reward_episode_mean.append(np.mean(self.rewards))
-                self.n_episode += 1
+            if cfg['loglevel'] == 'train':
+                episode_data = {"Name": "On_Training",
+                                "Episode_number": self.n_episode,
+                                "Episode_length": self._n_training_steps,
+                                "i_d_mess": self.i_d_mess,
+                                "i_q_mess": self.i_q_mess,
+                                "i_d_ref": self.i_d_ref,
+                                "i_q_ref": self.i_q_ref,
+                                'action_d': self.action_d,
+                                'action_q': self.action_q,
+                                "Rewards": self.rewards,
+                                "Node": platform.uname().node,
+                                "Trial number": self.n_trail,
+                                "Database name": cfg['STUDY_NAME'],
+                                "Reward function": 'MRE'
+                                }
 
-                if cfg['loglevel'] == 'train':
-                    episode_data = {"Name": "On_Training",
-                                    "Episode_number": self.n_episode,
-                                    "Episode_length": self._n_training_steps,
-                                    "i_d_mess": self.i_d_mess,
-                                    "i_q_mess": self.i_q_mess,
-                                    "i_d_ref": self.i_d_ref,
-                                    "i_q_ref": self.i_q_ref,
-                                    'action_d': self.action_d,
-                                    'action_q': self.action_q,
-                                    "Rewards": self.rewards,
-                                    "Node": platform.uname().node,
-                                    "Trial number": self.n_trail,
-                                    "Database name": cfg['STUDY_NAME'],
-                                    "Reward function": 'MRE'
-                                    }
+                """
+                add here "model_params_change": callback.params_change, from training_recorder?
+                """
 
-                    """
-                    add here "model_params_change": callback.params_change, from training_recorder?
-                    """
+                # stores data locally to cfg['meas_data_folder'], needs to be grept / transfered via reporter to mongodc
+                self.recorder.save_to_json('Trial_number_' + self.n_trail, episode_data)
 
-                    # stores data locally to cfg['meas_data_folder'], needs to be grept / transfered via reporter to mongodc
-                    self.recorder.save_to_json('Trial_number_' + self.n_trail, episode_data)
-
-                    # clear lists
-                    self.i_d_mess = []
-                    self.i_q_mess = []
-                    self.i_d_ref = []
-                    self.i_q_ref = []
-                    self.action_d = []
-                    self.action_q = []
+                # clear lists
+                self.i_d_mess = []
+                self.i_q_mess = []
+                self.i_d_ref = []
+                self.i_q_ref = []
+                self.action_d = []
+                self.action_q = []
         """
         Features
         """
@@ -251,8 +242,7 @@ class FeatureWrapper(Monitor):
         Triggers the env to reset without done=True every training_episode_length steps
         """
         action_P = action[0:2]
-        action_I = action[2:5
-                   ]
+        action_I = action[2:4]
 
         self.integrator_sum += action_I * self.integrator_weight
 
@@ -285,7 +275,7 @@ class FeatureWrapper(Monitor):
         reward = reward + clip_reward
         reward = reward * (1 - self.gamma)
 
-        super().render()
+        #super().render()
 
         integrator_penalty = np.sum(-((np.abs(action_I)) ** 0.5)) * (1 - self.gamma) / 3
         # action_P_penalty = - np.sum((np.abs(action_P - self.used_P)) ** 0.5) * (1 - self.gamma) / 3
