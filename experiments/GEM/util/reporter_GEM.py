@@ -81,7 +81,7 @@ class Reporter:
 
         if not len(os.listdir(self.save_folder)) == 0:
 
-            if file_name_to_store is not None:
+            if file_name_to_store is None:
                 try:
                     oldest_file_path = self.oldest_file_in_tree()
                 except(ValueError) as e:
