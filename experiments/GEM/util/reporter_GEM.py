@@ -127,7 +127,7 @@ if __name__ == "__main__":
     reporter = Reporter()
     print("Starting Reporter for logging from local savefolder to mongoDB")
 
-    file_ending_number = [2, 3]  # [178, 179]
+    file_ending_number = [178, 179]
 
     print(f"Searching for files in directory with number ending on {file_ending_number}")
 
