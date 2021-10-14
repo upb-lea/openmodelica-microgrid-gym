@@ -127,7 +127,7 @@ if __name__ == "__main__":
     reporter = Reporter()
     print("Starting Reporter for logging from local savefolder to mongoDB")
 
-    file_ending_number = [178, 179]
+    file_ending_number = [2, 3]  # [178, 179]
 
     print(f"Searching for files in directory with number ending on {file_ending_number}")
 
@@ -138,6 +138,7 @@ if __name__ == "__main__":
         for number in file_ending_number:
             try:
                 oldest_named_file_path = reporter.oldest_file_with_name_in_tree(number)
+                print(oldest_named_file_path)
 
                 reporter.json_to_mongo_via_sshtunnel(oldest_named_file_path)
 
