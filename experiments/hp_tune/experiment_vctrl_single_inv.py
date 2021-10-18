@@ -314,6 +314,16 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
             break
 
     ts = time.gmtime()
+    reward_test_after_training = {"Name": "Test_Reward",
+                                  "time": ts,
+                                  "Reward": rew_list,
+                                  "Trial number": n_trail,
+                                  "Database name": folder_name,
+                                  "Node": platform.uname().node,
+                                  "End time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime())}
+
+    mongo_recorder.save_to_json('Trial_number_' + n_trail, reward_test_after_training)
+
     test_after_training = {"Name": "Test",
                            "time": ts,
                            "Reward": rew_list,

@@ -35,8 +35,8 @@ if not cfg['is_dq0']:
     net = Network.load('net/net_vctrl_single_inv.yaml')
 else:
     # load net using dq0 reference values
-    # net = Network.load('net/net_vctrl_single_inv_dq0.yaml')
-    net = Network.load('net/net_p10.yaml')
+    net = Network.load('net/net_vctrl_single_inv_dq0.yaml')
+    # net = Network.load('net/net_p10.yaml')
 
 # set high to not terminate env! Termination should be done in wrapper by env after episode-length-HP
 max_episode_steps = 1500000  # net.max_episode_steps  # number of simulation steps per episode
@@ -48,12 +48,15 @@ v_lim = net['inverter1'].v_lim
 v_DC = net['inverter1'].v_DC
 
 # plant
+"""
+print('Using P10 setting')
 L_filter = 70e-6  # / H
 R_filter = 1.1e-3  # / Ohm
 C_filter = 250e-6  # / F
-# L_filter = 2.3e-3  # / H
-# R_filter = 400e-3 # / Ohm
-# C_filter = 10e-6  # / F
+"""
+L_filter = 2.3e-3  # / H
+R_filter = 400e-3  # / Ohm
+C_filter = 10e-6  # / F
 # R = 40  # nomVoltPeak / 7.5   # / Ohm
 lower_bound_load = -10  # to allow maximal load that draws i_limit
 upper_bound_load = 200  # to apply symmetrical load bounds

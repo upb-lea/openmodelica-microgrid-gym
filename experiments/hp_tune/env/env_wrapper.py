@@ -97,8 +97,8 @@ class BaseWrapper(Monitor):
 
         # add wanted features here (add appropriate self.observation in init!!)
         # calculate magnitude of current phasor abc
-        self.i_phasor = self.cal_phasor_magnitude(obs[0:3])
-        self.v_phasor = self.cal_phasor_magnitude(obs[3:6])
+        # self.i_phasor = self.cal_phasor_magnitude(obs[0:3])
+        # self.v_phasor = self.cal_phasor_magnitude(obs[3:6])
 
         if cfg['loglevel'] == 'train':
             self.R_training.append(self.env.history.df['r_load.resistor1.R'].iloc[-1])
@@ -166,7 +166,7 @@ class BaseWrapper(Monitor):
         """
         Features
         """
-        error = obs[6:9] - obs[3:6]  # control error: v_setpoint - v_mess
+        error = (obs[6:9] - obs[3:6]) / 2  # control error: v_setpoint - v_mess
         # delta_i_lim_i_phasor = 1 - self.i_phasor  # delta to current limit
 
         """
@@ -207,8 +207,8 @@ class BaseWrapper(Monitor):
         self._n_training_steps = 0
         self.used_P = np.zeros(self.action_space.shape)
 
-        self.i_phasor = self.cal_phasor_magnitude(obs[0:3])
-        self.v_phasor = self.cal_phasor_magnitude(obs[3:6])
+        # self.i_phasor = self.cal_phasor_magnitude(obs[0:3])
+        # self.v_phasor = self.cal_phasor_magnitude(obs[3:6])
 
         if cfg['loglevel'] == 'train':
             self.R_training.append(self.env.history.df['r_load.resistor1.R'].iloc[-1])
@@ -231,7 +231,7 @@ class BaseWrapper(Monitor):
         """
         Features
         """
-        error = obs[6:9] - obs[3:6]  # control error: v_setpoint - v_mess
+        error = (obs[6:9] - obs[3:6]) / 2  # control error: v_setpoint - v_mess
         # delta_i_lim_i_phasor = 1 - self.i_phasor  # delta to current limit
 
         """
@@ -377,10 +377,13 @@ class FeatureWrapper(Monitor):
             action_delta = abc_to_dq0(delta_action, self.env.net.components[0].phase)
             self.integrator_sum += action_delta * self.antiwindup_weight
 
-            clip_reward = np.clip(np.sum(np.abs(delta_action) * \
-                                         (-1 / (self.env.net.components[0].v_lim / self.env.net.components[
-                                             0].v_DC))) / 3 * (1 - self.gamma),
-                                  -1, 0)
+            # clip_reward = np.clip(np.sum(np.abs(delta_action) * \
+            #                             (-1 / (self.env.net.components[0].v_lim / self.env.net.components[
+            #                                 0].v_DC))) / 3 * (1 - self.gamma),
+            #                      -1, 0)
+
+            clip_reward = 0
+            # toDo reset clip reward for P10 experiment
 
             action_abc = clipped_action
 
@@ -470,7 +473,7 @@ class FeatureWrapper(Monitor):
         """
         Features
         """
-        error = obs[6:9] - obs[3:6]  # control error: v_setpoint - v_mess
+        error = (obs[6:9] - obs[3:6]) / 2  # control error: v_setpoint - v_mess
         # delta_i_lim_i_phasor = 1 - self.i_phasor  # delta to current limit
 
         """
@@ -601,7 +604,7 @@ class FeatureWrapper(Monitor):
         """
         Features
         """
-        error = obs[6:9] - obs[3:6]  # control error: v_setpoint - v_mess
+        error = (obs[6:9] - obs[3:6]) / 2  # control error: v_setpoint - v_mess
         # delta_i_lim_i_phasor = 1 - self.i_phasor  # delta to current limit
 
         """
