@@ -53,6 +53,8 @@ print('Using P10 setting')
 L_filter = 70e-6  # / H
 R_filter = 1.1e-3  # / Ohm
 C_filter = 250e-6  # / F
+lower_bound_load_clip = 1  # to allow maximal load that draws i_limit (let exceed?)
+lower_bound_load_clip_std = 1
 """
 L_filter = 2.3e-3  # / H
 R_filter = 400e-3  # / Ohm
@@ -60,9 +62,9 @@ C_filter = 10e-6  # / F
 # R = 40  # nomVoltPeak / 7.5   # / Ohm
 lower_bound_load = -10  # to allow maximal load that draws i_limit
 upper_bound_load = 200  # to apply symmetrical load bounds
-lower_bound_load_clip = 1  # to allow maximal load that draws i_limit (let exceed?)
+lower_bound_load_clip = 14  # to allow maximal load that draws i_limit (let exceed?)
 upper_bound_load_clip = 200  # to apply symmetrical load bounds
-lower_bound_load_clip_std = 1
+lower_bound_load_clip_std = 2
 upper_bound_load_clip_std = 0
 R = np.random.uniform(low=lower_bound_load, high=upper_bound_load)
 
