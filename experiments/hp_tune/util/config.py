@@ -1,6 +1,5 @@
 cfg = dict(lea_vpn_nodes=['lea-skynet', 'lea-picard', 'lea-barclay',
                           'lea-cyberdyne', 'webbah-ThinkPad-L380', 'LEA_WORK35'],
-
            # STUDY_NAME='PC2_TD3_Vctrl_single_inv_2',
            # STUDY_NAME='PC2_DDPG_Vctrl_single_inv_23_added_Past_vals',
            # STUDY_NAME='PC2_DDPG_Vctrl_single_inv_HPO_noI_term_study_25',
