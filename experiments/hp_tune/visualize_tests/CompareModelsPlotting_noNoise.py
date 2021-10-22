@@ -14,19 +14,21 @@ interval_plt = True
 
 
 # Fuer den Detzerministc case
-# interval_list_x = [[0, 0.01], [0.105, 0.2], [0.695, 0.71], [0.85, 0.88]]
-# interval_list_y = [[-25, 210], [165, 175], [-25, 335], [165, 175]]
+interval_list_x = [[0, 0.01], [0.105, 0.2], [0.695, 0.71], [0.85, 0.88]]
+interval_list_y = [[-25, 210], [165, 175], [-25, 335], [165, 175]]
 
 # Fuer den 10s Fall
-interval_list_x = [[0, 0.01], [2.09, 2.1], [7.08, 7.16], [7.145, 7.16]]
-interval_list_y = [[-25, 210], [-25, 340], [-25, 340], [125, 340]]
+# interval_list_x = [[0, 0.01], [2.09, 2.1], [7.08, 7.16], [7.145, 7.16]]
+# interval_list_y = [[-25, 210], [-25, 340], [-25, 340], [125, 340]]
 # folder_name = 'saves/Comparison_study_future10Rvals_deterministicTestcase'
-folder_name = 'saves/P10_clipped_abortReward'  # _deterministic'
 # folder_name = 'saves/Comparison_study_22_best_pastVal_HPO_deterministic_noMeasNoise'
+folder_names = [
+    'saves/OMG_integratorActor_3_Deterministic']  # , 'saves/OMG_i_load_feature_0_Deterministic']  # _deterministic'
+# folder_names = [ 'saves/OMG_i_load_feature_0_Deterministic']  # _deterministic'
 
-number_of_steps = '_20000steps'
+number_of_steps = '_10000steps'
 
-df = pd.read_pickle(folder_name + '/PI' + number_of_steps)
+df = pd.read_pickle(folder_names[0] + '/PI' + number_of_steps)
 # df = pd.read_pickle(folder_name + '/PI_9989steps')
 
 env_hist_PI = df['env_hist_PI']
@@ -49,7 +51,7 @@ ki_v = df['PI_Ki_v'][0]
 
 # model_names = ['model_5_pastVals.zip']  # ['model_0_pastVals.zip','model_2_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
 model_names = ['model.zip']
-pastVals = ['1']  # ['0', '2', '5', '10', '16', '25']
+pastVals = ['5']  # ['0', '2', '5', '10', '16', '25']
 return_list_DDPG = []
 reward_list_DDPG = []
 
@@ -69,7 +71,7 @@ for i in range(len(interval_list_y)):
     ############## Subplots
     # fig = plt.figure(figsize=(10,12))  # a new figure window
 
-    for model_name, pV in zip(model_names, pastVals):
+    for model_name, pV, folder_name in zip(model_names, pastVals, folder_names):
 
         df_DDPG = pd.read_pickle(folder_name + '/' + model_name + number_of_steps)
         # df_DDPG = pd.read_pickle(folder_name + '/' + model_name + '_9989steps')

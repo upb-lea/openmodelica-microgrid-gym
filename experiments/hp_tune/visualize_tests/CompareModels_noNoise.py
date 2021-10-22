@@ -51,11 +51,12 @@ import gym
 show_plots = True
 save_results = False
 
-folder_name = 'saves/P10_clipped_abortReward_deterministic'  # cfg['STUDY_NAME']
+# folder_name = 'saves/OMG_integratorActor_3_Deterministic'  # cfg['STUDY_NAME']
+folder_name = 'saves/OMG_i_load_feature_0_Deterministic'  # cfg['STUDY_NAME']
 node = platform.uname().node
 
 # model_name = 'model_retrain_pastVals12.zip'
-number_past_vals = [5]  # [0, 5, 10, 16, 25]  # [30, 0]
+number_past_vals = [0]  # [0, 5, 10, 16, 25]  # [30, 0]
 # use_past_vals = [True]  # [False, True, True, True, True]  # [True, False]
 wrapper = ['past']  # ['past', 'future', 'no-I-term', 'I-controller']
 
@@ -64,7 +65,9 @@ wrapper = ['past']  # ['past', 'future', 'no-I-term', 'I-controller']
 # model_path = 'experiments/hp_tune/trained_models/NoPhaseFeature_1427/'
 # model_path = 'experiments/hp_tune/trained_models/study_22_best_iLoad_Feature/'
 # model_path = 'experiments/hp_tune/trained_models/Future_10Rvals/'
-model_path = 'experiments/hp_tune/trained_models/P10_setting_best_study22_clipped_abort_newReward_design_Corr/'
+# model_path = 'experiments/hp_tune/trained_models/P10_setting_best_study22_clipped_abort_newReward_design_Corr/'
+model_path = 'OMG_Integrator_Actor_i_load_feature_2/1/'
+# model_path = 'OMG_Integrator_Actor/3/'
 
 # model_name = [
 # 'model_5_pastVals.zip']  # ['model_0_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
@@ -100,7 +103,7 @@ print('HPs für DDPG ohne I-Anteil!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 mongo_recorder = Recorder(node=node, database_name=folder_name)
 
 num_average = 1
-max_episode_steps_list = [2000]  # [1000, 5000, 10000, 20000, 50000, 100000]
+max_episode_steps_list = [10000]  # [1000, 5000, 10000, 20000, 50000, 100000]
 
 data_str = 'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'
 # data_str = 'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'
@@ -138,13 +141,16 @@ i_nom = net['inverter1'].i_nom  # nominal inverter current / A
 v_nom = net.v_nom
 v_lim = net['inverter1'].v_lim
 v_DC = net['inverter1'].v_DC
-# L_filter = 2.3e-3  # / H
-# R_filter = 400e-3  # / Ohm
-# C_filter = 10e-6  # / F
+L_filter = 2.3e-3  # / H
+R_filter = 400e-3  # / Ohm
+C_filter = 10e-6  # / F
 
+"""
+print("P10 stuff!")
 L_filter = 70e-6  # / H
 R_filter = 1.1e-3  # / Ohm
 C_filter = 250e-6  # / F
+"""
 
 lower_bound_load = -10  # to allow maximal load that draws i_limit
 upper_bound_load = 200  # to apply symmetrical load bounds
@@ -177,21 +183,21 @@ kernel = GPy.kern.Matern32(input_dim=len(bounds), variance=prior_var, lengthscal
 # Definition of the controllers
 # kp_v = 0.002
 # ki_v = 143
-"""
-Old optimized parameters:
+
+# Old optimized parameters:
 kp_v = 0  # 0.0095  # 0.0
 ki_v = 182  # 173.22  # 200
 kp_c = 0.0308  # 0.0404  # 0.04
 ki_c = 13.3584  # 4.065  # 11.8
-"""
 
 """
-P10:
-"""
+#P10:
+print('using p10 setting')
 kp_v = 0.2972
 ki_v = 142.7
 kp_c = 0.00068
 ki_c = 0.731
+"""
 # Choose Kp and Ki for the current and voltage controller as mutable parameters
 mutable_params = dict(voltageP=MutableFloat(kp_v), voltageI=MutableFloat(ki_v))  # 300Hz
 # mutable_params = dict(voltageP=MutableFloat(0.016), voltageI=MutableFloat(105))  # 300Hz
@@ -454,8 +460,8 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                                 # on_episode_reset_callback=cb.fire  # needed?
                                 obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
                                             'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
-                                            'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2'],
-                                # ,'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i'],
+                                            'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2'  # ],
+                                    , 'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i'],
                                 max_episode_steps=max_episode_steps_list[max_eps_steps],
                                 model_params={'lc.resistor1.R': R_filter,
                                               'lc.resistor2.R': R_filter,
@@ -675,10 +681,16 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
             plt.title('DDPG')
             plt.show()
 
-            plt.plot(env_test.integrator_sum_list0)
-            plt.plot(env_test.integrator_sum_list1)
-            plt.plot(env_test.integrator_sum_list2)
+            plt.plot(integrator_sum0)
+            plt.plot(integrator_sum0)
+            plt.plot(integrator_sum0)
             plt.ylabel('intergratorzustand')
+            plt.show()
+
+            plt.plot(action_I0)
+            plt.plot(action_I1)
+            plt.plot(action_I2)
+            plt.ylabel('action I')
             plt.show()
 
             plt.plot(action_P0)
