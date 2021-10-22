@@ -7,86 +7,49 @@ import pandas as pd
 
 
 
-#define general parameter
+#define parameter
 # Inertia, Damping Factor, Line Parameters, Filters, Load steps
-k_p = 20 # P-Droop Factor [dimensionless], it's actually inverse
+k_p_inverse_pu = 20 # P-Droop Factor [dimensionless], it's actually inverse
 t_end = 0.5 # Simulation time / sec
 steps = 1001 # 1 more step than expected, starting and endpoint are included
 nomFreq = 50  # Grid frequency / Hz
 nomVolt = value = 6000 # Voltage / Volt
 omega = 2*np.pi*nomFreq
 tau_VSG = 0.0000# Filter constant of pt1 filter for P and Q, inverse of cut-off frequency
-e1=6600 #V
-u2=6570 #V
-P2_nom=500000 #Watt
+
 Delta_P2_step=96000
 J=np.ones(3)
 J[0]=0.5 # Inertia J_nom  / kgm² J_nom
-J[1]=J[0]*0.5 # Inertia J_1 / kgm²
-J[2]=J[0]*0.1 # Inertia J_2/ kgm²
+
 all_f1=[] #list where all frequencies of the different J are included
 D = 20  # [?, unfortunately given in per unit]
-X_L_lv_line_1km = 0.329  # Line inductance / Henry
-B_L_lv_line_1km = -1 / X_L_lv_line_1km  # Line suszeptance / (1/Henry)
-R_load = u2 ** 2 / P2_nom # Load resistance / Ohm
-R_load_step = u2 ** 2 / (P2_nom + Delta_P2_step) # Load step / Ohm
-Pbase = 500000  # P_base / W
-P1_nom=Pbase # Nominal active power of the inverter / W
-Pdroop_normal= (k_p * Pbase) / omega
+P_base = 500000  # P_base / W
+P_1_nom=P_base
+k_p_inverse= (k_p_inverse_pu * P_base) / omega
 
-step_ohmic_load = np.zeros(steps)
-step_ohmic_load[0:500] = R_load # Resistance load / Ohm
-step_ohmic_load[500:] = R_load_step # Resistance load / Ohm (calculated through P=U²/R)
+P_out = np.zeros(steps)
+P_out[0:500] = 500000 # Resistance load / Ohm
+P_out[500:] = 3000000 # Resistance load / Ohm (calculated through P=U²/R)
 
-T_a=(J[0]*(omega**2))/Pbase # inertia Constant / s
-tau_Droop= (1 / k_p) * T_a # tau for Droop control / s
+##Berechnung von tau Droop
 
-
+T_a= (J[0]*(omega**2)) / P_base #inertia Constant
+tau_Droop= (1 / k_p_inverse_pu) * T_a #inverse droop coefficient inverse value
 
 #######VSG-Control###########################
 
 #Loop through model in order to apply different J for the solver
 for i in range(1):
     m = GEKKO(remote=False)
-    e1=m.Const(e1) # Output voltage / Volt
-    u2=m.Const(u2) # Load voltage / Volt
-    P_out= m.Var(value=0) #Output Voltage behind filter
-    P_2=m.Var(value=0)
-    w1 = m.Var(value=50)
-    w2 = m.Var(value=50)
-    theta1 = m.Var(value=0)
-    theta2 = m.Var(value=0)
-    P_out_dt=m.Var(value=0)
-    P_in=m.Param(value=Pbase)
+    P_out = m.Param(value=P_out) #load
+    P_in = m.Param(value=P_1_nom) #Input power constant of inverter
+    w1=m.Var(value=200)
 
-    #Matrices for node admittance matrix
-    R_load_variable=m.Param(value=step_ohmic_load)
-    G_load=1/R_load_variable
-    B = np.array([[B_L_lv_line_1km, -B_L_lv_line_1km],     #nochmal angucken!
-                  [-B_L_lv_line_1km, B_L_lv_line_1km]])
-
-    G = np.array([[0, 0],
-                  [0, G_load]])
-
-    #Power flow equations
-    m.Equation(e1 * e1 * (G[0][0] * m.cos(theta1 - theta1) + B[0][0] * m.sin(theta1 - theta1)) + \
-               e1 * u2 * (G[0][1] * m.cos(theta1 - theta2) + B[0][1] * m.sin(theta1 - theta2)) == P_out)
-    m.Equation(u2 * e1 * (G[1][0] * m.cos(theta2 - theta1) + B[1][0] * m.sin(theta2 - theta1)) + \
-               u2 * u2 * (G[1][1] * m.cos(theta2 - theta2) + B[1][1] * m.sin(theta2 - theta2)) == P_2)
-
-    # define omega as the derivation of the phase angle
-    m.Equation(theta1.dt() == w1)
-    m.Equation(theta2.dt() == w2)
-    m.Equation(P_out.dt() == P_out_dt)
-
-    #m.Equation(P_in == P1_nom - (Pdroop_base * Pbase * ((w1 - omega) / omega)))
-    m.Equation((P_in-P_out) == J[i]*w1*w1.dt()+D*Pbase*((w1-omega)/omega))
-    m.Equation(w2.dt()==-P_2/(J[i]*w2))
-
-    #Set global options, 7 is the solving of DAE. You can check the GEKKO handbook, but i think, mode 7 and the default stuff of the rest should be fine.
+    m.Equation((P_in-P_out) == J[i] * w1 * w1.dt() + D * P_base * ((w1 - omega) / omega))
     m.options.IMODE = 7
-    m.time = np.linspace(0, t_end, steps) # time points
 
+
+    m.time = np.linspace(0, t_end, steps)
 
     #Solve simulation
     m.solve()
@@ -96,54 +59,16 @@ for i in range(1):
 
 ######Droop Control Model###############################################################################################
 n = GEKKO(remote=False)
-#variables/parameters
-e1=n.Const(e1) # Output voltage / Volt
-u2=n.Const(u2) # Load voltage / Volt
-P_1= n.Var(value=0) #Output Voltage behind filter
-w1 = n.Var(value=50)
-w2 = n.Var(value=50)
-theta1 = n.Var(value=0)
-theta2 = n.Var(value=0)
-P_2=n.Var(value=0)
-omega_Droop=n.Var(value=0)
+w1 = n.Var(value=200)
+P_1=n.Param(value=P_out) #load behind inverter
+omega_Droop=n.Var(value=0) #omega before filter
 
-#Matrices for node admittance matrix
-R_load_variable=n.Param(value=step_ohmic_load)
-G_load=1/R_load_variable
-B = np.array([[B_L_lv_line_1km, -B_L_lv_line_1km],     #nochmal angucken!
-              [-B_L_lv_line_1km, B_L_lv_line_1km]])
-
-
-G = np.array([[0, 0],
-              [0, G_load]])
-
-
-#Power flow equations
-n.Equation(e1 * e1 * (G[0][0] * n.cos(theta1 - theta1) + B[0][0] * n.sin(theta1 - theta1)) + \
-           e1 * u2 * (G[0][1] * n.cos(theta1 - theta2) + B[0][1] * n.sin(theta1 - theta2)) == P_1)
-n.Equation(u2 * e1 * (G[1][0] * n.cos(theta2 - theta1) + B[1][0] * n.sin(theta2 - theta1)) + \
-           u2 * u2 * (G[1][1] * n.cos(theta2 - theta2) + B[1][1] * n.sin(theta2 - theta2)) == P_2)
-
-
+n.Equation(omega_Droop == (-(P_1 - P_1_nom) / k_p_inverse) + omega)
 n.Equation(w1 + (tau_Droop * w1.dt()) == omega_Droop)
 
-
-n.Equation(theta1.dt() == w1)
-n.Equation(theta2.dt() == w2)
-
-
-n.Equation(omega_Droop == (-(P_1 - P1_nom)/Pdroop_normal)+omega)
-n.Equation(w2.dt() == -P_2 /(J[0]*w2))
-
-
-
-
-#Set global options, 7 is the solving of DAE. You can check the GEKKO handbook, but i think, mode 7 and the default stuff of the rest should be fine.
+#Set global options
 n.options.IMODE = 7
-
-
 n.time = np.linspace(0, t_end, steps) # time points
-
 
 #Solve simulation
 n.solve()
@@ -151,11 +76,9 @@ f1 = np.divide(w1, (2*np.pi))
 all_f1.append(f1)
 n.cleanup()
 
-
-
 ####Plots###############################################################################################################
 all_f1=np.asarray(all_f1)
-deviation_f1=all_f1-nomFreq
+deviation_f1=all_f1
 plt.title('Frequenzabweichung $f_1$ von $f_0$')
 plt.plot(m.time, deviation_f1[0], 'r', label=r'VSG: $\Delta_{\mathrm{f_1}}\:(J=J_\mathrm{nom}, D=D_\mathrm{nom})$')
 #plt.plot(m.time, deviation_f1[1], 'b', label=r'VSG: $\Delta_{\mathrm{f_1}}\:(J=J_\mathrm{nom}*0.5 , D=D_\mathrm{nom})$')
@@ -163,9 +86,10 @@ plt.plot(m.time, deviation_f1[1], 'g', label=r'Droop Control')
 plt.axvline(x=0.249, color='black')
 plt.xlabel('Time (s)')
 plt.ylabel(r'$\Delta_{\mathrm{f_1}}\,/\,\mathrm{Hz}$')
-plt.ylim(-2, 1)
+plt.ylim(30, 51)
 plt.legend()
 plt.show()
+
 
 
 # plt.title('Phase Angle')
