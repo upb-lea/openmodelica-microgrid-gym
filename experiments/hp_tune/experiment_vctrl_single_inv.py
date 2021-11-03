@@ -275,12 +275,13 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
         aP0.append(np.float64(action[0]))
         aP1.append(np.float64(action[1]))
         aP2.append(np.float64(action[2]))
-        aI0.append(np.float64(action[3]))
-        aI1.append(np.float64(action[4]))
-        aI2.append(np.float64(action[5]))
-        integrator_sum0.append(np.float64(env_test.integrator_sum[0]))
-        integrator_sum1.append(np.float64(env_test.integrator_sum[1]))
-        integrator_sum2.append(np.float64(env_test.integrator_sum[2]))
+        if cfg['env_wrapper'] not in ['no-I-term']:
+            aI0.append(np.float64(action[3]))
+            aI1.append(np.float64(action[4]))
+            aI2.append(np.float64(action[5]))
+            integrator_sum0.append(np.float64(env_test.integrator_sum[0]))
+            integrator_sum1.append(np.float64(env_test.integrator_sum[1]))
+            integrator_sum2.append(np.float64(env_test.integrator_sum[2]))
 
         if rewards == -1 and not limit_exceeded_in_test:
             # Set addidional penalty of -1 if limit is exceeded once in the test case
