@@ -463,8 +463,8 @@ if __name__ == "__main__":
 
     # optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
 
-    # optuna_optimize_mysql_lea35(ddpg_objective_fix_params, study_name=STUDY_NAME, sampler=TPE_sampler)
-    optuna_optimize_sqlite(ddpg_objective_fix_params, study_name=STUDY_NAME, sampler=TPE_sampler)
+    optuna_optimize_mysql_lea35(ddpg_objective_fix_params, study_name=STUDY_NAME, sampler=TPE_sampler)
+    # optuna_optimize_sqlite(ddpg_objective_fix_params, study_name=STUDY_NAME, sampler=TPE_sampler)
 
     # optuna_optimize(ddpg_objective, study_name=STUDY_NAME,
     # sampler=TPE_sampler)  #, sampler=optuna.samplers.GridSampler(search_space))

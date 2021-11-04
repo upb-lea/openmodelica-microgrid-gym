@@ -207,8 +207,6 @@ class BaseWrapper(Monitor):
         self._n_training_steps = 0
         self.used_P = np.zeros(self.action_space.shape)
 
-        # self.i_phasor = self.cal_phasor_magnitude(obs[0:3])
-        # self.v_phasor = self.cal_phasor_magnitude(obs[3:6])
 
         if cfg['loglevel'] == 'train':
             self.R_training.append(self.env.history.df['r_load.resistor1.R'].iloc[-1])
