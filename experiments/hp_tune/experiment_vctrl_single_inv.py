@@ -52,8 +52,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                    abort_reward=-1,
                    obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
                                'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
-                               'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
-                   # ,'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i']
+                               'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2'  # ]
+                       , 'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i']
                    )
 
     if cfg['env_wrapper'] == 'past':
@@ -197,8 +197,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                         # on_episode_reset_callback=cb.fire  # needed?
                         obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
                                     'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
-                                    'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2']
-                        # ,'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i']
+                                    'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2'  # ]
+                            , 'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i']
                         )
 
     if cfg['env_wrapper'] == 'past':
