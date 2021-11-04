@@ -51,8 +51,9 @@ import gym
 show_plots = True
 save_results = False
 
-# folder_name = 'saves/OMG_integratorActor_3_Deterministic'  # cfg['STUDY_NAME']
-folder_name = 'saves/OMG_i_load_feature_0_Deterministic'  # cfg['STUDY_NAME']
+# folder_name = 'saves/OMG_DDPGActor_wo_integrator_butPastVals_3_Deterministic'  # cfg['STUDY_NAME']
+folder_name = 'saves/study_22_run_11534'  # cfg['STUDY_NAME']
+#  folder_name = 'saves/OMG_i_load_feature_0_Deterministic'  # cfg['STUDY_NAME']
 node = platform.uname().node
 
 # model_name = 'model_retrain_pastVals12.zip'
@@ -61,13 +62,10 @@ number_past_vals = [0]  # [0, 5, 10, 16, 25]  # [30, 0]
 wrapper = ['past']  # ['past', 'future', 'no-I-term', 'I-controller']
 
 # model_name = ['model.zip']
-# model_path = 'experiments/hp_tune/trained_models/study_22_best_pastVal_HPO_oldtestEnv/'
-# model_path = 'experiments/hp_tune/trained_models/NoPhaseFeature_1427/'
-# model_path = 'experiments/hp_tune/trained_models/study_22_best_iLoad_Feature/'
-# model_path = 'experiments/hp_tune/trained_models/Future_10Rvals/'
-# model_path = 'experiments/hp_tune/trained_models/P10_setting_best_study22_clipped_abort_newReward_design_Corr/'
-model_path = 'OMG_Integrator_Actor_i_load_feature_2/1/'
-# model_path = 'OMG_Integrator_Actor/3/'
+# model_path = 'OMG_Integrator_Actor_i_load_feature_2/1/'
+# model_path = 'OMG_Integrator_Actor/32/'
+# model_path = 'OMG_DDPG_Actor/3/'
+model_path = 'experiments/hp_tune/trained_models/study_22_run_11534/'
 
 # model_name = [
 # 'model_5_pastVals.zip']  # ['model_0_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
@@ -103,7 +101,7 @@ print('HPs für DDPG ohne I-Anteil!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 mongo_recorder = Recorder(node=node, database_name=folder_name)
 
 num_average = 1
-max_episode_steps_list = [10000]  # [1000, 5000, 10000, 20000, 50000, 100000]
+max_episode_steps_list = [1000]  # [1000, 5000, 10000, 20000, 50000, 100000]
 
 data_str = 'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'
 # data_str = 'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'
@@ -460,8 +458,8 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                                 # on_episode_reset_callback=cb.fire  # needed?
                                 obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
                                             'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
-                                            'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2'  # ],
-                                    , 'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i'],
+                                            'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2'],
+                                # , 'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i'],
                                 max_episode_steps=max_episode_steps_list[max_eps_steps],
                                 model_params={'lc.resistor1.R': R_filter,
                                               'lc.resistor2.R': R_filter,
