@@ -52,26 +52,25 @@ show_plots = True
 save_results = False
 
 # folder_name = 'saves/OMG_DDPGActor_wo_integrator_butPastVals_3_Deterministic'  # cfg['STUDY_NAME']
-folder_name = 'saves/study_22_run_11534'  # cfg['STUDY_NAME']
+folder_name = 'saves/paper_deterministic'  # cfg['STUDY_NAME']
 #  folder_name = 'saves/OMG_i_load_feature_0_Deterministic'  # cfg['STUDY_NAME']
 node = platform.uname().node
 
 # model_name = 'model_retrain_pastVals12.zip'
-number_past_vals = [0]  # [0, 5, 10, 16, 25]  # [30, 0]
+number_past_vals = [5, 5, 0, 0]  # [0, 5, 10, 16, 25]  # [30, 0]
 # use_past_vals = [True]  # [False, True, True, True, True]  # [True, False]
-wrapper = ['past']  # ['past', 'future', 'no-I-term', 'I-controller']
+wrapper = ['past', 'no-I-term', 'past', 'i_load']  # ['past', 'future', 'no-I-term', 'I-controller']
 
 # model_name = ['model.zip']
 # model_path = 'OMG_Integrator_Actor_i_load_feature_2/1/'
 # model_path = 'OMG_Integrator_Actor/32/'
 # model_path = 'OMG_DDPG_Actor/3/'
-model_path = 'experiments/hp_tune/trained_models/study_22_run_11534/'
+model_path = 'experiments/hp_tune/trained_models/paper/'
 
-# model_name = [
-# 'model_5_pastVals.zip']  # ['model_0_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
-model_name = [
-    'model.zip']  # ['model_0_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
-
+model_name = ['model_OMG_DDPG_Integrator_no_pastVals.zip', 'model_OMG_DDPG_Actor.zip',
+              'model_OMG_DDPG_Integrator_no_pastVals_corr.zip',
+              'model_OMG_DDPG_Integrator_no_pastVals_i_load_feature_corr.zip']
+# model_name = ['model.zip']
 ################DDPG Config Stuff#########################################################################
 gamma = 0.946218
 integrator_weight = 0.311135
@@ -452,43 +451,80 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
 
         for used_model, wrapper_mode, used_number_past_vales in zip(model_name, wrapper, number_past_vals):
 
-            env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v0',
-                                reward_fun=rew.rew_fun_dq0,
-                                abort_reward=-1,  # no needed if in rew no None is given back
-                                # on_episode_reset_callback=cb.fire  # needed?
-                                obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
-                                            'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
-                                            'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2'],
-                                # , 'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i'],
-                                max_episode_steps=max_episode_steps_list[max_eps_steps],
-                                model_params={'lc.resistor1.R': R_filter,
-                                              'lc.resistor2.R': R_filter,
-                                              'lc.resistor3.R': R_filter,
-                                              'lc.resistor4.R': 0.0000001,
-                                              'lc.resistor5.R': 0.0000001,
-                                              'lc.resistor6.R': 0.0000001,
-                                              'lc.inductor1.L': L_filter,
-                                              'lc.inductor2.L': L_filter,
-                                              'lc.inductor3.L': L_filter,
-                                              'lc.capacitor1.C': C_filter,
-                                              'lc.capacitor2.C': C_filter,
-                                              'lc.capacitor3.C': C_filter,
-                                              'r_load.resistor1.R': partial(rand_load_test.give_dataframe_value,
-                                                                            col='r_load.resistor1.R'),
-                                              'r_load.resistor2.R': partial(rand_load_test.give_dataframe_value,
-                                                                            col='r_load.resistor2.R'),
-                                              'r_load.resistor3.R': partial(rand_load_test.give_dataframe_value,
-                                                                            col='r_load.resistor3.R'),
-                                              # 'lc.capacitor1.v': 0,
-                                              # 'lc.capacitor2.v': 0,
-                                              # 'lc.capacitor3.v': 0,
-                                              # 'lc.inductor1.i': 0,
-                                              # 'lc.inductor2.i': 0,
-                                              # 'lc.inductor3.i': 0,
-                                              },
-                                )
+            if wrapper_mode == 'i_load':
+                env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v0',
+                                    reward_fun=rew.rew_fun_dq0,
+                                    abort_reward=-1,  # no needed if in rew no None is given back
+                                    # on_episode_reset_callback=cb.fire  # needed?
+                                    obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
+                                                'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
+                                                'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2'  # ],
+                                        , 'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i'],
+                                    max_episode_steps=max_episode_steps_list[max_eps_steps],
+                                    model_params={'lc.resistor1.R': R_filter,
+                                                  'lc.resistor2.R': R_filter,
+                                                  'lc.resistor3.R': R_filter,
+                                                  'lc.resistor4.R': 0.0000001,
+                                                  'lc.resistor5.R': 0.0000001,
+                                                  'lc.resistor6.R': 0.0000001,
+                                                  'lc.inductor1.L': L_filter,
+                                                  'lc.inductor2.L': L_filter,
+                                                  'lc.inductor3.L': L_filter,
+                                                  'lc.capacitor1.C': C_filter,
+                                                  'lc.capacitor2.C': C_filter,
+                                                  'lc.capacitor3.C': C_filter,
+                                                  'r_load.resistor1.R': partial(rand_load_test.give_dataframe_value,
+                                                                                col='r_load.resistor1.R'),
+                                                  'r_load.resistor2.R': partial(rand_load_test.give_dataframe_value,
+                                                                                col='r_load.resistor2.R'),
+                                                  'r_load.resistor3.R': partial(rand_load_test.give_dataframe_value,
+                                                                                col='r_load.resistor3.R'),
+                                                  # 'lc.capacitor1.v': 0,
+                                                  # 'lc.capacitor2.v': 0,
+                                                  # 'lc.capacitor3.v': 0,
+                                                  # 'lc.inductor1.i': 0,
+                                                  # 'lc.inductor2.i': 0,
+                                                  # 'lc.inductor3.i': 0,
+                                                  },
+                                    )
+            else:
+                env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v0',
+                                    reward_fun=rew.rew_fun_dq0,
+                                    abort_reward=-1,  # no needed if in rew no None is given back
+                                    # on_episode_reset_callback=cb.fire  # needed?
+                                    obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
+                                                'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
+                                                'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2'],
+                                    # , 'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i'],
+                                    max_episode_steps=max_episode_steps_list[max_eps_steps],
+                                    model_params={'lc.resistor1.R': R_filter,
+                                                  'lc.resistor2.R': R_filter,
+                                                  'lc.resistor3.R': R_filter,
+                                                  'lc.resistor4.R': 0.0000001,
+                                                  'lc.resistor5.R': 0.0000001,
+                                                  'lc.resistor6.R': 0.0000001,
+                                                  'lc.inductor1.L': L_filter,
+                                                  'lc.inductor2.L': L_filter,
+                                                  'lc.inductor3.L': L_filter,
+                                                  'lc.capacitor1.C': C_filter,
+                                                  'lc.capacitor2.C': C_filter,
+                                                  'lc.capacitor3.C': C_filter,
+                                                  'r_load.resistor1.R': partial(rand_load_test.give_dataframe_value,
+                                                                                col='r_load.resistor1.R'),
+                                                  'r_load.resistor2.R': partial(rand_load_test.give_dataframe_value,
+                                                                                col='r_load.resistor2.R'),
+                                                  'r_load.resistor3.R': partial(rand_load_test.give_dataframe_value,
+                                                                                col='r_load.resistor3.R'),
+                                                  # 'lc.capacitor1.v': 0,
+                                                  # 'lc.capacitor2.v': 0,
+                                                  # 'lc.capacitor3.v': 0,
+                                                  # 'lc.inductor1.i': 0,
+                                                  # 'lc.inductor2.i': 0,
+                                                  # 'lc.inductor3.i': 0,
+                                                  },
+                                    )
 
-            if wrapper_mode == 'past':
+            if wrapper_mode in ['past', 'i_load']:
                 env_test = FeatureWrapper_pastVals(env_test, number_of_features=9 + used_number_past_vales * 3,
                                                    # training_episode_length=training_episode_length, (da aus pickle!)
                                                    recorder=mongo_recorder, n_trail=n_trail,
@@ -515,7 +551,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                                                        number_past_vals=number_past_vals)
 
             elif wrapper_mode == 'no-I-term':
-                env_test = BaseWrapper(env_test, number_of_features=8 + used_number_past_vales * 3,
+                env_test = BaseWrapper(env_test, number_of_features=6 + used_number_past_vales * 3,
                                        recorder=mongo_recorder, n_trail=n_trail, gamma=gamma,
                                        number_past_vals=used_number_past_vales)
 
@@ -530,7 +566,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                 env_test.action_space = gym.spaces.Box(low=np.full(6, -1), high=np.full(6, 1))
 
             # model2 = DDPG.load(model_path + f'model.zip')  # , env=env_test)
-            model = DDPG.load(model_path + f'{used_model}')  # , env=env_test)
+            model = DDPG.load(model_path + f'{used_model}', env=env_test)
 
             count = 0
             for kk in range(actor_number_layers + 1):
