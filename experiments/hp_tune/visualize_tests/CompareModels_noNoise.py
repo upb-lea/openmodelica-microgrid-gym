@@ -1,3 +1,5 @@
+print('Start script')
+
 import logging
 import os
 import platform
