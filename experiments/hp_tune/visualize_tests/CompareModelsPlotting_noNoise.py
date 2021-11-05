@@ -18,14 +18,15 @@ interval_list_x = [[0, 0.01], [0.105, 0.2], [0.695, 0.71], [0.85, 0.88]]
 interval_list_y = [[-25, 210], [165, 175], [-25, 335], [165, 175]]
 
 # Fuer den 10s Fall
-# interval_list_x = [[0, 0.01], [2.09, 2.1], [7.08, 7.16], [7.145, 7.16]]
-# interval_list_y = [[-25, 210], [-25, 340], [-25, 340], [125, 340]]
+interval_list_x = [[0, 0.01], [2.09, 2.1], [7.08, 7.16], [7.145, 7.16]]
+interval_list_y = [[-25, 210], [-25, 340], [-25, 340], [125, 340]]
 # folder_name = 'saves/Comparison_study_future10Rvals_deterministicTestcase'
 # folder_name = 'saves/Comparison_study_22_best_pastVal_HPO_deterministic_noMeasNoise'
 folder_names = [
     'saves/OMG_integratorActor_3_Deterministic']  # , 'saves/OMG_i_load_feature_0_Deterministic']  # _deterministic'
 folder_names = ['saves/OMG_i_load_feature_0_Deterministic']  # _deterministic'
 folder_names = ['saves/paper_deterministic']  # _deterministic'
+folder_names = ['saves/paper']  # _deterministic'
 # folder_names = [ 'saves/paper_deterministic', 'saves/paper_deterministic', 'saves/paper_deterministic', 'saves/paper_deterministic']  # _deterministic'
 
 number_of_steps = '_10000steps'
