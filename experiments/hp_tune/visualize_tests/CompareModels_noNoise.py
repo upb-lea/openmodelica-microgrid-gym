@@ -67,13 +67,14 @@ wrapper = ['past']  #, 'no-I-term', 'past', 'i_load']  # ['past', 'future', 'no-
 # model_path = 'OMG_Integrator_Actor_i_load_feature_2/1/'
 # model_path = 'OMG_DDPG_Actor/3/'
 model_path = 'experiments/hp_tune/trained_models/paper/'
+model_path = 'experiments/hp_tune/trained_models/NoPhaseFeature_1427/'
 # model_path = 'OMG_Integrator_Actor/32/'
 
 model_name = ['model_OMG_DDPG_Integrator_no_pastVals.zip', 'model_OMG_DDPG_Actor.zip',
               'model_OMG_DDPG_Integrator_no_pastVals_corr.zip',
               'model_OMG_DDPG_Integrator_no_pastVals_i_load_feature_corr.zip']
 
-model_name = ['model_OMG_DDPG_Integrator_no_pastVals.zip']
+model_name = ['model_5_pastVals.zip']
 # model_name = ['model.zip']
 ################DDPG Config Stuff#########################################################################
 gamma = 0.946218
@@ -104,7 +105,7 @@ print('HPs für DDPG ohne I-Anteil!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 mongo_recorder = Recorder(node=node, database_name=folder_name)
 
 num_average = 1
-max_episode_steps_list = [10000]  # [1000, 5000, 10000, 20000, 50000, 100000]
+max_episode_steps_list = [100000]  # [1000, 5000, 10000, 20000, 50000, 100000]
 
 data_str = 'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'
 data_str = 'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'
@@ -380,7 +381,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
         R_load_PI = []
         limit_exceeded_in_test_PI = False
         limit_exceeded_penalty_PI = 0
-
+        """
         agent.reset()
         agent.obs_varnames = env.history.cols
         env.history.cols = env.history.structured_cols(None) + agent.measurement_cols
@@ -443,7 +444,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                           }
         store_df = pd.DataFrame([compare_result])
         store_df.to_pickle(f'{folder_name}/PI_{max_episode_steps_list[max_eps_steps]}steps')
-
+        """
         ####################################DDPG Stuff##############################################
 
         rew.gamma = 0
@@ -767,7 +768,8 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                               "optimization node": 'Thinkpad',
                               }
             store_df = pd.DataFrame([compare_result])
-            store_df.to_pickle(f'{folder_name}/' + used_model + f'_{max_episode_steps_list[max_eps_steps]}steps')
+            store_df.to_pickle(
+                f'{folder_name}/' + used_model + f'_{max_episode_steps_list[max_eps_steps]}steps_NoPhaseFeature_1427')
 
         ret_list.append((return_sum / env_test.max_episode_steps + limit_exceeded_penalty))
         ret_array[ave_run] = (return_sum / env_test.max_episode_steps + limit_exceeded_penalty)

@@ -18,8 +18,8 @@ interval_list_x = [[0, 0.01], [0.105, 0.2], [0.695, 0.71], [0.85, 0.88]]
 interval_list_y = [[-25, 210], [165, 175], [-25, 335], [165, 175]]
 
 # Fuer den 10s Fall
-interval_list_x = [[0, 0.01], [2.09, 2.1], [7.08, 7.16], [7.145, 7.16]]
-interval_list_y = [[-25, 210], [-25, 340], [-25, 340], [125, 340]]
+interval_list_x = [[0, 0.01], [2.09, 2.1], [2.11, 2.12], [7.08, 7.16], [7.145, 7.16]]
+interval_list_y = [[-25, 210], [-25, 340], [160, 190], [-25, 340], [125, 340]]
 # folder_name = 'saves/Comparison_study_future10Rvals_deterministicTestcase'
 # folder_name = 'saves/Comparison_study_22_best_pastVal_HPO_deterministic_noMeasNoise'
 folder_names = [
@@ -27,9 +27,9 @@ folder_names = [
 folder_names = ['saves/OMG_i_load_feature_0_Deterministic']  # _deterministic'
 folder_names = ['saves/paper_deterministic']  # _deterministic'
 folder_names = ['saves/paper']  # _deterministic'
-# folder_names = [ 'saves/paper_deterministic', 'saves/paper_deterministic', 'saves/paper_deterministic', 'saves/paper_deterministic']  # _deterministic'
+# folder_names = [ 'saves/paper', 'saves/paper', 'saves/paper', 'saves/paper']  # _deterministic'
 
-number_of_steps = '_10000steps'
+number_of_steps = '_100000steps'
 
 df = pd.read_pickle(folder_names[0] + '/PI' + number_of_steps)
 # df = pd.read_pickle(folder_name + '/PI_9989steps')
@@ -52,16 +52,17 @@ ki_c = df['PI_Ki_c'][0]
 kp_v = df['PI_Kp_v'][0]
 ki_v = df['PI_Ki_v'][0]
 
-# model_names = ['model_OMG_DDPG_Actor.zip', 'model_OMG_DDPG_Integrator_no_pastVals_corr.zip',
-#               'model_OMG_DDPG_Integrator_no_pastVals.zip',
-#               'model_OMG_DDPG_Integrator_no_pastVals_i_load_feature_corr.zip']
+model_names = ['model_OMG_DDPG_Actor.zip', 'model_OMG_DDPG_Integrator_no_pastVals_corr.zip',
+               'model_OMG_DDPG_Integrator_no_pastVals.zip',
+               'model_OMG_DDPG_Integrator_no_pastVals_i_load_feature_corr.zip']
 ylabels = ['DDPG', 'DDPG-I', 'DDPG-I+pastVals', 'DDPG-I+i_load']
+# ylabels = ['DDPG-I+pastVals']
 ylabels = ['DDPG-I+pastVals']
 # model_names = ['model_OMG_DDPG_Actor.zip']  # ['model_0_pastVals.zip','model_2_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
 model_names = ['model_OMG_DDPG_Integrator_no_pastVals.zip']
 # model_names = ['model_OMG_DDPG_Integrator_no_pastVals_i_load_feature_corr.zip']
 # model_names = ['model_OMG_DDPG_Integrator_no_pastVals_corr.zip']
-pastVals = ['5', '0', '5', '0']  # ['0', '2', '5', '10', '16', '25']
+# pastVals = ['5', '0', '5', '0']  # ['0', '2', '5', '10', '16', '25']
 pastVals = ['5']  # ['0', '2', '5', '10', '16', '25']
 return_list_DDPG = []
 reward_list_DDPG = []
@@ -85,11 +86,11 @@ for i in range(len(interval_list_y)):
     for model_name, pV, folder_name, ylabel_use in zip(model_names, pastVals, folder_names, ylabels):
 
         df_DDPG = pd.read_pickle(folder_name + '/' + model_name + number_of_steps)
-        # df_DDPG = pd.read_pickle(folder_name + '/' + model_name + '_9989steps')
+        #df_DDPG = pd.read_pickle(folder_name + '/' 'model_5_pastVals.zip_100000steps_NoPhaseFeature_1427')
 
         if i == 0:
             return_list_DDPG.append(round(df_DDPG['Return DDPG'][0], 7))
-            reward_list_DDPG.append(df_DDPG['Reward DDPG'][0])
+        #    reward_list_DDPG.append(df_DDPG['Reward DDPG'][0])
 
         env_hist_DDPG = df_DDPG['env_hist_DDPG']
 
@@ -111,9 +112,9 @@ for i in range(len(interval_list_y)):
         # ax.set_xlabel(r'$t\,/\,\mathrm{s}$')
 
         DDPG_reward = df_DDPG['Reward DDPG'][0]
-
-        axs[1, i].plot(t_reward, reward_PI, 'b', label=f'      PI: '
-                                                       f'{round(sum(reward_PI[int(interval_list_x[i][0] / ts):int(interval_list_x[i][1] / ts)]) / ((interval_list_x[i][1] - interval_list_x[i][0]) / ts), 4)}')
+        if plt_count == 3:
+            axs[1, i].plot(t_reward, reward_PI, 'b', label=f'      PI: '
+                                                           f'{round(sum(reward_PI[int(interval_list_x[i][0] / ts):int(interval_list_x[i][1] / ts)]) / ((interval_list_x[i][1] - interval_list_x[i][0]) / ts), 4)}')
         axs[1, i].plot(t_reward, DDPG_reward, 'r', label=f'DDPG: '
                                                          f'{round(sum(DDPG_reward[int(interval_list_x[i][0] / ts):int(interval_list_x[i][1] / ts)]) / ((interval_list_x[i][1] - interval_list_x[i][0]) / ts), 4)}')
         axs[1, i].grid()
@@ -150,9 +151,9 @@ for i in range(len(interval_list_y)):
         plt_count += 1
 
 fig.suptitle(f'Model using pastVals:' + str(pastVals) + ' \n '
-                                                        f'Model-return(MRE)' + str(return_list_DDPG[0]) + ' \n'
-                                                                                                          f'  PI-return(MRE):     {round(return_PI, 7)} \n '
-                                                                                                          f'PI: Kp_i = {kp_c}, Ki_i = {ki_c}, Kp_v = {kp_v}, Ki_v = {ki_v}',
+                                                        f'Model-return(MRE)' + str(return_list_DDPG) + ' \n'
+                                                                                                       f'  PI-return(MRE):     {round(return_PI, 7)} \n '
+                                                                                                       f'PI: Kp_i = {kp_c}, Ki_i = {ki_c}, Kp_v = {kp_v}, Ki_v = {ki_v}',
              fontsize=14)
 
 fig.subplots_adjust(wspace=0.2, hspace=0.2)
