@@ -400,7 +400,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                 limit_exceeded_in_test_PI = True
                 limit_exceeded_penalty_PI = -1
 
-        _, env_fig = env.close()
+        # _, env_fig = env.close()
         agent.observe(r_PI, done_PI)
 
         v_a_PI = env.history.df['lc.capacitor1.v']
