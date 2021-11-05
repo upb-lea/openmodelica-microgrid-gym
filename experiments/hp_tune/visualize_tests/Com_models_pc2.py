@@ -59,9 +59,9 @@ folder_name = 'saves/paper_deterministic'  # cfg['STUDY_NAME']
 node = platform.uname().node
 
 # model_name = 'model_retrain_pastVals12.zip'
-number_past_vals = [5]  # , 5, 0, 0]  # [0, 5, 10, 16, 25]  # [30, 0]
+number_past_vals = [5, 5, 0, 0]  # [0, 5, 10, 16, 25]  # [30, 0]
 # use_past_vals = [True]  # [False, True, True, True, True]  # [True, False]
-wrapper = ['past']  # , 'no-I-term', 'past', 'i_load']  # ['past', 'future', 'no-I-term', 'I-controller']
+wrapper = ['past', 'no-I-term', 'past', 'i_load']  # ['past', 'future', 'no-I-term', 'I-controller']
 
 # model_name = ['model.zip']
 # model_path = 'OMG_Integrator_Actor_i_load_feature_2/1/'
@@ -73,7 +73,7 @@ model_name = ['model_OMG_DDPG_Integrator_no_pastVals.zip', 'model_OMG_DDPG_Actor
               'model_OMG_DDPG_Integrator_no_pastVals_corr.zip',
               'model_OMG_DDPG_Integrator_no_pastVals_i_load_feature_corr.zip']
 
-model_name = ['model_OMG_DDPG_Integrator_no_pastVals.zip']
+# model_name = ['model_OMG_DDPG_Integrator_no_pastVals.zip']
 # model_name = ['model.zip']
 ################DDPG Config Stuff#########################################################################
 gamma = 0.946218
@@ -104,7 +104,7 @@ print('HPs für DDPG ohne I-Anteil!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 mongo_recorder = Recorder(node=node, database_name=folder_name)
 
 num_average = 1
-max_episode_steps_list = [100]  # [1000, 5000, 10000, 20000, 50000, 100000]
+max_episode_steps_list = [10000]  # [1000, 5000, 10000, 20000, 50000, 100000]
 
 data_str = 'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'
 # data_str = 'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'
