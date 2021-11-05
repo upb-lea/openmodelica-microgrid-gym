@@ -54,7 +54,7 @@ show_plots = True
 save_results = False
 
 # folder_name = 'saves/OMG_DDPGActor_wo_integrator_butPastVals_3_Deterministic'  # cfg['STUDY_NAME']
-folder_name = 'saves/paper_deterministic'  # cfg['STUDY_NAME']
+folder_name = 'saves/paper'  # cfg['STUDY_NAME']
 #  folder_name = 'saves/OMG_i_load_feature_0_Deterministic'  # cfg['STUDY_NAME']
 node = platform.uname().node
 
@@ -106,8 +106,8 @@ mongo_recorder = Recorder(node=node, database_name=folder_name)
 num_average = 1
 max_episode_steps_list = [10000]  # [1000, 5000, 10000, 20000, 50000, 100000]
 
-data_str = 'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'
-# data_str = 'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'
+# data_str = 'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'
+data_str = 'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'
 # data_str = 'experiments/hp_tune/data/R_load_hard_test_case_60_seconds_noReset.pkl'
 
 result_list = []

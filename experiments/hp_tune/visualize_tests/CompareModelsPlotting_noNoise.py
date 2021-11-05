@@ -24,7 +24,9 @@ interval_list_y = [[-25, 210], [165, 175], [-25, 335], [165, 175]]
 # folder_name = 'saves/Comparison_study_22_best_pastVal_HPO_deterministic_noMeasNoise'
 folder_names = [
     'saves/OMG_integratorActor_3_Deterministic']  # , 'saves/OMG_i_load_feature_0_Deterministic']  # _deterministic'
-# folder_names = [ 'saves/OMG_i_load_feature_0_Deterministic']  # _deterministic'
+folder_names = ['saves/OMG_i_load_feature_0_Deterministic']  # _deterministic'
+folder_names = ['saves/paper_deterministic']  # _deterministic'
+# folder_names = [ 'saves/paper_deterministic', 'saves/paper_deterministic', 'saves/paper_deterministic', 'saves/paper_deterministic']  # _deterministic'
 
 number_of_steps = '_10000steps'
 
@@ -49,8 +51,16 @@ ki_c = df['PI_Ki_c'][0]
 kp_v = df['PI_Kp_v'][0]
 ki_v = df['PI_Ki_v'][0]
 
-# model_names = ['model_5_pastVals.zip']  # ['model_0_pastVals.zip','model_2_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
-model_names = ['model.zip']
+# model_names = ['model_OMG_DDPG_Actor.zip', 'model_OMG_DDPG_Integrator_no_pastVals_corr.zip',
+#               'model_OMG_DDPG_Integrator_no_pastVals.zip',
+#               'model_OMG_DDPG_Integrator_no_pastVals_i_load_feature_corr.zip']
+ylabels = ['DDPG', 'DDPG-I', 'DDPG-I+pastVals', 'DDPG-I+i_load']
+ylabels = ['DDPG-I+pastVals']
+# model_names = ['model_OMG_DDPG_Actor.zip']  # ['model_0_pastVals.zip','model_2_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
+model_names = ['model_OMG_DDPG_Integrator_no_pastVals.zip']
+# model_names = ['model_OMG_DDPG_Integrator_no_pastVals_i_load_feature_corr.zip']
+# model_names = ['model_OMG_DDPG_Integrator_no_pastVals_corr.zip']
+pastVals = ['5', '0', '5', '0']  # ['0', '2', '5', '10', '16', '25']
 pastVals = ['5']  # ['0', '2', '5', '10', '16', '25']
 return_list_DDPG = []
 reward_list_DDPG = []
@@ -71,7 +81,7 @@ for i in range(len(interval_list_y)):
     ############## Subplots
     # fig = plt.figure(figsize=(10,12))  # a new figure window
 
-    for model_name, pV, folder_name in zip(model_names, pastVals, folder_names):
+    for model_name, pV, folder_name, ylabel_use in zip(model_names, pastVals, folder_names, ylabels):
 
         df_DDPG = pd.read_pickle(folder_name + '/' + model_name + number_of_steps)
         # df_DDPG = pd.read_pickle(folder_name + '/' + model_name + '_9989steps')
@@ -132,7 +142,8 @@ for i in range(len(interval_list_y)):
         axs[plt_count, i].set_xlabel(r'$t\,/\,\mathrm{s}$')
         if i == 0:
             # axs[plt_count, i].set_ylabel(pV)
-            axs[plt_count, i].set_ylabel("$v_{\mathrm{dq0, DDPG}}\,/\,\mathrm{V}$")
+            axs[plt_count, i].set_ylabel(ylabel_use)
+            #axs[plt_count, i].set_ylabel("$v_{\mathrm{dq0, DDPG}}\,/\,\mathrm{V}$")
         # else:
         #    axs[plt_count, i].set_ylabel("$v_{\mathrm{q0, DDPG}}\,/\,\mathrm{V}$")
         plt_count += 1
