@@ -61,7 +61,7 @@ node = platform.uname().node
 # model_name = 'model_retrain_pastVals12.zip'
 number_past_vals = [5]  # , 5, 0, 0]  # [0, 5, 10, 16, 25]  # [30, 0]
 # use_past_vals = [True]  # [False, True, True, True, True]  # [True, False]
-wrapper = ['past']  #, 'no-I-term', 'past', 'i_load']  # ['past', 'future', 'no-I-term', 'I-controller']
+wrapper = ['past']  # , 'no-I-term', 'past', 'i_load']  # ['past', 'future', 'no-I-term', 'I-controller']
 
 # model_name = ['model.zip']
 # model_path = 'OMG_Integrator_Actor_i_load_feature_2/1/'
@@ -227,7 +227,7 @@ agent = SafeOptAgent(mutable_params,
                      history=FullHistory(),
                      )
 
-
+""""""
 for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit='step', leave=False):
 
     for ave_run in tqdm(range(num_average), desc='steps', unit='step', leave=False):
@@ -370,7 +370,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                        # on_episode_reset_callback=cb.fire,
                        action_time_delay=1 * undersample
                        )
-
+        """
         rew.gamma = 0
         return_sum_PI = 0.0
         rew_list_PI = []
@@ -443,7 +443,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                           }
         store_df = pd.DataFrame([compare_result])
         store_df.to_pickle(f'{folder_name}/PI_{max_episode_steps_list[max_eps_steps]}steps')
-
+        """
         ####################################DDPG Stuff##############################################
 
         rew.gamma = 0
@@ -570,7 +570,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                 env_test.action_space = gym.spaces.Box(low=np.full(6, -1), high=np.full(6, 1))
 
             # model2 = DDPG.load(model_path + f'model.zip')  # , env=env_test)
-            model = DDPG.load(model_path + f'{used_model}')  #, env=env_test)
+            model = DDPG.load(model_path + f'{used_model}')  # , env=env_test)
 
             count = 0
             for kk in range(actor_number_layers + 1):
@@ -672,7 +672,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
             v_d = (v_dq0[0].tolist())
             v_q = (v_dq0[1].tolist())
             v_0 = (v_dq0[2].tolist())
-
+            """
             plt.plot(v_d_PI, 'b')
             plt.plot(v_q_PI, 'r')
             plt.plot(v_0_PI, 'g')
@@ -695,6 +695,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
             plt.ylabel('$R_{\mathrm{abc}}\,/\,\mathrm{\Omega}$')
             plt.title('Test')
             plt.show()
+            """
 
             plt.plot(v_d, 'b')
             plt.plot(v_q, 'r')
