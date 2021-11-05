@@ -570,7 +570,11 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                 env_test.action_space = gym.spaces.Box(low=np.full(6, -1), high=np.full(6, 1))
 
             # model2 = DDPG.load(model_path + f'model.zip')  # , env=env_test)
+            print('Before load')
+
             model = DDPG.load(model_path + f'{used_model}')  # , env=env_test)
+
+            print('After load')
 
             count = 0
             for kk in range(actor_number_layers + 1):
