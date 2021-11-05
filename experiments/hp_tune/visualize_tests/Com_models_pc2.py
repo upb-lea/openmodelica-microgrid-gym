@@ -745,7 +745,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
             # return (return_sum / env_test.max_episode_steps + limit_exceeded_penalty)
 
             print(f'RL: {(return_sum / env_test.max_episode_steps + limit_exceeded_penalty)}')
-            print(f'PI: {(return_sum_PI / env.max_episode_steps + limit_exceeded_penalty_PI)}')
+            # print(f'PI: {(return_sum_PI / env.max_episode_steps + limit_exceeded_penalty_PI)}')
 
             ts = time.gmtime()
             compare_result = {"Name": "comparison_PI_DDPG",
