@@ -154,7 +154,7 @@ all_f1=np.asarray(all_f1)
 deviation_f1=all_f1-nomFreq
 plt.title('Frequenzabweichung $f_1$ von $f_0$')
 plt.plot(m.time, deviation_f1[0], 'r', label=r'VSG: $\Delta_{\mathrm{f_1}}\:(J=J_\mathrm{nom}, D=D_\mathrm{nom})$')
-plt.plot(m.time, deviation_f1[1], 'g', label=r'Droop Control')
+plt.plot(m.time, deviation_f1[1], 'g', label=r'Droop Control: $\Delta_{\mathrm{f_1}}$')
 plt.axvline(x=0.249, color='black')
 plt.xlabel('Time (s)')
 plt.ylabel(r'$\Delta_{\mathrm{f_1}}\,/\,\mathrm{Hz}$')
