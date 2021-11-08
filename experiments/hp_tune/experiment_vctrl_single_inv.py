@@ -318,6 +318,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     reward_test_after_training = {"Name": "Test_Reward",
                                   "time": ts,
                                   "Reward": rew_list,
+                                  "Return": (return_sum / env_test.max_episode_steps + limit_exceeded_penalty),
                                   "Trial number": n_trail,
                                   "Database name": folder_name,
                                   "Node": platform.uname().node,
@@ -369,6 +370,6 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
         env_test.viz_col_tmpls[2].vars[i]].copy().tolist() for i in range(3)
                                 })
 
-    mongo_recorder.save_to_json('Trial_number_' + n_trail, test_after_training)
+    # mongo_recorder.save_to_json('Trial_number_' + n_trail, test_after_training)
 
     return (return_sum / env_test.max_episode_steps + limit_exceeded_penalty)
