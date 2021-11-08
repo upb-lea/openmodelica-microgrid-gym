@@ -109,7 +109,7 @@ def ddpg_objective_fix_params(trial):
     optimizer = trial_config[
         "optimizer"]  # trial.suggest_categorical("optimizer", ["Adam", "SGD", "RMSprop"])  # , "LBFGS"])
 
-    number_past_vals = 5  # trial.suggest_int("number_past_vals", 0, 15)
+    number_past_vals = 0  # trial.suggest_int("number_past_vals", 0, 15)
 
     learning_rate = linear_schedule(initial_value=learning_rate, final_value=learning_rate * final_lr,
                                     t_start=t_start,
