@@ -59,9 +59,11 @@ folder_name = 'saves/paper_new'  # cfg['STUDY_NAME']
 node = platform.uname().node
 
 # model_name = 'model_retrain_pastVals12.zip'
-number_past_vals = [5, 5, 0, 0]  # [0, 5, 10, 16, 25]  # [30, 0]
+# number_past_vals = [5, 5, 0, 0]  # [0, 5, 10, 16, 25]  # [30, 0]
+number_past_vals = [0]  # [0, 5, 10, 16, 25]  # [30, 0]
 # use_past_vals = [True]  # [False, True, True, True, True]  # [True, False]
-wrapper = ['past', 'no-I-term', 'past', 'i_load']  # ['past', 'future', 'no-I-term', 'I-controller']
+# wrapper = ['past', 'no-I-term', 'past', 'i_load']  # ['past', 'future', 'no-I-term', 'I-controller']
+wrapper = ['i_load']  # ['past', 'future', 'no-I-term', 'I-controller']
 
 # model_name = ['model.zip']
 # model_path = 'OMG_Integrator_Actor_i_load_feature_2/1/'
@@ -69,11 +71,11 @@ wrapper = ['past', 'no-I-term', 'past', 'i_load']  # ['past', 'future', 'no-I-te
 model_path = 'experiments/hp_tune/trained_models/paper/'
 # model_path = 'OMG_Integrator_Actor/32/'
 
-model_name = ['model_OMG_DDPG_Integrator_no_pastVals.zip', 'model_OMG_DDPG_Actor.zip',
-              'model_OMG_DDPG_Integrator_no_pastVals_corr.zip',
-              'model_OMG_DDPG_Integrator_no_pastVals_i_load_feature_corr.zip']
+# model_name = ['model_OMG_DDPG_Integrator_no_pastVals.zip', 'model_OMG_DDPG_Actor.zip',
+#              'model_OMG_DDPG_Integrator_no_pastVals_corr.zip',
+#              'model_OMG_DDPG_Integrator_no_pastVals_i_load_feature_corr.zip']
 
-# model_name = ['model_OMG_DDPG_Integrator_no_pastVals.zip']
+model_name = ['model_OMG_DDPG_Integrator_no_pastVals_i_load_feature_corr.zip']
 # model_name = ['model.zip']
 ################DDPG Config Stuff#########################################################################
 gamma = 0.946218
