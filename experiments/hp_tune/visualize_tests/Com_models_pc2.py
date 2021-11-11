@@ -54,7 +54,7 @@ show_plots = True
 save_results = False
 
 # folder_name = 'saves/OMG_DDPGActor_wo_integrator_butPastVals_3_Deterministic'  # cfg['STUDY_NAME']
-folder_name = 'saves/paper'  # cfg['STUDY_NAME']
+folder_name = 'saves/paper_new'  # cfg['STUDY_NAME']
 #  folder_name = 'saves/OMG_i_load_feature_0_Deterministic'  # cfg['STUDY_NAME']
 node = platform.uname().node
 
