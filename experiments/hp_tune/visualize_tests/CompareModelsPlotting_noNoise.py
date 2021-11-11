@@ -27,7 +27,7 @@ folder_names = [
 folder_names = ['saves/OMG_i_load_feature_0_Deterministic']  # _deterministic'
 folder_names = ['saves/paper_deterministic']  # _deterministic'
 folder_names = ['saves/paper']  # _deterministic'
-# folder_names = [ 'saves/paper', 'saves/paper', 'saves/paper', 'saves/paper']  # _deterministic'
+folder_names = ['saves/paper_new', 'saves/paper_new', 'saves/paper_new', 'saves/paper_new']  # _deterministic'
 
 number_of_steps = '_100000steps'
 
@@ -57,13 +57,13 @@ model_names = ['model_OMG_DDPG_Actor.zip', 'model_OMG_DDPG_Integrator_no_pastVal
                'model_OMG_DDPG_Integrator_no_pastVals_i_load_feature_corr.zip']
 ylabels = ['DDPG', 'DDPG-I', 'DDPG-I+pastVals', 'DDPG-I+i_load']
 # ylabels = ['DDPG-I+pastVals']
-ylabels = ['DDPG-I+pastVals']
+# ylabels = ['DDPG-I+pastVals']
 # model_names = ['model_OMG_DDPG_Actor.zip']  # ['model_0_pastVals.zip','model_2_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
-model_names = ['model_OMG_DDPG_Integrator_no_pastVals.zip']
+# model_names = ['model_OMG_DDPG_Integrator_no_pastVals.zip']
 # model_names = ['model_OMG_DDPG_Integrator_no_pastVals_i_load_feature_corr.zip']
 # model_names = ['model_OMG_DDPG_Integrator_no_pastVals_corr.zip']
-# pastVals = ['5', '0', '5', '0']  # ['0', '2', '5', '10', '16', '25']
-pastVals = ['5']  # ['0', '2', '5', '10', '16', '25']
+pastVals = ['5', '0', '5', '0']  # ['0', '2', '5', '10', '16', '25']
+# pastVals = ['5']  # ['0', '2', '5', '10', '16', '25']
 return_list_DDPG = []
 reward_list_DDPG = []
 
