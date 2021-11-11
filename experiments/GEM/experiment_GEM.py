@@ -54,26 +54,36 @@ class AppendLastActionWrapper(Wrapper):
             np.concatenate((environment.observation_space[0].high, environment.action_space.high))
         ), environment.observation_space[1]))
 
+        self.v_d_mess = []
+        self.v_q_mess = []
+
     def step(self, action):
         (state, ref), rew, term, info = self.env.step(action)
 
+        self.v_d_mess.append(np.float64(state[2]))
+        self.v_q_mess.append(np.float64(state[3]))
+        state = np.delete(state, [2, 3])
         # extend the output state by the selected action
         # state = np.concatenate((state, action))
 
         return (state, ref), rew, term, info
 
     def reset(self, **kwargs):
-
-
         # extend the output state by zeros after reset
         # no action can be appended yet, but the dimension must fit
         # state = np.concatenate((state, np.zeros(self.env.action_space.shape)))
+
+        self.v_d_mess = []
+        self.v_q_mess = []
 
         # set random reference values
         self.env.reference_generator._sub_generators[0]._reference_value = np.random.uniform(-1, 0)
         self.env.reference_generator._sub_generators[1]._reference_value = np.random.uniform(-1, 1)
 
         state, ref = self.env.reset()
+        self.v_d_mess.append(np.float64(state[2]))
+        self.v_q_mess.append(np.float64(state[3]))
+        state = np.delete(state, [2, 3])  # remove vdq from state
 
         return state, ref
 
@@ -106,12 +116,18 @@ class AppendLastActionWrapper_testsetting(AppendLastActionWrapper):
         return (state, ref), rew, term, info
 
     def reset(self, **kwargs):
+        self.v_d_mess = []
+        self.v_q_mess = []
+
         self.env.reference_generator._sub_generators[0]._reference_value = self.new_ref_d[
             self.ref_count]  # np.random.uniform(-1, 0)
         self.env.reference_generator._sub_generators[1]._reference_value = self.new_ref_q[
             self.ref_count]  # np.random.uniform(-1, 1)
 
         state, ref = self.env.reset()
+        self.v_d_mess.append(np.float64(state[2]))
+        self.v_q_mess.append(np.float64(state[3]))
+        state = np.delete(state, [2, 3])  # remove vdq from state
 
         return state, ref
 
@@ -210,7 +226,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
             nominal_values=nominal_values,
         ),
         # Define which states will be shown in the state observation (what we can "measure")
-        state_filter=['i_sd', 'i_sq'],  # , 'epsilon'],
+        state_filter=['i_sd', 'i_sq', 'u_sd', 'u_sq'],  # , 'epsilon'],
     )
 
     # Now we apply the wrapper defined at the beginning of this script
@@ -450,6 +466,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                            "Reward": rew_list,
                            "i_d_mess": i_d_mess,
                            "i_q_mess": i_q_mess,
+                           "v_d_mess": env_test.env.env.v_d_mess,
+                           "v_q_mess": env_test.env.env.v_q_mess,
                            "i_d_ref": i_d_ref,
                            "i_q_ref": i_q_ref,
                            'action_d': action_d,

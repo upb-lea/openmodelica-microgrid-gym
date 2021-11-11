@@ -31,8 +31,8 @@ class BaseWrapper(Monitor):
         """
         super().__init__(env)
         self.observation_space = gym.spaces.Box(
-            low=np.full(env.observation_space.shape[0] + number_of_features, -np.inf),
-            high=np.full(env.observation_space.shape[0] + number_of_features, np.inf))
+            low=np.full(env.observation_space.shape[0] + number_of_features - 2, -np.inf),  # -2 because v_dq is removed
+            high=np.full(env.observation_space.shape[0] + number_of_features - 2, np.inf))
 
         # increase action-space for PI-seperation
         # self.action_space=gym.spaces.Box(low=np.full(d_i, -1), high=np.full(d_i, 1))
@@ -89,6 +89,8 @@ class BaseWrapper(Monitor):
                                 "Episode_length": self._n_training_steps,
                                 "i_d_mess": self.i_d_mess,
                                 "i_q_mess": self.i_q_mess,
+                                "v_d_mess": self.env.env.v_d_mess,
+                                "v_q_mess": self.env.env.v_q_mess,
                                 "i_d_ref": self.i_d_ref,
                                 "i_q_ref": self.i_q_ref,
                                 'action_d': self.action_d,
@@ -198,8 +200,9 @@ class FeatureWrapper(Monitor):
         """
         super().__init__(env)
         self.observation_space = gym.spaces.Box(
-            low=np.full(env.observation_space.shape[0] + number_of_features, -np.inf),
-            high=np.full(env.observation_space.shape[0] + number_of_features, np.inf))
+            low=np.full(env.observation_space.shape[0] + number_of_features - 2, -np.inf),
+            # -2 because, v_dq is removed
+            high=np.full(env.observation_space.shape[0] + number_of_features - 2, np.inf))
 
         # increase action-space for PI-seperation
         # self.action_space=gym.spaces.Box(low=np.full(d_i, -1), high=np.full(d_i, 1))
@@ -333,6 +336,8 @@ class FeatureWrapper(Monitor):
                                 "Episode_length": self._n_training_steps,
                                 "i_d_mess": self.i_d_mess,
                                 "i_q_mess": self.i_q_mess,
+                                "v_d_mess": self.env.env.v_d_mess,
+                                "v_q_mess": self.env.env.v_q_mess,
                                 "i_d_ref": self.i_d_ref,
                                 "i_q_ref": self.i_q_ref,
                                 'action_d': self.action_d,
