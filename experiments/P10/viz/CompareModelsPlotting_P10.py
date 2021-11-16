@@ -15,15 +15,15 @@ interval_plt = True
 
 # Fuer den Detzerministc case
 interval_list_x = [[0, 0.01], [0.105, 0.2], [0.695, 0.71], [0.85, 0.88]]
-interval_list_y = [[-25, 210], [165, 175], [-25, 335], [165, 175]]
+interval_list_y = [[-25, 400], [-25, 400], [-25, 400], [-25, 400]]
 
 # Fuer den 10s Fall
-interval_list_x = [[0, 0.02], [2.09, 2.1], [2.11, 2.12], [7.08, 7.16], [7.145, 7.16]]
-interval_list_y = [[-50, 400], [-25, 340], [160, 190], [-25, 340], [125, 340]]
+# interval_list_x = [[0, 0.02], [2.09, 2.1], [2.11, 2.12], [7.08, 7.16], [7.145, 7.16]]
+# interval_list_y = [[-50, 400], [-25, 340], [160, 190], [-25, 340], [125, 340]]
 
-folder_names = ['saves/P10_I_term_1/801']  # _deterministic'
+folder_names = ['saves/P10_I_term_1/801_deterministic']  # _deterministic'
 
-number_of_steps = '_100000steps'
+number_of_steps = '_10000steps'
 
 df = pd.read_pickle(folder_names[0] + '/PI' + number_of_steps)
 
@@ -207,6 +207,8 @@ if make_pyplot:
         plot.show()
 
 plt.plot(t_test, v_d_DDPG, 'b')
+plt.plot(t_test, v_q_DDPG, 'r')
+plt.plot(t_test, v_0_DDPG, 'g')
 # plt.plot(t_test, v_d_PI, 'r')
 # plt.plot(t_test, v_sp_abc[0, :])
 plt.grid()
@@ -217,7 +219,9 @@ plt.ylabel("v_dq0_DDPG")
 plt.title(f'DDPG')
 plt.show()
 
-plt.plot(t_test, v_d_PI, 'r')
+plt.plot(t_test, v_d_PI, 'b')
+plt.plot(t_test, v_q_PI, 'r')
+plt.plot(t_test, v_q_PI, 'g')
 # plt.plot(t_test, v_sp_abc[0, :])
 plt.grid()
 # plt.xlim([0.1, 0.2])

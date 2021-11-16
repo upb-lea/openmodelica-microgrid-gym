@@ -146,8 +146,32 @@ def ddpg_objective_fix_params(trial):
 
 def ddpg_objective(trial):
     number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
-    # rew_weigth = trial.suggest_float("rew_weigth", 0.1, 5)
-    # rew_penalty_distribution = trial.suggest_float("antiwindup_weight", 0.1, 5)
+    actor_hidden_size = trial.suggest_int("actor_hidden_size", 10, 100)  # Using LeakyReLU
+    actor_number_layers = trial.suggest_int("actor_number_layers", 1, 3)
+    alpha_relu_actor = trial.suggest_loguniform("alpha_relu_actor", 0.001, 0.5)
+    alpha_relu_critic = trial.suggest_loguniform("alpha_relu_critic", 0.001, 0.5)
+    antiwindup_weight = trial.suggest_float("antiwindup_weight", 1e-4, 1)
+    batch_size = trial.suggest_int("batch_size", 16, 512)
+    bias_scale = trial.suggest_loguniform("bias_scale", 5e-5, 0.2)
+    buffer_size = trial.suggest_int("buffer_size", int(20e4), number_learning_steps)  # 128
+    critic_hidden_size = trial.suggest_int("critic_hidden_size", 10, 300)
+    critic_number_layers = trial.suggest_int("critic_number_layers", 1, 4)
+    error_exponent = 0.5  # 0.5  # trial.suggest_loguniform("error_exponent", 0.001, 4)
+    final_lr = trial.suggest_float("final_lr", 0.00001, 1)
+    gamma = trial.suggest_float("gamma", 0.6, 0.99999)
+    integrator_weight = trial.suggest_float("integrator_weight", 1e-4, 0.5)
+    learning_rate = trial.suggest_loguniform("learning_rate", 1e-8, 1e-2)
+    lr_decay_start = trial.suggest_float("lr_decay_start", 0.00001, 1)
+    lr_decay_duration = trial.suggest_float("lr_decay_duration", 0.00001, 1)
+    n_trail = str(trial.number)
+    noise_steps_annealing = int(
+        0.25 * number_learning_steps)  # trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
+    # number_learning_steps)
+    noise_theta = trial.suggest_loguniform("noise_theta", 1, 100)  # 25  # stiffness of OU
+    noise_var = trial.suggest_loguniform("noise_var", 0.001, 1)  # 2
+    noise_var_min = 0.0013  # trial.suggest_loguniform("noise_var_min", 0.0000001, 2)
+    number_past_vals = trial.suggest_int("number_past_vals", 0, 20)
+    optimizer = trial.suggest_categorical("optimizer", ["Adam", "SGD", "RMSprop"])  # , "LBFGS"])
     penalty_I_weight = trial.suggest_float("penalty_I_weight", 100e-6, 2)
     penalty_P_weight = trial.suggest_float("penalty_P_weight", 100e-6, 2)
 
@@ -156,63 +180,20 @@ def ddpg_objective(trial):
 
     t_start_penalty_I = int(penalty_I_decay_start * number_learning_steps)
     t_start_penalty_P = int(penalty_P_decay_start * number_learning_steps)
-
-    integrator_weight = trial.suggest_float("integrator_weight", 1e-4, 0.5)
-    # integrator_weight = trial.suggest_float("integrator_weight", 1 / 200, 0.5)
-    antiwindup_weight = trial.suggest_float("antiwindup_weight", 1e-4, 1)
-
-    learning_rate = trial.suggest_loguniform("learning_rate", 1e-8, 1e-2)  # 0.0002#
-
-    lr_decay_start = trial.suggest_float("lr_decay_start", 0.00001, 1)  # 3000  # 0.2 * number_learning_steps?
-    lr_decay_duration = trial.suggest_float("lr_decay_duration", 0.00001,
-                                            1)  # 3000  # 0.2 * number_learning_steps?
     t_start = int(lr_decay_start * number_learning_steps)
     t_end = int(np.minimum(lr_decay_start * number_learning_steps + lr_decay_duration * number_learning_steps,
                            number_learning_steps))
-    final_lr = trial.suggest_float("final_lr", 0.00001, 1)
-
-    gamma = trial.suggest_float("gamma", 0.6, 0.99999)
-    weight_scale = trial.suggest_loguniform("weight_scale", 5e-5, 0.2)  # 0.005
-
-    bias_scale = trial.suggest_loguniform("bias_scale", 5e-5, 0.2)  # 0.005
-    alpha_relu_actor = trial.suggest_loguniform("alpha_relu_actor", 0.001, 0.5)  # 0.005
-    alpha_relu_critic = trial.suggest_loguniform("alpha_relu_critic", 0.001, 0.5)  # 0.005
-
-    batch_size = trial.suggest_int("batch_size", 16, 512)  # 128
-    buffer_size = trial.suggest_int("buffer_size", int(20e4), number_learning_steps)  # 128
-
-    actor_hidden_size = trial.suggest_int("actor_hidden_size", 10, 100)  # 100  # Using LeakyReLU
-    actor_number_layers = trial.suggest_int("actor_number_layers", 1, 3)
-
-    critic_hidden_size = trial.suggest_int("critic_hidden_size", 10, 300)  # 100
-    critic_number_layers = trial.suggest_int("critic_number_layers", 1, 4)
-
-    n_trail = str(trial.number)
-    use_gamma_in_rew = 1
-    noise_var = trial.suggest_loguniform("noise_var", 0.001, 1)  # 2
-    # min var, action noise is reduced to (depends on noise_var)
-    noise_var_min = 0.0013  # trial.suggest_loguniform("noise_var_min", 0.0000001, 2)
-    # min var, action noise is reduced to (depends on training_episode_length)
-    noise_steps_annealing = int(
-        0.25 * number_learning_steps)  # trail.suggest_int("noise_steps_annealing", int(0.1 * number_learning_steps),
-    # number_learning_steps)
-    noise_theta = trial.suggest_loguniform("noise_theta", 1, 100)  # 25  # stiffness of OU
-    error_exponent = 0.5  # 0.5  # trial.suggest_loguniform("error_exponent", 0.001, 4)
-
-    training_episode_length = trial.suggest_int("training_episode_length", 1000, 4000)  # 128
-    # learning_starts = 0.32  # trial.suggest_loguniform("learning_starts", 0.1, 2)  # 128
     tau = trial.suggest_loguniform("tau", 0.0001, 0.3)  # 2
-
     train_freq_type = "step"  # trial.suggest_categorical("train_freq_type", ["episode", "step"])
+    training_episode_length = trial.suggest_int("training_episode_length", 1000, 4000)  # 128
     train_freq = trial.suggest_int("train_freq", 1, 5000)
-
-    optimizer = trial.suggest_categorical("optimizer", ["Adam", "SGD", "RMSprop"])  # , "LBFGS"])
+    use_gamma_in_rew = 1
+    weight_scale = trial.suggest_loguniform("weight_scale", 5e-5, 0.2)
 
     learning_rate = linear_schedule(initial_value=learning_rate, final_value=learning_rate * final_lr,
                                     t_start=t_start,
                                     t_end=t_end,
                                     total_timesteps=number_learning_steps)
-    number_past_vals = trial.suggest_int("number_past_vals", 0, 20)
 
     trail_config_mongo = {"Name": "Config",
                           "Node": node,
