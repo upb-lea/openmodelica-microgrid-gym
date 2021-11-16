@@ -71,7 +71,7 @@ n_trail = 50001
 mongo_recorder = Recorder(node=node, database_name=folder_name)
 
 num_average = 1
-max_episode_steps_list = [100000]
+max_episode_steps_list = [2000]
 
 # data_str = 'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'
 data_str = 'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'
