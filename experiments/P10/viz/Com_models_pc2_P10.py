@@ -189,7 +189,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
         rew = Reward(net.v_nom, net['inverter1'].v_lim, net['inverter1'].v_DC, gamma,
                      use_gamma_normalization=use_gamma_in_rew, error_exponent=error_exponent,
                      i_lim=net['inverter1'].i_lim,
-                     i_nom=net['inverter1'].i_nom)
+                     i_nom=net['inverter1'].i_nom, det_run=True)
 
         ####################################PI Stuff################################################
         R = np.random.uniform(low=lower_bound_load, high=upper_bound_load)
@@ -334,7 +334,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
         R_load_PI = []
         limit_exceeded_in_test_PI = False
         limit_exceeded_penalty_PI = 0
-
+        """
         agent.reset()
         agent.obs_varnames = env.history.cols
         env.history.cols = env.history.structured_cols(None) + agent.measurement_cols
@@ -397,7 +397,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                           }
         store_df = pd.DataFrame([compare_result])
         store_df.to_pickle(f'{folder_name}/PI_{max_episode_steps_list[max_eps_steps]}steps')
-
+        """
         ####################################DDPG Stuff##############################################
 
         rew.gamma = 0
