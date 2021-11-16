@@ -187,6 +187,52 @@ register(id='vctrl_single_inv_train-v0',
          )
          )
 
+register(id='vctrl_single_inv_test-v0',
+         entry_point='openmodelica_microgrid_gym.env:ModelicaEnv',
+         kwargs=dict(  # reward_fun=rew.rew_fun,
+             viz_cols=[
+                 PlotTmpl([[f'lc.capacitor{i}.v' for i in '123'], [f'inverter1.v_ref.{k}' for k in '012']],
+                          callback=xylables_v,
+                          color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+                          style=[[None], ['--']]
+                          ),
+                 PlotTmpl([[f'lc.inductor{i}.i' for i in '123'], [f'inverter1.i_ref.{k}' for k in '012']],
+                          callback=xylables_i,
+                          color=[['b', 'r', 'g'], ['b', 'r', 'g']],
+                          style=[[None], ['--']]
+                          ),
+                 PlotTmpl([[f'r_load.resistor{i}.R' for i in '123']],
+                          callback=xylables_R,
+                          color=[['b', 'r', 'g']],
+                          style=[[None]]
+                          )
+             ],
+             viz_mode='episode',
+             max_episode_steps=20000,
+             model_params={'lc.resistor1.R': R_filter,
+                           'lc.resistor2.R': R_filter,
+                           'lc.resistor3.R': R_filter,
+                           'lc.resistor4.R': 0.0000001,
+                           'lc.resistor5.R': 0.0000001,
+                           'lc.resistor6.R': 0.0000001,
+                           'lc.inductor1.L': L_filter,
+                           'lc.inductor2.L': L_filter,
+                           'lc.inductor3.L': L_filter,
+                           'lc.capacitor1.C': C_filter,
+                           'lc.capacitor2.C': C_filter,
+                           'lc.capacitor3.C': C_filter,
+                           # 'r_load.resistor1.R': partial(rand_load_test.give_dataframe_value, col='r_load.resistor1.R'),
+                           # 'r_load.resistor2.R': partial(rand_load_test.give_dataframe_value, col='r_load.resistor2.R'),
+                           # 'r_load.resistor3.R': partial(rand_load_test.give_dataframe_value, col='r_load.resistor3.R')
+                           },
+             net=net,
+             model_path='omg_grid/grid.paper_loadstep.fmu',
+             on_episode_reset_callback=cb.fire,
+             is_normalized=True,
+             action_time_delay=1
+         )
+         )
+
 register(id='vctrl_single_inv_test-v1',
          entry_point='openmodelica_microgrid_gym.env:ModelicaEnv',
          kwargs=dict(  # reward_fun=rew.rew_fun,
@@ -208,7 +254,7 @@ register(id='vctrl_single_inv_test-v1',
                           )
              ],
              viz_mode='episode',
-             max_episode_steps=1001,
+             max_episode_steps=100001,
              model_params={'lc.resistor1.R': R_filter,
                            'lc.resistor2.R': R_filter,
                            'lc.resistor3.R': R_filter,

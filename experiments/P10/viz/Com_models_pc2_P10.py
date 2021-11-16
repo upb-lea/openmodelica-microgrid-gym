@@ -446,7 +446,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                                                   },
                                     )
             else:
-                env_test = gym.make('experiments.hp_tune.env:vctrl_single_inv_test-v0',
+                env_test = gym.make('experiments.P10.env:vctrl_single_inv_test-v0',
                                     reward_fun=rew.rew_fun_dq0,
                                     abort_reward=-1,  # no needed if in rew no None is given back
                                     # on_episode_reset_callback=cb.fire  # needed?
