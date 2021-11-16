@@ -48,7 +48,7 @@ class CallbackList(list):
 show_plots = True
 save_results = False
 
-folder_name = 'saves/P10_I_term_1/801'
+folder_name = 'saves/P10_I_term_1/801_deterministic'
 number_past_vals = [16]
 wrapper = ['past']  # ['past', 'future', 'no-I-term', 'I-controller']
 model_path = 'experiments/P10/trained_models/801/'
@@ -71,10 +71,10 @@ n_trail = 50001
 mongo_recorder = Recorder(node=node, database_name=folder_name)
 
 num_average = 1
-max_episode_steps_list = [100000]
+max_episode_steps_list = [10000]
 
-# data_str = 'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'
-data_str = 'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'
+data_str = 'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'
+# data_str = 'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'
 # data_str = 'experiments/hp_tune/data/R_load_hard_test_case_60_seconds_noReset.pkl'
 
 result_list = []

@@ -18,21 +18,14 @@ interval_list_x = [[0, 0.01], [0.105, 0.2], [0.695, 0.71], [0.85, 0.88]]
 interval_list_y = [[-25, 210], [165, 175], [-25, 335], [165, 175]]
 
 # Fuer den 10s Fall
-interval_list_x = [[0, 0.01], [2.09, 2.1], [2.11, 2.12], [7.08, 7.16], [7.145, 7.16]]
-interval_list_y = [[-25, 210], [-25, 340], [160, 190], [-25, 340], [125, 340]]
-# folder_name = 'saves/Comparison_study_future10Rvals_deterministicTestcase'
-# folder_name = 'saves/Comparison_study_22_best_pastVal_HPO_deterministic_noMeasNoise'
-folder_names = [
-    'saves/OMG_integratorActor_3_Deterministic']  # , 'saves/OMG_i_load_feature_0_Deterministic']  # _deterministic'
-folder_names = ['saves/OMG_i_load_feature_0_Deterministic']  # _deterministic'
-folder_names = ['saves/paper_deterministic']  # _deterministic'
-folder_names = ['saves/paper']  # _deterministic'
-folder_names = ['saves/paper_new', 'saves/paper_new', 'saves/paper_new', 'saves/paper_new']  # _deterministic'
+interval_list_x = [[0, 0.02], [2.09, 2.1], [2.11, 2.12], [7.08, 7.16], [7.145, 7.16]]
+interval_list_y = [[-50, 400], [-25, 340], [160, 190], [-25, 340], [125, 340]]
+
+folder_names = ['saves/P10_I_term_1/801']  # _deterministic'
 
 number_of_steps = '_100000steps'
 
 df = pd.read_pickle(folder_names[0] + '/PI' + number_of_steps)
-# df = pd.read_pickle(folder_name + '/PI_9989steps')
 
 env_hist_PI = df['env_hist_PI']
 v_a_PI = env_hist_PI[0]['lc.capacitor1.v'].tolist()
@@ -52,18 +45,10 @@ ki_c = df['PI_Ki_c'][0]
 kp_v = df['PI_Kp_v'][0]
 ki_v = df['PI_Ki_v'][0]
 
-model_names = ['model_OMG_DDPG_Actor.zip', 'model_OMG_DDPG_Integrator_no_pastVals_corr.zip',
-               'model_OMG_DDPG_Integrator_no_pastVals.zip',
-               'model_OMG_DDPG_Integrator_no_pastVals_i_load_feature_corr.zip']
-ylabels = ['DDPG', 'DDPG-I', 'DDPG-I+pastVals', 'DDPG-I+i_load']
-# ylabels = ['DDPG-I+pastVals']
-# ylabels = ['DDPG-I+pastVals']
-# model_names = ['model_OMG_DDPG_Actor.zip']  # ['model_0_pastVals.zip','model_2_pastVals.zip', 'model_5_pastVals.zip', 'model_10_pastVals.zip', 'model_16_pastVals.zip', 'model_25_pastVals.zip', ]  # , 'model_noPastVals.zip']
-# model_names = ['model_OMG_DDPG_Integrator_no_pastVals.zip']
-# model_names = ['model_OMG_DDPG_Integrator_no_pastVals_i_load_feature_corr.zip']
-# model_names = ['model_OMG_DDPG_Integrator_no_pastVals_corr.zip']
-pastVals = ['5', '0', '5', '0']  # ['0', '2', '5', '10', '16', '25']
-# pastVals = ['5']  # ['0', '2', '5', '10', '16', '25']
+model_names = ['model.zip']
+ylabels = ['DDPG-I+pastVals']
+
+pastVals = ['16']
 return_list_DDPG = []
 reward_list_DDPG = []
 
@@ -159,7 +144,7 @@ fig.suptitle(f'Model using pastVals:' + str(pastVals) + ' \n '
 fig.subplots_adjust(wspace=0.2, hspace=0.2)
 plt.show()
 
-fig.savefig(f'{folder_name}/Ausschnitt_2pV_q0.pdf')
+fig.savefig(f'{folder_name}/Ausschnitt_q0' + number_of_steps + '.pdf')
 
 if make_pyplot:
     # pyplot Load
@@ -225,8 +210,8 @@ plt.plot(t_test, v_d_DDPG, 'b')
 # plt.plot(t_test, v_d_PI, 'r')
 # plt.plot(t_test, v_sp_abc[0, :])
 plt.grid()
-# plt.xlim([0, 0.025])
-plt.ylim([160, 190])
+# plt.xlim([0.1, 0.11])
+# plt.ylim([290, 360])
 plt.xlabel("time")
 plt.ylabel("v_dq0_DDPG")
 plt.title(f'DDPG')
@@ -235,29 +220,8 @@ plt.show()
 plt.plot(t_test, v_d_PI, 'r')
 # plt.plot(t_test, v_sp_abc[0, :])
 plt.grid()
-# plt.xlim([0, 0.025])
-plt.ylim([160, 190])
-plt.xlabel("time")
-plt.ylabel("v_dq0_PI")
-plt.title(f'PI')
-plt.show()
-
-plt.plot(t_test, v_d_DDPG, 'b')
-# plt.plot(t_test, v_d_PI, 'r')
-# plt.plot(t_test, v_sp_abc[0, :])
-plt.grid()
-plt.xlim([0.1, 0.11])
-plt.ylim([290, 360])
-plt.xlabel("time")
-plt.ylabel("v_dq0_DDPG")
-plt.title(f'DDPG')
-plt.show()
-
-plt.plot(t_test, v_d_PI, 'r')
-# plt.plot(t_test, v_sp_abc[0, :])
-plt.grid()
-plt.xlim([0.1, 0.2])
-plt.ylim([290, 360])
+# plt.xlim([0.1, 0.2])
+# plt.ylim([290, 360])
 plt.xlabel("time")
 plt.ylabel("v_dq0_PI")
 plt.title(f'PI')
