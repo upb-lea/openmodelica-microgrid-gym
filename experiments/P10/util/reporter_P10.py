@@ -130,8 +130,10 @@ if __name__ == "__main__":
 
     # print(reporter.oldest_file_in_tree())
     while True:
-        # reporter.json_to_mongo_via_sshtunnel()
+        reporter.json_to_mongo_via_sshtunnel()
 
+        """
+        # to send only files ending with number file_ending_number
         for number in file_ending_number:
             try:
                 oldest_named_file_path = reporter.oldest_file_with_name_in_tree(number)
@@ -144,3 +146,4 @@ if __name__ == "__main__":
                 print(f'ValueError{e}')
                 print('Go to sleep for 5 seconds and go on with next number!')
                 time.sleep(5)
+        """
