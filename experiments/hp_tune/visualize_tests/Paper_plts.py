@@ -2,8 +2,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as px
+import matplotlib
 
 from openmodelica_microgrid_gym.util import abc_to_dq0
+
+save_results = True
 
 # Fuer den 10s Fall
 interval_list_x = [[0, 0.005], [7.145, 7.155]]
@@ -195,3 +198,26 @@ fig.subplots_adjust(wspace=0.2, hspace=0.2)
 plt.show()
 
 fig.savefig(f'{folder_name}/Ausschnitt_2pV_q0.pdf')
+if save_results:
+    # Plot setting
+    params = {'backend': 'ps',
+              'text.latex.preamble': [r'\usepackage{gensymb}'
+                                      r'\usepackage{amsmath,amssymb,mathtools}'
+                                      r'\newcommand{\mlutil}{\ensuremath{\operatorname{ml-util}}}'
+                                      r'\newcommand{\mlacc}{\ensuremath{\operatorname{ml-acc}}}'],
+              'axes.labelsize': 8,  # fontsize for x and y labels (was 10)
+              'axes.titlesize': 8,
+              'font.size': 8,  # was 10
+              'legend.fontsize': 8,  # was 10
+              'xtick.labelsize': 8,
+              'ytick.labelsize': 8,
+              'text.usetex': True,
+              'figure.figsize': [3.9, 3.1],
+              'font.family': 'serif',
+              'lines.linewidth': 1
+              }
+    matplotlib.rcParams.update(params)
+
+    fig.savefig(f'{folder_name}/_OMG_U_I.png')
+    fig.savefig(f'{folder_name}/_OMG_U_I.pdf')
+    fig.savefig(f'{folder_name}/_OMG_U_I.pgf')
