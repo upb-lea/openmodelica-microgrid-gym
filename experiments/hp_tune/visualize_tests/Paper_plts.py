@@ -10,7 +10,7 @@ save_results = True
 
 # Fuer den 10s Fall
 interval_list_x = [[0, 0.005], [7.145, 7.155]]
-interval_list_y = [[-5, 202], [80, 345]]
+interval_list_y = [[-5, 202], [-20, 345]]
 
 folder_name = 'saves/paper_new2'  # _deterministic'
 

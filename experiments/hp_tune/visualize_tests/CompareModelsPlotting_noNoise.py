@@ -18,7 +18,8 @@ interval_list_x = [[0, 0.01], [0.105, 0.2], [0.695, 0.71], [0.85, 0.88]]
 interval_list_y = [[-25, 210], [165, 175], [-25, 335], [165, 175]]
 
 # Fuer den 10s Fall
-interval_list_x = [[0, 0.01], [2.09, 2.1], [2.11, 2.12], [7.08, 7.16], [7.145, 7.16]]
+interval_list_x = [[0, 0.006], [2.0925, 2.1], [3.11, 3.12], [7.1, 7.14], [8.145, 8.16]]
+# interval_list_x = [[0, 0.01], [2.09, 2.1], [2.11, 2.12], [7.08, 7.16], [7.145, 7.16]]
 interval_list_y = [[-25, 210], [-25, 340], [160, 190], [-25, 340], [125, 340]]
 # folder_name = 'saves/Comparison_study_future10Rvals_deterministicTestcase'
 # folder_name = 'saves/Comparison_study_22_best_pastVal_HPO_deterministic_noMeasNoise'
@@ -159,7 +160,7 @@ fig.suptitle(f'Model using pastVals:' + str(pastVals) + ' \n '
 fig.subplots_adjust(wspace=0.2, hspace=0.2)
 plt.show()
 
-fig.savefig(f'{folder_name}/Ausschnitt_2pV_q0.pdf')
+#fig.savefig(f'{folder_name}/Ausschnitt_2pV_q0.pdf')
 
 if make_pyplot:
     # pyplot Load
