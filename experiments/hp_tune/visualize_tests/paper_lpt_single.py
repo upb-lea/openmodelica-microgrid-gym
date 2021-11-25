@@ -179,6 +179,60 @@ if save_results:
               'xtick.labelsize': 13,
               'ytick.labelsize': 13,
               'text.usetex': True,
+              'figure.figsize': [8.5, 8],  # [8.5, 2.4],  # [3.9, 3.1],
+              'font.family': 'serif',
+              'lines.linewidth': 1
+              }
+    matplotlib.rcParams.update(params)
+
+fig, axs = plt.subplots(3, 1)
+axs[0].plot(t_test, R_load_PI, 'g')
+axs[0].grid()
+axs[0].tick_params(axis='x', colors='w')
+axs[0].set_xlim([0, 10])
+axs[0].set_ylabel('$R_\mathrm{load}\,/\,\mathrm{\Omega}$')
+# axs[0].setxlabel(r'$t\,/\,\mathrm{s}$')
+
+axs[1].plot(t_test, v_d_PI, 'b', label='PI')
+axs[1].plot(t_test, v_q_PI, 'r')
+axs[1].plot(t_test, v_0_PI, 'g')
+axs[1].grid()
+axs[1].legend()
+axs[1].tick_params(axis='x', colors='w')
+axs[1].set_xlim([0, 10])
+axs[1].set_ylabel('$v_{\mathrm{dq0}}\,/\,\mathrm{V}$')
+# axs[1].setxlabel(r'$t\,/\,\mathrm{s}$')
+
+axs[2].plot(t_test, v_d_DDPG_I, 'b', label='$\mathrm{DDPG}_\mathrm{I,pv}$')
+axs[2].plot(t_test, v_q_DDPG_I, 'r')
+axs[2].plot(t_test, v_0_DDPG_I, 'g')
+axs[2].grid()
+axs[2].legend()
+axs[2].set_xlim([0, 10])
+axs[2].set_ylabel('$v_{\mathrm{dq0}}\,/\,\mathrm{V}$')
+axs[2].set_xlabel(r'$t\,/\,\mathrm{s}$')
+
+plt.show()
+
+if save_results:
+    fig.savefig(f'{folder_name}/OMG_testcase.png')
+    fig.savefig(f'{folder_name}/OMG_testcase.pdf')
+    fig.savefig(f'{folder_name}/OMG_testcase.pgf')
+
+    # if save_results:
+    # Plot setting
+    params = {'backend': 'ps',
+              'text.latex.preamble': [r'\usepackage{gensymb}'
+                                      r'\usepackage{amsmath,amssymb,mathtools}'
+                                      r'\newcommand{\mlutil}{\ensuremath{\operatorname{ml-util}}}'
+                                      r'\newcommand{\mlacc}{\ensuremath{\operatorname{ml-acc}}}'],
+              'axes.labelsize': 13,  # fontsize for x and y labels (was 10)
+              'axes.titlesize': 13,
+              'font.size': 13,  # was 10
+              'legend.fontsize': 13,  # was 10
+              'xtick.labelsize': 13,
+              'ytick.labelsize': 13,
+              'text.usetex': True,
               'figure.figsize': [8.5, 2.4],  # [3.9, 3.1],
               'font.family': 'serif',
               'lines.linewidth': 1

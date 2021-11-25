@@ -358,8 +358,8 @@ class FeatureWrapper(Monitor):
 
             clip_reward = np.clip(np.sum(np.abs(delta_action) * \
                                          (-1 / (self.env.net.components[0].v_lim / self.env.net.components[
-                                             0].v_DC))) / 3 * (1 - self.gamma),
-                                  -1, 0)
+                                             0].v_DC / 2))) / 3,
+                                  -1, 0) * (1 - self.gamma)
 
             # clip_reward = 0
 
@@ -370,7 +370,7 @@ class FeatureWrapper(Monitor):
 
         obs, reward, done, info = super().step(action_abc)
 
-        reward = reward + clip_reward
+        # reward = reward + clip_reward shifted to reward sum
 
         if len(obs) > 9:
             # ASSUME  THAT LOADCURRENT is included!
@@ -399,9 +399,16 @@ class FeatureWrapper(Monitor):
 
             penalty_P_weight_scale = 1
 
-        reward = (reward + (self.penalty_I_weight * penalty_I_weight_scale) * integrator_penalty
-                  + self.penalty_P_weight * penalty_P_weight_scale * action_P_penalty) \
-                 / (1 + self.penalty_I_weight * penalty_I_weight_scale + self.penalty_P_weight * penalty_P_weight_scale)
+        if reward > -1:
+            lam_P = self.penalty_P_weight * penalty_P_weight_scale
+            lam_I = self.penalty_I_weight * penalty_I_weight_scale
+            # if reward = -1, env is abort, worst reward = -1, if not, sum up components:
+            reward_sum = (reward + clip_reward + lam_I * integrator_penalty + lam_P * action_P_penalty)
+
+            # normalize r_sum between [-1, 1] from [-1-lam_P-lam_I, 1] using min-max normalization from
+            # https://en.wikipedia.org/wiki/Feature_scaling
+
+            reward = 2 * (reward_sum + 1 + lam_P + lam_I) / (1 + 1 + lam_P + lam_I) - 1
 
         self._n_training_steps += 1
 
