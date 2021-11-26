@@ -495,7 +495,10 @@ class FeatureWrapper(Monitor):
                 reward_Data = {'Reward_env': self.rew,
                                'penaltyP': self.penaltyP,
                                'penaltyI': self.penaltyI,
-                               'clipped_rew': self.clipped_rew}
+                               'clipped_rew': self.clipped_rew,
+                               "Trial number": self.n_trail,
+                               "Database name": cfg['STUDY_NAME'],
+                               }
 
                 self.recorder.save_to_json('Trial_number_' + self.n_trail, reward_Data)
 
