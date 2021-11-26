@@ -21,7 +21,11 @@ interval_list_y = [[-25, 400], [-25, 400], [-25, 400], [-25, 400]]
 # interval_list_x = [[0, 0.02], [2.09, 2.1], [2.11, 2.12], [7.08, 7.16], [7.145, 7.16]]
 # interval_list_y = [[-50, 400], [-25, 340], [160, 190], [-25, 340], [125, 340]]
 
-folder_names = ['saves/P10_I_term_1/801_deterministic']  # _deterministic'
+run = '204 Return: -2 '
+# run = '374 Return: 0 '
+# run = '213 Return: 0.8 '
+
+folder_names = ['saves/P10_I_term_2/204_deterministic']  # _deterministic'
 
 number_of_steps = '_10000steps'
 
@@ -135,11 +139,7 @@ for i in range(len(interval_list_y)):
         #    axs[plt_count, i].set_ylabel("$v_{\mathrm{q0, DDPG}}\,/\,\mathrm{V}$")
         plt_count += 1
 
-fig.suptitle(f'Model using pastVals:' + str(pastVals) + ' \n '
-                                                        f'Model-return(MRE)' + str(return_list_DDPG) + ' \n'
-                                                                                                       f'  PI-return(MRE):     {round(return_PI, 7)} \n '
-                                                                                                       f'PI: Kp_i = {kp_c}, Ki_i = {ki_c}, Kp_v = {kp_v}, Ki_v = {ki_v}',
-             fontsize=14)
+fig.suptitle(run)
 
 fig.subplots_adjust(wspace=0.2, hspace=0.2)
 plt.show()
@@ -216,7 +216,7 @@ plt.grid()
 # plt.ylim([290, 360])
 plt.xlabel("time")
 plt.ylabel("v_dq0_DDPG")
-plt.title(f'DDPG')
+plt.title(f'DDPG' + run)
 plt.show()
 
 plt.plot(t_test, v_d_PI, 'b')

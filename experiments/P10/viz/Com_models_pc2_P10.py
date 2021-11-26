@@ -48,25 +48,26 @@ class CallbackList(list):
 show_plots = True
 save_results = False
 
-folder_name = '/scratch/hpc-prf-reinfl/weber/OMG/P10_I_term_2/saves/374_deterministic'  # 'saves/P10_I_term_2/204_deterministic'
+folder_name = '/scratch/hpc-prf-reinfl/weber/OMG/P10_I_term_2/saves/1080_deterministic'  # 'saves/P10_I_term_2/204_deterministic'
+os.makedirs(folder_name, exist_ok=True)
 wrapper = ['past']  # ['past', 'future', 'no-I-term', 'I-controller']
-model_path = '/scratch/hpc-prf-reinfl/weber/OMG/P10_I_term_2/374/'  # experiments/P10/trained_models/2_213/'
+model_path = '/scratch/hpc-prf-reinfl/weber/OMG/P10_I_term_2/1080/'  # experiments/P10/trained_models/2_213/'
 node = platform.uname().node
 model_name = ['model.zip']
 
 ################DDPG Config Stuff#########################################################################
 print('Using model_801 setting')
-actor_number_layers = 1
-alpha_relu_actor = 0.00159083
-alpha_relu_critic = 0.00103832
-antiwindup_weight = 0.226494
+actor_number_layers = 3
+alpha_relu_actor = 0.0879403
+alpha_relu_critic = 0.373547
+antiwindup_weight = 0.784046
 critic_number_layers = 4
 error_exponent = 0.5
-gamma = 0.721657
-integrator_weight = 0.0118049
+gamma = 0.796004
+integrator_weight = 0.419145
 use_gamma_in_rew = 1
 n_trail = 50001
-number_past_vals = [12]
+number_past_vals = [8]
 
 mongo_recorder = Recorder(node=node, database_name=folder_name)
 
