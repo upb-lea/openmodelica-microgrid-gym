@@ -170,7 +170,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     rew.det_run = True
     rew.exponent = 0.5  # 1
     limit_exceeded_in_test = False
-    limit_exceeded_penalty = 0
+
     env_test = gym.make('experiments.P10.env:vctrl_single_inv_test-v1',
                         reward_fun=rew.rew_fun_dq0,
                         abort_reward=-1,  # no needed if in rew no None is given back
@@ -244,10 +244,15 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                 integrator_sum1.append(np.float64(env_test.integrator_sum[1]))
                 integrator_sum2.append(np.float64(env_test.integrator_sum[2]))
 
-        if rewards == -1 and not limit_exceeded_in_test:
+        if rewards == -1 and not limit_exceeded_in_test and env_test.rew[-1]:
             # Set addidional penalty of -1 if limit is exceeded once in the test case
             limit_exceeded_in_test = True
-            limit_exceeded_penalty = -1
+
+        if limit_exceeded_in_test:
+            # if limit was exceeded once, reward will be kept to -1 till the end of the episode,
+            # nevertheless what the agent does
+            rewards = -1
+
         env_test.render()
         return_sum += rewards
         rew_list.append(rewards)
@@ -281,7 +286,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     reward_test_after_training = {"Name": "Test_Reward",
                                   "time": ts,
                                   "Reward": rew_list,
-                                  "Return": (return_sum / env_test.max_episode_steps + limit_exceeded_penalty),
+                                  "Return": (return_sum / env_test.max_episode_steps),
                                   "Trial number": n_trail,
                                   "Database name": folder_name,
                                   "Node": platform.uname().node,
@@ -337,4 +342,4 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
         mongo_recorder.save_to_json('Trial_number_' + n_trail, test_after_training)
 
-    return (return_sum / env_test.max_episode_steps + limit_exceeded_penalty)
+    return (return_sum / env_test.max_episode_steps)

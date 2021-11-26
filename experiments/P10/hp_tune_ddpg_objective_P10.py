@@ -203,7 +203,8 @@ def ddpg_objective(trial):
                           "Database name": cfg['STUDY_NAME'],
                           "Start time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime()),
                           "Optimierer/ Setting stuff": "DDPG HPO mit Integrator und pastVals (HP) "
-                                                       "P10 setting first try"
+                                                       "P10 setting thrid try"
+                                                       "Reward in test is kept to -1 if limit exceeded once"
                           }
     trail_config_mongo.update(trial.params)
     # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
@@ -435,7 +436,7 @@ def optuna_optimize(objective, sampler=None, study_name='dummy'):
 
 
 if __name__ == "__main__":
-    TPE_sampler = TPESampler(n_startup_trials=2500)  # , constant_liar=True)
+    TPE_sampler = TPESampler(n_startup_trials=1000)  # , constant_liar=True)
 
     optuna_optimize_mysql_lea35(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
     # optuna_optimize_sqlite(ddpg_objective, study_name=STUDY_NAME, sampler=TPE_sampler)
