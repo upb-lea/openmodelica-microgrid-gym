@@ -231,7 +231,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     for step in range(env_test.max_episode_steps):
         action, _states = model.predict(obs, deterministic=True)
         obs, rewards, done, info = env_test.step(action)
-        if cfg['loglevel'] in ['train', 'test', 'setting']:
+        if cfg['loglevel'] in ['train', 'test']:
             phase_list.append(env_test.env.net.components[0].phase)
             aP0.append(np.float64(action[0]))
             aP1.append(np.float64(action[1]))

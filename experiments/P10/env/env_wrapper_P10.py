@@ -329,6 +329,10 @@ class FeatureWrapper(Monitor):
         self.action_I0 = []
         self.action_I1 = []
         self.action_I2 = []
+        self.rew = []
+        self.penaltyP = []
+        self.penaltyI = []
+        self.clipped_rew = []
 
     def step(self, action: Union[np.ndarray, int]) -> GymStepReturn:
         """
@@ -399,9 +403,16 @@ class FeatureWrapper(Monitor):
 
             penalty_P_weight_scale = 1
 
+        lam_P = self.penalty_P_weight * penalty_P_weight_scale
+        lam_I = self.penalty_I_weight * penalty_I_weight_scale
+
+        if cfg['loglevel'] == 'setting':
+            self.rew.append(reward)
+            self.penaltyP.append(lam_P * action_P_penalty)
+            self.penaltyI.append(lam_I * integrator_penalty)
+            self.clipped_rew.append(clip_reward)
+
         if reward > -1:
-            lam_P = self.penalty_P_weight * penalty_P_weight_scale
-            lam_I = self.penalty_I_weight * penalty_I_weight_scale
             # if reward = -1, env is abort, worst reward = -1, if not, sum up components:
             reward_sum = (reward + clip_reward + lam_I * integrator_penalty + lam_P * action_P_penalty)
 
@@ -479,6 +490,19 @@ class FeatureWrapper(Monitor):
         if done:
             self.reward_episode_mean.append(np.mean(self.rewards))
             self.n_episode += 1
+
+            if cfg['loglevel'] == 'setting':
+                reward_Data = {'Reward_env': self.rew,
+                               'penaltyP': self.penaltyP,
+                               'penaltyI': self.penaltyI,
+                               'clipped_rew': self.clipped_rew}
+
+                self.recorder.save_to_json('Trial_number_' + self.n_trail, reward_Data)
+
+                self.rew = []
+                self.penaltyP = []
+                self.penaltyI = []
+                self.clipped_rew = []
 
             if cfg['loglevel'] == 'train':
                 episode_data = {"Name": "On_Training",
