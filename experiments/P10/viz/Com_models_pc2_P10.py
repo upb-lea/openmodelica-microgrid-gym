@@ -57,14 +57,14 @@ model_name = ['model.zip']
 
 ################DDPG Config Stuff#########################################################################
 print('Using model_801 setting')
-actor_number_layers = 2
-alpha_relu_actor = 0.055594
-alpha_relu_critic = 0.0315699
-antiwindup_weight = 0.12813
-critic_number_layers = 4
+actor_number_layers = 1
+alpha_relu_actor = 0.248976
+alpha_relu_critic = 0.00393358
+antiwindup_weight = 0.860333
+critic_number_layers = 3
 error_exponent = 0.5
-gamma = 0.807412
-integrator_weight = 0.18754
+gamma = 0.616819
+integrator_weight = 0.167409
 use_gamma_in_rew = 1
 n_trail = 50001
 
