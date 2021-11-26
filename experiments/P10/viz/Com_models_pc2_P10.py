@@ -48,25 +48,25 @@ class CallbackList(list):
 show_plots = True
 save_results = False
 
-folder_name = 'saves/P10_I_term_2/213_deterministic'
-number_past_vals = [20]
+folder_name = 'saves/P10_I_term_2/204_deterministic'
 wrapper = ['past']  # ['past', 'future', 'no-I-term', 'I-controller']
-model_path = 'experiments/P10/trained_models/2_213/'
+model_path = 'scratch/hpc-prf-reinfl/weber/OMG/P10_I_term_2/204/'  # experiments/P10/trained_models/2_213/'
 node = platform.uname().node
 model_name = ['model.zip']
 
 ################DDPG Config Stuff#########################################################################
 print('Using model_801 setting')
 actor_number_layers = 1
-alpha_relu_actor = 0.248976
-alpha_relu_critic = 0.00393358
-antiwindup_weight = 0.860333
-critic_number_layers = 3
+alpha_relu_actor = 0.0110171
+alpha_relu_critic = 0.0893961
+antiwindup_weight = 0.463714
+critic_number_layers = 1
 error_exponent = 0.5
-gamma = 0.616819
-integrator_weight = 0.167409
+gamma = 0.921406
+integrator_weight = 0.343288
 use_gamma_in_rew = 1
 n_trail = 50001
+number_past_vals = [13]
 
 mongo_recorder = Recorder(node=node, database_name=folder_name)
 
