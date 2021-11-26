@@ -48,9 +48,9 @@ class CallbackList(list):
 show_plots = True
 save_results = False
 
-folder_name = 'saves/P10_I_term_2/204_deterministic'
+folder_name = '/scratch/hpc-prf-reinfl/weber/OMG/P10_I_term_2/saves'  # 'saves/P10_I_term_2/204_deterministic'
 wrapper = ['past']  # ['past', 'future', 'no-I-term', 'I-controller']
-model_path = 'scratch/hpc-prf-reinfl/weber/OMG/P10_I_term_2/204/'  # experiments/P10/trained_models/2_213/'
+model_path = '/scratch/hpc-prf-reinfl/weber/OMG/P10_I_term_2/204/'  # experiments/P10/trained_models/2_213/'
 node = platform.uname().node
 model_name = ['model.zip']
 
