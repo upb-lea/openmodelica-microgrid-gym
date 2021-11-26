@@ -48,10 +48,10 @@ class CallbackList(list):
 show_plots = True
 save_results = False
 
-folder_name = 'saves/P10_I_term_1/801_deterministic'
-number_past_vals = [16]
+folder_name = 'saves/P10_I_term_1/213_deterministic'
+number_past_vals = [20]
 wrapper = ['past']  # ['past', 'future', 'no-I-term', 'I-controller']
-model_path = 'experiments/P10/trained_models/801/'
+model_path = 'experiments/P10/trained_models/2_213/'
 node = platform.uname().node
 model_name = ['model.zip']
 
