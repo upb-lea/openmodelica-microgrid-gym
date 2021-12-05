@@ -152,11 +152,22 @@ for i in range(1):
     m.Equation(w3 + (tau_Droop * w3.dt()) == omega_Droop_w3)
     m.Equation(P_3 == P3_nom-(k_p*Pbase*((omega_Droop_w3-omega)/omega)))
 
+    # m.Equation(e1.dt() == (-Q_1 - Qdroop_normal * (e1 - nomVolt)) / (J_Q * e1))
+    # m.Equation(u2.dt() ==-Q_2 / (J_Q * u2))
+    # m.Equation(e3.dt() == (-Q_3 - Qdroop_normal * (e3 - nomVolt)) / (J_Q * e3))
+
+    # m.Equation(e1.dt() == (-Q_1 - Qdroop_normal * (e1 - nomVolt)) / (J_Q * e1))
+    # m.Equation(u2.dt() ==-Q_2 / (J_Q * u2))
+    # m.Equation(e3.dt() == (-Q_3 - Qdroop_normal * (e3 - nomVolt)) / (J_Q * e3))
+
+    m.Equation(Q_1== Qdroop_normal * (e1 - nomVolt)+ nomVolt)
+    m.Equation(Q_2 == 0)
+    m.Equation(Q_3 == Qdroop_normal * (e1 - nomVolt)+ nomVolt)
 
 
-    m.Equation(e1.dt() == (-Q_1 - Qdroop_normal * (e1 - nomVolt)) / (J_Q * e1))
-    m.Equation(u2.dt() ==-Q_2 / (J_Q * u2))
-    m.Equation(e3.dt() == (-Q_3 - Qdroop_normal * (e3 - nomVolt)) / (J_Q * e3))
+    # m.Equation(e1 == (-(Q_1 - Q1_nom) / Qdroop_normal) + nomVolt)
+    # m.Equation(u2 == 0)
+    # m.Equation(e3 == (-(Q_3 - Q3_nom) / Qdroop_normal) + nomVolt)
 
     m.options.IMODE = 7
     m.time = np.linspace(0, t_end, steps)  # time points
@@ -252,13 +263,15 @@ for i in range(1):
     n.Equation(w2.dt() == -P_2 / (J[i] * w2))
     n.Equation((P_in_2-P_3) == J[i]*w3*w3.dt()+D*Pbase*((w3-omega)/omega))
 
-    n.Equation(e1.dt() == (-Q_1 - Qdroop_normal * (e1 - nomVolt)) / (J_Q * e1))
-    n.Equation(u2.dt() ==  -Q_2 / (J_Q * u2))
-    n.Equation(e3.dt() == (-Q_3 - 15000 * (e3 - nomVolt)) / (J_Q * e3))
+    # n.Equation(e1.dt() == (-Q_1 - Qdroop_normal * (e1 - nomVolt)) / (J_Q * e1))
+    # n.Equation(u2.dt() ==  -Q_2 / (J_Q * u2))
+    # n.Equation(e3.dt() == (-Q_3 - Qdroop_normal * (e3 - nomVolt)) / (J_Q * e3))
 
-    # n.Equation(e1 == (-(Q_1 - Q1_nom) / Qdroop_normal) + nomVolt)
-    # n.Equation(u2.dt() == -Q_2 / (J[0] * u2))
-    # n.Equation(e3 == (-(Q_3 - Q3_nom) / Qdroop_normal) + nomVolt)
+    n.Equation(Q_1 == Qdroop_normal * (e1 - nomVolt) + nomVolt)
+    n.Equation(Q_2 == 0)
+    n.Equation(Q_3 == Qdroop_normal * (e1 - nomVolt) + nomVolt)
+
+
     #Set global options, 7 is the solving of DAE. You can check the GEKKO handbook, but i think, mode 7 and the default stuff of the rest should be fine.
     n.options.IMODE = 7
     n.time = np.linspace(0, t_end, steps) # time points
