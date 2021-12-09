@@ -345,7 +345,7 @@ if save_results:
     matplotlib.rcParams.update(params)
 
 fig, axs = plt.subplots(2, 1)
-axs[0].plot(t_test, v_d_DDPG_I, 'b', label='$\mathrm{DDPG}_\mathrm{I,pv}$')
+axs[0].plot(t_test, v_d_DDPG_I, 'b', label='$\mathrm{SEC-DDPG}$')
 axs[0].plot(t_test, v_q_DDPG_I, 'r')
 axs[0].plot(t_test, v_0_DDPG_I, 'g')
 axs[0].plot(t_test, v_d_PI, '--b', label='PI')
