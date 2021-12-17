@@ -245,6 +245,7 @@ plt.grid()
 plt.xlim([0, 10])
 plt.ylabel('$R_\mathrm{load}\,/\,\mathrm{\Omega}$')
 plt.xlabel(r'$t\,/\,\mathrm{s}$')
+plt.tick_params(direction='in')
 plt.show()
 
 if save_results:
