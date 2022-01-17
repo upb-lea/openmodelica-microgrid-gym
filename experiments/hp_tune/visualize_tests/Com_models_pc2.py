@@ -60,7 +60,7 @@ node = platform.uname().node
 
 # model_name = 'model_retrain_pastVals12.zip'
 # number_past_vals = [5, 5, 0, 0]  # [0, 5, 10, 16, 25]  # [30, 0]
-number_past_vals = [0]  # [0, 5, 10, 16, 25]  # [30, 0]
+number_past_vals = [5]  # [0, 5, 10, 16, 25]  # [30, 0]
 # use_past_vals = [True]  # [False, True, True, True, True]  # [True, False]
 # wrapper = ['past', 'no-I-term', 'past', 'i_load']  # ['past', 'future', 'no-I-term', 'I-controller']
 wrapper = ['no-I-term']  # ['past', 'future', 'no-I-term', 'I-controller']
