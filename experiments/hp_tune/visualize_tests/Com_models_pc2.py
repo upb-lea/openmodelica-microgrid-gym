@@ -60,10 +60,10 @@ node = platform.uname().node
 
 # model_name = 'model_retrain_pastVals12.zip'
 # number_past_vals = [5, 5, 0, 0]  # [0, 5, 10, 16, 25]  # [30, 0]
-number_past_vals = [5, 0]  # [0, 5, 10, 16, 25]  # [30, 0]
+number_past_vals = [0]  # [0, 5, 10, 16, 25]  # [30, 0]
 # use_past_vals = [True]  # [False, True, True, True, True]  # [True, False]
 # wrapper = ['past', 'no-I-term', 'past', 'i_load']  # ['past', 'future', 'no-I-term', 'I-controller']
-wrapper = ['past', 'no-I-term']  # ['past', 'future', 'no-I-term', 'I-controller']
+wrapper = ['no-I-term']  # ['past', 'future', 'no-I-term', 'I-controller']
 
 # model_name = ['model.zip']
 # model_path = 'OMG_Integrator_Actor_i_load_feature_2/1/'
@@ -76,6 +76,7 @@ model_path = 'experiments/hp_tune/trained_models/paper/'
 #              'model_OMG_DDPG_Integrator_no_pastVals_i_load_feature_corr.zip']
 
 model_name = ['model_OMG_DDPG_Integrator_no_pastVals.zip', 'model_OMG_DDPG_Actor.zip']
+model_name = ['model_OMG_DDPG_Actor.zip']
 # model_name = ['model.zip']
 ################DDPG Config Stuff#########################################################################
 gamma = 0.946218
@@ -464,8 +465,8 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                                     # on_episode_reset_callback=cb.fire  # needed?
                                     obs_output=['lc.inductor1.i', 'lc.inductor2.i', 'lc.inductor3.i',
                                                 'lc.capacitor1.v', 'lc.capacitor2.v', 'lc.capacitor3.v',
-                                                'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2'],
-                                    # , 'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i'],
+                                                'inverter1.v_ref.0', 'inverter1.v_ref.1', 'inverter1.v_ref.2'  # ],
+                                        , 'r_load.resistor1.i', 'r_load.resistor2.i', 'r_load.resistor3.i'],
                                     max_episode_steps=max_episode_steps_list[max_eps_steps],
                                     model_params={'lc.resistor1.R': R_filter,
                                                   'lc.resistor2.R': R_filter,
