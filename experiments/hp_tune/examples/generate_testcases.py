@@ -159,6 +159,32 @@ def load_step(t):
     return R_load_sample
 
 
+R_L_dessca = [0.9383603849247186, 0.01370747099315972, 0.436663566297538, 0.2261261999434656, 0.6485002895059251,
+              0.11839290006977787, 0.5463985295511345, 0.7530789892142805, 0.32964132905168747, 0.9944504372633558,
+              0.49206163189268537, 0.8079144275290111, 0.3794638365771582, 0.17277441320360834, 0.0658824263134536,
+              0.7017633533405172, 0.2733925217683726, 0.5982364701739138, 0.9008471432389613, 0.0034681769531965667,
+              0.9875802744573191]
+
+
+class Load_runner():
+    def __init__(self):
+        self.count = 0
+        self.cc = 0
+
+    def load_step_dessca(self, t):
+        self.cc += 1
+
+        if self.cc % 500 == 0:
+            self.count += 1
+
+        return R_L_dessca[self.count] * (200 - 14) + 14
+
+    def give_val(self, t):
+        return R_L_dessca[self.count] * (200 - 14) + 14
+
+
+Load_runner_dessca = Load_runner()
+
 if __name__ == '__main__':
     # gen = RandProcess(VasicekProcess, proc_kwargs=dict(speed=1000, vol=10, mean=load), initial=load,
     #                  bounds=(lower_bound_load, upper_bound_load))
@@ -201,9 +227,12 @@ if __name__ == '__main__':
                    # model_params={'r_load.resistor1.R': load_step_deterministic,  # for check train-random
                    #              'r_load.resistor2.R': load_step_deterministic,  # loadstep
                    #              'r_load.resistor3.R': load_step_deterministic},
-                   model_params={'r_load.resistor1.R': 25,  # for check train-random
-                                 'r_load.resistor2.R': 25,  # loadstep
-                                 'r_load.resistor3.R': 25},
+                   # model_params={'r_load.resistor1.R': 25,  # for check train-random
+                   #              'r_load.resistor2.R': 25,  # loadstep
+                   #              'r_load.resistor3.R': 25},
+                   model_params={'r_load.resistor1.R': Load_runner_dessca.load_step_dessca,  # for check train-random
+                                 'r_load.resistor2.R': Load_runner_dessca.give_val,  # loadstep
+                                 'r_load.resistor3.R': Load_runner_dessca.give_val},
                    viz_cols=[
                        PlotTmpl([f'r_load.resistor{i}.R' for i in '123'],
                                 callback=xylables
@@ -244,4 +273,8 @@ if __name__ == '__main__':
 
     # df_store = env.history.df[['r_load.resistor1.R', 'r_load.resistor2.R', 'r_load.resistor3.R']]
     # df_store.to_pickle('R_load_tenLoadstepPerEpisode2881Len_test_case_10_seconds.pkl')
-    df_store.to_pickle('R_load_deterministic_test_case_25_ohm_1_seconds.pkl')
+    # df_store.to_pickle('R_load_deterministic_test_case_25_ohm_1_seconds.pkl')
+    df_store.to_pickle('R_load_dess'
+                       ',322'
+                       ',23,,'
+                       'ca.pkl')
