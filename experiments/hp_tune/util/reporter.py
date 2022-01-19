@@ -74,18 +74,21 @@ class Reporter:
              if filename.endswith(str(count_number_to_find) + extension)),
             key=lambda fn: os.stat(fn).st_mtime)
 
-    def json_to_mongo_via_sshtunnel(self):
+    def json_to_mongo_via_sshtunnel(self, file_name_to_store=None):
 
         if not len(os.listdir(self.save_folder)) == 0:
 
-            try:
-                oldest_file_path = self.oldest_file_in_tree()
-            except(ValueError) as e:
-                print('Folder seems empty or no matching data found!')
-                print(f'ValueError{e}')
-                print('Empty directory! Go to sleep for 5 minutes!')
-                time.sleep(5 * 60)
-                return
+            if file_name_to_store is None:
+                try:
+                    oldest_file_path = self.oldest_file_in_tree()
+                except(ValueError) as e:
+                    print('Folder seems empty or no matching data found!')
+                    print(f'ValueError{e}')
+                    print('Empty directory! Go to sleep for 5 minutes!')
+                    time.sleep(5 * 60)
+                    return
+            else:
+                oldest_file_path = file_name_to_store
 
             with open(oldest_file_path) as json_file:
                 data = json.load(json_file)
