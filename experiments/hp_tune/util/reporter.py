@@ -60,6 +60,20 @@ class Reporter:
              if filename.endswith(extension)),
             key=lambda fn: os.stat(fn).st_mtime)
 
+    def oldest_file_with_name_in_tree(self, count_number_to_find, extension=".json"):
+        """
+        Returns the oldest file-path string
+
+        :param count_number_to_find: List of count_numbers to find and store instead of storing all
+        """
+        print(os.getcwd())
+        return min(
+            (os.path.join(dirname, filename)
+             for dirname, dirnames, filenames in os.walk(self.save_folder)
+             for filename in filenames
+             if filename.endswith(str(count_number_to_find) + extension)),
+            key=lambda fn: os.stat(fn).st_mtime)
+
     def json_to_mongo_via_sshtunnel(self):
 
         if not len(os.listdir(self.save_folder)) == 0:
@@ -104,8 +118,27 @@ class Reporter:
 
 if __name__ == "__main__":
 
+    file_ending_number = [0, 1, 2]
+
     reporter = Reporter()
     print("Starting Reporter for logging from local savefolder to mongoDB")
+
+    print(f"Searching for files in directory with number ending on {file_ending_number}")
+
     # print(reporter.oldest_file_in_tree())
     while True:
-        reporter.json_to_mongo_via_sshtunnel()
+        # reporter.json_to_mongo_via_sshtunnel()
+
+        # to send only files ending with number file_ending_number
+        for number in file_ending_number:
+            try:
+                oldest_named_file_path = reporter.oldest_file_with_name_in_tree(number)
+                print(oldest_named_file_path)
+
+                reporter.json_to_mongo_via_sshtunnel(oldest_named_file_path)
+
+            except(ValueError) as e:
+                print(f'No file with number {number} ending')
+                print(f'ValueError{e}')
+                print('Go to sleep for 5 seconds and go on with next number!')
+                time.sleep(5)
