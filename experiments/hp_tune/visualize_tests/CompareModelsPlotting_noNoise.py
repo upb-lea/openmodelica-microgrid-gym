@@ -32,7 +32,8 @@ folder_names = ['saves/paper_new', 'saves/paper_new', 'saves/paper_new', 'saves/
 
 number_of_steps = '_100000steps'
 
-df = pd.read_pickle(folder_names[0] + '/PI' + number_of_steps)
+# df = pd.read_pickle(folder_names[0] + '/PI' + number_of_steps)
+df = pd.read_pickle('saves/paper_desscaR_load' + '/PI_10000steps')
 # df = pd.read_pickle(folder_name + '/PI_9989steps')
 
 env_hist_PI = df['env_hist_PI']
@@ -116,8 +117,8 @@ for i in range(len(interval_list_y)):
         if plt_count == 3:
             axs[1, i].plot(t_reward, reward_PI, 'b', label=f'      PI: '
                                                            f'{round(sum(reward_PI[int(interval_list_x[i][0] / ts):int(interval_list_x[i][1] / ts)]) / ((interval_list_x[i][1] - interval_list_x[i][0]) / ts), 4)}')
-        axs[1, i].plot(t_reward, DDPG_reward, 'r', label=f'DDPG: '
-                                                         f'{round(sum(DDPG_reward[int(interval_list_x[i][0] / ts):int(interval_list_x[i][1] / ts)]) / ((interval_list_x[i][1] - interval_list_x[i][0]) / ts), 4)}')
+        axs[1, i].plot(DDPG_reward, 'r', label=f'DDPG: '
+                                               f'{round(sum(DDPG_reward[int(interval_list_x[i][0] / ts):int(interval_list_x[i][1] / ts)]) / ((interval_list_x[i][1] - interval_list_x[i][0]) / ts), 4)}')
         axs[1, i].grid()
         axs[1, i].set_xlim(interval_list_x[i])
         # axs[1, i].set_ylim(interval_list_y[i])
@@ -136,9 +137,9 @@ for i in range(len(interval_list_y)):
         # else:
         #    axs[1, i].set_ylabel("$v_{\mathrm{q0, PI}}\,/\,\mathrm{V}$")
 
-        axs[plt_count, i].plot(t_test, v_d_DDPG, 'b')
-        axs[plt_count, i].plot(t_test, v_q_DDPG, 'r')
-        axs[plt_count, i].plot(t_test, v_0_DDPG, 'g')
+        axs[plt_count, i].plot(v_d_DDPG, 'b')
+        axs[plt_count, i].plot(v_q_DDPG, 'r')
+        axs[plt_count, i].plot(v_0_DDPG, 'g')
         axs[plt_count, i].grid()
         axs[plt_count, i].set_xlim(interval_list_x[i])
         axs[plt_count, i].set_ylim(interval_list_y[i])
@@ -146,10 +147,11 @@ for i in range(len(interval_list_y)):
         if i == 0:
             # axs[plt_count, i].set_ylabel(pV)
             axs[plt_count, i].set_ylabel(ylabel_use)
-            #axs[plt_count, i].set_ylabel("$v_{\mathrm{dq0, DDPG}}\,/\,\mathrm{V}$")
+            # axs[plt_count, i].set_ylabel("$v_{\mathrm{dq0, DDPG}}\,/\,\mathrm{V}$")
         # else:
         #    axs[plt_count, i].set_ylabel("$v_{\mathrm{q0, DDPG}}\,/\,\mathrm{V}$")
         plt_count += 1
+        plt.show()
 
 fig.suptitle(f'Model using pastVals:' + str(pastVals) + ' \n '
                                                         f'Model-return(MRE)' + str(return_list_DDPG) + ' \n'
