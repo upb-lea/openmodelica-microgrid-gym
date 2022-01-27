@@ -12,14 +12,14 @@ params = {'backend': 'ps',
                                   r'\usepackage{amsmath,amssymb,mathtools}'
                                   r'\newcommand{\mlutil}{\ensuremath{\operatorname{ml-util}}}'
                                   r'\newcommand{\mlacc}{\ensuremath{\operatorname{ml-acc}}}'],
-          'axes.labelsize': 8,  # fontsize for x and y labels (was 10)
-          'axes.titlesize': 8,
-          'font.size': 10,  # was 10
-          'legend.fontsize': 10,  # was 10
-          'xtick.labelsize': 10,
-          'ytick.labelsize': 10,
+          'axes.labelsize': 12,  # fontsize for x and y labels (was 10)
+          'axes.titlesize': 12,
+          'font.size': 12,  # was 10
+          'legend.fontsize': 12,  # was 10
+          'xtick.labelsize': 12,
+          'ytick.labelsize': 12,
           'text.usetex': True,
-          'figure.figsize': [5.8, 3.8],  # [3.9, 3.1],
+          'figure.figsize': [5.5, 3.7],  # [3.9, 3.1],
           'font.family': 'serif',
           'lines.linewidth': 1
           }
@@ -57,7 +57,8 @@ plt.boxplot((m_sec_550, m_ddpg_550))
 plt.grid()
 plt.ylim([-1, 0])
 plt.xticks([1, 2], ['$\mathrm{SEC}$', '$\mathrm{DDPG}$'])
-plt.ylabel('$\overline{\sum{r_k}}$')
+plt.ylabel('$\overline{r}_{k,i}$')
+# plt.ylabel('$\overline{\sum{r_k}}$')
 plt.tick_params(direction='in')
 plt.show()
 
@@ -129,7 +130,8 @@ plt.tick_params(direction='in')
 plt.legend()
 plt.xlim([0, 176])
 # plt.set_xlim([0, 10])
-plt.ylabel('$\overline{{r}}$')
+plt.ylabel('$\overline{r}_{k,i}$')
+# plt.ylabel('$\overline{{r}}$')
 plt.xlabel(r'$\mathrm{Episode}$')
 plt.show()
 

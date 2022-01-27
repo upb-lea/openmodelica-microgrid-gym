@@ -165,25 +165,10 @@ i_0_DDPG_I_load = (i_dq0_I_load[2].tolist())
 
 DDPG_reward_I_load = df_DDPG_I['Reward DDPG'][0]
 
+"""
 if save_results:
     # Plot setting
-    params = {'backend': 'ps',
-              'text.latex.preamble': [r'\usepackage{gensymb}'
-                                      r'\usepackage{amsmath,amssymb,mathtools}'
-                                      r'\newcommand{\mlutil}{\ensuremath{\operatorname{ml-util}}}'
-                                      r'\newcommand{\mlacc}{\ensuremath{\operatorname{ml-acc}}}'],
-              'axes.labelsize': 13,  # fontsize for x and y labels (was 10)
-              'axes.titlesize': 13,
-              'font.size': 13,  # was 10
-              'legend.fontsize': 13,  # was 10
-              'xtick.labelsize': 13,
-              'ytick.labelsize': 13,
-              'text.usetex': True,
-              'figure.figsize': [8.5, 8],  # [8.5, 2.4],  # [3.9, 3.1],
-              'font.family': 'serif',
-              'lines.linewidth': 1
-              }
-    matplotlib.rcParams.update(params)
+    
 
 fig, axs = plt.subplots(3, 1)
 axs[0].plot(t_test, R_load_PI, 'g')
@@ -218,8 +203,8 @@ if save_results:
     fig.savefig(f'{folder_name}/OMG_testcase.png')
     fig.savefig(f'{folder_name}/OMG_testcase.pdf')
     fig.savefig(f'{folder_name}/OMG_testcase.pgf')
-
-    # if save_results:
+"""
+if save_results:
     # Plot setting
     params = {'backend': 'ps',
               'text.latex.preamble': [r'\usepackage{gensymb}'
@@ -239,6 +224,24 @@ if save_results:
               }
     matplotlib.rcParams.update(params)
 
+    params = {'backend': 'ps',
+              'text.latex.preamble': [r'\usepackage{gensymb}'
+                                      r'\usepackage{amsmath,amssymb,mathtools}'
+                                      r'\newcommand{\mlutil}{\ensuremath{\operatorname{ml-util}}}'
+                                      r'\newcommand{\mlacc}{\ensuremath{\operatorname{ml-acc}}}'],
+              'axes.labelsize': 12,  # fontsize for x and y labels (was 10)
+              'axes.titlesize': 12,
+              'font.size': 12,  # was 10
+              'legend.fontsize': 12,  # was 10
+              'xtick.labelsize': 12,
+              'ytick.labelsize': 12,
+              'text.usetex': True,
+              'figure.figsize': [5.3, 3.5],  # [3.9, 3.1],
+              'font.family': 'serif',
+              'lines.linewidth': 1
+              }
+    matplotlib.rcParams.update(params)
+
 fig = plt.figure()  # figsize =(6, 5))
 plt.plot(t_test, R_load_PI, 'g')
 plt.grid()
@@ -249,9 +252,9 @@ plt.tick_params(direction='in')
 plt.show()
 
 if save_results:
-    fig.savefig(f'{folder_name}/OMG_R_load.png')
-    fig.savefig(f'{folder_name}/OMG_R_load.pdf')
-    fig.savefig(f'{folder_name}/OMG_R_load.pgf')
+    fig.savefig(f'{folder_name}/OMG_R_loadsmall.png')
+    fig.savefig(f'{folder_name}/OMG_R_loadsmall.pdf')
+    fig.savefig(f'{folder_name}/OMG_R_loadsmall.pgf')
 
     # Plot setting
     params = {'backend': 'ps',
