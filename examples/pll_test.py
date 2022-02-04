@@ -17,10 +17,16 @@ import matplotlib.pyplot as plt
 
 from openmodelica_microgrid_gym import Runner
 from openmodelica_microgrid_gym.agents import StaticControlAgent
-from openmodelica_microgrid_gym.agents.mp_agent import PllAgent
 from openmodelica_microgrid_gym.aux_ctl import PI_params, DroopParams, MultiPhaseDQ0PIPIController, \
     MultiPhaseDQCurrentController, InverseDroopParams, PLLParams
 from openmodelica_microgrid_gym.net import Network
+from openmodelica_microgrid_gym.agents import StaticControlAgent
+from openmodelica_microgrid_gym.aux_ctl import PLLParams, PLL
+from typing import List, Mapping, Union
+
+import numpy as np
+
+from openmodelica_microgrid_gym.aux_ctl import Controller
 
 # list_resistance = [13,15,17,26,30] #training
 # list_inductance = [0.00065, 0.0012, 0.0014, 0.0017, 0.0023] #training
@@ -39,6 +45,34 @@ list_factor = [0.75, 1.75]
 # list_factor = [0.5, 1.5, 2]
 # list_factor=[0.5]
 
+class PllAgent(StaticControlAgent):
+
+    def __init__(self, pllPIParams: PLLParams, ts, ctrls: List[Controller],
+                 obs_template: Mapping[str, List[Union[List[str], np.ndarray]]],
+                 obs_varnames: List[str] = None, **kwargs):
+
+        self._ts = ts
+
+        super().__init__(ctrls, obs_template, obs_varnames, **kwargs)
+
+        self._pll = PLL(pllPIParams, self._ts)
+        self.freq_load_store=[]
+
+
+    def measure(self, state) -> np.ndarray:
+
+        obs = super().measure(state)
+        if len(self.env.history.data)!=0:
+            v_load1= self.env.history.df[['rl1.resistor1.v']].to_numpy()[-1]
+            v_load2= self.env.history.df[['rl1.resistor2.v']].to_numpy()[-1]
+            v_load3= self.env.history.df[['rl1.resistor3.v']].to_numpy()[-1]
+            asd = 1
+            _,freq,_=self._pll.step(np.array([v_load1, v_load2, v_load3]))
+            self.freq_load_store.append(freq)
+        return obs
+
+
+
 for (resistance, inductance) in zip(list_resistance, list_inductance):
     if list_resistance == list_resistance[0]:
         list_factor[0] = 0.7
@@ -47,7 +81,7 @@ for (resistance, inductance) in zip(list_resistance, list_inductance):
 
     for factor in list_factor:
         # Simulation definitions
-        max_episode_steps = 1000  # number of simulation steps per episode
+        max_episode_steps = 100  # number of simulation steps per episode
         num_episodes = 1  # number of simulation episodes
         # (here, only 1 episode makes sense since simulation conditions don't change in this example)
         DroopGain = 40000.0  # virtual droop gain for active power / W/Hz
@@ -137,11 +171,10 @@ for (resistance, inductance) in zip(list_resistance, list_inductance):
             plt.close('all')
 
 
-        pll_freq = env.history.df[['lcl1.pll.add_freq_nom_delta_f.y']]
         slave_freq=env.history.df[['slave.freq']]
+        load_freq=agent.freq_load_store
 
         master_freq = env.history.df[['master.freq']]
-        plt.plot(pll_freq, label='PLL')
         plt.plot(slave_freq, label='slave_freq')
         plt.legend()
         plt.show()
