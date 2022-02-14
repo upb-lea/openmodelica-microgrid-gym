@@ -1,5 +1,5 @@
 cfg = dict(lea_vpn_nodes=['lea-skynet', 'lea-picard', 'lea-barclay',
-                          'lea-cyberdyne', 'webbah-ThinkPad-L380', 'LEA_WORK35'],
+                          'lea-cyberdyne', 'webbah-ThinkPad-L380', 'LEA_WORK35', 'webbah-ThinkPad-T14-Gen-2a'],
            STUDY_NAME='P10_I_term_3',
            meas_data_folder='Json_to_MonogDB_P10_I_term_3_new/',
            MONGODB_PORT=12001,

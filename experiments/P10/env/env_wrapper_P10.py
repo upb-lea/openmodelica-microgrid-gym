@@ -307,6 +307,7 @@ class FeatureWrapper(Monitor):
         self.i_phasor_training = []
         self.v_phasor_training = []
         self.reward_episode_mean = []
+        self.reward_plus_addon_episode_mean = []
         self.n_trail = n_trail
         self.phase = []
         self.integrator_sum = np.zeros(self.action_space.shape)
@@ -330,6 +331,7 @@ class FeatureWrapper(Monitor):
         self.action_I1 = []
         self.action_I2 = []
         self.rew = []
+        self.rew_sum = []
         self.penaltyP = []
         self.penaltyI = []
         self.clipped_rew = []
@@ -406,7 +408,7 @@ class FeatureWrapper(Monitor):
         lam_P = self.penalty_P_weight * penalty_P_weight_scale
         lam_I = self.penalty_I_weight * penalty_I_weight_scale
 
-        if cfg['loglevel'] == 'setting':
+        if cfg['loglevel'] == 'debug_reward':
             self.rew.append(reward)
             self.penaltyP.append(lam_P * action_P_penalty)
             self.penaltyI.append(lam_I * integrator_penalty)
@@ -487,7 +489,10 @@ class FeatureWrapper(Monitor):
         # self.used_P = action_P
         # self.used_I = self.integrator_sum
 
+        self.rew_sum.append(reward)
+
         if done:
+            self.reward_plus_addon_episode_mean.append(np.mean(reward))
             self.reward_episode_mean.append(np.mean(self.rewards))
             self.n_episode += 1
 

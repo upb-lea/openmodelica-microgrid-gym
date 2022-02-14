@@ -154,7 +154,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
 
     # Log Train-info data
     train_data = {"Name": "After_Training",
-                  "Mean_eps_reward": env.reward_episode_mean,
+                  "Mean_eps_env_reward": env.reward_episode_mean,
+                  "Mean_eps_reward_sum": env.reward_plus_addon_episode_mean,
                   "Trial number": n_trail,
                   "Database name": folder_name,
                   "Sum_eps_reward": env.get_episode_rewards()
