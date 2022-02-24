@@ -7,8 +7,8 @@ OpenModelica Microgrid Gym
 
 .. |nbsp|   unicode:: U+00A0 .. NO-BREAK SPACE
 
-.. |build| image:: https://travis-ci.org/upb-lea/openmodelica-microgrid-gym.svg?branch=master
-    :target: https://travis-ci.org/github/upb-lea/openmodelica-microgrid-gym
+.. |build| image:: https://github.com/upb-lea/openmodelica-microgrid-gym/actions/workflows/build_and_test.yml/badge.svg
+    :target: https://github.com/upb-lea/openmodelica-microgrid-gym/actions/workflows/build_and_test.yml
 
 .. |cov| image:: https://codecov.io/gh/upb-lea/openmodelica-microgrid-gym/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/upb-lea/openmodelica-microgrid-gym
