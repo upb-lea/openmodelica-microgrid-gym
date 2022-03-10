@@ -492,11 +492,13 @@ class FeatureWrapper(Monitor):
         self.rew_sum.append(reward)
 
         if done:
-            self.reward_plus_addon_episode_mean.append(np.mean(reward))
+            # log train curve with additional rewards:
+            self.reward_plus_addon_episode_mean.append(np.mean(self.rew_sum))
+            # log train curve with raw env-reward:
             self.reward_episode_mean.append(np.mean(self.rewards))
             self.n_episode += 1
 
-            if cfg['loglevel'] == 'setting':
+            if cfg['loglevel'] == 'train':
                 reward_Data = {'Reward_env': self.rew,
                                'penaltyP': self.penaltyP,
                                'penaltyI': self.penaltyI,

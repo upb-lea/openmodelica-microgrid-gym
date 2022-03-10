@@ -194,7 +194,7 @@ def ddpg_objective(trial):
                                     t_start=t_start,
                                     t_end=t_end,
                                     total_timesteps=number_learning_steps)
-
+    """
     trail_config_mongo = {"Name": "Config",
                           "Node": node,
                           "Agent": "DDPG",
@@ -206,9 +206,11 @@ def ddpg_objective(trial):
                                                        "P10 setting thrid try"
                                                        "Reward in test is kept to -1 if limit exceeded once"
                           }
+
     trail_config_mongo.update(trial.params)
-    # mongo_recorder.save_to_mongodb('Trial_number_' + n_trail, trail_config_mongo)
-    mongo_recorder.save_to_json('Trial_number_' + n_trail, trail_config_mongo)
+    mongo_recorder.save_to_json('Config_Trial_number_' + n_trail, trail_config_mongo, n_trail)
+    #mongo_recorder.save_local_to_pkl('Trial_number_' + n_trail, trail_config_mongo)
+    """
 
     loss = experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale,
                                # loss = experiment_fit_DDPG_custom(learning_rate, gamma, use_gamma_in_rew, weight_scale, bias_scale,

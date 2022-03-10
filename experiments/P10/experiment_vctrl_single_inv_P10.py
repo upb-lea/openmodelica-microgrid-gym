@@ -153,14 +153,15 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
     model.learn(total_timesteps=number_learning_steps)
 
     # Log Train-info data
-    train_data = {"Name": "After_Training",
-                  "Mean_eps_env_reward": env.reward_episode_mean,
+    train_data = {#"Name": "After_Training",
+                  "Mean_eps_env_reward_raw": env.reward_episode_mean,
                   "Mean_eps_reward_sum": env.reward_plus_addon_episode_mean,
-                  "Trial number": n_trail,
-                  "Database name": folder_name,
-                  "Sum_eps_reward": env.get_episode_rewards()
+                  #"Trial number": n_trail,
+                  #"Database name": folder_name,
+                  #"Sum_eps_reward": env.get_episode_rewards()
                   }
-    mongo_recorder.save_to_json('Trial_number_' + n_trail, train_data)
+    #mongo_recorder.save_to_json('Trial_number_' + n_trail, train_data)
+    mongo_recorder.save_local_to_pkl('traing_rewards_Trial_number_' + n_trail, train_data, n_trail)
 
     model.save(log_path + f'model.zip')
 
@@ -245,7 +246,7 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                 integrator_sum1.append(np.float64(env_test.integrator_sum[1]))
                 integrator_sum2.append(np.float64(env_test.integrator_sum[2]))
 
-        if rewards == -1 and not limit_exceeded_in_test and env_test.rew[-1]:
+        if rewards == -1 and not limit_exceeded_in_test:# and env_test.rew[-1]:
             # Set addidional penalty of -1 if limit is exceeded once in the test case
             limit_exceeded_in_test = True
 
@@ -284,17 +285,22 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
             break
 
     ts = time.gmtime()
-    reward_test_after_training = {"Name": "Test_Reward",
+    """
+    test_after_training_config = {"Name": "Test_Reward",
                                   "time": ts,
-                                  "Reward": rew_list,
+                                  #"Reward": rew_list,
                                   "Return": (return_sum / env_test.max_episode_steps),
                                   "Trial number": n_trail,
                                   "Database name": folder_name,
                                   "Node": platform.uname().node,
                                   "End time": time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime())}
+    """
+
+    reward_test_after_training = {"Reward": rew_list}
 
     if cfg['loglevel'] in ['train', 'test', 'setting']:
-        mongo_recorder.save_to_json('Trial_number_' + n_trail, reward_test_after_training)
+        #mongo_recorder.save_to_json('Test_setting_Trial_number_' + n_trail, test_after_training_config, n_trail)
+        mongo_recorder.save_local_to_pkl('Test_reward_Trial_number_' + n_trail, reward_test_after_training, n_trail)
 
     if cfg['loglevel'] in ['train', 'test']:
         test_after_training = {"Name": "Test",
@@ -341,6 +347,6 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
             env_test.viz_col_tmpls[2].vars[i]].copy().tolist() for i in range(3)
                                     })
 
-        mongo_recorder.save_to_json('Trial_number_' + n_trail, test_after_training)
+        mongo_recorder.save_to_json('Trial_number_' + n_trail, test_after_training, n_trail)
 
     return (return_sum / env_test.max_episode_steps)

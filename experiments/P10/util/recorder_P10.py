@@ -1,5 +1,6 @@
 import json
 from os import makedirs
+import pandas as pd
 
 import sshtunnel
 from pymongo import MongoClient
@@ -39,7 +40,8 @@ class Recorder:
                                                     MONGODB_PORT),
                             'ssh_username': 'webbah'}
 
-            self.save_folder = '/scratch/hpc-prf-reinfl/weber/OMG/' + cfg['meas_data_folder']
+            #self.save_folder = '/scratch/hpc-prf-reinfl/weber/OMG/' + cfg['meas_data_folder']
+            self.save_folder = cfg['pc2_logpath'] + '/' + cfg['meas_data_folder']
 
         self.database_name = database_name
         makedirs(self.save_folder, exist_ok=True)
@@ -55,15 +57,22 @@ class Recorder:
                 trial_coll = db[col]  # get collection named col
                 trial_coll.insert_one(data)
 
-    def save_to_json(self, col: str = ' trails', data=None):
+    def save_to_json(self, col: str = ' trails', data=None, n_trail=999999):
         """
         Stores data to json file in specified directory. From there the data can be grept by another process
         and can be stored to a DB via ssh
         To distinguish the files of one trail a save_count is incremented and added to the filename
         """
 
-        with open(self.save_folder + self.database_name + '_' + col + '_' + str(self.save_count) + '.json',
+        with open(self.save_folder + str(n_trail) + '_' + self.database_name + '_' + col + '_' + str(self.save_count) + '.json',
                   'w') as outfile:
             json.dump(data, outfile)
 
         self.save_count += 1
+
+    def save_local_to_pkl(self, col: str = ' trails', data=None, n_trail=999999):
+        """
+        Stores data locally to comp. pkl
+        """
+        df = pd.DataFrame(data)
+        df.to_pickle(self.save_folder + str(n_trail) + '_' + self.database_name + '_' + col + '_' + str(self.save_count) + ".pkl.bz2")

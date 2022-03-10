@@ -53,6 +53,7 @@ v_DC = net['inverter1'].v_DC
 print('Using P10 setting')
 L_filter = 70e-6  # / H
 R_filter = 1.1e-3  # / Ohm
+R_filter_C = 7e-3  # / Ohm
 C_filter = 250e-6  # / F
 lower_bound_load_clip = 1  # to allow maximal load that draws i_limit (let exceed?)
 lower_bound_load_clip_std = 1
@@ -151,9 +152,9 @@ register(id='vctrl_single_inv_train-v0',
              model_params={'lc.resistor1.R': R_filter,
                            'lc.resistor2.R': R_filter,
                            'lc.resistor3.R': R_filter,
-                           'lc.resistor4.R': 0.0000001,
-                           'lc.resistor5.R': 0.0000001,
-                           'lc.resistor6.R': 0.0000001,
+                           'lc.resistor4.R': R_filter_C,
+                           'lc.resistor5.R': R_filter_C,
+                           'lc.resistor6.R': R_filter_C,
                            'lc.inductor1.L': L_filter,
                            'lc.inductor2.L': L_filter,
                            'lc.inductor3.L': L_filter,
@@ -258,9 +259,9 @@ register(id='vctrl_single_inv_test-v1',
              model_params={'lc.resistor1.R': R_filter,
                            'lc.resistor2.R': R_filter,
                            'lc.resistor3.R': R_filter,
-                           'lc.resistor4.R': 0.0000001,
-                           'lc.resistor5.R': 0.0000001,
-                           'lc.resistor6.R': 0.0000001,
+                           'lc.resistor4.R': R_filter_C,
+                           'lc.resistor5.R': R_filter_C,
+                           'lc.resistor6.R': R_filter_C,
                            'lc.inductor1.L': L_filter,
                            'lc.inductor2.L': L_filter,
                            'lc.inductor3.L': L_filter,
