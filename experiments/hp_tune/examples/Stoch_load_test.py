@@ -10,23 +10,23 @@ from openmodelica_microgrid_gym.env import PlotTmpl
 from openmodelica_microgrid_gym.net import Network
 from openmodelica_microgrid_gym.util import RandProcess
 
-load = 55  # 28
-upper_bound_load = 200
-lower_bound_load = -10
+load = 1e-6  # 28
+upper_bound_load = 1e-3
+lower_bound_load = 1e-9
 net = Network.load('net/net_vctrl_single_inv.yaml')
 max_episode_steps = 10000  # int(2 / net.ts)
 
 if __name__ == '__main__':
-    gen = RandProcess(VasicekProcess, proc_kwargs=dict(speed=1000, vol=200, mean=load), initial=load,
+    gen = RandProcess(VasicekProcess, proc_kwargs=dict(speed=10, vol=1e-40, mean=load), initial=load,
                       bounds=(lower_bound_load, upper_bound_load))
 
-    rand_load = RandomLoad(max_episode_steps, net.ts, gen, bounds=(14, 200), bounds_std=(2, 0))
+    rand_load = RandomLoad(max_episode_steps, net.ts, gen, bounds=(1e-9, 1e-3), bounds_std=(0, 0))
 
     R_load = []
     t_vec = []
     t = 0
 
-    for ii in range(2000):
+    for ii in range(200):
         # if ii % 1000 == 0:
         #    gen.reset()
 

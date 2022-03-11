@@ -460,3 +460,87 @@ class MultiPhaseDQCurrentSourcingController(Controller):
 
         # Transform the MVs back to the abc frame
         return MVabc
+
+
+class MultiPhaseDQCurrentSourcingControllerNoPLL(Controller):
+    """
+    Implements a discrete 3-phase current sourcing inverter, using NO PLL but gets additionally phase as input e.g. from
+    the master inverter. Will wait loops_till_enable-loops of the sine wave till gets active!
+
+    Controls the currents dq0 axis, aligned to the external voltage vector,
+    d-axis is aligned with the A phase. Rotating frame aligned with A axis at #
+    t = 0, that is, at t = 0, the d-axis is aligned with the a-axis.
+
+    DOES NOT need PLL but external signal
+    """
+
+    def __init__(self, IPIParams: PI_params, i_limit: float,
+                 ts_sim: float, ts_ctrl: Optional[float] = None, loops_till_enable: float = 0.0, freq: float = 50,
+                 *args, **kwargs):
+        """
+        :param IPIParams: PI_parameter for the current control loop
+        :param pllPIParams: PI parameters for the PLL controller
+        :param i_limit: Current limit
+        :param Pdroop_param: Droop parameters for P-droop
+        :param Qdroop_param: Droop parameters for Q-droop
+        :param lower_droop_voltage_threshold: Grid voltage threshold from where the controller starts to react on the
+               voltage and frequency in the grid
+        :param ts_sim: positive float. absolute time resolution of the env
+        :param ts_ctrl: positive float. absolute sampling time for the controller
+        :param loops_till_enable: Will wait loops_till_enable turns of sinewave till gets active
+        :param freq: Frequenzcy of sinewave to count
+        :param history: Dataframe to store internal data
+        """
+        super().__init__(IPIParams, ts_sim=ts_sim, ts_ctrl=ts_ctrl, *args, **kwargs)
+
+        self._set_hist_cols([[f'CVI{s}' for s in 'dq0'],
+                             [f'SPI{s}' for s in 'dq0'],
+                             [f'm{s}' for s in 'dq0'], [f'm{s}' for s in 'abc']])
+
+        # Populate the previous values with 0's
+        self._lastIDQ = np.zeros(N_PHASE)
+        self._i_limit = i_limit
+        self.enable = False
+        self.loops_till_enable = loops_till_enable
+        self.num_phase_loops = 0.0
+        self.ts = ts_sim
+        self.freq = freq
+
+    def control(self, currentCV: np.ndarray, phaseCV: float, idq0SP: np.ndarray = np.zeros(3), **kwargs):
+        """
+        Performs the calculations for a discrete step of the controller
+        Droop-control is started if Vgrid_rms exceeds 200 V, to avoid oscillation with the grid forming inverter
+
+        :param currentCV: 1d-array with 3 entries, one for each phase. The feedback values for current
+        :param voltageCV:  1d-array with 3 entries, one for each phase. The feedback values for voltage
+        :param idq0SP: The peak current setpoints in the dq0 frame (Additional power output to droop, if == 0, than
+            only droop is applied
+
+        :return: Modulation indices for the current sourcing inverter in ABC
+        """
+        if self.enable:
+            # Transform the current feedback to the DQ0 frame
+            self._lastIDQ = abc_to_dq0(currentCV, phaseCV[0])
+
+            idq0SP = idq0SP
+            # Calculate the control applied to the DQ0 currents
+            # action space is limited to [-1,1]
+
+            MVdq0 = self._currentPI.step(idq0SP, self._lastIDQ)
+            # Transform the outputs from the controllers (dq0) to abc
+            # also divide by SQRT(2) to ensure the transform is limited to [-1,1]
+
+            MVabc = dq0_to_abc(MVdq0, phaseCV[0])
+            self._last_meas = [*self._lastIDQ,
+                               *idq0SP,
+                               *MVdq0, *MVabc]
+            return MVabc
+        else:
+            if round(phaseCV[0],6) == round(self.ts * self.freq * 2*np.pi, 6):
+                self.num_phase_loops += 1
+            if self.num_phase_loops >= self.loops_till_enable:
+                self.enable = True
+            self._last_meas = [*[0, 0, 0],
+                               *[0, 0, 0],
+                               *[0, 0, 0], *[0, 0, 0]]
+            return [0, 0, 0]
