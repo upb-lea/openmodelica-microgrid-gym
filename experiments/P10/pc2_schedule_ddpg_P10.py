@@ -56,7 +56,7 @@ def main():
             break
 
         job_files_path = pathlib.Path(
-            f"/scratch/hpc-prf-reinfl/weber/OMG/ccs_job_files/{STUDY_NAME}")  # SCRATCH = $PC2PFS/hpc_....re/OMG_prjecet
+            f"/scratch/hpc-prf-reinfl/weber/P10/ccs_job_files/{STUDY_NAME}")  # SCRATCH = $PC2PFS/hpc_....re/OMG_prjecet
         job_files_path.mkdir(parents=False, exist_ok=True)
 
         # read ccsinfo
