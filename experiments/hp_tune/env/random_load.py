@@ -105,7 +105,7 @@ class RandomLoad:
         # Changes rand process data with probability of 5% and sets new value randomly
         if np.random.randint(0, 1001) < 2:
 
-            gain = np.random.uniform(self.rand_process.bounds[0], self.rand_process.bounds[1])
+            gain = np.random.randint(self.rand_process.bounds[0], self.rand_process.bounds[1])
 
             self.rand_process.proc.mean = gain
             self.rand_process.proc.vol = np.random.randint(1, 150)
