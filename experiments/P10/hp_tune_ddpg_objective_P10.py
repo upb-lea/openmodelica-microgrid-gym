@@ -147,11 +147,11 @@ def ddpg_objective_fix_params(trial):
 def ddpg_objective(trial):
     number_learning_steps = 500000  # trial.suggest_int("number_learning_steps", 100000, 1000000)
     actor_hidden_size = trial.suggest_int("actor_hidden_size", 10, 100)  # Using LeakyReLU
-    actor_number_layers = trial.suggest_int("actor_number_layers", 1, 3)
+    actor_number_layers = trial.suggest_int("actor_number_layers", 1, 4)
     alpha_relu_actor = trial.suggest_loguniform("alpha_relu_actor", 0.001, 0.5)
     alpha_relu_critic = trial.suggest_loguniform("alpha_relu_critic", 0.001, 0.5)
     antiwindup_weight = trial.suggest_float("antiwindup_weight", 1e-4, 1)
-    batch_size = trial.suggest_int("batch_size", 16, 512)
+    batch_size = trial.suggest_int("batch_size", 16, 1024)
     bias_scale = trial.suggest_loguniform("bias_scale", 5e-5, 0.2)
     buffer_size = trial.suggest_int("buffer_size", int(20e4), number_learning_steps)  # 128
     critic_hidden_size = trial.suggest_int("critic_hidden_size", 10, 300)

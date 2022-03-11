@@ -37,7 +37,8 @@ def experiment_fit_DDPG(learning_rate, gamma, use_gamma_in_rew, weight_scale, bi
                         number_past_vals=0):
     if node not in cfg['lea_vpn_nodes']:
         # assume we are on pc2
-        log_path = f'/scratch/hpc-prf-reinfl/weber/OMG/{folder_name}/{n_trail}/'
+        pc2_log_path = cfg['pc2_logpath']
+        log_path = f'{pc2_log_path}/{folder_name}/{n_trail}/'
     else:
         log_path = f'{folder_name}/{n_trail}/'
 
