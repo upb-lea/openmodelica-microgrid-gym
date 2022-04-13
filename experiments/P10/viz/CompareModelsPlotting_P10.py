@@ -26,11 +26,11 @@ run = '204 Return: -2 '
 # run = '213 Return: 0.8 '
 run = '1080 Return: 0.9 '
 
-folder_names = ['saves/P10_I_term_2/1080_deterministic']  # _deterministic'
-folder_names = ['saves/P10_I_term_2/1080_deterministic']  # _deterministic'
+folder_names = ['saves/P10_SEC_R_load']  # _deterministic'
 
-number_of_steps = '_10000steps'
 
+number_of_steps = '_1000steps'
+"""
 df = pd.read_pickle('saves/P10_I_term_2/204_deterministic/PI' + number_of_steps)
 
 env_hist_PI = df['env_hist_PI']
@@ -50,7 +50,7 @@ kp_c = df['PI_Kp_c'][0]
 ki_c = df['PI_Ki_c'][0]
 kp_v = df['PI_Kp_v'][0]
 ki_v = df['PI_Ki_v'][0]
-
+"""
 model_names = ['model.zip']
 ylabels = ['DDPG-I+pastVals']
 

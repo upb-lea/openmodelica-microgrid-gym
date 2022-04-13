@@ -47,35 +47,66 @@ class CallbackList(list):
 
 show_plots = True
 save_results = False
+# 2128 ->0; 3125 -> -1, 956-> best
+trial = '956'
 
-folder_name = '/scratch/hpc-prf-reinfl/weber/OMG/P10_I_term_2/saves/1080_deterministic'  # 'saves/P10_I_term_2/204_deterministic'
+folder_name = 'saves/P10_SEC_R_load'
 os.makedirs(folder_name, exist_ok=True)
-wrapper = ['past']  # ['past', 'future', 'no-I-term', 'I-controller']
-model_path = '/scratch/hpc-prf-reinfl/weber/OMG/P10_I_term_2/1080/'  # experiments/P10/trained_models/2_213/'
+wrapper = ['past']
+model_path = 'experiments/P10/viz/data/'
+model_path = 'experiments/P10/retrain/'
 node = platform.uname().node
-model_name = ['model.zip']
+model_name = ['model_'+trial+'.zip']
+model_name = ['model'+trial+'_retrained']
 
 ################DDPG Config Stuff#########################################################################
-print('Using model_801 setting')
-actor_number_layers = 3
-alpha_relu_actor = 0.0879403
-alpha_relu_critic = 0.373547
-antiwindup_weight = 0.784046
-critic_number_layers = 4
-error_exponent = 0.5
-gamma = 0.796004
-integrator_weight = 0.419145
-use_gamma_in_rew = 1
-n_trail = 50001
-number_past_vals = [8]
+print('Using model_'+trial+' setting')
+if trial == '956':
+    actor_number_layers = 2
+    alpha_relu_actor = 0.0225049
+    alpha_relu_critic = 0.00861825
+    antiwindup_weight = 0.350646
+    critic_number_layers = 4
+    error_exponent = 0.5
+    gamma = 0.794337
+    integrator_weight = 0.214138
+    use_gamma_in_rew = 1
+    n_trail = 50001
+    number_past_vals = [18]
+
+if trial == '3125':
+    actor_number_layers = 1
+    alpha_relu_actor = 0.305758
+    alpha_relu_critic = 0.0119687
+    antiwindup_weight = 0.767766
+    critic_number_layers = 4
+    error_exponent = 0.5
+    gamma = 0.922121
+    integrator_weight = 0.237488
+    use_gamma_in_rew = 1
+    n_trail = 50001
+    number_past_vals = [2]
+
+if trial == '2128':
+    actor_number_layers = 1
+    alpha_relu_actor = 0.334101
+    alpha_relu_critic = 0.0729528
+    antiwindup_weight = 0.648373
+    critic_number_layers = 4
+    error_exponent = 0.5
+    gamma = 0.798319
+    integrator_weight = 0.122662
+    use_gamma_in_rew = 1
+    n_trail = 50001
+    number_past_vals = [7]
 
 mongo_recorder = Recorder(node=node, database_name=folder_name)
 
 num_average = 1
-max_episode_steps_list = [10000]
+max_episode_steps_list = [1000]
 
 data_str = 'experiments/hp_tune/data/R_load_deterministic_test_case2_1_seconds.pkl'
-# data_str = 'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'
+#data_str = 'experiments/hp_tune/data/R_load_hard_test_case_10_seconds.pkl'
 # data_str = 'experiments/hp_tune/data/R_load_hard_test_case_60_seconds_noReset.pkl'
 
 result_list = []
@@ -144,15 +175,19 @@ kernel = GPy.kern.Matern32(input_dim=len(bounds), variance=prior_var, lengthscal
 
 #####################################
 # Definition of the controllers
-# kp_v = 0.002
-# ki_v = 143
-
+#From MATLAB:
+#################################################################################
+#Layout using mangtude optimum for inverter with LC-filter using L = 7e-05 H, C = 0.00025 F, R = 0.001 Ohm.
+#Current controller:
+#Kp = 0.0009773 A/V and Ki = 0.13159 A/(Vs)
+#Voltage controller:
+#Kp = 0.45052 V/A and Ki = 305.6655 V/(As)
 # P10:
 print('using p10 setting')
-kp_v = 0.2972
-ki_v = 142.7
-kp_c = 0.00068
-ki_c = 0.731
+kp_v = 0.45052
+ki_v = 305.6655
+kp_c = 0.0009773
+ki_c = 0.13159
 
 # Choose Kp and Ki for the current and voltage controller as mutable parameters
 mutable_params = dict(voltageP=MutableFloat(kp_v), voltageI=MutableFloat(ki_v))  # 300Hz
@@ -297,9 +332,9 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                        model_params={'lc.resistor1.R': R_filter,
                                      'lc.resistor2.R': R_filter,
                                      'lc.resistor3.R': R_filter,
-                                     'lc.resistor4.R': 0.0000001,
-                                     'lc.resistor5.R': 0.0000001,
-                                     'lc.resistor6.R': 0.0000001,
+                                     'lc.resistor4.R': R_filter,
+                                     'lc.resistor5.R': R_filter,
+                                     'lc.resistor6.R': R_filter,
                                      'lc.inductor1.L': L_filter,
                                      'lc.inductor2.L': L_filter,
                                      'lc.inductor3.L': L_filter,
@@ -406,7 +441,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
         rew.det_run = True
         rew.exponent = 0.5  # 1
 
-        net = Network.load('net/net_vctrl_single_inv_dq0.yaml')  # is used from vctrl_single_env, not needed here
+        #net = Network.load('net/net_vctrl_single_inv_dq0.yaml')  # is used from vctrl_single_env, not needed here
 
         for used_model, wrapper_mode, used_number_past_vales in zip(model_name, wrapper, number_past_vals):
 
@@ -423,9 +458,9 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                                     model_params={'lc.resistor1.R': R_filter,
                                                   'lc.resistor2.R': R_filter,
                                                   'lc.resistor3.R': R_filter,
-                                                  'lc.resistor4.R': 0.0000001,
-                                                  'lc.resistor5.R': 0.0000001,
-                                                  'lc.resistor6.R': 0.0000001,
+                                                  'lc.resistor4.R': R_filter,
+                                                  'lc.resistor5.R': R_filter,
+                                                  'lc.resistor6.R': R_filter,
                                                   'lc.inductor1.L': L_filter,
                                                   'lc.inductor2.L': L_filter,
                                                   'lc.inductor3.L': L_filter,
@@ -459,9 +494,9 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
                                     model_params={'lc.resistor1.R': R_filter,
                                                   'lc.resistor2.R': R_filter,
                                                   'lc.resistor3.R': R_filter,
-                                                  'lc.resistor4.R': 0.0000001,
-                                                  'lc.resistor5.R': 0.0000001,
-                                                  'lc.resistor6.R': 0.0000001,
+                                                  'lc.resistor4.R': R_filter,
+                                                  'lc.resistor5.R': R_filter,
+                                                  'lc.resistor6.R': R_filter,
                                                   'lc.inductor1.L': L_filter,
                                                   'lc.inductor2.L': L_filter,
                                                   'lc.inductor3.L': L_filter,
@@ -511,7 +546,7 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
             # model2 = DDPG.load(model_path + f'model.zip')  # , env=env_test)
             print('Before load')
 
-            model = DDPG.load(model_path + f'{used_model}')  # , env=env_test)
+            model = DDPG.load(model_path + f'{used_model}', env=env_test)
 
             print('After load')
 
@@ -615,6 +650,14 @@ for max_eps_steps in tqdm(range(len(max_episode_steps_list)), desc='steps', unit
             v_d = (v_dq0[0].tolist())
             v_q = (v_dq0[1].tolist())
             v_0 = (v_dq0[2].tolist())
+
+
+            plt.plot(v_d)
+            plt.show()
+            plt.plot(v_q)
+            plt.show()
+            plt.plot(v_0)
+            plt.show()
 
             # return (return_sum / env_test.max_episode_steps + limit_exceeded_penalty)
 
