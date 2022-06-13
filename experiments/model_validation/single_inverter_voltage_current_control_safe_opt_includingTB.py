@@ -50,14 +50,14 @@ params = {'backend': 'ps',
 matplotlib.rcParams.update(params)
 
 include_simulate = True
-show_plots = True
+show_plots = False
 balanced_load = False
 do_measurement = False
-save_results = False
+save_results = True
 
 # Files saves results and  resulting plots to the folder saves_VI_control_safeopt in the current directory
 current_directory = os.getcwd()
-save_folder = os.path.join(current_directory, r'VSim_rebase2_MC3')
+save_folder = os.path.join(current_directory, r'V_ctrl_delay_included')
 os.makedirs(save_folder, exist_ok=True)
 
 np.random.seed(1)
@@ -67,7 +67,7 @@ net = Network.load('../../net/net_single-inv-Paper_Loadstep.yaml')
 delta_t = 1e-4  # simulation time step size / s
 undersample = 1
 max_episode_steps = 2000  # number of simulation steps per episode
-num_episodes = 1  # number of simulation episodes (i.e. SafeOpt iterations)
+num_episodes = 40  # number of simulation episodes (i.e. SafeOpt iterations)
 n_MC = 1  # number of Monte-Carlo samples for simulation - samples device parameters (e.g. L,R, noise) from
 v_DC = 600  # DC-link voltage / V; will be set as model parameter in the FMU
 nomFreq = 60  # nominal grid frequency / Hz
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     # unsafe, if the new measured performance drops below 20 % of the initial performance of the initial safe (!)
     # parameter set
     safe_threshold = 0
-    j_min = cal_J_min(phase_shift, amp_dev)  # cal min allowed performance
+    j_min = 15000  # cal_J_min(phase_shift, amp_dev)  # cal min allowed performance
 
     # The algorithm will not try to expand any points that are below this threshold. This makes the algorithm stop
     # expanding points eventually.
@@ -206,6 +206,7 @@ if __name__ == '__main__':
     # Definition of the controllers
     # Choose Kp and Ki for the current and voltage controller as mutable parameters
     mutable_params = dict(voltageP=MutableFloat(0.0175), voltageI=MutableFloat(12))  # 300Hz
+    #mutable_params = dict(voltageP=MutableFloat(0.022), voltageI=MutableFloat(213))  # 300Hz
     voltage_dqp_iparams = PI_params(kP=mutable_params['voltageP'], kI=mutable_params['voltageI'],
                                     limits=(-iLimit, iLimit))
 
@@ -224,11 +225,9 @@ if __name__ == '__main__':
 
     # Define a voltage forming inverter using the PIPI and droop parameters from above
 
-    # Controller with observer
-    # ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t, droop_param, qdroop_param,
-    #                                   observer=[Lueneberger(*params) for params in
-    #                                             repeat((A, B, C, L, delta_t * undersample, v_DC / 2), 3)], undersampling=undersample,
-    #                                   name='master')
+    # Controller with observer ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, delta_t,
+    # droop_param, qdroop_param, observer=[Lueneberger(*params) for params in repeat((A, B, C, L, delta_t *
+    # undersample, v_DC / 2), 3)], undersampling=undersample, name='master')
 
     # Controller without observer
     ctrl = MultiPhaseDQ0PIPIController(voltage_dqp_iparams, current_dqp_iparams, droop_param, qdroop_param,
@@ -356,7 +355,7 @@ if __name__ == '__main__':
         runner = MonteCarloRunner(agent, env)
 
         runner.run(num_episodes, n_mc=n_MC, visualise=True, prepare_mc_experiment=reset_loads,
-                   return_gradient_extend=True)
+                   return_gradient_extend=False)
 
         df_len = pd.DataFrame({'lengthscale': lengthscale,
                                'bounds': bounds,

@@ -2152,6 +2152,42 @@ package grid
     annotation(
       Diagram);
   end testbench_SC_load;
+  
+  model P10_R_load
+    grid.inverters.inverter inverter1(v_DC = 60)  annotation(
+      Placement(visible = true, transformation(origin = {-70, 30}, extent = {{-10, 10}, {10, -10}}, rotation = 0)));
+    Modelica.Blocks.Interfaces.RealInput i1p1 annotation(
+      Placement(visible = true, transformation(origin = {-104, 18}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 18}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
+    Modelica.Blocks.Interfaces.RealInput i1p2 annotation(
+      Placement(visible = true, transformation(origin = {-104, 30}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 30}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
+    Modelica.Blocks.Interfaces.RealInput i1p3 annotation(
+      Placement(visible = true, transformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0), iconTransformation(origin = {-104, 42}, extent = {{-8, -8}, {8, 8}}, rotation = 0)));
+  grid.filter.lc lc(C1 = 0.0000136, C2 = 0.0000136, C3 = 0.0000136, L1 = 0.0023, L2 = 0.0023, L3 = 0.0023, R1 = 0.4, R2 = 0.4, R3 = 0.4, R4 = 0.0000000001, R5 = 0.0000000001, R6 = 0.0000000001)  annotation(
+      Placement(visible = true, transformation(origin = {-32, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  grid.loads.r r_load(R1 = 7.15, R2 = 7.15, R3 = 7.15)  annotation(
+      Placement(visible = true, transformation(origin = {10, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+  equation
+  connect(i1p1, inverter1.u1) annotation(
+      Line(points = {{-104, 18}, {-86, 18}, {-86, 36}, {-80, 36}}, color = {0, 0, 127}));
+  connect(i1p2, inverter1.u2) annotation(
+      Line(points = {{-104, 30}, {-80, 30}}, color = {0, 0, 127}));
+  connect(i1p3, inverter1.u3) annotation(
+      Line(points = {{-104, 42}, {-86, 42}, {-86, 24}, {-80, 24}}, color = {0, 0, 127}));
+  connect(lc.pin3, inverter1.pin3) annotation(
+      Line(points = {{-42, 36}, {-51, 36}, {-51, 24}, {-60, 24}}, color = {0, 0, 255}));
+  connect(lc.pin2, inverter1.pin2) annotation(
+      Line(points = {{-42, 30}, {-60, 30}}, color = {0, 0, 255}));
+  connect(lc.pin1, inverter1.pin1) annotation(
+      Line(points = {{-42, 24}, {-51, 24}, {-51, 36}, {-60, 36}}, color = {0, 0, 255}));
+  connect(r_load.pin3, lc.pin6) annotation(
+      Line(points = {{0, 36}, {-22, 36}, {-22, 36}, {-22, 36}}, color = {0, 0, 255}));
+  connect(r_load.pin2, lc.pin5) annotation(
+      Line(points = {{0, 30}, {-22, 30}, {-22, 30}, {-22, 30}}, color = {0, 0, 255}));
+  connect(r_load.pin1, lc.pin4) annotation(
+      Line(points = {{0, 24}, {-22, 24}, {-22, 24}, {-22, 24}}, color = {0, 0, 255}));
+    annotation(
+      Diagram);
+  end P10_R_load;
   annotation(
     uses(Modelica(version = "3.2.3")));
 end grid;

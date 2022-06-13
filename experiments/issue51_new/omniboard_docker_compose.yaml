@@ -1,0 +1,28 @@
+version: '3'
+services:
+
+  mongo:
+    image: mongo
+    ports:
+      - 127.0.0.1:27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: sample
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: db
+    expose:
+      - 27017
+    networks:
+      - omniboard
+
+  omniboard:
+    image: vivekratnavel/omniboard:latest
+    command: [ "--mu", "mongodb://sample:password@mongo:27017/db?authSource=admin" ]
+    ports:
+      - 127.0.0.1:9000:9000
+    networks:
+      - omniboard
+    depends_on:
+      - mongo
+
+networks:
+  omniboard:

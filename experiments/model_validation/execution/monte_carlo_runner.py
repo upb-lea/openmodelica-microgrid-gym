@@ -66,13 +66,15 @@ class MonteCarloRunner:
             for m in tqdm(range(n_mc), desc='monte_carlo_run', unit='epoch', leave=False):
                 prepare_mc_experiment()  # reset stoch components
 
-                r_vec = np.zeros(self.env.max_episode_steps)
+                r_vec = np.zeros(self.env.max_episode_steps + 1)
 
                 obs = self.env.reset()
 
-                for p in tqdm(range(self.env.max_episode_steps), desc='steps', unit='step', leave=False):
+                for p in tqdm(range(self.env.max_episode_steps + 1), desc='steps', unit='step', leave=False):
                     self.agent.observe(r, False)
                     act = self.agent.act(obs)
+                    if p == 1999:
+                        asd = 1
                     obs, r, done, info = self.env.step(act)
                     r_vec[p] = r
                     self.env.render()
@@ -97,7 +99,7 @@ class MonteCarloRunner:
                             dev_return = 0
                             print('NO DEV RETURN!!!!')
 
-                        dev_fac = 5  # 3
+                        dev_fac = 0.5  # 3
 
                         print(self.agent.episode_return)
                         print(dev_return)
